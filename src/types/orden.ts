@@ -32,12 +32,22 @@ export interface OrdenBase {
 }
 
 export interface OrdenGarantia extends OrdenBase {
+  idPersonalizado: string;
   tipo: 'garantia';
   fechaCompra: Date;
   descripcionProblema: string;
+  fechaReporte: Date;
+  horaReporte: string;
+  piezasUsadas: Array<{pieza: string, cantidad: number}>;
+  accionesTomadas: string[];
+  estadoInicial: string[];
+  estadoFinal: string[];
+  reparacionesRealizadas?: string[];
+  contadorFinal?: number;
   evidencia?: string[];
-  tiempoGarantia: number; 
-  condicionesGarantia: string;
+  garantiaTiempo: number; 
+  garantiaDescripcion: string;
+
 }
 
 export interface OrdenMantenimiento {

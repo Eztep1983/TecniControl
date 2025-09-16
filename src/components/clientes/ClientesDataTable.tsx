@@ -11,42 +11,133 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger,
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Trash2, Eye, Loader2, User, Mail, Phone, MapPin, 
-  Search, 
-  ChevronLeft, 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Eye,
+  Loader2,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Search,
+  ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
   Users,
+  X,
 } from "lucide-react";
 import type { Cliente } from "@/types/orden";
 import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 
 interface ClientesDataTableProps {
   data: Cliente[];
+}
+
+// Componente de skeleton para loading
+function TableSkeleton({ rows = 5 }: { rows?: number }) {
+  return (
+    <>
+      {Array.from({ length: rows }).map((_, index) => (
+        <TableRow key={index} className="animate-pulse">
+          <TableCell>
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-muted"></div>
+              <div className="space-y-1">
+                <div className="h-4 w-32 bg-muted rounded"></div>
+                <div className="h-3 w-20 bg-muted rounded"></div>
+              </div>
+            </div>
+          </TableCell>
+          <TableCell className="hidden md:table-cell">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 bg-muted rounded"></div>
+              <div className="h-4 w-40 bg-muted rounded"></div>
+            </div>
+          </TableCell>
+          <TableCell>
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 bg-muted rounded"></div>
+              <div className="h-4 w-24 bg-muted rounded"></div>
+            </div>
+          </TableCell>
+          <TableCell className="hidden sm:table-cell">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 bg-muted rounded"></div>
+              <div className="h-4 w-32 bg-muted rounded"></div>
+            </div>
+          </TableCell>
+          <TableCell className="text-right">
+            <div className="flex justify-end gap-2">
+              <div className="h-8 w-8 bg-muted rounded"></div>
+              <div className="h-8 w-8 bg-muted rounded"></div>
+              <div className="h-8 w-8 bg-muted rounded"></div>
+            </div>
+          </TableCell>
+        </TableRow>
+      ))}
+    </>
+  );
 }
 
 export function ClientesDataTable({ data }: ClientesDataTableProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [loadingStates, setLoadingStates] = useState<Record<string, string>>({});
-  const [globalLoading, setGlobalLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clienteToDelete, setClienteToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounce para la búsqueda
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setCurrentPage(1); // Resetear a la primera página al buscar
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm]);
 
   // Filtrar clientes basado en el término de búsqueda
   const filteredClientes = useMemo(() => {
-    if (!searchTerm) return data;
+    if (!debouncedSearchTerm) return data;
     
     return data.filter((cliente) => {
-      const searchLower = searchTerm.toLowerCase();
+      const searchLower = debouncedSearchTerm.toLowerCase();
       return (
         cliente.name?.toLowerCase().includes(searchLower) ||
         cliente.email?.toLowerCase().includes(searchLower) ||
@@ -55,7 +146,7 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
         cliente.address?.toLowerCase().includes(searchLower) 
       );
     });
-  }, [data, searchTerm]);
+  }, [data, debouncedSearchTerm]);
 
   // Calcular el total de páginas
   const totalPages = Math.ceil(filteredClientes.length / itemsPerPage);
@@ -73,18 +164,19 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
     return filteredClientes.slice(startIndex, startIndex + itemsPerPage);
   }, [currentPage, filteredClientes, itemsPerPage]);
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
+  const handleDeleteClick = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    // Confirmación antes de eliminar
-    if (!confirm("¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer.")) {
-      return;
-    }
+    setClienteToDelete(id);
+    setDeleteDialogOpen(true);
+  };
 
-    setLoadingStates(prev => ({ ...prev, [id]: "deleting" }));
+  const handleDeleteConfirm = async () => {
+    if (!clienteToDelete) return;
+    
+    setIsDeleting(true);
     
     try {
-      await deleteDoc(doc(db, "clientes", id));
+      await deleteDoc(doc(db, "clientes", clienteToDelete));
       
       toast({
         title: "✅ Cliente eliminado",
@@ -107,11 +199,9 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
         variant: "destructive",
       });
     } finally {
-      setLoadingStates(prev => {
-        const newStates = { ...prev };
-        delete newStates[id];
-        return newStates;
-      });
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setClienteToDelete(null);
     }
   };
 
@@ -135,7 +225,6 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // Resetear a la primera página al buscar
   };
 
   const goToPage = (page: number) => {
@@ -144,52 +233,116 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
     }
   };
 
+  // Función para generar los botones de paginación
+  const renderPaginationButtons = () => {
+    const buttons = [];
+    const maxVisiblePages = 5;
+    
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <Button
+          key={i}
+          variant={currentPage === i ? "default" : "ghost"}
+          className="h-8 w-8 p-0 hidden sm:flex"
+          onClick={() => goToPage(i)}
+        >
+          {i}
+        </Button>
+      );
+    }
+    
+    return buttons;
+  };
+
   return (
     <div className="space-y-4">
-      {/* Loading overlay global */}
-      {globalLoading && (
-        <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50">
-          <div className="flex flex-col items-center gap-4 p-6 bg-card rounded-lg shadow-lg">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-lg font-medium">Cargando...</p>
-          </div>
-        </div>
-      )}
+      {/* Modal de confirmación de eliminación */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>¿Eliminar cliente?</DialogTitle>
+            <DialogDescription>
+              Esta acción no se puede deshacer. ¿Estás seguro de que deseas eliminar este cliente permanentemente?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+            <Button 
+              onClick={() => setDeleteDialogOpen(false)}
+              className="w-full sm:w-auto"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="w-full sm:w-auto"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                "Eliminar"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
+      <br />
       {/* Tarjeta con el total de clientes */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border p-4 md:p-6">
+      <div className="bg-gradient-to-r from-blue-20 to-indigo-10 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg md:p-6">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-blue-100 rounded-full">
-            <Users className="h-6 w-6 text-blue-600" />
+          <div className="p-3 bg-blue-100 dark:bg-blue-800 rounded-full">
+            <Users className="h-6 w-6 text-blue-600 dark:text-blue-300" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Total de Clientes Registrados</h2>
-            <p className="text-3xl font-bold text-blue-700">{data.length}</p>
-            <p className="text-sm text-gray-500 mt-1">
-              {searchTerm ? `${filteredClientes.length} coinciden con tu búsqueda` : 'Gestión completa de clientes'}
+            <h2 className="text-lg font-semibold text-gray-900 text-white">Total de Clientes Registrados</h2>
+            <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">{data.length}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              {debouncedSearchTerm ? `${filteredClientes.length} coinciden con tu búsqueda` : 'Gestión completa de clientes'}
             </p>
           </div>
         </div>
       </div>
       
       {/* Barra de búsqueda y controles */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-white p-4 rounded-md">
-        <div className="relative w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-gradient-to-r from-blue-20 to-indigo-10 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg  md:p-6">
+        <div className="relative w-full sm:max-w-sm lg:max-w-lg shadow-lg ">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Buscar clientes..."
-            className="pl-8 w-full sm:w-[800px]"
+            className="pl-8 w-full bg-transparent"
             value={searchTerm}
             onChange={handleSearchChange}
           />
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-1 h-7 w-7"
+              onClick={() => setSearchTerm("")}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
         <div className="flex items-center gap-2 self-end sm:self-auto">
           <span className="text-sm text-muted-foreground hidden sm:inline">
             Mostrar
           </span>
           <select
-            className="h-9 rounded-md border border-input bg-transparent px-2 py-1 text-sm"
+            className="h-9 rounded-md border border-input bg-transparent px-2 py-1 text-sm dark:bg-gray-800"
             value={itemsPerPage}
             onChange={(e) => {
               setItemsPerPage(Number(e.target.value));
@@ -208,7 +361,7 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
       </div>
       
       {/* Información de resultados */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-center sm:items-center gap-2 ">
         <p className="text-sm text-muted-foreground">
           {filteredClientes.length === 0 
             ? "No se encontraron clientes" 
@@ -216,12 +369,12 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
           }
         </p>
         
-        {searchTerm && (
+        {debouncedSearchTerm && (
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setSearchTerm("")}
-            className="h-8 px-2 lg:px-3"
+            className="h-8 px-2 lg:px-3 self-end sm:self-auto"
           >
             Limpiar búsqueda
             <span className="sr-only">Limpiar búsqueda</span>
@@ -229,8 +382,9 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
         )}
       </div>
 
-      <div className="rounded-md border bg-card overflow-x-auto">
-        <Table className="min-w-[600px] lg:min-w-full">
+      {/* Tabla responsive */}
+      <div className="rounded-md bg-gradient-to-r from-blue-20 to-indigo-10 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg overflow-x-auto">
+        <Table className="min-w-full">
           <TableHeader>
             <TableRow>
               <TableHead className="w-[20%]">Nombre</TableHead>
@@ -264,7 +418,7 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
                           <User className="h-4 w-4 text-muted-foreground" />
                         )}
                         <div className="flex flex-col">
-                          <span>{client.name}</span>
+                          <span className="font-medium">{client.name}</span>
                           <span className="text-xs text-muted-foreground">{client.cedula}</span>
                         </div>
                       </div>
@@ -272,15 +426,15 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
                     
                     <TableCell className="hidden md:table-cell">
                       <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <span className="truncate">{client.email}</span>
                       </div>
                     </TableCell>
                     
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        {client.phone}
+                        <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="truncate">{client.phone}</span>
                       </div>
                     </TableCell>
                     
@@ -301,6 +455,7 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
                             onClick={(e) => handleEditClick(client.id!, e)}
                             title="Editar cliente"
                             disabled={!!isLoading}
+                            className="h-8 w-8"
                           >
                             {isEditing ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -315,6 +470,7 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
                             onClick={() => handleRowClick(client.id!)}
                             title="Ver detalles"
                             disabled={!!isLoading}
+                            className="h-8 w-8"
                           >
                             {isViewing ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -326,9 +482,10 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            onClick={(e) => handleDelete(client.id!, e)}
+                            onClick={(e) => handleDeleteClick(client.id!, e)}
                             title="Eliminar cliente"
                             disabled={!!isLoading}
+                            className="h-8 w-8"
                           >
                             {isDeleting ? (
                               <Loader2 className="h-4 w-4 animate-spin text-destructive" />
@@ -353,7 +510,7 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
                                 )}
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="w-48">
                               <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                               
                               <DropdownMenuItem 
@@ -383,8 +540,8 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
                               </DropdownMenuItem>
                               
                               <DropdownMenuItem 
-                                className="text-destructive cursor-pointer"
-                                onClick={(e) => handleDelete(client.id!, e)}
+                                className="text-destructive cursor-pointer focus:text-destructive"
+                                onClick={(e) => handleDeleteClick(client.id!, e)}
                                 disabled={!!isLoading}
                               >
                                 {isDeleting ? (
@@ -405,7 +562,7 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
             ) : (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
-                  {searchTerm ? 
+                  {debouncedSearchTerm ? 
                     "No se encontraron clientes que coincidan con tu búsqueda." : 
                     "No hay clientes registrados."
                   }
@@ -418,15 +575,14 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
       
       {/* Paginación */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-2">
-          <div className="flex-1 text-sm text-muted-foreground">
+        <div className="flex flex-col sm:flex-row items-center justify-between px-2 gap-4 sm:gap-0">
+          <div className="text-sm text-muted-foreground">
             Página {currentPage} de {totalPages}
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2">
               <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
+                className="h-8 w-8 p-0 hidden sm:flex"
                 onClick={() => goToPage(1)}
                 disabled={currentPage === 1}
               >
@@ -434,7 +590,6 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
                 <ChevronsLeft className="h-4 w-4" />
               </Button>
               <Button
-                variant="outline"
                 className="h-8 w-8 p-0"
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage === 1}
@@ -443,48 +598,19 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               
-              {/* Números de página */}
+              {/* Números de página - versión responsive */}
               <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-                  
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={currentPage === pageNum ? "default" : "outline"}
-                      className="h-8 w-8 p-0"
-                      onClick={() => goToPage(pageNum)}
-                    >
-                      {pageNum}
-                    </Button>
-                  );
-                })}
+                {renderPaginationButtons()}
                 
-                {totalPages > 5 && currentPage < totalPages - 2 && (
-                  <>
-                    <span className="px-1">...</span>
-                    <Button
-                      variant="outline"
-                      className="h-8 w-8 p-0"
-                      onClick={() => goToPage(totalPages)}
-                    >
-                      {totalPages}
-                    </Button>
-                  </>
+                {/* Indicador de más páginas en móvil */}
+                {totalPages > 5 && (
+                  <span className="text-sm text-muted-foreground px-1 sm:hidden">
+                    {currentPage} / {totalPages}
+                  </span>
                 )}
               </div>
               
               <Button
-                variant="outline"
                 className="h-8 w-8 p-0"
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
@@ -493,8 +619,7 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
                 <ChevronRight className="h-4 w-4" />
               </Button>
               <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
+                className="h-8 w-8 p-0 hidden sm:flex"
                 onClick={() => goToPage(totalPages)}
                 disabled={currentPage === totalPages}
               >
@@ -505,11 +630,6 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
           </div>
         </div>
       )}
-      
-      {/* Toast de confirmación de eliminación */}
-      <div className="fixed bottom-4 right-4 z-50 transition-transform duration-300 transform translate-y-0">
-        {/* Este espacio está reservado para toasts personalizados si es necesario */}
-      </div>
     </div>
   );
 }

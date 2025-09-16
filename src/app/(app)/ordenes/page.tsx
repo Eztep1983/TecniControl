@@ -8,13 +8,11 @@ import {
   Wrench, 
   Search, 
   Truck,
-  FileText,
   PlusCircle,
   UserPlus,
   ArrowRight,
   FileCheck,
-  Clock,
-  CheckCircle,
+
   Loader2
 } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'

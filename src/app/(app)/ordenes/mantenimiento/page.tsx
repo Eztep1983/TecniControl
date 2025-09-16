@@ -694,7 +694,7 @@ const imprimirOrden = (orden: OrdenMantenimiento) => {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="bg-gradient-to-r from-blue-20 to-indigo-10 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-700">
                   <thead className="bg-gray-700">
                     <tr>
@@ -840,7 +840,6 @@ const imprimirOrden = (orden: OrdenMantenimiento) => {
             </div>
           </div>
         </div>
-
         {/* Modal de Visualización */}
         {ordenSeleccionada && (
           <ModalOrden 
