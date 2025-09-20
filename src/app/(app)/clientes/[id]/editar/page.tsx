@@ -1,7 +1,7 @@
 import { ClienteForm } from "@/components/clientes/ClienteForm";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/basic/button";
 import Link from "next/link";
 import { Cliente, Dispositivo } from "@/types/orden";
 import { Suspense } from "react";

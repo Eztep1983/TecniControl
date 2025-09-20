@@ -1,5 +1,5 @@
 import { ClienteForm } from "@/components/clientes/ClienteForm";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/basic/button";
 import Link from "next/link";
 import { UserPlus, ArrowLeft } from "lucide-react";
 

@@ -2,9 +2,9 @@
 "use client"
 
 import { useAuth } from "@/components/auth/AuthProvider"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/basic/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/basic/card"
+import { Alert, AlertDescription } from "@/components/ui/basic/alert"
 import { Loader2, Wrench, Shield, AlertCircle, Moon, Sun, Smartphone } from "lucide-react"
 import { useState, useEffect } from "react"
 

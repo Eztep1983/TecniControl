@@ -15,7 +15,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/basic/button'
 import { UserProfile } from '@/components/auth/UserProfile'
 import { useAuth } from '@/components/auth/AuthProvider'
 

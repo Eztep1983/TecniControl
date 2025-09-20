@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/basic/button";
 import {
   Form,
   FormControl,
@@ -12,19 +12,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/basic/form";
+import { Input } from "@/components/ui/basic/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/basic/card";
 import { useToast } from "@/hooks/use-toast";
 import type { Cliente, Dispositivo } from "@/types/orden";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Plus, Trash2, Monitor, Loader2, AlertCircle, CheckCircle2, ArrowLeft, Save, User, Mail, Phone, MapPin, IdCard } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/basic/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/basic/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/basic/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/basic/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/basic/tabs";
 
 // IMPORTAR LOS HELPERS MULTI-USUARIO
 import { 

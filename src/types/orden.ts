@@ -59,18 +59,21 @@ export interface OrdenMantenimiento {
   dispositivo: Dispositivo;
   fechaCreacion: Date | any;
   horaCreacion: string;
+  contadorMaquina?: number;
   tipoMantenimiento: 'preventivo' | 'correctivo';
   tareasRealizadas: string[];
   piezasUsadas: Array<{pieza: string, cantidad: number}>;
   estadoAntes: string[];
   estadoDespues: string[];
-  garantiaTiempo: number;
+  garantiaTiempoDesde: Date | any;
+  garantiaTiempoHasta: Date | any;
   garantiaDescripcion: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 export interface OrdenDiagnostico extends OrdenBase {
   tipo: 'diagnostico';
+  idPersonalizado: string;
   observacionesIniciales: string;
   pruebasRealizadas: string;
   posiblesCausas: string;

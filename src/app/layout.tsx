@@ -3,10 +3,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthProvider"; 
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/basic/toaster";
 import { cn } from "@/lib/utils";
 // import ProtectedRoute from "@/components/ProtectedRoute";
-import { AuthGuard } from "@/components/AuthGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 

@@ -1,11 +1,11 @@
 // app/configuracion/page.tsx
 'use client'
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/basic/card";
+import { Input } from "@/components/ui/basic/input";
+import { Button } from "@/components/ui/basic/button";
+import { Label } from "@/components/ui/basic/label";
+import { Switch } from "@/components/ui/basic/switch";
 import { Save, User, Building, FileText, Loader2, Settings } from 'lucide-react';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
