@@ -14,7 +14,6 @@ import Section from '@/components/ui/basic/Section'
 import ClienteSelector from '@/components/forms/ClienteSelector'
 import DispositivoSelector from '@/components/forms/DispositivoSelector'
 import MantenimientoInfo from '@/components/forms/MantenimientoInfo'
-import EstadoInput from '@/components/forms/EstadoInput'
 import GarantiaInput from '@/components/forms/GarantiaInput'
 import FormActions from '@/components/forms/FormActions'
 
@@ -165,35 +164,6 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     setPiezasUsadas(piezasUsadas.filter((_, i) => i !== index))
   }
 
-  // Handlers para estado
-  const handleActualizarEstadoAntes = (index: number, valor: string) => {
-    const nuevosEstados = [...estadoAntes]
-    nuevosEstados[index] = valor
-    setEstadoAntes(nuevosEstados)
-  }
-
-  const handleAgregarEstadoAntes = () => {
-    setEstadoAntes([...estadoAntes, ''])
-  }
-
-  const handleEliminarEstadoAntes = (index: number) => {
-    setEstadoAntes(estadoAntes.filter((_, i) => i !== index))
-  }
-
-  const handleActualizarEstadoDespues = (index: number, valor: string) => {
-    const nuevosEstados = [...estadoDespues]
-    nuevosEstados[index] = valor
-    setEstadoDespues(nuevosEstados)
-  }
-
-  const handleAgregarEstadoDespues = () => {
-    setEstadoDespues([...estadoDespues, ''])
-  }
-
-  const handleEliminarEstadoDespues = (index: number) => {
-    setEstadoDespues(estadoDespues.filter((_, i) => i !== index))
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -244,8 +214,6 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
         tipoMantenimiento,
         tareasRealizadas: todasLasTareas,
         piezasUsadas: piezasUsadasFiltradas.length > 0 ? piezasUsadasFiltradas : [],
-        estadoAntes: estadoAntes.filter(estado => estado.trim() !== ''),
-        estadoDespues: estadoDespues.filter(estado => estado.trim() !== ''),
         garantiaTiempoDesde: garantiaTiempoDesde ? new Date(garantiaTiempoDesde) : null,
         garantiaTiempoHasta: garantiaTiempoHasta ? new Date(garantiaTiempoHasta) : null,
         garantiaDescripcion,
@@ -355,31 +323,6 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                   onAgregarPieza={handleAgregarPieza}
                   onEliminarPieza={handleEliminarPieza}
                 />
-              </Section>
-
-              {/* Estado del Equipo */}
-              <Section
-                title="Estado del Equipo"
-                colorClass="bg-yellow-500"
-                isOpen={seccionesAbiertas.estado}
-                onToggle={() => toggleSeccion('estado')}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <EstadoInput
-                    tipo="antes"
-                    estados={estadoAntes}
-                    onActualizar={handleActualizarEstadoAntes}
-                    onAgregar={handleAgregarEstadoAntes}
-                    onEliminar={handleEliminarEstadoAntes}
-                  />
-                  <EstadoInput
-                    tipo="despues"
-                    estados={estadoDespues}
-                    onActualizar={handleActualizarEstadoDespues}
-                    onAgregar={handleAgregarEstadoDespues}
-                    onEliminar={handleEliminarEstadoDespues}
-                  />
-                </div>
               </Section>
 
               {/* Garantía */}

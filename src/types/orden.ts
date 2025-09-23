@@ -63,8 +63,6 @@ export interface OrdenMantenimiento {
   tipoMantenimiento: 'preventivo' | 'correctivo';
   tareasRealizadas: string[];
   piezasUsadas: Array<{pieza: string, cantidad: number}>;
-  estadoAntes: string[];
-  estadoDespues: string[];
   garantiaTiempoDesde: Date | any;
   garantiaTiempoHasta: Date | any;
   garantiaDescripcion: string;
