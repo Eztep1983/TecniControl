@@ -12,12 +12,13 @@ import {
   Loader2
 } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { redirect, usePathname } from 'next/navigation'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/basic/button'
 import { UserProfile } from '@/components/auth/UserProfile'
 import { useAuth } from '@/components/auth/AuthProvider'
+import router from 'next/dist/client/router'
 
 const navigation = [
   { name: 'Ordenes de Servicio', href: '/ordenes', icon: Package  },
@@ -36,8 +37,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const { user, loading } = useAuth()
 
-  // ✅ ELIMINADO: No hay redirección aquí, ProtectedRoute se encarga
-  // El layout solo se preocupa de renderizar si hay usuario
+  const handleHomeClick = useCallback(() => {
+    redirect('/ordenes')
+  }, [])
 
   useEffect(() => {
     const checkIsMobile = () => {
@@ -145,7 +147,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex w-64 flex-col">
           <div className="flex flex-grow flex-col overflow-y-auto border-r border-gray-800 bg-gray-800 pt-5">
             <div className="flex flex-shrink-0 items-center px-4 mb-6">
-              <div className="flex items-center">
+              <div className="flex items-center" onClick={handleHomeClick} style={{ cursor: 'pointer' }}>
                 <span className="ml-2 text-xl font-bold text-blue-400">TecniControl</span>
               </div>
             </div>
@@ -169,7 +171,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Menu className="h-6 w-6" aria-hidden="true" />
           </Button>
           <div className="flex flex-1 justify-between px-4">
-            <div className="flex flex-1 items-center">
+            <div className="flex flex-1 items-center" onClick={handleHomeClick} style={{ cursor: 'pointer' }}>
               <span className="text-xl font-bold text-blue-400">TecniControl</span>
             </div>
             <div className="ml-4 flex items-center md:ml-6">
@@ -208,7 +210,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <X className="h-6 w-6 text-white" aria-hidden="true" />
               </Button>
             </div>
-            <div className="flex flex-shrink-0 items-center px-4 mb-6">
+            <div className="flex flex-shrink-0 items-center px-4 mb-6" onClick={handleHomeClick} style={{ cursor: 'pointer' }}>
               <span className="text-xl font-bold text-blue-400">TecniControl</span>
             </div>
             <div className="mt-5 h-0 flex-1 overflow-y-auto justify-between flex flex-col">

@@ -283,7 +283,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
           {/* Selección de Dispositivo */}
           {clienteSeleccionado && (
             <Section
-              title="Seleccionar Dispositivo"
+              title="Selecciona el Dispositivos del Cliente"
               icon={<Monitor className="w-5 h-5 text-green-400" />}
               colorClass="bg-green-500"
               isOpen={seccionesAbiertas.dispositivo}
@@ -324,6 +324,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                   onEliminarPieza={handleEliminarPieza}
                 />
               </Section>
+              {/* Contador Aqui añade la seccion del contador*/}
+
 
               {/* Garantía */}
               <Section

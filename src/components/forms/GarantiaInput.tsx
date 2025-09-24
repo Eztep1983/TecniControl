@@ -58,7 +58,7 @@ export default function GarantiaInput({
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
           <Clock className="w-4 h-4 mr-1" />
-          Fecha de finalización
+          Fecha de vencimiento de la garantía (Automatica)
         </label>
         <input
           type="text"
@@ -73,7 +73,6 @@ export default function GarantiaInput({
           Descripción de Garantía *
         </label>
         <textarea
-          required
           rows={3}
           value={garantiaDescripcion}
           onChange={(e) => onCambiarDescripcion(e.target.value)}

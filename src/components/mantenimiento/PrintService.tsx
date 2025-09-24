@@ -1,7 +1,6 @@
 'use client'
 import { useCallback } from 'react'
 import { OrdenMantenimiento } from '@/types/orden'
-import { useNegocio } from '@/hooks/useNegocio'
 import { Printer } from 'lucide-react'
 
 interface PrintServiceProps {
