@@ -142,7 +142,7 @@ export default function OrdenesPage() {
               Gestión de Órdenes de Servicio
             </h1>
             <p className="text-gray-400 text-sm sm:text-base">
-              Selecciona el tipo de orden que deseas generar o gestionar.
+              Crea un Cliente y selecciona el tipo de orden que deseas generar o gestionar.
             </p>
           </div>
           
@@ -208,16 +208,6 @@ export default function OrdenesPage() {
           </div>
         </div>
 
-        {/* Botón flotante para móviles */}
-        <div className="lg:hidden fixed bottom-6 right-6 z-10">
-          <Link 
-            href="/clientes/nuevo"
-            className="flex items-center justify-center w-14 h-14 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-110"
-            aria-label="Añadir cliente"
-          >
-            <PlusCircle size={24} />
-          </Link>
-        </div>
       </div>
     </div>
   )

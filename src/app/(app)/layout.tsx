@@ -9,7 +9,8 @@ import {
   X,
   Package,
   Settings,
-  Loader2
+  Loader2,
+  ClipboardList,
 } from 'lucide-react'
 import Link from 'next/link'
 import { redirect, usePathname } from 'next/navigation'
@@ -18,12 +19,11 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/basic/button'
 import { UserProfile } from '@/components/auth/UserProfile'
 import { useAuth } from '@/components/auth/AuthProvider'
-import router from 'next/dist/client/router'
 
 const navigation = [
   { name: 'Ordenes de Servicio', href: '/ordenes', icon: Package  },
   { name: 'Clientes', href: '/clientes', icon: Users },
-  { name: 'Tecnicos', href: '/tecnicos', icon: Wrench },
+  { name: 'Tareas y Repuestos', href: '/tareas-repuestos', icon: ClipboardList  },
 ]
 
 const secondaryNavigation = [

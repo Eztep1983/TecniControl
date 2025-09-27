@@ -84,7 +84,7 @@ const FilterLoadingIndicator = () => (
   <div className="absolute inset-0 bg-gray-800/80 rounded-lg flex items-center justify-center z-10 backdrop-blur-sm">
     <div className="flex items-center space-x-2">
       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-      <span className="text-sm text-blue-400">Aplicando filtro...</span>
+      <span className="text-sm text-blue-400">Cargando...</span>
     </div>
   </div>
 );
@@ -353,7 +353,7 @@ export default function OrdenesMantenimientoPage() {
             <div className="absolute inset-0 bg-gray-800/80 flex items-center justify-center z-10 backdrop-blur-sm rounded-xl">
               <div className="flex items-center space-x-3">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                <span className="text-blue-400 text-sm">Aplicando filtro...</span>
+                <span className="text-blue-400 text-sm">Cargando...</span>
               </div>
             </div>
           )}
@@ -554,7 +554,7 @@ export default function OrdenesMantenimientoPage() {
           </div>
         </div>
         
-        {/* Modal de Visualización */}
+        {/* Modal de Visualización de la orden */}
         {ordenSeleccionada && (
           <ModalOrden 
             orden={ordenSeleccionada} 

@@ -1,6 +1,10 @@
-// components/forms/TareasInput.tsx
+// components/forms/TareasInput.tsx (modificado)
 'use client'
-import { Plus, Trash2, Info, Check } from 'lucide-react'
+import { Plus, Trash2, Info, Check, Settings } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/auth/AuthProvider'
+import { obtenerTareasPredefinidas, TareaPredefinida } from '@/lib/configuracionTareasR-helpers'
+import Link from 'next/link'
 
 interface TareasInputProps {
   tipoMantenimiento: 'preventivo' | 'correctivo'
@@ -14,56 +18,6 @@ interface TareasInputProps {
   onEliminarTareaPersonalizada: (index: number) => void
 }
 
-const TAREAS_PREVENTIVAS = [
-  'Limpieza interna del equipo',
-  'Limpieza de ventiladores y disipadores',
-  'Verificación de temperaturas del sistema',
-  'Actualización de drivers y controladores',
-  'Actualización del sistema operativo',
-  'Escaneo antivirus completo',
-  'Limpieza de archivos temporales',
-  'Desfragmentación del disco duro',
-  'Verificación de la integridad del disco',
-  'Limpieza del registro de Windows',
-  'Verificación de conectores y cables',
-  'Prueba de memoria RAM',
-  'Verificación de la fuente de poder',
-  'Backup de archivos importantes',
-  'Optimización del inicio del sistema',
-  'Verificación de puertos USB y conectividad',
-  'Calibración de pantalla',
-  'Limpieza de teclado y mouse',
-  'Verificación de la batería (portátiles)',
-  'Actualización de software instalado'
-]
-
-const TAREAS_CORRECTIVAS = [
-  'Diagnóstico de fallas del sistema',
-  'Reparación de sistema operativo corrupto',
-  'Eliminación de virus y malware',
-  'Recuperación de archivos eliminados',
-  'Reparación de errores de disco duro',
-  'Reemplazo de disco duro defectuoso',
-  'Instalación de nuevo sistema operativo',
-  'Reparación de problemas de arranque',
-  'Solución de pantallas azules (BSOD)',
-  'Reparación de problemas de red',
-  'Configuración de conexión a internet',
-  'Reparación de problemas de audio',
-  'Solución de problemas de video/pantalla',
-  'Reemplazo de memoria RAM defectuosa',
-  'Reparación/reemplazo de fuente de poder',
-  'Solución de sobrecalentamiento',
-  'Reparación de puertos USB dañados',
-  'Reinstalación de drivers corruptos',
-  'Reparación de problemas de software',
-  'Configuración de programas específicos',
-  'Recuperación de contraseñas',
-  'Reparación de problemas de impresora',
-  'Solución de lentitud del sistema',
-  'Reparación de problemas de teclado/mouse'
-]
-
 export default function TareasInput({
   tipoMantenimiento,
   tareasSeleccionadas,
@@ -75,7 +29,37 @@ export default function TareasInput({
   onAgregarTareaPersonalizada,
   onEliminarTareaPersonalizada
 }: TareasInputProps) {
-  const tareasPredefinidas = tipoMantenimiento === 'preventivo' ? TAREAS_PREVENTIVAS : TAREAS_CORRECTIVAS
+  const { user } = useAuth()
+  const [tareasPredefinidasUsuario, setTareasPredefinidasUsuario] = useState<TareaPredefinida[]>([])
+
+  useEffect(() => {
+    cargarTareasPredefinidas()
+  }, [user?.uid])
+
+  const cargarTareasPredefinidas = async () => {
+    if (!user?.uid) return
+    
+    try {
+      const tareas = await obtenerTareasPredefinidas(user.uid)
+      setTareasPredefinidasUsuario(tareas)
+    } catch (error) {
+      console.error('Error cargando tareas predefinidas:', error)
+    }
+  }
+
+  // Filtrar tareas según el tipo de mantenimiento
+  const tareasFiltradas = tareasPredefinidasUsuario.filter(tarea => 
+    tarea.tipo === tipoMantenimiento || tarea.tipo === 'ambos'
+  )
+
+  // Agrupar tareas por categoría
+  const tareasPorCategoria = tareasFiltradas.reduce((acc, tarea) => {
+    if (!acc[tarea.categoria]) {
+      acc[tarea.categoria] = []
+    }
+    acc[tarea.categoria].push(tarea)
+    return acc
+  }, {} as Record<string, TareaPredefinida[]>)
 
   return (
     <div className="mb-6">
@@ -85,45 +69,69 @@ export default function TareasInput({
             Tareas Realizadas 
           </label>
         </div>
-        <button
-          type="button"
-          onClick={() => setMostrarTareasPredefinidas(!mostrarTareasPredefinidas)}
-          className="text-blue-400 hover:text-blue-300 text-sm transition-colors flex items-center"
-        >
-          <Info className="w-4 h-4 mr-1" />
-          {mostrarTareasPredefinidas ? 'Ocultar opciones' : 'Mostrar opciones predefinidas'}
-        </button>
+        <div className="flex items-center space-x-3">
+          <Link 
+            href="/configuracion/tareas-repuestos"
+            className="text-blue-400 hover:text-blue-300 text-sm transition-colors flex items-center"
+            title="Configurar tareas predefinidas"
+          >
+            <Settings className="w-4 h-4 mr-1" />
+            Configurar
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMostrarTareasPredefinidas(!mostrarTareasPredefinidas)}
+            className="text-blue-400 hover:text-blue-300 text-sm transition-colors flex items-center"
+          >
+            <Info className="w-4 h-4 mr-1" />
+            {mostrarTareasPredefinidas ? 'Ocultar opciones' : 'Mostrar opciones'}
+          </button>
+        </div>
       </div>
 
-      {/* Tareas Predefinidas */}
-      {mostrarTareasPredefinidas && (
+      {/* Tareas Predefinidas del Usuario */}
+      {mostrarTareasPredefinidas && tareasFiltradas.length > 0 && (
         <div className="mb-6 p-4 bg-gray-700/30 rounded-xl border border-gray-600/50 backdrop-blur-sm">
-          <h4 className="text-sm font-medium text-gray-300 mb-3">
-            Tareas comunes para mantenimiento {tipoMantenimiento}:
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-60 overflow-y-auto">
-            {tareasPredefinidas.map((tarea, index) => (
-              <label
-                key={index}
-                className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-200 text-sm ${
-                  tareasSeleccionadas.includes(tarea)
-                    ? 'bg-blue-500/20 border border-blue-500/50 text-blue-300 shadow-md'
-                    : 'bg-gray-800/50 border border-gray-700 text-gray-300 hover:bg-gray-700/50'
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={tareasSeleccionadas.includes(tarea)}
-                  onChange={() => onToggleTareaPredefinida(tarea)}
-                  className="mr-2 text-blue-500 rounded focus:ring-2 focus:ring-blue-500"
-                />
-                <span className="flex-1">{tarea}</span>
-                {tareasSeleccionadas.includes(tarea) && (
-                  <Check className="w-4 h-4 text-blue-400 ml-2" />
-                )}
-              </label>
-            ))}
+          <div className="flex justify-between items-center mb-3">
+            <h4 className="text-sm font-medium text-gray-300">
+              Tus tareas predefinidas para {tipoMantenimiento}:
+            </h4>
+            <span className="text-xs text-blue-400">
+              {tareasFiltradas.length} disponible{tareasFiltradas.length !== 1 ? 's' : ''}
+            </span>
           </div>
+          
+          {Object.entries(tareasPorCategoria).map(([categoria, tareas]) => (
+            <div key={categoria} className="mb-4 last:mb-0">
+              <h5 className="text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">
+                {categoria}
+              </h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {tareas.map((tarea) => (
+                  <label
+                    key={tarea.id}
+                    className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-200 text-sm ${
+                      tareasSeleccionadas.includes(tarea.nombre)
+                        ? 'bg-blue-500/20 border border-blue-500/50 text-blue-300 shadow-md'
+                        : 'bg-gray-800/50 border border-gray-700 text-gray-300 hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={tareasSeleccionadas.includes(tarea.nombre)}
+                      onChange={() => onToggleTareaPredefinida(tarea.nombre)}
+                      className="mr-2 text-blue-500 rounded focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="flex-1">{tarea.nombre}</span>
+                    {tareasSeleccionadas.includes(tarea.nombre) && (
+                      <Check className="w-4 h-4 text-blue-400 ml-2" />
+                    )}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+          
           {tareasSeleccionadas.length > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-600">
               <p className="text-sm text-blue-400 flex items-center">
@@ -132,6 +140,23 @@ export default function TareasInput({
               </p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Mensaje cuando no hay tareas predefinidas */}
+      {mostrarTareasPredefinidas && tareasFiltradas.length === 0 && (
+        <div className="mb-6 p-4 bg-gray-700/30 rounded-xl border border-gray-600/50 backdrop-blur-sm">
+          <div className="text-center py-4">
+            <Settings className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+            <p className="text-gray-400 text-sm mb-2">No tienes tareas predefinidas configuradas</p>
+            <Link 
+              href="/configuracion/tareas-repuestos"
+              className="text-blue-400 hover:text-blue-300 text-sm transition-colors flex items-center justify-center"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Configurar tareas predefinidas
+            </Link>
+          </div>
         </div>
       )}
 

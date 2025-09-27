@@ -1,3 +1,5 @@
+//app/(app)/mantenimiento/fomulario.tsx
+
 'use client'
 import { useState, useEffect } from 'react'
 import { OrdenMantenimiento, Cliente, Dispositivo } from '@/types/orden'
@@ -283,7 +285,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
           {/* Selección de Dispositivo */}
           {clienteSeleccionado && (
             <Section
-              title="Selecciona el Dispositivos del Cliente"
+              title="Selecciona el Dispositivo del Cliente"
               icon={<Monitor className="w-5 h-5 text-green-400" />}
               colorClass="bg-green-500"
               isOpen={seccionesAbiertas.dispositivo}
