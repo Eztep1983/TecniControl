@@ -1,5 +1,5 @@
 // lib/firebase-utils.ts 
-import { doc, getDoc, setDoc, updateDoc, runTransaction } from 'firebase/firestore';
+import { doc, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 // Función para obtener el próximo número consecutivo

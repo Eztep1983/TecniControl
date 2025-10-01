@@ -70,7 +70,7 @@ export default function GarantiaInput({
       
       <div className="md:col-span-3 mt-4">
         <label className="block text-sm font-medium text-gray-300 mb-2">
-          Descripción de Garantía *
+          ¿Que cubre la garantía? (Opcional) 
         </label>
         <textarea
           rows={3}

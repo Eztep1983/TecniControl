@@ -315,7 +315,7 @@ export default function TareasRepuestosPage() {
         )}
 
 
-                {/* Información adicional - optimizada */}
+      {/* Información adicional - optimizada */}
         <div className="mt-8 bg-gray-800/30 rounded-xl border border-gray-700/50 p-4 sm:p-6">
           <div className="flex items-start space-x-3">
             <Settings className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />

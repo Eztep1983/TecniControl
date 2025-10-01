@@ -134,59 +134,74 @@ const PiezaItem = memo(({
         
         {/* Contenido principal */}
         <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full min-w-0">
-          {/* Input de nombre de pieza con selector */}
+          {/* Campo de entrada con selector de piezas */}
           <div className="flex-1 w-full min-w-0 relative">
+            {/* Contenedor input + botón */}
             <div className="flex rounded-lg bg-gray-700/30 border border-gray-600/50 focus-within:ring-2 focus-within:ring-purple-500 focus-within:border-transparent transition-colors">
               <input
                 ref={inputRef}
                 type="text"
-                value={pieza.pieza}
+                value={pieza.pieza ?? ""}
                 onChange={handleNombreChange}
                 onFocus={() => piezasPredefinidas.length > 0 && setMostrarSugerencias(true)}
                 placeholder={
-                  modoSeleccion === 'predefinida' 
+                  modoSeleccion === "predefinida"
                     ? "Selecciona o busca una pieza predefinida..."
                     : "Escribe el nombre de la pieza personalizada..."
                 }
                 className="flex-1 bg-transparent border-none rounded-l-lg px-3 py-2 text-white placeholder-gray-400 text-sm focus:outline-none"
                 aria-label={`Nombre de la pieza ${index + 1}`}
               />
-              
-              {/* Botón desplegable para piezas predefinidas */}
+
+              {/* Botón para desplegar sugerencias */}
               {piezasPredefinidas.length > 0 && (
                 <button
                   type="button"
                   onClick={handleToggleSugerencias}
                   className="px-2 border-l border-gray-600/50 hover:bg-gray-600/30 transition-colors flex items-center"
                   aria-label="Mostrar piezas predefinidas"
+                  aria-expanded={mostrarSugerencias}
+                  aria-controls="lista-sugerencias"
                 >
-                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${
-                    mostrarSugerencias ? 'rotate-180' : ''
-                  }`} />
+                  <ChevronDown
+                    className={`w-4 h-4 text-gray-400 transition-transform ${
+                      mostrarSugerencias ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
               )}
             </div>
-            
-            {/* Indicador de tipo */}
+
+            {/* Indicador del tipo de pieza */}
             {pieza.pieza && (
               <div className="absolute -top-2 right-2">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  modoSeleccion === 'predefinida' && piezaExacta
-                    ? 'bg-green-500/20 text-green-300'
-                    : 'bg-purple-500/20 text-purple-300'
-                }`}>
-                  {modoSeleccion === 'predefinida' && piezaExacta ? 'Predefinida' : 'Personalizada'}
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    modoSeleccion === "predefinida" && piezaExacta
+                      ? "bg-green-500/20 text-green-300"
+                      : "bg-purple-500/20 text-purple-300"
+                  }`}
+                >
+                  {modoSeleccion === "predefinida" && piezaExacta
+                    ? "Predefinida"
+                    : "Personalizada"}
                 </span>
               </div>
             )}
-            
+
             {/* Panel de sugerencias */}
             {mostrarSugerencias && piezasPredefinidas.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-20 max-h-64 overflow-y-auto">
+              <div
+                id="lista-sugerencias"
+                role="listbox"
+                className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-20 max-h-64 overflow-y-auto"
+              >
                 {/* Header */}
                 <div className="p-3 bg-gray-700/50 border-b border-gray-600">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-white">Piezas Predefinidas</span>
+                    <span className="text-sm font-medium text-white">
+                      Piezas Predefinidas
+                    </span>
                     <span className="text-xs text-gray-400">
                       {sugerenciasFiltradas.length} de {piezasPredefinidas.length}
                     </span>
@@ -200,28 +215,29 @@ const PiezaItem = memo(({
                     <p className="text-sm">No se encontraron piezas</p>
                   </div>
                 ) : (
-                  <>
-                    {sugerenciasFiltradas.map((piezaPredefinida) => (
-                      <button
-                        key={piezaPredefinida.id}
-                        type="button"
-                        onClick={() => handleSeleccionarPiezaPredefinida(piezaPredefinida)}
-                        className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/70 transition-colors border-b border-gray-700/50 last:border-b-0"
-                      >
-                        <div className="font-medium text-white flex items-center justify-between">
-                          {piezaPredefinida.nombre}
-                          {pieza.pieza.toLowerCase() === piezaPredefinida.nombre.toLowerCase() && (
-                            <Check className="w-4 h-4 text-green-400" />
-                          )}
-                        </div>
-                        {piezaPredefinida.categoria && piezaPredefinida.categoria !== 'General' && (
+                  sugerenciasFiltradas.map((piezaPredefinida) => (
+                    <button
+                      key={piezaPredefinida.id}
+                      type="button"
+                      role="option"
+                      onClick={() => handleSeleccionarPiezaPredefinida(piezaPredefinida)}
+                      className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/70 transition-colors border-b border-gray-700/50 last:border-b-0"
+                    >
+                      <div className="font-medium text-white flex items-center justify-between">
+                        {piezaPredefinida.nombre}
+                        {pieza.pieza.toLowerCase() ===
+                          piezaPredefinida.nombre.toLowerCase() && (
+                          <Check className="w-4 h-4 text-green-400" />
+                        )}
+                      </div>
+                      {piezaPredefinida.categoria &&
+                        piezaPredefinida.categoria !== "General" && (
                           <div className="text-xs text-purple-400 mt-1">
                             {piezaPredefinida.categoria}
                           </div>
                         )}
-                      </button>
-                    ))}
-                  </>
+                    </button>
+                  ))
                 )}
 
                 {/* Opción para pieza personalizada */}
@@ -244,10 +260,10 @@ const PiezaItem = memo(({
                   </>
                 )}
 
-                {/* Footer con link a configuración */}
+                {/* Footer con enlace a configuración */}
                 <div className="p-2 bg-gray-700/30 border-t border-gray-600">
-                  <Link 
-                    href="/configuracion/tareas-repuestos"
+                  <Link
+                    href="/tareas-repuestos"
                     className="text-xs text-blue-400 hover:text-blue-300 flex items-center justify-center"
                   >
                     <Settings className="w-3 h-3 mr-1" />
@@ -257,6 +273,8 @@ const PiezaItem = memo(({
               </div>
             )}
           </div>
+
+
           
           {/* Controles de cantidad */}
           <div className="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-start">
@@ -275,7 +293,7 @@ const PiezaItem = memo(({
               </button>
               <input
                 type="number"
-                value={pieza.cantidad}
+                value={pieza.cantidad ?? ""}
                 onChange={(e) => {
                   const nuevaCantidad = parseInt(e.target.value) || 1;
                   handleCambiarCantidad(nuevaCantidad);
@@ -383,14 +401,15 @@ const PiezasInput = memo(function PiezasInput({
         
         <div className="flex items-center space-x-2 w-full xs:w-auto">
           <Link 
-            href="/configuracion/tareas-repuestos"
+            href="/tareas-repuestos"
             className="text-purple-400 hover:text-purple-300 text-sm transition-colors flex items-center px-3 py-2 bg-purple-500/10 hover:bg-purple-500/20 rounded-lg border border-purple-500/20"
             title="Configurar piezas predefinidas"
           >
             <Settings className="w-4 h-4 mr-1" />
-            Configurar
+             Añade, edita o elimina piezas
           </Link>
         </div>
+        
       </div>
 
       {/* Mensaje de error de carga */}

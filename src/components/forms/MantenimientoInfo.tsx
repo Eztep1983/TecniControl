@@ -27,134 +27,124 @@ interface MantenimientoInfoProps {
   onEliminarPieza: (index: number) => void
 }
 
-// CONSTANTES EXTERNAS PARA EVITAR RECREACIÓN
 const TIPO_CONFIG = {
   preventivo: {
-    gradient: 'from-green-500/20 to-emerald-500/10',
-    border: 'border-green-500/50',
-    shadow: 'shadow-green-500/10',
-    iconBg: 'bg-green-500/20',
-    iconColor: 'text-green-400',
-    textColor: 'text-green-300',
+    icono: Shield,
     nombre: 'Preventivo',
-    descripcion: 'Mantenimiento programado para prevenir fallas y optimizar rendimiento',
-    icono: Shield
+    descripcion: 'Mantenimiento programado para prevenir fallas',
+    colorBorder: 'border-green-500/40',
+    colorBg: 'bg-green-500/5',
+    colorIcon: 'bg-green-500/15 text-green-400',
+    colorText: 'text-green-300',
+    colorHover: 'hover:border-green-500/60 hover:bg-green-500/10'
   },
   correctivo: {
-    gradient: 'from-orange-500/20 to-red-500/10',
-    border: 'border-orange-500/50',
-    shadow: 'shadow-orange-500/10',
-    iconBg: 'bg-orange-500/20',
-    iconColor: 'text-orange-400',
-    textColor: 'text-orange-300',
+    icono: Wrench,
     nombre: 'Correctivo',
-    descripcion: 'Reparación de fallas existentes y solución de problemas específicos',
-    icono: Wrench
+    descripcion: 'Reparación de fallas y solución de problemas',
+    colorBorder: 'border-orange-500/40',
+    colorBg: 'bg-orange-500/5',
+    colorIcon: 'bg-orange-500/15 text-orange-400',
+    colorText: 'text-orange-300',
+    colorHover: 'hover:border-orange-500/60 hover:bg-orange-500/10'
   }
-} as const;
+} as const
 
-// COMPONENTES MEMOIZADOS PEQUEÑOS
 const SectionHeader = memo(({ 
   icon: Icon, 
   title, 
   description,
   colorClass 
 }: { 
-  icon: React.ComponentType<any>;
-  title: string;
-  description: string;
-  colorClass?: string;
+  icon: React.ComponentType<any>
+  title: string
+  description: string
+  colorClass?: string
 }) => (
-  <div className="flex items-center mb-4 md:mb-6">
-    <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center mr-3 md:mr-4 ${
-      colorClass || 'bg-purple-500/20 text-purple-400'
+  <div className="flex items-start gap-3 mb-5">
+    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
+      colorClass || 'bg-gray-700/50 text-gray-400'
     }`}>
-      <Icon className="w-4 h-4 md:w-5 md:h-5" />
+      <Icon className="w-5 h-5" />
     </div>
     <div>
-      <h3 className="text-base md:text-lg font-semibold text-white">{title}</h3>
-      <p className="text-xs md:text-sm text-gray-400">{description}</p>
+      <h3 className="text-base font-semibold text-white">{title}</h3>
+      <p className="text-sm text-gray-400 mt-0.5">{description}</p>
     </div>
   </div>
-));
+))
 
-SectionHeader.displayName = 'SectionHeader';
+SectionHeader.displayName = 'SectionHeader'
 
 const TipoMantenimientoCard = memo(({ 
   tipo, 
   esSeleccionado, 
   onClick 
 }: { 
-  tipo: 'preventivo' | 'correctivo';
-  esSeleccionado: boolean;
-  onClick: () => void;
+  tipo: 'preventivo' | 'correctivo'
+  esSeleccionado: boolean
+  onClick: () => void
 }) => {
-  const config = TIPO_CONFIG[tipo];
-  const opuestoTipo = tipo === 'preventivo' ? 'correctivo' : 'preventivo';
-  const opuestoConfig = TIPO_CONFIG[opuestoTipo];
-  const Icono = config.icono;
+  const config = TIPO_CONFIG[tipo]
+  const Icono = config.icono
 
   return (
-    <label className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-200 ${
+    <label className={`block rounded-lg border-2 cursor-pointer transition-all ${
       esSeleccionado 
-        ? `bg-gradient-to-br ${config.gradient} border-2 ${config.border} shadow-lg ${config.shadow} scale-[1.02]` 
-        : `bg-gray-800/40 border-2 border-gray-700/50 hover:border-${tipo === 'preventivo' ? 'green' : 'orange'}-500/30 hover:bg-${tipo === 'preventivo' ? 'green' : 'orange'}-500/5`
+        ? `${config.colorBorder} ${config.colorBg}` 
+        : `border-gray-700 bg-gray-800/30 ${config.colorHover}`
     }`}>
-      <div className="relative p-4 md:p-6">
-        <div className="flex items-start space-x-3 md:space-x-4">
-          <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center transition-colors ${
-            esSeleccionado 
-              ? config.iconBg
-              : `bg-gray-700/50 text-gray-500 group-hover:${opuestoConfig.iconBg} group-hover:${opuestoConfig.iconColor}`
+      <div className="p-4">
+        <div className="flex items-start gap-3">
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+            esSeleccionado ? config.colorIcon : 'bg-gray-700/50 text-gray-500'
           }`}>
-            <Icono className="w-5 h-5 md:w-6 md:h-6" />
+            <Icono className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className={`font-semibold text-base md:text-lg ${
-              esSeleccionado ? config.textColor : 'text-gray-300 group-hover:' + opuestoConfig.textColor
+            <div className={`font-medium ${
+              esSeleccionado ? config.colorText : 'text-gray-300'
             }`}>
               {config.nombre}
             </div>
-            <p className="text-xs md:text-sm text-gray-400 mt-1 leading-relaxed">
+            <p className="text-sm text-gray-400 mt-1">
               {config.descripcion}
             </p>
           </div>
+          <input
+            type="radio"
+            name="tipoMantenimiento"
+            value={tipo}
+            checked={esSeleccionado}
+            onChange={onClick}
+            className="mt-1"
+          />
         </div>
-        <input
-          type="radio"
-          name="tipoMantenimiento"
-          value={tipo}
-          checked={esSeleccionado}
-          onChange={onClick}
-          className="absolute top-3 right-3 md:top-4 md:right-4"
-        />
       </div>
     </label>
-  );
-});
+  )
+})
 
-TipoMantenimientoCard.displayName = 'TipoMantenimientoCard';
+TipoMantenimientoCard.displayName = 'TipoMantenimientoCard'
 
-// HOOK PARA OPTIMIZAR HANDLERS
 const useMantenimientoHandlers = (props: Pick<MantenimientoInfoProps, 
   'onCambiarTipoMantenimiento' | 
   'onSetMostrarTareasPredefinidas'
 >) => {
   const handleCambiarPreventivo = useCallback(() => {
-    props.onCambiarTipoMantenimiento('preventivo');
-  }, [props.onCambiarTipoMantenimiento]);
+    props.onCambiarTipoMantenimiento('preventivo')
+  }, [props.onCambiarTipoMantenimiento])
 
   const handleCambiarCorrectivo = useCallback(() => {
-    props.onCambiarTipoMantenimiento('correctivo');
-  }, [props.onCambiarTipoMantenimiento]);
+    props.onCambiarTipoMantenimiento('correctivo')
+  }, [props.onCambiarTipoMantenimiento])
 
   return {
     handleCambiarPreventivo,
     handleCambiarCorrectivo
-  };
-};
+  }
+}
 
-// COMPONENTE PRINCIPAL OPTIMIZADO
 const MantenimientoInfo = memo(function MantenimientoInfo({
   tipoMantenimiento,
   tareasSeleccionadas,
@@ -175,9 +165,8 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   const handlers = useMantenimientoHandlers({
     onCambiarTipoMantenimiento,
     onSetMostrarTareasPredefinidas
-  });
+  })
 
-  // MEMOIZAR PROPS PARA COMPONENTES HIJOS
   const tareasInputProps = useMemo(() => ({
     tipoMantenimiento,
     tareasSeleccionadas,
@@ -198,7 +187,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
     onActualizarTareaPersonalizada,
     onAgregarTareaPersonalizada,
     onEliminarTareaPersonalizada
-  ]);
+  ])
 
   const piezasInputProps = useMemo(() => ({
     piezasUsadas,
@@ -210,23 +199,23 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
     onActualizarPieza,
     onAgregarPieza,
     onEliminarPieza
-  ]);
+  ])
 
   const colorClassTareas = tipoMantenimiento === 'preventivo' 
-    ? 'bg-green-500/20 text-green-400' 
-    : 'bg-orange-500/20 text-orange-400';
+    ? 'bg-green-500/15 text-green-400' 
+    : 'bg-orange-500/15 text-orange-400'
 
   return (
-    <div className="space-y-6 md:space-y-8">
-      {/* Sección Tipo de Mantenimiento */}
-      <div className="bg-gray-800/50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-600/30">
+    <div className="space-y-6">
+      {/* Tipo de Mantenimiento */}
+      <div className="bg-gray-800/40 rounded-lg p-5 border border-gray-700/50">
         <SectionHeader
           icon={Settings}
           title="Tipo de Trabajo"
           description="Selecciona el tipo de mantenimiento"
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <TipoMantenimientoCard 
             tipo="preventivo"
             esSeleccionado={tipoMantenimiento === 'preventivo'}
@@ -241,8 +230,8 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
         </div>
       </div>
 
-      {/* Sección de Tareas */}
-      <div className="bg-gray-800/30 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-600/20">
+      {/* Tareas Realizadas */}
+      <div className="bg-gray-800/40 rounded-lg p-5 border border-gray-700/50">
         <SectionHeader
           icon={Zap}
           title="Tareas Realizadas"
@@ -253,14 +242,14 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
         <TareasInput {...tareasInputProps} />
       </div>
 
-      {/* Sección de Piezas */}
-      <div className="bg-gray-800/30 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-600/20">
+      {/* Piezas Usadas */}
+      <div className="bg-gray-800/40 rounded-lg p-5 border border-gray-700/50">
         <PiezasInput {...piezasInputProps} />
       </div>
     </div>
   )
-});
+})
 
-MantenimientoInfo.displayName = 'MantenimientoInfo';
+MantenimientoInfo.displayName = 'MantenimientoInfo'
 
-export default MantenimientoInfo;
+export default MantenimientoInfo
