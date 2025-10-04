@@ -27,6 +27,7 @@ interface MantenimientoInfoProps {
   onEliminarPieza: (index: number) => void
 }
 
+// Configuración inmutable fuera del componente
 const TIPO_CONFIG = {
   preventivo: {
     icono: Shield,
@@ -50,6 +51,7 @@ const TIPO_CONFIG = {
   }
 } as const
 
+// Componentes memoizados con props estables
 const SectionHeader = memo(({ 
   icon: Icon, 
   title, 
@@ -89,20 +91,20 @@ const TipoMantenimientoCard = memo(({
   const Icono = config.icono
 
   return (
-    <label className={`block rounded-lg border-2 cursor-pointer transition-all ${
+    <label className={`block rounded-lg border-2 cursor-pointer transition-all duration-200 ${
       esSeleccionado 
         ? `${config.colorBorder} ${config.colorBg}` 
         : `border-gray-700 bg-gray-800/30 ${config.colorHover}`
     }`}>
       <div className="p-4">
         <div className="flex items-start gap-3">
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
             esSeleccionado ? config.colorIcon : 'bg-gray-700/50 text-gray-500'
           }`}>
             <Icono className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className={`font-medium ${
+            <div className={`font-medium transition-colors ${
               esSeleccionado ? config.colorText : 'text-gray-300'
             }`}>
               {config.nombre}
@@ -117,7 +119,7 @@ const TipoMantenimientoCard = memo(({
             value={tipo}
             checked={esSeleccionado}
             onChange={onClick}
-            className="mt-1"
+            className="mt-1 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
           />
         </div>
       </div>
@@ -127,24 +129,25 @@ const TipoMantenimientoCard = memo(({
 
 TipoMantenimientoCard.displayName = 'TipoMantenimientoCard'
 
-const useMantenimientoHandlers = (props: Pick<MantenimientoInfoProps, 
-  'onCambiarTipoMantenimiento' | 
-  'onSetMostrarTareasPredefinidas'
->) => {
+// Hook personalizado optimizado
+const useMantenimientoHandlers = (
+  onCambiarTipoMantenimiento: (tipo: 'preventivo' | 'correctivo') => void
+) => {
   const handleCambiarPreventivo = useCallback(() => {
-    props.onCambiarTipoMantenimiento('preventivo')
-  }, [props.onCambiarTipoMantenimiento])
+    onCambiarTipoMantenimiento('preventivo')
+  }, [onCambiarTipoMantenimiento])
 
   const handleCambiarCorrectivo = useCallback(() => {
-    props.onCambiarTipoMantenimiento('correctivo')
-  }, [props.onCambiarTipoMantenimiento])
+    onCambiarTipoMantenimiento('correctivo')
+  }, [onCambiarTipoMantenimiento])
 
-  return {
+  return useMemo(() => ({
     handleCambiarPreventivo,
     handleCambiarCorrectivo
-  }
+  }), [handleCambiarPreventivo, handleCambiarCorrectivo])
 }
 
+// Componente principal memoizado
 const MantenimientoInfo = memo(function MantenimientoInfo({
   tipoMantenimiento,
   tareasSeleccionadas,
@@ -162,11 +165,10 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   onEliminarPieza
 }: MantenimientoInfoProps) {
   
-  const handlers = useMantenimientoHandlers({
-    onCambiarTipoMantenimiento,
-    onSetMostrarTareasPredefinidas
-  })
+  // Handlers optimizados con dependencias mínimas
+  const handlers = useMantenimientoHandlers(onCambiarTipoMantenimiento)
 
+  // Memoización de props para componentes hijos
   const tareasInputProps = useMemo(() => ({
     tipoMantenimiento,
     tareasSeleccionadas,
@@ -201,14 +203,24 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
     onEliminarPieza
   ])
 
-  const colorClassTareas = tipoMantenimiento === 'preventivo' 
-    ? 'bg-green-500/15 text-green-400' 
-    : 'bg-orange-500/15 text-orange-400'
+  // Valores derivados memoizados
+  const colorClassTareas = useMemo(() => 
+    tipoMantenimiento === 'preventivo' 
+      ? 'bg-green-500/15 text-green-400' 
+      : 'bg-orange-500/15 text-orange-400'
+  , [tipoMantenimiento])
+
+  const sectionTareasProps = useMemo(() => ({
+    icon: Zap,
+    title: "Tareas Realizadas",
+    description: `Documenta las actividades de mantenimiento ${tipoMantenimiento}`,
+    colorClass: colorClassTareas
+  }), [tipoMantenimiento, colorClassTareas])
 
   return (
     <div className="space-y-6">
       {/* Tipo de Mantenimiento */}
-      <div className="bg-gray-800/40 rounded-lg p-5 border border-gray-700/50">
+      <section className="bg-gray-800/40 rounded-lg p-5 border border-gray-700/50">
         <SectionHeader
           icon={Settings}
           title="Tipo de Trabajo"
@@ -228,24 +240,18 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
             onClick={handlers.handleCambiarCorrectivo}
           />
         </div>
-      </div>
+      </section>
 
       {/* Tareas Realizadas */}
-      <div className="bg-gray-800/40 rounded-lg p-5 border border-gray-700/50">
-        <SectionHeader
-          icon={Zap}
-          title="Tareas Realizadas"
-          description={`Documenta las actividades de mantenimiento ${tipoMantenimiento}`}
-          colorClass={colorClassTareas}
-        />
-        
+      <section className="bg-gray-800/40 rounded-lg p-5 border border-gray-700/50">
+        <SectionHeader {...sectionTareasProps} />
         <TareasInput {...tareasInputProps} />
-      </div>
+      </section>
 
       {/* Piezas Usadas */}
-      <div className="bg-gray-800/40 rounded-lg p-5 border border-gray-700/50">
+      <section className="bg-gray-800/40 rounded-lg p-5 border border-gray-700/50">
         <PiezasInput {...piezasInputProps} />
-      </div>
+      </section>
     </div>
   )
 })

@@ -78,35 +78,7 @@ export default function TareasInput({
   return (
     <div className="space-y-5">
       {/* Header con contador de tareas */}
-      <div className="p-4 bg-gray-700/30 rounded-lg border border-gray-600/50">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-              <ListChecks className="w-5 h-5 text-blue-400" />
-            </div>
-            <div>
-              <h3 className="font-medium text-white">Tareas del Mantenimiento</h3>
-              <p className="text-sm text-gray-400 mt-0.5">
-                {totalTareasSeleccionadas > 0 ? (
-                  <span className="text-blue-400 font-medium">{totalTareasSeleccionadas} tarea{totalTareasSeleccionadas !== 1 ? 's' : ''} agregada{totalTareasSeleccionadas !== 1 ? 's' : ''}</span>
-                ) : (
-                  'Selecciona o escribe las tareas realizadas'
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-                <div className="flex items-center space-x-2 w-full xs:w-auto">
-          <Link 
-            href="/tareas-repuestos"
-            className="text-blue-400 hover:text-blue-300 text-sm transition-colors flex items-center px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-blue-500/20"
-            title="Configurar piezas predefinidas"
-          >
-            <Settings className="w-4 h-4 mr-1" />
-            Configurar tareas predefinidas
-          </Link>
-        </div>
-      </div>
+
       
 
       {/* Sección de Tareas Predefinidas */}
@@ -240,7 +212,16 @@ export default function TareasInput({
           </div>
         )}
       </div>
-
+        <div className="flex items-center space-x-2 w-full xs:w-auto">
+          <Link 
+            href="/tareas-repuestos"
+            className="text-blue-400 hover:text-blue-300 text-sm transition-colors flex items-center px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-blue-500/20"
+            title="Configurar piezas predefinidas"
+          >
+            <Settings className="w-4 h-4 mr-1" />
+            Configurar tareas predefinidas
+          </Link>
+        </div>
       {/* Sección de Tareas Personalizadas */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -253,6 +234,7 @@ export default function TareasInput({
               </span>
             )}
           </div>
+          
           <button
             type="button"
             onClick={onAgregarTareaPersonalizada}
@@ -275,7 +257,7 @@ export default function TareasInput({
                   value={tarea}
                   onChange={(e) => onActualizarTareaPersonalizada(index, e.target.value)}
                   placeholder="Escribe una tarea específica..."
-                  className="flex-1 px-4 py-2.5 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="flex-1 px-4 py-2.5 bg-gray-700/50 border border-gray-600/50 rounded-lg text-sm text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 />
                 <button
                   type="button"

@@ -1,7 +1,7 @@
 // components/forms/ClienteSelector.tsx
 'use client'
 import { Cliente } from '@/types/orden'
-import { Search, UserPlus, X, MapPin, Phone, Mail, HardDrive } from 'lucide-react'
+import { Search, UserPlus, X, MapPin, Phone, Mail, HardDrive, Clock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 
@@ -25,6 +25,16 @@ export default function ClienteSelector({
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Ordenar clientes por fecha de creación (más recientes primero)
+  const clientesOrdenados = [...clientes].sort((a, b) => {
+    const fechaA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+    const fechaB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+    return fechaB - fechaA
+  })
+
+  // Obtener los últimos 5 clientes
+  const ultimosClientes = clientesOrdenados.slice(0, 5)
+
   const clientesFiltrados = clientes.filter(cliente =>
     cliente.name.toLowerCase().includes(busquedaCliente.toLowerCase()) ||
     cliente.email.toLowerCase().includes(busquedaCliente.toLowerCase()) ||
@@ -45,7 +55,7 @@ export default function ClienteSelector({
   if (clienteSeleccionado) {
     return (
       <div className="relative overflow-hidden bg-gradient-to-br from-blue-500/15 to-blue-600/10 p-5 rounded-xl border border-blue-500/40 shadow-lg">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl -mr-16 -mt-16" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16" />
         
         <div className="relative flex justify-between items-start gap-4">
           <div className="flex-1 space-y-3">
@@ -142,9 +152,66 @@ export default function ClienteSelector({
           </button>
         )}
       </div>
-      
+
+      {/* Mostrar últimos clientes cuando no hay búsqueda */}
+      {!busquedaCliente && ultimosClientes.length > 0 && (
+        <div className="border border-gray-700/50 rounded-xl bg-gray-800/90 shadow-xl overflow-hidden">
+          <div className="p-3 bg-gray-900/50 border-b border-gray-700/50">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-blue-400" />
+              <p className="text-sm text-gray-300 font-medium">Clientes Recientes</p>
+              <span className="text-xs text-gray-500 bg-gray-700/50 px-2 py-1 rounded-full">
+                {ultimosClientes.length} de {clientes.length}
+              </span>
+            </div>
+          </div>
+          <div className="max-h-80 overflow-y-auto custom-scrollbar">
+            {ultimosClientes.map((cliente) => (
+              <div
+                key={cliente.id}
+                onClick={() => onSeleccionarCliente(cliente)}
+                className="p-4 hover:bg-gray-700/40 cursor-pointer border-b border-gray-700/30 last:border-b-0 transition-all duration-150 group"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 bg-gray-700 group-hover:bg-blue-600/20 rounded-full flex items-center justify-center flex-shrink-0 transition-colors">
+                      <span className="text-gray-300 group-hover:text-blue-300 font-semibold transition-colors">
+                        {cliente.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-white group-hover:text-blue-300 transition-colors truncate">
+                        {cliente.name}
+                      </div>
+                      <div className="text-sm text-gray-400 mt-1 space-y-0.5">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <Mail className="w-3.5 h-3.5 flex-shrink-0" />
+                          <span className="truncate">{cliente.email}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 flex-shrink-0" />
+                          <span>{cliente.phone}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                    <div className="px-2.5 py-1 bg-gray-700/50 group-hover:bg-blue-500/20 rounded-full transition-colors">
+                      <span className="text-xs text-gray-400 group-hover:text-blue-300 font-medium transition-colors">
+                        {cliente.dispositivos?.length || 0} dispositivo{cliente.dispositivos?.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Mostrar resultados de búsqueda */}
       {busquedaCliente && (
-        <div className="border border-gray-700/50 rounded-xl bg-gray-800/90 shadow-xl overflow-hidden backdrop-blur-sm">
+        <div className="border border-gray-700/50 rounded-xl bg-gray-800/90 shadow-xl overflow-hidden">
           {clientesFiltrados.length > 0 ? (
             <div className="max-h-80 overflow-y-auto custom-scrollbar">
               <div className="p-2 bg-gray-900/50 border-b border-gray-700/50">
@@ -152,7 +219,7 @@ export default function ClienteSelector({
                   {clientesFiltrados.length} resultado{clientesFiltrados.length !== 1 ? 's' : ''} encontrado{clientesFiltrados.length !== 1 ? 's' : ''}
                 </p>
               </div>
-              {clientesFiltrados.map((cliente, index) => (
+              {clientesFiltrados.map((cliente) => (
                 <div
                   key={cliente.id}
                   onClick={() => onSeleccionarCliente(cliente)}
@@ -204,9 +271,12 @@ export default function ClienteSelector({
         </div>
       )}
 
-      {!busquedaCliente && clientes.length > 0 && (
-        <div className="text-center py-6 text-gray-500 text-sm">
-          Escribe para buscar entre {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} registrado{clientes.length !== 1 ? 's' : ''}
+      {/* Mensaje cuando no hay clientes */}
+      {!busquedaCliente && clientes.length === 0 && (
+        <div className="text-center py-8 text-gray-500 border border-gray-700/50 rounded-xl bg-gray-800/50">
+          <UserPlus className="w-12 h-12 mx-auto mb-3 text-gray-600" />
+          <p className="text-gray-400 font-medium">No hay clientes registrados</p>
+          <p className="text-sm text-gray-500 mt-1">Crea tu primer cliente para comenzar</p>
         </div>
       )}
     </div>
