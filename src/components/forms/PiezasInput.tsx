@@ -31,11 +31,7 @@ export default function PiezasInput({
   const [loading, setLoading] = useState(true)
   const [errorCarga, setErrorCarga] = useState('')
 
-  useEffect(() => {
-    cargarPiezasPredefinidas()
-  }, [user?.uid])
-
-  const cargarPiezasPredefinidas = async () => {
+  const cargarPiezasPredefinidas = useCallback(async () => {
     if (!user?.uid) {
       setLoading(false)
       return
@@ -51,17 +47,25 @@ export default function PiezasInput({
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.uid])
 
-  const agregarPiezaPredefinida = (piezaPredefinida: PiezaPredefinida) => {
+  useEffect(() => {
+    cargarPiezasPredefinidas()
+  }, [cargarPiezasPredefinidas])
+
+  const agregarPiezaPredefinida = useCallback((piezaPredefinida: PiezaPredefinida) => {
     onAgregarPieza()
     setTimeout(() => {
       const nuevoIndex = piezasUsadas.length
       onActualizarPieza(nuevoIndex, 'pieza', piezaPredefinida.nombre)
     }, 10)
-  }
+  }, [onAgregarPieza, piezasUsadas.length, onActualizarPieza])
 
   const handleCambiarCantidad = useCallback((index: number, nuevaCantidad: number) => {
+    if (isNaN(nuevaCantidad)) {
+      onActualizarPieza(index, 'cantidad', 1)
+      return
+    }
     onActualizarPieza(index, 'cantidad', Math.max(1, nuevaCantidad))
   }, [onActualizarPieza])
 
@@ -169,13 +173,13 @@ export default function PiezasInput({
                   <div className="min-w-0">
                     <input
                       type="text"
-                      value={pieza.pieza}
+                      value={pieza.pieza || ''}
                       onChange={(e) => onActualizarPieza(index, 'pieza', e.target.value)}
                       placeholder="Nombre de la pieza..."
                       className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                     {pieza.pieza && (
-                      <span className={`text-xs mt-1 ${
+                      <span className={`text-xs mt-1 block ${
                         esPredefinida ? 'text-green-400' : 'text-purple-400'
                       }`}>
                         {esPredefinida ? 'Predefinida' : 'Personalizada'}
@@ -199,7 +203,7 @@ export default function PiezasInput({
                         type="number"
                         value={pieza.cantidad}
                         onChange={(e) => {
-                          const nuevaCantidad = parseInt(e.target.value) || 1
+                          const nuevaCantidad = parseInt(e.target.value)
                           handleCambiarCantidad(index, nuevaCantidad)
                         }}
                         min="1"
