@@ -535,47 +535,6 @@ export default function TareasRepuestosPage() {
               </div>
             </div>
 
-            {/* Botón toggle para mostrar formulario en móvil */}
-            <div className="mb-4 sm:hidden">
-              <button
-                onClick={() => setMostrarFormPiezas(!mostrarFormPiezas)}
-                className="flex items-center space-x-2 px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg border border-purple-500/30 transition-colors w-full justify-center touch-manipulation"
-              >
-                <Plus className="w-4 h-4" />
-                <span>{mostrarFormPiezas ? 'Ocultar formulario' : 'Agregar nueva pieza'}</span>
-              </button>
-            </div>
-
-            {/* Formulario para nueva pieza */}
-            <div className={`mb-6 p-3 sm:p-4 bg-gray-700/30 rounded-lg border border-gray-600/50 transition-all duration-300 ${
-              mostrarFormPiezas ? 'block' : 'hidden sm:block'
-            }`}>
-              <h3 className="text-sm font-medium text-gray-300 mb-3">Agregar Nueva Pieza</h3>
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  value={nuevaPieza.nombre}
-                  onChange={(e) => setNuevaPieza(prev => ({ ...prev, nombre: e.target.value }))}
-                  placeholder="Nombre de la pieza..."
-                  className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                />
-                <input
-                  type="text"
-                  value={nuevaPieza.categoria}
-                  onChange={(e) => setNuevaPieza(prev => ({ ...prev, categoria: e.target.value }))}
-                  placeholder="Categoría..."
-                  className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                />
-                <button
-                  onClick={agregarPieza}
-                  className="flex items-center space-x-2 px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg border border-purple-500/30 transition-colors w-full justify-center touch-manipulation"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Agregar Pieza</span>
-                </button>
-              </div>
-            </div>
-
             {/* Lista de piezas */}
             <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-96 overflow-y-auto">
               {piezasFiltradas.length === 0 ? (
@@ -653,6 +612,49 @@ export default function TareasRepuestosPage() {
                 ))
               )}
             </div>
+            <br />
+
+            {/* Botón toggle para mostrar formulario en móvil */}
+            <div className="mb-4 sm:hidden">
+              <button
+                onClick={() => setMostrarFormPiezas(!mostrarFormPiezas)}
+                className="flex items-center space-x-2 px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg border border-purple-500/30 transition-colors w-full justify-center touch-manipulation"
+              >
+                <Plus className="w-4 h-4" />
+                <span>{mostrarFormPiezas ? 'Ocultar formulario' : 'Agregar nueva pieza'}</span>
+              </button>
+            </div>
+
+                        {/* Formulario para nueva pieza */}
+            <div className={`mb-6 p-3 sm:p-4 bg-gray-700/30 rounded-lg border border-gray-600/50 transition-all duration-300 ${
+              mostrarFormPiezas ? 'block' : 'hidden sm:block'
+            }`}>
+              <h3 className="text-sm font-medium text-gray-300 mb-3">Agregar Nueva Pieza</h3>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={nuevaPieza.nombre}
+                  onChange={(e) => setNuevaPieza(prev => ({ ...prev, nombre: e.target.value }))}
+                  placeholder="Nombre de la pieza..."
+                  className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                />
+                <input
+                  type="text"
+                  value={nuevaPieza.categoria}
+                  onChange={(e) => setNuevaPieza(prev => ({ ...prev, categoria: e.target.value }))}
+                  placeholder="Categoría..."
+                  className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                />
+                <button
+                  onClick={agregarPieza}
+                  className="flex items-center space-x-2 px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg border border-purple-500/30 transition-colors w-full justify-center touch-manipulation"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Agregar Pieza</span>
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
 

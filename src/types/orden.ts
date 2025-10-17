@@ -50,6 +50,14 @@ export interface OrdenGarantia extends OrdenBase {
 
 }
 
+export interface Contador {
+  tipo: 'unidades' | 'impresiones' | 'copias' | 'escaneos' | 'horas' | 'personalizado'
+  valor: number
+  unidadPersonalizada?: string
+  fechaRegistro: Date
+  notas?: string
+}
+
 export interface OrdenMantenimiento {
   id?: string;
   idPersonalizado: string; // ID consecutivo personalizado
@@ -59,7 +67,7 @@ export interface OrdenMantenimiento {
   dispositivo: Dispositivo;
   fechaCreacion: Date | any;
   horaCreacion: string;
-  contadorMaquina?: number;
+  contador?: Contador;
   tipoMantenimiento: 'preventivo' | 'correctivo';
   tareasRealizadas: string[];
   piezasUsadas: Array<{pieza: string, cantidad: number}>;
@@ -105,13 +113,6 @@ export interface Negocio {
   logoUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
-}
-
-export interface Contador {
-  userId: string;
-  siguiente: number;
-  ultimaOrden: string;
-  fechaActualizacion: Date;
 }
 
 export type Orden = OrdenGarantia | OrdenMantenimiento | OrdenDiagnostico | OrdenEntrega;

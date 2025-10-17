@@ -1,9 +1,7 @@
-//app/(app)/mantenimiento/fomulario.tsx
-
 'use client'
 import { useState, useEffect } from 'react'
 import { OrdenMantenimiento, Cliente, Dispositivo } from '@/types/orden'
-import { ArrowLeft, Monitor } from 'lucide-react'
+import { ArrowLeft, Monitor, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench, ClipboardCheck, GaugeCircle, Laptop, ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { 
   getClientesPorUsuario, 
@@ -18,6 +16,7 @@ import DispositivoSelector from '@/components/forms/DispositivoSelector'
 import MantenimientoInfo from '@/components/forms/MantenimientoInfo'
 import GarantiaInput from '@/components/forms/GarantiaInput'
 import FormActions from '@/components/forms/FormActions'
+import ContadorInput, { Contador } from '@/components/forms/ContadorInput'
 
 interface FormularioMantenimientoProps {
   onClose: () => void
@@ -29,9 +28,15 @@ interface Pieza {
   cantidad: number
 }
 
+// Definir los pasos del formulario
+type FormStep = 'cliente' | 'dispositivo' | 'mantenimiento' | 'contador' | 'garantia' | 'resumen'
+
 export default function FormularioMantenimiento({ onClose, onSuccess }: FormularioMantenimientoProps) {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
+  
+  // Estado para el paso actual
+  const [currentStep, setCurrentStep] = useState<FormStep>('cliente')
   
   // Estado para clientes y dispositivos
   const [clientes, setClientes] = useState<Cliente[]>([])
@@ -56,14 +61,49 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   const [garantiaTiempoHasta, setGarantiaTiempoHasta] = useState<string>('')
   const [mesesGarantia, setMesesGarantia] = useState<number>(3)
   
-  // Estado para secciones colapsables
-  const [seccionesAbiertas, setSeccionesAbiertas] = useState({
-    cliente: true,
-    dispositivo: true,
-    mantenimiento: true,
-    estado: true,
-    garantia: true
-  })
+  // Estado para contador
+  const [contador, setContador] = useState<Contador | null>(null)
+  const [mostrarContador, setMostrarContador] = useState(false)
+
+  // Configuración de los pasos
+const steps: { key: FormStep; title: string; description: string; icon?: JSX.Element }[] = [
+  {
+    key: 'cliente',
+    title: 'Cliente',
+    description: 'Selecciona el cliente',
+    icon: <Users className="w-5 h-5" />
+  },
+  {
+    key: 'dispositivo',
+    title: 'Dispositivo',
+    description: 'Elige el dispositivo',
+    icon: <Laptop className="w-5 h-5" />
+  },
+  {
+    key: 'mantenimiento',
+    title: 'Trabajo',
+    description: 'Detalla el trabajo',
+    icon: <Wrench className="w-5 h-5" />
+  },
+  {
+    key: 'contador',
+    title: 'Contador',
+    description: 'Registro opcional',
+    icon: <GaugeCircle className="w-5 h-5" />
+  },
+  {
+    key: 'garantia',
+    title: 'Garantía',
+    description: 'Configura garantía',
+    icon: <ShieldCheck className="w-5 h-5" />
+  },
+  {
+    key: 'resumen',
+    title: 'Resumen',
+    description: 'Revisa y confirma',
+    icon: <ClipboardCheck className="w-5 h-5" />
+  }
+];
 
   useEffect(() => {
     cargarClientes()
@@ -98,11 +138,46 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     }
   }
 
-  const toggleSeccion = (seccion: keyof typeof seccionesAbiertas) => {
-    setSeccionesAbiertas(prev => ({
-      ...prev,
-      [seccion]: !prev[seccion]
-    }))
+  // Navegación entre pasos
+  const nextStep = () => {
+    const currentIndex = steps.findIndex(step => step.key === currentStep)
+    if (currentIndex < steps.length - 1) {
+      setCurrentStep(steps[currentIndex + 1].key)
+      // Scroll suave al inicio en móviles
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  const prevStep = () => {
+    const currentIndex = steps.findIndex(step => step.key === currentStep)
+    if (currentIndex > 0) {
+      setCurrentStep(steps[currentIndex - 1].key)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  // Validaciones para cada paso
+  const canProceedToNextStep = (): boolean => {
+    switch (currentStep) {
+      case 'cliente':
+        return clienteSeleccionado !== null
+      case 'dispositivo':
+        return dispositivoSeleccionado !== null
+      case 'mantenimiento':
+        const todasLasTareas = [
+          ...tareasSeleccionadas,
+          ...tareasPersonalizadas.filter(tarea => tarea.trim() !== '')
+        ]
+        return todasLasTareas.length > 0
+      case 'contador':
+        return true
+      case 'garantia':
+        return true
+      case 'resumen':
+        return true
+      default:
+        return false
+    }
   }
 
   // Handlers para cliente
@@ -166,31 +241,35 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     setPiezasUsadas(piezasUsadas.filter((_, i) => i !== index))
   }
 
+  // Handlers para contador
+  const handleToggleContador = () => {
+    const nuevoEstado = !mostrarContador
+    setMostrarContador(nuevoEstado)
+    
+    if (nuevoEstado && !contador) {
+      const hoy = new Date().toISOString().split('T')[0]
+      setContador({
+        tipo: 'unidades',
+        valor: 0,
+        fechaRegistro: hoy,
+        notas: ''
+      })
+    }
+    
+    if (!nuevoEstado) {
+      setContador(null)
+    }
+  }
+
+  const handleCambiarContador = (nuevoContador: Contador | null) => {
+    setContador(nuevoContador)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!user?.uid) {
       alert('Usuario no autenticado')
-      return
-    }
-    
-    if (!clienteSeleccionado) {
-      alert('Por favor seleccione un cliente')
-      return
-    }
-    
-    if (!dispositivoSeleccionado) {
-      alert('Por favor seleccione un dispositivo')
-      return
-    }
-
-    const todasLasTareas = [
-      ...tareasSeleccionadas,
-      ...tareasPersonalizadas.filter(tarea => tarea.trim() !== '')
-    ]
-
-    if (todasLasTareas.length === 0) {
-      alert('Por favor agregue al menos una tarea realizada')
       return
     }
 
@@ -199,6 +278,11 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     try {
       const proximoNumero = await obtenerProximoNumeroOrden('mantenimiento')
       const idPersonalizado = formatearIdOrden(proximoNumero, 'mantenimiento')
+
+      const todasLasTareas = [
+        ...tareasSeleccionadas,
+        ...tareasPersonalizadas.filter(tarea => tarea.trim() !== '')
+      ]
 
       const piezasUsadasFiltradas = piezasUsadas
         .filter(pieza => pieza.pieza.trim() !== '')
@@ -210,8 +294,12 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       const nuevaOrden: Omit<OrdenMantenimiento, 'id'> = {
         tipo: 'mantenimiento',
         horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        cliente: clienteSeleccionado,
-        dispositivo: dispositivoSeleccionado,
+        cliente: clienteSeleccionado!,
+        dispositivo: dispositivoSeleccionado!,
+        contador: mostrarContador && contador ? {
+          ...contador,
+          fechaRegistro: new Date(contador.fechaRegistro)
+        } : undefined,
         fechaCreacion: new Date(),
         tipoMantenimiento,
         tareasRealizadas: todasLasTareas,
@@ -236,7 +324,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-gray-400">Debes iniciar sesión para crear órdenes.</p>
         </div>
@@ -244,33 +332,15 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     )
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4">
-            <button 
-              onClick={onClose} 
-              className="text-blue-400 hover:text-blue-300 p-2 rounded-full hover:bg-gray-800 transition-colors"
-              aria-label="Volver"
-            >
-              <ArrowLeft className="w-6 h-6" />
-            </button>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Nueva Orden de Mantenimiento</h1>
-              <p className="text-gray-400 mt-1">Complete la información del cliente, dispositivo y el trabajo realizado</p>
-            </div>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Selección de Cliente */}
+  // Renderizar el paso actual
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 'cliente':
+        return (
           <Section
             title="Selecciona el Cliente"
             colorClass="bg-blue-500"
-            isOpen={seccionesAbiertas.cliente}
-            onToggle={() => toggleSeccion('cliente')}
+            isOpen={true}
           >
             <ClienteSelector
               clientes={clientes}
@@ -281,83 +351,421 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
               onDesseleccionarCliente={handleDesseleccionarCliente}
             />
           </Section>
+        )
 
-          {/* Selección de Dispositivo */}
-          {clienteSeleccionado && (
-            <Section
-              title="Selecciona el Dispositivo del Cliente"
-              icon={<Monitor className="w-5 h-5 text-green-400" />}
-              colorClass="bg-green-500"
-              isOpen={seccionesAbiertas.dispositivo}
-              onToggle={() => toggleSeccion('dispositivo')}
-            >
-              <DispositivoSelector
-                cliente={clienteSeleccionado}
-                dispositivoSeleccionado={dispositivoSeleccionado}
-                onSeleccionarDispositivo={handleSeleccionarDispositivo}
-                onDesseleccionarDispositivo={handleDesseleccionarDispositivo}
-              />
-            </Section>
-          )}
+      case 'dispositivo':
+        return (
+          <Section
+            title="Selecciona el Dispositivo del Cliente"
+            icon={<Monitor className="w-5 h-5 text-green-400" />}
+            colorClass="bg-green-500"
+            isOpen={true}
+          >
+            <DispositivoSelector
+              cliente={clienteSeleccionado!}
+              dispositivoSeleccionado={dispositivoSeleccionado}
+              onSeleccionarDispositivo={handleSeleccionarDispositivo}
+              onDesseleccionarDispositivo={handleDesseleccionarDispositivo}
+            />
+          </Section>
+        )
 
-          {/* Información del Mantenimiento */}
-          {clienteSeleccionado && dispositivoSeleccionado && (
-            <>
-              <Section
-                title="Información del Mantenimiento"
-                colorClass="bg-purple-500"
-                isOpen={seccionesAbiertas.mantenimiento}
-                onToggle={() => toggleSeccion('mantenimiento')}
-              >
-                <MantenimientoInfo
-                  tipoMantenimiento={tipoMantenimiento}
-                  tareasSeleccionadas={tareasSeleccionadas}
-                  tareasPersonalizadas={tareasPersonalizadas}
-                  piezasUsadas={piezasUsadas}
-                  mostrarTareasPredefinidas={mostrarTareasPredefinidas}
-                  onCambiarTipoMantenimiento={setTipoMantenimiento}
-                  onToggleTareaPredefinida={handleToggleTareaPredefinida}
-                  onSetMostrarTareasPredefinidas={setMostrarTareasPredefinidas}
-                  onActualizarTareaPersonalizada={handleActualizarTareaPersonalizada}
-                  onAgregarTareaPersonalizada={handleAgregarTareaPersonalizada}
-                  onEliminarTareaPersonalizada={handleEliminarTareaPersonalizada}
-                  onActualizarPieza={handleActualizarPieza}
-                  onAgregarPieza={handleAgregarPieza}
-                  onEliminarPieza={handleEliminarPieza}
-                />
-              </Section>
-              {/* Contador Aqui añade la seccion del contador*/}
+      case 'mantenimiento':
+        return (
+          <Section
+            title="Información del Mantenimiento"
+            colorClass="bg-purple-500"
+            isOpen={true}
+          >
+            <MantenimientoInfo
+              tipoMantenimiento={tipoMantenimiento}
+              tareasSeleccionadas={tareasSeleccionadas}
+              tareasPersonalizadas={tareasPersonalizadas}
+              piezasUsadas={piezasUsadas}
+              mostrarTareasPredefinidas={mostrarTareasPredefinidas}
+              onCambiarTipoMantenimiento={setTipoMantenimiento}
+              onToggleTareaPredefinida={handleToggleTareaPredefinida}
+              onSetMostrarTareasPredefinidas={setMostrarTareasPredefinidas}
+              onActualizarTareaPersonalizada={handleActualizarTareaPersonalizada}
+              onAgregarTareaPersonalizada={handleAgregarTareaPersonalizada}
+              onEliminarTareaPersonalizada={handleEliminarTareaPersonalizada}
+              onActualizarPieza={handleActualizarPieza}
+              onAgregarPieza={handleAgregarPieza}
+              onEliminarPieza={handleEliminarPieza}
+            />
+          </Section>
+        )
 
+      case 'contador':
+        return (
+          <Section
+            title="Contador del Dispositivo (Opcional)"
+            colorClass="bg-amber-500"
+            isOpen={true}
+          >
+            <ContadorInput
+              contador={contador}
+              mostrarContador={mostrarContador}
+              onToggleContador={handleToggleContador}
+              onChangeContador={handleCambiarContador}
+            />
+          </Section>
+        )
+
+      case 'garantia':
+        return (
+          <Section
+            title="Garantía del Trabajo"
+            colorClass="bg-red-500"
+            isOpen={true}
+          >
+            <GarantiaInput
+              garantiaTiempoDesde={garantiaTiempoDesde}
+              garantiaTiempoHasta={garantiaTiempoHasta}
+              mesesGarantia={mesesGarantia}
+              garantiaDescripcion={garantiaDescripcion}
+              onCambiarFechaDesde={setGarantiaTiempoDesde}
+              onCambiarMeses={setMesesGarantia}
+              onCambiarDescripcion={setGarantiaDescripcion}
+            />
+          </Section>
+        )
+
+      case 'resumen':
+        return (
+          <Section
+            title="Resumen de la Orden"
+            colorClass="bg-indigo-500"
+            isOpen={true}
+          >
+            <div className="space-y-6 text-white">
+              {/* Información Principal */}
+              <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <h3 className="text-xs sm:text-sm font-semibold text-blue-300 uppercase tracking-wide">Cliente</h3>
+                    <p className="text-base sm:text-lg font-medium">{clienteSeleccionado?.name}</p>
+                    {clienteSeleccionado?.phone && (
+                      <p className="text-xs sm:text-sm text-gray-400">{clienteSeleccionado.phone}</p>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xs sm:text-sm font-semibold text-green-300 uppercase tracking-wide">Dispositivo</h3>
+                    <p className="text-base sm:text-lg font-medium">{dispositivoSeleccionado?.tipo}</p>
+                    {dispositivoSeleccionado?.numeroSerie && (
+                      <p className="text-xs sm:text-sm text-gray-400">S/N: {dispositivoSeleccionado.numeroSerie}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Mantenimiento */}
+              <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-3">
+                <h3 className="text-xs sm:text-sm font-semibold text-purple-300 uppercase tracking-wide">Mantenimiento</h3>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400 text-sm">Tipo:</span>
+                  <span className="text-base font-medium capitalize bg-purple-600/20 px-3 py-1 rounded-full">
+                    {tipoMantenimiento}
+                  </span>
+                </div>
+                <div className="pt-2 border-t border-gray-700">
+                  <p className="text-gray-400 text-sm mb-2">Tareas realizadas:</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-purple-400">
+                      {[...tareasSeleccionadas, ...tareasPersonalizadas.filter(t => t.trim())].length}
+                    </span>
+                  </div>
+                </div>
+                {piezasUsadas.filter(p => p.pieza.trim()).length > 0 && (
+                  <div className="pt-2 border-t border-gray-700">
+                    <p className="text-gray-400 text-sm mb-2">Piezas utilizadas:</p>
+                    <span className="text-lg font-medium text-purple-400">
+                      {piezasUsadas.filter(p => p.pieza.trim()).length} piezas
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Contador */}
+              {mostrarContador && contador && (
+                <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-3">
+                  <h3 className="text-xs sm:text-sm font-semibold text-amber-300 uppercase tracking-wide">Contador</h3>
+                  <div className="flex items-baseline space-x-2">
+                    <span className="text-3xl font-bold text-amber-400">{contador.valor.toLocaleString()}</span>
+                    <span className="text-base text-gray-400 capitalize">{contador.tipo}</span>
+                  </div>
+                  {contador.notas && (
+                    <p className="text-sm text-gray-400 pt-2 border-t border-gray-700">{contador.notas}</p>
+                  )}
+                </div>
+              )}
 
               {/* Garantía */}
-              <Section
-                title="Garantía del Trabajo"
-                colorClass="bg-red-500"
-                isOpen={seccionesAbiertas.garantia}
-                onToggle={() => toggleSeccion('garantia')}
-              >
-                <GarantiaInput
-                  garantiaTiempoDesde={garantiaTiempoDesde}
-                  garantiaTiempoHasta={garantiaTiempoHasta}
-                  mesesGarantia={mesesGarantia}
-                  garantiaDescripcion={garantiaDescripcion}
-                  onCambiarFechaDesde={setGarantiaTiempoDesde}
-                  onCambiarMeses={setMesesGarantia}
-                  onCambiarDescripcion={setGarantiaDescripcion}
-                />
-              </Section>
+              {garantiaDescripcion && (
+                <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-3">
+                  <h3 className="text-xs sm:text-sm font-semibold text-red-300 uppercase tracking-wide">Garantía</h3>
+                  <p className="text-base">{garantiaDescripcion}</p>
+                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-700 text-sm">
+                    <span className="text-gray-400">Vigencia:</span>
+                    <span className="bg-red-600/20 px-3 py-1 rounded-full font-medium">
+                      {new Date(garantiaTiempoDesde).toLocaleDateString()} - {new Date(garantiaTiempoHasta).toLocaleDateString()}
+                    </span>
+                    <span className="text-gray-500">({mesesGarantia} meses)</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Section>
+        )
+    }
+  }
 
-              {/* Botones de Acción */}
-              <FormActions
-                loading={loading}
-                tareasSeleccionadas={tareasSeleccionadas}
-                tareasPersonalizadas={tareasPersonalizadas}
-                onCancel={onClose}
-              />
-            </>
-          )}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pb-24 sm:pb-8">
+      {/* Header - Mejorado para móvil */}
+      <div className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 shadow-lg">
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <button 
+              onClick={onClose} 
+              className="text-blue-400 hover:text-blue-300 p-2 rounded-lg hover:bg-gray-800 transition-all active:scale-95"
+              aria-label="Volver"
+            >
+              <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-white truncate">
+                Nueva Orden
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-400 mt-0.5 truncate">
+                Paso {steps.findIndex(s => s.key === currentStep) + 1} de {steps.length}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6">
+        {/* Progress Steps - Versión Desktop */}
+        <div className="hidden lg:block mb-8">
+          <div className="flex items-center justify-between">
+            {steps.map((step, index) => {
+              const isCompleted = steps.findIndex(s => s.key === currentStep) > index
+              const isCurrent = currentStep === step.key
+              
+              return (
+                <div key={step.key} className="flex items-center flex-1">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
+                        isCompleted
+                          ? 'bg-green-500 border-green-500 scale-105'
+                          : isCurrent
+                          ? 'bg-blue-500 border-blue-500 scale-110 shadow-lg shadow-blue-500/50'
+                          : 'bg-gray-700 border-gray-600'
+                      }`}
+                    >
+                      {isCompleted ? (
+                        <CheckCircle className="w-6 h-6 text-white" />
+                      ) : (
+                        <span className="text-xl">{step.icon}</span>
+                      )}
+                    </div>
+                    <span className={`text-sm mt-2 text-center font-medium ${
+                      isCurrent ? 'text-blue-400' : isCompleted ? 'text-green-400' : 'text-gray-500'
+                    }`}>
+                      {step.title}
+                    </span>
+                    <span className={`text-xs text-center ${
+                      isCurrent ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
+                      {step.description}
+                    </span>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`flex-1 h-1 mx-3 rounded transition-all ${
+                        isCompleted ? 'bg-green-500' : 'bg-gray-700'
+                      }`}
+                    />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Progress Steps - Versión Móvil/Tablet */}
+        <div className="lg:hidden mb-6">
+          <div className="bg-gray-800 rounded-xl p-4 shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-xl">
+                  {steps[steps.findIndex(s => s.key === currentStep)].icon}
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white">
+                    {steps[steps.findIndex(s => s.key === currentStep)].title}
+                  </h2>
+                  <p className="text-xs text-gray-400">
+                    {steps[steps.findIndex(s => s.key === currentStep)].description}
+                  </p>
+                </div>
+              </div>
+              <span className="text-sm font-semibold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full">
+                {steps.findIndex(s => s.key === currentStep) + 1}/{steps.length}
+              </span>
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="relative h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div 
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-500 ease-out"
+                style={{ width: `${((steps.findIndex(s => s.key === currentStep) + 1) / steps.length) * 100}%` }}
+              >
+                <div className="absolute right-0 top-0 h-full w-8 bg-gradient-to-r from-transparent to-white/30 animate-pulse" />
+              </div>
+            </div>
+
+            {/* Mini Steps Indicators */}
+            <div className="flex justify-between mt-3 px-1">
+              {steps.map((step, index) => {
+                const isCompleted = steps.findIndex(s => s.key === currentStep) > index
+                const isCurrent = currentStep === step.key
+                
+                return (
+                  <div 
+                    key={step.key}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all ${
+                      isCompleted 
+                        ? 'bg-green-500 text-white' 
+                        : isCurrent 
+                        ? 'bg-blue-500 text-white ring-2 ring-blue-400 ring-offset-2 ring-offset-gray-800' 
+                        : 'bg-gray-700 text-gray-500'
+                    }`}
+                  >
+                    {isCompleted ? '✓' : index + 1}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          {/* Paso Actual */}
+          <div className="animate-fadeIn">
+            {renderCurrentStep()}
+          </div>
+
+          {/* Navegación entre Pasos - Fixed en móvil */}
+          <div className="fixed bottom-0 left-0 right-0 sm:relative bg-gray-900/95 sm:bg-transparent backdrop-blur-sm sm:backdrop-blur-none border-t sm:border-t-0 border-gray-800 sm:border-gray-700 mt-0 sm:mt-8 pt-0 sm:pt-6 z-20">
+            <div className="max-w-4xl mx-auto px-3 sm:px-0 py-3 sm:py-0">
+              <div className="flex justify-between items-center gap-3">
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  disabled={currentStep === 'cliente'}
+                  className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-gray-300 bg-gray-800 rounded-lg sm:rounded-xl hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 disabled:active:scale-100 shadow-lg sm:shadow-none"
+                >
+                  <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Anterior</span>
+                  <span className="sm:hidden">Atrás</span>
+                </button>
+
+                {currentStep === 'resumen' ? (
+                  <div className="flex gap-2 sm:gap-3 flex-1 sm:flex-initial justify-end">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      disabled={loading}
+                      className="px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-gray-300 bg-gray-800 rounded-lg sm:rounded-xl hover:bg-gray-700 disabled:opacity-50 transition-all active:scale-95 disabled:active:scale-100 shadow-lg sm:shadow-none"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-white bg-gradient-to-r from-green-600 to-green-500 rounded-lg sm:rounded-xl hover:from-green-700 hover:to-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 disabled:active:scale-100 shadow-lg shadow-green-500/30"
+                    >
+                      {loading ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 sm:h-5 sm:w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Guardando...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                          Crear Orden
+                        </>
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={!canProceedToNextStep()}
+                    className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 disabled:active:scale-100 shadow-lg shadow-blue-500/30 flex-1 sm:flex-initial"
+                  >
+                    <span className="hidden sm:inline">Siguiente</span>
+                    <span className="sm:hidden">Continuar</span>
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2" />
+                  </button>
+                )}
+              </div>
+
+              {/* Hint Text - Solo visible en móvil cuando el botón está deshabilitado */}
+              {!canProceedToNextStep() && currentStep !== 'resumen' && (
+                <div className="sm:hidden mt-2 text-center">
+                  <p className="text-xs text-amber-400 bg-amber-500/10 rounded-lg py-2 px-3">
+                    {currentStep === 'cliente' && 'Selecciona un cliente para continuar'}
+                    {currentStep === 'dispositivo' && 'Selecciona un dispositivo para continuar'}
+                    {currentStep === 'mantenimiento' && 'Agrega al menos una tarea para continuar'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </form>
       </div>
+
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Mejora del scroll en móviles */
+        @media (max-width: 640px) {
+          body {
+            overflow-x: hidden;
+          }
+        }
+
+        /* Asegurar que los inputs sean accesibles en móvil */
+        input, textarea, select {
+          font-size: 16px !important;
+        }
+
+        /* Mejorar la experiencia táctil */
+        button, a, [role="button"] {
+          -webkit-tap-highlight-color: transparent;
+        }
+      `}</style>
     </div>
   )
 }

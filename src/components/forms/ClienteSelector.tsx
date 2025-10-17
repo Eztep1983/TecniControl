@@ -122,14 +122,6 @@ export default function ClienteSelector({
           <p className="text-sm text-gray-300 font-medium">Seleccionar Cliente</p>
           <p className="text-xs text-gray-500">Busca un cliente existente o crea uno nuevo</p>
         </div>
-        <button
-          type="button"
-          onClick={() => router.push('/clientes/nuevo')}
-          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 text-sm font-medium shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30 hover:-translate-y-0.5"
-        >
-          <UserPlus className="w-4 h-4" />
-          <span>Nuevo Cliente</span>
-        </button>
       </div>
       
       <div className="relative">
@@ -279,6 +271,15 @@ export default function ClienteSelector({
           <p className="text-sm text-gray-500 mt-1">Crea tu primer cliente para comenzar</p>
         </div>
       )}
+              <button
+          type="button"
+          onClick={() => router.push('/clientes/nuevo')}
+          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 text-sm font-medium shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30 hover:-translate-y-0.5"
+        >
+          <UserPlus className="w-4 h-4" />
+          <span>Nuevo Cliente</span>
+        </button>
     </div>
+    
   )
 }

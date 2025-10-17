@@ -213,14 +213,14 @@ export default function TareasInput({
         )}
       </div>
         <div className="flex items-center space-x-2 w-full xs:w-auto">
-          <Link 
-            href="/tareas-repuestos"
-            className="text-blue-400 hover:text-blue-300 text-sm transition-colors flex items-center px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-blue-500/20"
-            title="Configurar piezas predefinidas"
-          >
-            <Settings className="w-4 h-4 mr-1" />
-            Configurar tareas predefinidas
-          </Link>
+       
+        <Link 
+          href="/tareas-repuestos"
+          className="sm:w-auto text-center text-blue-400 hover:text-blue-300 text-sm transition-colors flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-500/10 hover:bg-blue-500/20 rounded-xl border border-blue-500/20 active:scale-95"
+        >
+          <Settings className="w-4 h-4" />
+          <span>Crea Tareas predefinidas</span>
+        </Link>
         </div>
       {/* Sección de Tareas Personalizadas */}
       <div className="space-y-3">
