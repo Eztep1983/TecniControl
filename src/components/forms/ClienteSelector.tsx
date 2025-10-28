@@ -120,7 +120,7 @@ export default function ClienteSelector({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <p className="text-sm text-gray-300 font-medium">Seleccionar Cliente</p>
-          <p className="text-xs text-gray-500">Busca un cliente existente o crea uno nuevo</p>
+          <p className="text-xs text-gray-500">Busca un cliente existente</p>
         </div>
       </div>
       

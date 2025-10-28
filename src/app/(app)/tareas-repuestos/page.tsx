@@ -156,7 +156,6 @@ export default function TareasRepuestosPage() {
       ])
       setUltimoGuardado(new Date())
       setCambiosPendientes(false)
-      mostrarMensaje('¡Cambios guardados automáticamente!', 'success')
     } catch (error) {
       console.error('Error guardando cambios:', error)
       mostrarMensaje('Error al guardar los cambios', 'error')

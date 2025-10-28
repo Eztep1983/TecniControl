@@ -1,6 +1,6 @@
 // components/forms/PiezasInput.tsx 
 'use client'
-import { Plus, Trash2, Package, Wrench, Settings, AlertCircle, ChevronDown, ChevronUp, Check } from 'lucide-react'
+import { Plus, Trash2, Package, Settings, AlertCircle, ChevronDown, ChevronUp, Minus } from 'lucide-react'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { obtenerPiezasPredefinidas, PiezaPredefinida } from '@/lib/configuracionTareasR-helpers'
@@ -31,7 +31,7 @@ export default function PiezasInput({
   const [loading, setLoading] = useState(true)
   const [errorCarga, setErrorCarga] = useState('')
   const [mostrarPiezasPredefinidas, setMostrarPiezasPredefinidas] = useState(true)
-  const [inputPersonalizado, setInputPersonalizado] = useState('')
+  const [nuevaPiezaPersonalizada, setNuevaPiezaPersonalizada] = useState('')
 
   const cargarPiezasPredefinidas = useCallback(async () => {
     if (!user?.uid) {
@@ -58,62 +58,77 @@ export default function PiezasInput({
   // Verificar si una pieza está seleccionada
   const estaPiezaSeleccionada = useCallback((nombrePieza: string) => {
     return piezasUsadas.some(
-      p => p.pieza.toLowerCase() === nombrePieza.toLowerCase()
+      p => p.pieza === nombrePieza
     )
   }, [piezasUsadas])
 
-  // Toggle pieza predefinida (agregar o eliminar)
-  const togglePiezaPredefinida = useCallback((piezaPredefinida: PiezaPredefinida) => {
+  // Obtener la cantidad de una pieza seleccionada
+  const obtenerCantidadPieza = useCallback((nombrePieza: string) => {
+    const pieza = piezasUsadas.find(
+      p => p.pieza === nombrePieza
+    )
+    return pieza?.cantidad || 1
+  }, [piezasUsadas])
+
+  // Toggle pieza predefinida
+  const togglePiezaPredefinida = useCallback((nombrePieza: string) => {
     const index = piezasUsadas.findIndex(
-      p => p.pieza.toLowerCase() === piezaPredefinida.nombre.toLowerCase()
+      p => p.pieza === nombrePieza
     )
     
     if (index >= 0) {
-      // Si ya existe, la eliminamos
+      // Si está seleccionada, la eliminamos
       onEliminarPieza(index)
     } else {
-      // Si no existe, la agregamos
+      // Si no está seleccionada, la agregamos con cantidad 1
       onAgregarPieza()
       setTimeout(() => {
         const nuevoIndex = piezasUsadas.length
-        onActualizarPieza(nuevoIndex, 'pieza', piezaPredefinida.nombre)
+        onActualizarPieza(nuevoIndex, 'pieza', nombrePieza)
+        onActualizarPieza(nuevoIndex, 'cantidad', 1)
       }, 10)
     }
   }, [piezasUsadas, onAgregarPieza, onEliminarPieza, onActualizarPieza])
 
-  const handleCambiarCantidad = useCallback((index: number, nuevaCantidad: number) => {
-    if (isNaN(nuevaCantidad)) {
-      onActualizarPieza(index, 'cantidad', 1)
-      return
-    }
-    onActualizarPieza(index, 'cantidad', Math.max(1, nuevaCantidad))
-  }, [onActualizarPieza])
-
-  const agregarPiezaPersonalizada = useCallback(() => {
-    if (!inputPersonalizado.trim()) return
-    
-    // Verificar si ya existe
-    const existe = piezasUsadas.some(
-      p => p.pieza.toLowerCase() === inputPersonalizado.trim().toLowerCase()
+  // Actualizar cantidad de pieza
+  const actualizarCantidad = useCallback((nombrePieza: string, nuevaCantidad: number) => {
+    const index = piezasUsadas.findIndex(
+      p => p.pieza === nombrePieza
     )
     
-    if (!existe) {
-      onAgregarPieza()
-      setTimeout(() => {
-        const nuevoIndex = piezasUsadas.length
-        onActualizarPieza(nuevoIndex, 'pieza', inputPersonalizado.trim())
-      }, 10)
+    if (index >= 0) {
+      const cantidad = Math.max(1, Math.min(9999, nuevaCantidad))
+      onActualizarPieza(index, 'cantidad', cantidad)
+    }
+  }, [piezasUsadas, onActualizarPieza])
+
+  // Agregar pieza personalizada
+  const agregarPiezaPersonalizada = useCallback(() => {
+    const nombreTrimmed = nuevaPiezaPersonalizada.trim()
+    
+    if (!nombreTrimmed) return
+    
+    // Verificar si ya existe (case insensitive)
+    const yaExiste = piezasUsadas.some(
+      p => p.pieza === nombreTrimmed
+    )
+    
+    if (yaExiste) {
+      alert('Esta pieza ya está agregada')
+      return
     }
     
-    setInputPersonalizado('')
-  }, [inputPersonalizado, piezasUsadas, onAgregarPieza, onActualizarPieza])
+    onAgregarPieza()
+    setTimeout(() => {
+      const nuevoIndex = piezasUsadas.length
+      onActualizarPieza(nuevoIndex, 'pieza', nombreTrimmed)
+      onActualizarPieza(nuevoIndex, 'cantidad', 1)
+    }, 10)
+    
+    setNuevaPiezaPersonalizada('')
+  }, [nuevaPiezaPersonalizada, piezasUsadas, onAgregarPieza, onActualizarPieza])
 
-  const totalPiezas = useMemo(() => {
-    return piezasUsadas.reduce((sum, pieza) => sum + pieza.cantidad, 0)
-  }, [piezasUsadas])
-
-  const tienePiezas = piezasUsadas.length > 0
-
+  // Piezas agrupadas por categoría
   const piezasPorCategoria = useMemo(() => {
     return piezasPredefinidas.reduce((acc, pieza) => {
       const categoria = pieza.categoria || 'General'
@@ -125,293 +140,263 @@ export default function PiezasInput({
     }, {} as Record<string, PiezaPredefinida[]>)
   }, [piezasPredefinidas])
 
+  // Piezas personalizadas (no predefinidas)
+  const piezasPersonalizadas = useMemo(() => {
+    return piezasUsadas.filter(pieza => 
+      !piezasPredefinidas.some(pred => 
+        pred.nombre === pieza.pieza
+      )
+    )
+  }, [piezasUsadas, piezasPredefinidas])
+
+  const tienePiezas = piezasUsadas.length > 0
+  const totalPiezas = useMemo(() => {
+    return piezasUsadas.reduce((sum, pieza) => sum + pieza.cantidad, 0)
+  }, [piezasUsadas])
+
   return (
     <div className="space-y-4">
-      {/* Header - Optimizado para móvil */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Package className="w-5 h-5 text-purple-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-white text-base">Componentes y Piezas</h4>
-            <p className="text-xs text-gray-400 truncate">
-              {loading ? 'Cargando...' : 
-               piezasPredefinidas.length > 0 ? 
-                 `${piezasPredefinidas.length} disponibles` : 
-                 'Sin piezas predefinidas'
-              }
-            </p>
-          </div>
-        </div>
-        
-      </div>
-
       {/* Errores */}
       {errorCarga && (
-        <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl flex items-start gap-2">
+        <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
           <p className="text-red-300 text-sm">{errorCarga}</p>
         </div>
       )}
 
       {error && (
-        <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl">
+        <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
           <p className="text-red-300 text-sm">{error}</p>
         </div>
       )}
 
+      {/* Resumen de piezas seleccionadas */}
+      {tienePiezas && (
+        <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+          <div className="flex items-center gap-2 text-sm">
+            <Package className="w-4 h-4 text-blue-400" />
+            <span className="text-blue-300 font-medium">
+              {piezasUsadas.length} pieza{piezasUsadas.length !== 1 ? 's' : ''} seleccionada{piezasUsadas.length !== 1 ? 's' : ''}
+            </span>
+            <span className="text-blue-400/70">•</span>
+            <span className="text-blue-400">
+              Total: {totalPiezas} unidad{totalPiezas !== 1 ? 'es' : ''}
+            </span>
+          </div>
+        </div>
+      )}
 
-
-      {/* Sección de Piezas Predefinidas */}
+      {/* Piezas Predefinidas */}
       {piezasPredefinidas.length > 0 && (
         <div className="space-y-3">
           <button
             type="button"
             onClick={() => setMostrarPiezasPredefinidas(!mostrarPiezasPredefinidas)}
-            className="w-full flex items-center justify-between p-4 bg-gray-800/50 hover:bg-gray-800/70 border border-gray-700 rounded-xl transition-all active:scale-98"
+            className="w-full flex items-center justify-between p-3 bg-gray-700/30 hover:bg-gray-700/50 border border-gray-700 rounded-lg transition-all"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
-                <Package className="w-4 h-4 text-green-400" />
-              </div>
-              <div className="text-left">
-                <span className="font-semibold text-white block text-sm">Piezas Predefinidas</span>
-                <span className="text-xs text-gray-400">
-                  {piezasPredefinidas.length} disponible{piezasPredefinidas.length !== 1 ? 's' : ''}
-                </span>
-              </div>
+            <div className="flex items-center gap-2">
+              <Package className="w-4 h-4 text-green-400" />
+              <span className="font-medium text-white text-sm">
+                Piezas Predefinidas
+              </span>
+              <span className="text-xs text-gray-500">
+                ({piezasPredefinidas.length})
+              </span>
             </div>
             {mostrarPiezasPredefinidas ? (
-              <ChevronUp className="w-5 h-5 text-gray-400" />
+              <ChevronUp className="w-4 h-4 text-gray-400" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-gray-400" />
+              <ChevronDown className="w-4 h-4 text-gray-400" />
             )}
           </button>
 
-          {/* Lista de Piezas Predefinidas - Optimizado para táctil */}
           {mostrarPiezasPredefinidas && (
-            <div className="border border-gray-700 rounded-xl bg-gray-800/30 overflow-hidden">
-              <div className="divide-y divide-gray-700/50">
-                {Object.entries(piezasPorCategoria).map(([categoria, piezas]) => (
-                  <div key={categoria}>
-                    {/* Header de Categoría */}
-                    <div className="px-4 py-2.5 bg-gray-700/30">
-                      <span className="font-medium text-gray-300 uppercase text-xs tracking-wider">
-                        {categoria}
-                      </span>
-                      <span className="text-xs text-gray-500 ml-2">
-                        ({piezas.length})
-                      </span>
-                    </div>
+            <div className="space-y-4 pl-2">
+              {Object.entries(piezasPorCategoria).map(([categoria, piezas]) => (
+                <div key={categoria} className="space-y-2">
+                  {/* Nombre de categoría */}
+                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2">
+                    {categoria}
+                  </div>
 
-                    {/* Grid de Piezas - Diseño móvil optimizado */}
-                    <div className="p-3 grid grid-cols-1 gap-2">
-                      {piezas.map((pieza) => {
-                        const seleccionada = estaPiezaSeleccionada(pieza.nombre)
-                        const index = piezasUsadas.findIndex(
-                          p => p.pieza.toLowerCase() === pieza.nombre.toLowerCase()
-                        )
-                        const cantidad = index >= 0 ? piezasUsadas[index].cantidad : 0
+                  {/* Lista de piezas */}
+                  <div className="space-y-1.5">
+                    {piezas.map((pieza) => {
+                      const seleccionada = estaPiezaSeleccionada(pieza.nombre)
+                      const cantidad = obtenerCantidadPieza(pieza.nombre)
 
-                        return (
-                          <div
-                            key={pieza.id}
-                            className={`rounded-xl border-2 transition-all ${
-                              seleccionada
-                                ? 'bg-green-500/20 border-green-500/50'
-                                : 'bg-gray-700/30 border-transparent hover:border-gray-600'
-                            }`}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => togglePiezaPredefinida(pieza)}
-                              className="w-full text-left p-3 flex items-center justify-between active:scale-98 transition-transform"
-                            >
-                              <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                                  seleccionada ? 'bg-green-500/30' : 'bg-gray-600/30'
-                                }`}>
-                                  {seleccionada ? (
-                                    <Check className="w-5 h-5 text-green-400" />
-                                  ) : (
-                                    <Package className="w-5 h-5 text-gray-400" />
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-sm font-medium text-white truncate">
-                                    {pieza.nombre}
-                                  </div>
-                                  {seleccionada && (
-                                    <div className="text-xs text-green-400 mt-0.5">
-                                      Cantidad: {cantidad}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </button>
+                      return (
+                        <div key={pieza.id} className="space-y-2">
+                          {/* Checkbox de la pieza */}
+                          <label className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-700/30 cursor-pointer transition-colors group">
+                            <input
+                              type="checkbox"
+                              checked={seleccionada}
+                              onChange={() => togglePiezaPredefinida(pieza.nombre)}
+                              className="w-4 h-4 rounded border-gray-600 text-green-500 focus:ring-2 focus:ring-green-500 focus:ring-offset-0 focus:ring-offset-gray-800"
+                            />
+                            <span className={`text-sm flex-1 transition-colors ${
+                              seleccionada ? 'text-white font-medium' : 'text-gray-300 group-hover:text-white'
+                            }`}>
+                              {pieza.nombre}
+                            </span>
+                            {seleccionada && (
+                              <span className="text-xs text-green-400 font-medium">
+                                x{cantidad}
+                              </span>
+                            )}
+                          </label>
 
-                            {/* Controles de cantidad cuando está seleccionada */}
-                            {seleccionada && index >= 1 && (
-                              <div className="px-3 pb-3 flex items-center justify-between gap-3">
-                                <span className="text-xs text-gray-400">Ajustar cantidad:</span>
+                          {/* Control de cantidad (solo visible si está seleccionada) */}
+                          {seleccionada && (
+                            <div className="ml-7 pl-4 border-l-2 border-gray-700">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-400 flex-shrink-0">
+                                  Cantidad:
+                                </span>
                                 <div className="flex items-center gap-1.5">
                                   <button
                                     type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleCambiarCantidad(index, cantidad - 1)
-                                    }}
+                                    onClick={() => actualizarCantidad(pieza.nombre, cantidad - 1)}
                                     disabled={cantidad <= 1}
-                                    className="w-9 h-9 flex items-center justify-center bg-gray-700/50 rounded-lg text-white hover:bg-gray-700 disabled:opacity-30 active:scale-95 transition-all"
+                                    className="w-7 h-7 flex items-center justify-center bg-gray-700/50 hover:bg-gray-700 rounded text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                                   >
-                                    <span className="text-lg">-</span>
+                                    <Minus className="w-3 h-3" />
                                   </button>
                                   <input
                                     type="number"
                                     value={cantidad}
                                     onChange={(e) => {
-                                      const nuevaCantidad = parseInt(e.target.value)
-                                      handleCambiarCantidad(index, nuevaCantidad)
+                                      const valor = parseInt(e.target.value) || 1
+                                      actualizarCantidad(pieza.nombre, valor)
                                     }}
-                                    onClick={(e) => e.stopPropagation()}
                                     min="1"
-                                    className="w-16 h-9 bg-gray-700/50 border border-gray-600/50 rounded-lg px-2 text-white text-center text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    max="9999"
+                                    className="w-16 h-7 bg-gray-700/50 border border-gray-600 rounded px-2 text-center text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                   />
                                   <button
                                     type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleCambiarCantidad(index, cantidad + 1)
-                                    }}
-                                    className="w-9 h-9 flex items-center justify-center bg-gray-700/50 rounded-lg text-white hover:bg-gray-700 active:scale-95 transition-all"
+                                    onClick={() => actualizarCantidad(pieza.nombre, cantidad + 1)}
+                                    className="w-7 h-7 flex items-center justify-center bg-gray-700/50 hover:bg-gray-700 rounded text-white transition-colors"
                                   >
-                                    <span className="text-lg">+</span>
+                                    <Plus className="w-3 h-3" />
                                   </button>
                                 </div>
                               </div>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
       )}
 
-      {/* Sección para agregar pieza personalizada - Optimizado móvil */}
-      <div className="space-y-3">
+      {/* Link para configurar piezas */}
+      {!loading && (
         <Link 
           href="/tareas-repuestos"
-          className="sm:w-auto text-center text-purple-400 hover:text-purple-300 text-sm transition-colors flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-500/10 hover:bg-purple-500/20 rounded-xl border border-purple-500/20 active:scale-95"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-purple-400 hover:text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-lg transition-all"
         >
           <Settings className="w-4 h-4" />
-          <span>Crear piezas predefinidas</span>
+          <span>Configurar piezas predefinidas</span>
         </Link>
+      )}
 
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
-            <Wrench className="w-4 h-4 text-purple-400" />
-          </div>
-          <span className="font-semibold text-white text-sm">Pieza Personalizada</span>
+      {/* Agregar pieza personalizada */}
+      <div className="space-y-2">
+        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2">
+          Pieza Personalizada
         </div>
-        
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex gap-2">
           <input
             type="text"
-            value={inputPersonalizado}
-            onChange={(e) => setInputPersonalizado(e.target.value)}
-            placeholder="Nombre de la pieza..."
-            className="flex-1 px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+            value={nuevaPiezaPersonalizada}
+            onChange={(e) => setNuevaPiezaPersonalizada(e.target.value)}
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
+                e.preventDefault()
                 agregarPiezaPersonalizada()
               }
             }}
+            placeholder="Nombre de la pieza..."
+            className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
           <button
             type="button"
             onClick={agregarPiezaPersonalizada}
-            disabled={!inputPersonalizado.trim()}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-xl border border-purple-500/30 text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+            disabled={!nuevaPiezaPersonalizada.trim()}
+            className="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            <span>Agregar</span>
+            Agregar
           </button>
         </div>
       </div>
 
-      {/* Lista de Piezas Personalizadas */}
-      {piezasUsadas.some(p => !piezasPredefinidas.some(pred => pred.nombre.toLowerCase() === p.pieza.toLowerCase())) && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-white text-sm">Piezas Personalizadas</span>
+      {/* Lista de piezas personalizadas */}
+      {piezasPersonalizadas.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2">
+            Piezas Personalizadas ({piezasPersonalizadas.length})
           </div>
-          
-          <div className="space-y-2">
-            {piezasUsadas.map((pieza, index) => {
-              const esPredefinida = piezasPredefinidas.some(
-                p => p.nombre.toLowerCase() === pieza.pieza.toLowerCase()
-              )
-
-              if (esPredefinida) return null
-
+          <div className="space-y-1.5">
+            {piezasPersonalizadas.map((pieza, globalIndex) => {
+              // Encontrar el índice real en piezasUsadas
+              const index = piezasUsadas.findIndex(p => p === pieza)
+              
               return (
-                <div key={index} className="flex items-center gap-3 bg-purple-500/10 rounded-xl border border-purple-500/30 p-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                    <Wrench className="w-5 h-5 text-purple-400" />
+                <div key={index} className="flex items-center gap-2 p-2.5 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                  <div className="flex-1 min-w-0">
+                    <input
+                      type="text"
+                      value={pieza.pieza ?? ''}
+                      onChange={(e) => onActualizarPieza(index, 'pieza', e.target.value)}
+                      placeholder="Nombre de la pieza"
+                      className="w-full px-2 py-1 bg-transparent border-none text-sm text-white placeholder-gray-500 focus:outline-none"
+                    />
                   </div>
                   
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-white truncate">
-                      {pieza.pieza}
-                    </div>
-                    <div className="text-xs text-purple-400">
-                      Personalizada
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleCambiarCantidad(index, pieza.cantidad - 1)}
-                        disabled={pieza.cantidad <= 1}
-                        className="w-8 h-8 flex items-center justify-center bg-gray-700/50 rounded-lg text-white hover:bg-gray-700 disabled:opacity-30 active:scale-95 transition-all"
-                      >
-                        <span className="text-base">-</span>
-                      </button>
-                      <input
-                        type="number"
-                        value={pieza.cantidad}
-                        onChange={(e) => {
-                          const nuevaCantidad = parseInt(e.target.value) 
-                          handleCambiarCantidad(index, nuevaCantidad)
-                        }}
-                        min="1"
-                        className="w-14 h-8 bg-gray-700/50 border border-gray-600/50 rounded-lg px-2 text-white text-center text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleCambiarCantidad(index, pieza.cantidad + 1)}
-                        className="w-8 h-8 flex items-center justify-center bg-gray-700/50 rounded-lg text-white hover:bg-gray-700 active:scale-95 transition-all"
-                      >
-                        <span className="text-base">+</span>
-                      </button>
-                    </div>
-
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button
                       type="button"
-                      onClick={() => onEliminarPieza(index)}
-                      className="w-9 h-9 flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all active:scale-95"
+                      onClick={() => onActualizarPieza(index, 'cantidad', Math.max(1, pieza.cantidad - 1))}
+                      disabled={pieza.cantidad <= 1}
+                      className="w-7 h-7 flex items-center justify-center bg-gray-700/50 hover:bg-gray-700 rounded text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Minus className="w-3 h-3" />
+                    </button>
+                    <input
+                      type="number"
+                      value={pieza.cantidad}
+                      onChange={(e) => {
+                        const valor = parseInt(e.target.value) || 1
+                        onActualizarPieza(index, 'cantidad', Math.max(1, Math.min(9999, valor)))
+                      }}
+                      min="1"
+                      max="9999"
+                      className="w-14 h-7 bg-gray-700/50 border border-gray-600 rounded px-2 text-center text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => onActualizarPieza(index, 'cantidad', pieza.cantidad + 1)}
+                      className="w-7 h-7 flex items-center justify-center bg-gray-700/50 hover:bg-gray-700 rounded text-white transition-colors"
+                    >
+                      <Plus className="w-3 h-3" />
                     </button>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onEliminarPieza(index)}
+                    className="w-7 h-7 flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded transition-colors flex-shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               )
             })}
@@ -420,21 +405,23 @@ export default function PiezasInput({
       )}
 
       {/* Estado vacío */}
-      {!tienePiezas && piezasPredefinidas.length === 0 && !loading && (
-        <div className="text-center py-12 border-2 border-dashed border-gray-700 rounded-xl bg-gray-800/20">
-          <Package className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-          <p className="text-gray-400 font-medium mb-2">Sin piezas predefinidas</p>
-          <p className="text-sm text-gray-500 px-4">
-            Escribe el nombre de una pieza que no este en la lista predefinida y agrégala como personalizada.
+      {!tienePiezas && !loading && piezasPredefinidas.length === 0 && (
+        <div className="text-center py-8 border-2 border-dashed border-gray-700 rounded-lg bg-gray-800/20">
+          <Package className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+          <p className="text-gray-400 text-sm font-medium mb-1">
+            Sin piezas predefinidas
+          </p>
+          <p className="text-xs text-gray-500 px-4">
+            Agrega una pieza personalizada o configura piezas predefinidas
           </p>
         </div>
       )}
 
-      {/* Loading state */}
+      {/* Loading */}
       {loading && (
-        <div className="text-center py-12 bg-gray-800/20 rounded-xl">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-400 mx-auto"></div>
-          <p className="text-gray-400 text-sm mt-3">Cargando piezas...</p>
+        <div className="text-center py-8 bg-gray-800/20 rounded-lg">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400 mx-auto"></div>
+          <p className="text-gray-400 text-sm mt-2">Cargando piezas...</p>
         </div>
       )}
     </div>

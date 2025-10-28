@@ -15,7 +15,6 @@ import ClienteSelector from '@/components/forms/ClienteSelector'
 import DispositivoSelector from '@/components/forms/DispositivoSelector'
 import MantenimientoInfo from '@/components/forms/MantenimientoInfo'
 import GarantiaInput from '@/components/forms/GarantiaInput'
-import FormActions from '@/components/forms/FormActions'
 import ContadorInput, { Contador } from '@/components/forms/ContadorInput'
 
 interface FormularioMantenimientoProps {
@@ -45,15 +44,18 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   const [busquedaCliente, setBusquedaCliente] = useState('')
   
   // Estado para mantenimiento
-  const [tipoMantenimiento, setTipoMantenimiento] = useState<'preventivo' | 'correctivo'>('preventivo')
+  const [tipoMantenimiento, setTipoMantenimiento] = useState<'preventivo' | 'correctivo' | 'diagnostico'>('preventivo')
   const [tareasPersonalizadas, setTareasPersonalizadas] = useState<string[]>([''])
   const [tareasSeleccionadas, setTareasSeleccionadas] = useState<string[]>([])
   const [mostrarTareasPredefinidas, setMostrarTareasPredefinidas] = useState(true)
   const [piezasUsadas, setPiezasUsadas] = useState<Pieza[]>([])
   
-  // Estado para condición del equipo
-  const [estadoAntes, setEstadoAntes] = useState<string[]>([''])
-  const [estadoDespues, setEstadoDespues] = useState<string[]>([''])
+  // NUEVO: Estados para diagnóstico
+  const [observacionesIniciales, setObservacionesIniciales] = useState('')
+  const [pruebasRealizadas, setPruebasRealizadas] = useState('')
+  const [diagnosticoFinal, setDiagnosticoFinal] = useState('')
+  const [recomendaciones, setRecomendaciones] = useState('')
+  const [contadorMaquina, setContadorMaquina] = useState<number | undefined>(undefined)
   
   // Estado para garantía
   const [garantiaDescripcion, setGarantiaDescripcion] = useState('')
@@ -66,44 +68,44 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   const [mostrarContador, setMostrarContador] = useState(false)
 
   // Configuración de los pasos
-const steps: { key: FormStep; title: string; description: string; icon?: JSX.Element }[] = [
-  {
-    key: 'cliente',
-    title: 'Cliente',
-    description: 'Selecciona el cliente',
-    icon: <Users className="w-5 h-5" />
-  },
-  {
-    key: 'dispositivo',
-    title: 'Dispositivo',
-    description: 'Elige el dispositivo',
-    icon: <Laptop className="w-5 h-5" />
-  },
-  {
-    key: 'mantenimiento',
-    title: 'Trabajo',
-    description: 'Detalla el trabajo',
-    icon: <Wrench className="w-5 h-5" />
-  },
-  {
-    key: 'contador',
-    title: 'Contador',
-    description: 'Registro opcional',
-    icon: <GaugeCircle className="w-5 h-5" />
-  },
-  {
-    key: 'garantia',
-    title: 'Garantía',
-    description: 'Configura garantía',
-    icon: <ShieldCheck className="w-5 h-5" />
-  },
-  {
-    key: 'resumen',
-    title: 'Resumen',
-    description: 'Revisa y confirma',
-    icon: <ClipboardCheck className="w-5 h-5" />
-  }
-];
+  const steps: { key: FormStep; title: string; description: string; icon?: JSX.Element }[] = [
+    {
+      key: 'cliente',
+      title: 'Cliente',
+      description: 'Selecciona el cliente',
+      icon: <Users className="w-5 h-5" />
+    },
+    {
+      key: 'dispositivo',
+      title: 'Dispositivo',
+      description: 'Elige el dispositivo',
+      icon: <Laptop className="w-5 h-5" />
+    },
+    {
+      key: 'mantenimiento',
+      title: 'Trabajo',
+      description: 'Detalla el trabajo',
+      icon: <Wrench className="w-5 h-5" />
+    },
+    {
+      key: 'contador',
+      title: 'Contador',
+      description: 'Registro opcional',
+      icon: <GaugeCircle className="w-5 h-5" />
+    },
+    {
+      key: 'garantia',
+      title: 'Garantía',
+      description: 'Configura garantía',
+      icon: <ShieldCheck className="w-5 h-5" />
+    },
+    {
+      key: 'resumen',
+      title: 'Resumen',
+      description: 'Revisa y confirma',
+      icon: <ClipboardCheck className="w-5 h-5" />
+    }
+  ];
 
   useEffect(() => {
     cargarClientes()
@@ -122,9 +124,23 @@ const steps: { key: FormStep; title: string; description: string; icon?: JSX.Ele
     }
   }, [mesesGarantia, garantiaTiempoDesde])
 
+  // ACTUALIZADO: Limpiar datos al cambiar tipo de mantenimiento
   useEffect(() => {
     setTareasSeleccionadas([])
     setTareasPersonalizadas([''])
+    setPiezasUsadas([])
+    
+    // Limpiar campos específicos según el tipo
+    if (tipoMantenimiento === 'diagnostico') {
+      // No limpiar campos de diagnóstico, solo los de mantenimiento
+    } else {
+      // Limpiar campos de diagnóstico
+      setObservacionesIniciales('')
+      setPruebasRealizadas('')
+      setDiagnosticoFinal('')
+      setRecomendaciones('')
+      setContadorMaquina(undefined)
+    }
   }, [tipoMantenimiento])
 
   const cargarClientes = async () => {
@@ -143,7 +159,6 @@ const steps: { key: FormStep; title: string; description: string; icon?: JSX.Ele
     const currentIndex = steps.findIndex(step => step.key === currentStep)
     if (currentIndex < steps.length - 1) {
       setCurrentStep(steps[currentIndex + 1].key)
-      // Scroll suave al inicio en móviles
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
@@ -156,7 +171,7 @@ const steps: { key: FormStep; title: string; description: string; icon?: JSX.Ele
     }
   }
 
-  // Validaciones para cada paso
+  // ACTUALIZADO: Validaciones para cada paso
   const canProceedToNextStep = (): boolean => {
     switch (currentStep) {
       case 'cliente':
@@ -164,11 +179,20 @@ const steps: { key: FormStep; title: string; description: string; icon?: JSX.Ele
       case 'dispositivo':
         return dispositivoSeleccionado !== null
       case 'mantenimiento':
-        const todasLasTareas = [
-          ...tareasSeleccionadas,
-          ...tareasPersonalizadas.filter(tarea => tarea.trim() !== '')
-        ]
-        return todasLasTareas.length > 0
+        if (tipoMantenimiento === 'diagnostico') {
+          // Para diagnóstico validar campos específicos
+          return observacionesIniciales.trim() !== '' &&
+                 pruebasRealizadas.trim() !== '' &&
+                 diagnosticoFinal.trim() !== '' &&
+                 recomendaciones.trim() !== ''
+        } else {
+          // Para preventivo/correctivo validar tareas
+          const todasLasTareas = [
+            ...tareasSeleccionadas,
+            ...tareasPersonalizadas.filter(tarea => tarea.trim() !== '')
+          ]
+          return todasLasTareas.length > 0
+        }
       case 'contador':
         return true
       case 'garantia':
@@ -290,26 +314,35 @@ const steps: { key: FormStep; title: string; description: string; icon?: JSX.Ele
           pieza: pieza.pieza,
           cantidad: pieza.cantidad,
         }))
-
-      const nuevaOrden: Omit<OrdenMantenimiento, 'id'> = {
-        tipo: 'mantenimiento',
-        horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        cliente: clienteSeleccionado!,
-        dispositivo: dispositivoSeleccionado!,
-        contador: mostrarContador && contador ? {
-          ...contador,
-          fechaRegistro: new Date(contador.fechaRegistro)
-        } : undefined,
-        fechaCreacion: new Date(),
-        tipoMantenimiento,
-        tareasRealizadas: todasLasTareas,
-        piezasUsadas: piezasUsadasFiltradas.length > 0 ? piezasUsadasFiltradas : [],
-        garantiaTiempoDesde: garantiaTiempoDesde ? new Date(garantiaTiempoDesde) : null,
-        garantiaTiempoHasta: garantiaTiempoHasta ? new Date(garantiaTiempoHasta) : null,
-        garantiaDescripcion,
-        idPersonalizado,
-        userId: user.uid,
-      }
+        const nuevaOrden: Omit<OrdenMantenimiento, 'id'> = {
+          tipo: 'mantenimiento',
+          horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          cliente: clienteSeleccionado!,
+          dispositivo: dispositivoSeleccionado!,
+          contador: mostrarContador && contador ? {
+            ...contador,
+            fechaRegistro: new Date(contador.fechaRegistro)
+          } : undefined, 
+          fechaCreacion: new Date(),
+          tipoMantenimiento,
+          tareasRealizadas: todasLasTareas,
+          piezasUsadas: piezasUsadasFiltradas.length > 0 ? piezasUsadasFiltradas : [],
+          
+          // ✅ AGREGAR: Campos de diagnóstico
+          ...(tipoMantenimiento === 'diagnostico' && {
+            observacionesIniciales,
+            pruebasRealizadas,
+            diagnosticoFinal,
+            recomendaciones,
+            contadorMaquina
+          }),
+          
+          garantiaTiempoDesde: garantiaTiempoDesde ? new Date(garantiaTiempoDesde) : null,
+          garantiaTiempoHasta: garantiaTiempoHasta ? new Date(garantiaTiempoHasta) : null,
+          garantiaDescripcion: garantiaDescripcion || '',
+          idPersonalizado,
+          userId: user.uid,
+        }
 
       await crearOrden(nuevaOrden, user.uid)
       console.log('Orden creada exitosamente con ID:', idPersonalizado)
@@ -319,6 +352,34 @@ const steps: { key: FormStep; title: string; description: string; icon?: JSX.Ele
       alert('Error al crear la orden: ' + (error instanceof Error ? error.message : 'Error desconocido'))
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Función para obtener el label del tipo de mantenimiento
+  const getTipoMantenimientoLabel = () => {
+    switch (tipoMantenimiento) {
+      case 'preventivo':
+        return 'Preventivo'
+      case 'correctivo':
+        return 'Correctivo'
+      case 'diagnostico':
+        return 'Diagnóstico'
+      default:
+        return tipoMantenimiento
+    }
+  }
+
+  // Función para obtener el color del badge según tipo
+  const getTipoMantenimientoColor = () => {
+    switch (tipoMantenimiento) {
+      case 'preventivo':
+        return 'bg-green-600/20 text-green-400'
+      case 'correctivo':
+        return 'bg-orange-600/20 text-orange-400'
+      case 'diagnostico':
+        return 'bg-blue-600/20 text-blue-400'
+      default:
+        return 'bg-purple-600/20 text-purple-400'
     }
   }
 
@@ -383,6 +444,11 @@ const steps: { key: FormStep; title: string; description: string; icon?: JSX.Ele
               tareasPersonalizadas={tareasPersonalizadas}
               piezasUsadas={piezasUsadas}
               mostrarTareasPredefinidas={mostrarTareasPredefinidas}
+              // Props para diagnóstico
+              observacionesIniciales={observacionesIniciales}
+              pruebasRealizadas={pruebasRealizadas}
+              diagnosticoFinal={diagnosticoFinal}
+              // Handlers
               onCambiarTipoMantenimiento={setTipoMantenimiento}
               onToggleTareaPredefinida={handleToggleTareaPredefinida}
               onSetMostrarTareasPredefinidas={setMostrarTareasPredefinidas}
@@ -392,6 +458,10 @@ const steps: { key: FormStep; title: string; description: string; icon?: JSX.Ele
               onActualizarPieza={handleActualizarPieza}
               onAgregarPieza={handleAgregarPieza}
               onEliminarPieza={handleEliminarPieza}
+              // Handlers para diagnóstico
+              onCambiarObservaciones={setObservacionesIniciales}
+              onCambiarPruebas={setPruebasRealizadas}
+              onCambiarDiagnostico={setDiagnosticoFinal}
             />
           </Section>
         )
@@ -459,30 +529,56 @@ const steps: { key: FormStep; title: string; description: string; icon?: JSX.Ele
                 </div>
               </div>
 
-              {/* Mantenimiento */}
+              {/* Mantenimiento/Diagnóstico */}
               <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-3">
-                <h3 className="text-xs sm:text-sm font-semibold text-purple-300 uppercase tracking-wide">Mantenimiento</h3>
+                <h3 className="text-xs sm:text-sm font-semibold text-purple-300 uppercase tracking-wide">
+                  {tipoMantenimiento === 'diagnostico' ? 'Diagnóstico' : 'Mantenimiento'}
+                </h3>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-400 text-sm">Tipo:</span>
-                  <span className="text-base font-medium capitalize bg-purple-600/20 px-3 py-1 rounded-full">
-                    {tipoMantenimiento}
+                  <span className={`text-base font-medium capitalize px-3 py-1 rounded-full ${getTipoMantenimientoColor()}`}>
+                    {getTipoMantenimientoLabel()}
                   </span>
                 </div>
-                <div className="pt-2 border-t border-gray-700">
-                  <p className="text-gray-400 text-sm mb-2">Tareas realizadas:</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-purple-400">
-                      {[...tareasSeleccionadas, ...tareasPersonalizadas.filter(t => t.trim())].length}
-                    </span>
+                
+                {tipoMantenimiento === 'diagnostico' ? (
+                  // Resumen de diagnóstico
+                  <div className="pt-2 border-t border-gray-700 space-y-2">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Observaciones iniciales</p>
+                      <p className="text-sm text-gray-300">{observacionesIniciales.substring(0, 100)}{observacionesIniciales.length > 100 ? '...' : ''}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Diagnóstico final</p>
+                      <p className="text-sm text-gray-300">{diagnosticoFinal.substring(0, 100)}{diagnosticoFinal.length > 100 ? '...' : ''}</p>
+                    </div>
+                    {contadorMaquina !== undefined && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Contador de máquina</p>
+                        <p className="text-lg font-semibold text-purple-400">{contadorMaquina.toLocaleString()} unidades</p>
+                      </div>
+                    )}
                   </div>
-                </div>
-                {piezasUsadas.filter(p => p.pieza.trim()).length > 0 && (
-                  <div className="pt-2 border-t border-gray-700">
-                    <p className="text-gray-400 text-sm mb-2">Piezas utilizadas:</p>
-                    <span className="text-lg font-medium text-purple-400">
-                      {piezasUsadas.filter(p => p.pieza.trim()).length} piezas
-                    </span>
-                  </div>
+                ) : (
+                  // Resumen de mantenimiento
+                  <>
+                    <div className="pt-2 border-t border-gray-700">
+                      <p className="text-gray-400 text-sm mb-2">Tareas realizadas:</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl font-bold text-purple-400">
+                          {[...tareasSeleccionadas, ...tareasPersonalizadas.filter(t => t.trim())].length}
+                        </span>
+                      </div>
+                    </div>
+                    {piezasUsadas.filter(p => p.pieza.trim()).length > 0 && (
+                      <div className="pt-2 border-t border-gray-700">
+                        <p className="text-gray-400 text-sm mb-2">Piezas utilizadas:</p>
+                        <span className="text-lg font-medium text-purple-400">
+                          {piezasUsadas.filter(p => p.pieza.trim()).length} piezas
+                        </span>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -522,7 +618,7 @@ const steps: { key: FormStep; title: string; description: string; icon?: JSX.Ele
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pb-24 sm:pb-8">
-      {/* Header - Mejorado para móvil */}
+      {/* Header */}
       <div className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 shadow-lg">
         <div className="max-w-4xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center space-x-2 sm:space-x-4">
@@ -724,7 +820,8 @@ const steps: { key: FormStep; title: string; description: string; icon?: JSX.Ele
                   <p className="text-xs text-amber-400 bg-amber-500/10 rounded-lg py-2 px-3">
                     {currentStep === 'cliente' && 'Selecciona un cliente para continuar'}
                     {currentStep === 'dispositivo' && 'Selecciona un dispositivo para continuar'}
-                    {currentStep === 'mantenimiento' && 'Agrega al menos una tarea para continuar'}
+                    {currentStep === 'mantenimiento' && tipoMantenimiento === 'diagnostico' && 'Completa todos los campos del diagnóstico'}
+                    {currentStep === 'mantenimiento' && tipoMantenimiento !== 'diagnostico' && 'Agrega al menos una tarea para continuar'}
                   </p>
                 </div>
               )}

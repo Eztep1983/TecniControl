@@ -50,6 +50,13 @@ export interface OrdenGarantia extends OrdenBase {
 
 }
 
+export interface ContadorU {
+  userId: string;
+  siguiente: number;
+  ultimaOrden: string;
+  fechaActualizacion: Date;
+}
+
 export interface Contador {
   tipo: 'unidades' | 'impresiones' | 'copias' | 'escaneos' | 'horas' | 'personalizado'
   valor: number
@@ -67,8 +74,13 @@ export interface OrdenMantenimiento {
   dispositivo: Dispositivo;
   fechaCreacion: Date | any;
   horaCreacion: string;
+  observacionesIniciales?: string
+  pruebasRealizadas?: string
+  posiblesCausas?: string
+  diagnosticoFinal?: string
+  contadorMaquina?: number
   contador?: Contador;
-  tipoMantenimiento: 'preventivo' | 'correctivo';
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico';
   tareasRealizadas: string[];
   piezasUsadas: Array<{pieza: string, cantidad: number}>;
   garantiaTiempoDesde: Date | any;
@@ -77,17 +89,7 @@ export interface OrdenMantenimiento {
   createdAt?: Date;
   updatedAt?: Date;
 }
-export interface OrdenDiagnostico extends OrdenBase {
-  tipo: 'diagnostico';
-  idPersonalizado: string;
-  observacionesIniciales: string;
-  pruebasRealizadas: string;
-  posiblesCausas: string;
-  contadorMaquina?: number;
-  fechaCompra?: Date;
-  diagnosticoFinal: string;
-  recomendaciones: string;
-}
+
 
 export interface OrdenEntrega extends OrdenBase {
   tipo: 'entrega';
@@ -115,4 +117,4 @@ export interface Negocio {
   updatedAt?: Date;
 }
 
-export type Orden = OrdenGarantia | OrdenMantenimiento | OrdenDiagnostico | OrdenEntrega;
+export type Orden = OrdenGarantia | OrdenMantenimiento | OrdenEntrega;

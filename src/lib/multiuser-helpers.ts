@@ -10,11 +10,9 @@ import {
   setDoc, 
   updateDoc, 
   addDoc,
-  deleteDoc,
   orderBy,
-  limit
 } from 'firebase/firestore';
-import { Cliente, Orden, Negocio, Contador } from '@/types/orden';
+import { Cliente, Orden, Negocio, ContadorU } from '@/types/orden';
 
 // Cliente helpers
 export const getClientesPorUsuario = async (userId: string): Promise<Cliente[]> => {
@@ -162,13 +160,13 @@ export const actualizarNegocio = async (negocio: Partial<Negocio>, userId: strin
 };
 
 // Contador helpers
-export const getContadorPorUsuario = async (userId: string): Promise<Contador | null> => {
+export const getContadorPorUsuario = async (userId: string): Promise<ContadorU | null> => {
   try {
     const contadorRef = doc(db, 'contadores', userId);
     const contadorDoc = await getDoc(contadorRef);
     
     if (contadorDoc.exists()) {
-      return contadorDoc.data() as Contador;
+      return contadorDoc.data() as ContadorU;
     }
     
     return null;
@@ -181,7 +179,7 @@ export const getContadorPorUsuario = async (userId: string): Promise<Contador | 
 export const inicializarContador = async (userId: string): Promise<void> => {
   try {
     const contadorRef = doc(db, 'contadores', userId);
-    const contador: Contador = {
+    const contador: ContadorU = {
       userId,
       siguiente: 1,
       ultimaOrden: '',
@@ -201,7 +199,7 @@ export const incrementarContador = async (userId: string): Promise<number> => {
     const contadorDoc = await getDoc(contadorRef);
     
     if (contadorDoc.exists()) {
-      const contador = contadorDoc.data() as Contador;
+      const contador = contadorDoc.data() as ContadorU;
       const nuevoNumero = contador.siguiente + 1;
       
       await updateDoc(contadorRef, {
