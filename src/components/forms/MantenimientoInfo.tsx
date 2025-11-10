@@ -4,7 +4,7 @@ import { Settings, Wrench, Zap, Shield, Stethoscope, Package, CheckCircle2, Chev
 import TareasInput from './TareasInput'
 import PiezasInput from './PiezasInput'
 import DiagnosticoInfo from './DiagnosticoInfo'
-import { useCallback, useMemo, memo, useState } from 'react'
+import { useMemo, memo, useState } from 'react'
 
 interface Pieza {
   pieza: string

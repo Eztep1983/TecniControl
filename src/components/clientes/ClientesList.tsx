@@ -13,7 +13,9 @@ import {
   Filter,
   RefreshCw,
   Download,
-  Settings
+  Settings,
+  ChevronRight,
+  CheckCircle2
 } from "lucide-react";
 import { Cliente } from "@/types/orden";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -89,14 +91,14 @@ export function ClientesList() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-8">
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <User className="w-10 h-10 text-white" />
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-gray-800/40 rounded-xl border border-gray-700/50 p-6">
+            <div className="w-16 h-16 bg-blue-500/15 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <User className="w-8 h-8 text-blue-400" />
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">Acceso Requerido</h2>
-            <p className="text-gray-400">Debes iniciar sesión para gestionar los clientes.</p>
+            <h2 className="text-lg font-semibold text-white mb-2 text-center">Acceso Requerido</h2>
+            <p className="text-sm text-gray-400 text-center">Debes iniciar sesión para gestionar los clientes.</p>
           </div>
         </div>
       </div>
@@ -105,11 +107,10 @@ export function ClientesList() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="relative">
-          </div>
-          <p className="text-gray-400 mt-4 font-medium">Cargando clientes...</p>
+          <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-sm text-gray-400">Cargando clientes...</p>
         </div>
       </div>
     );
@@ -117,17 +118,17 @@ export function ClientesList() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-8">
-          <div className="bg-red-900/20 backdrop-blur-sm rounded-2xl p-8 border border-red-700/50 shadow-2xl">
-            <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <User className="w-10 h-10 text-white" />
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-gray-800/40 rounded-xl border border-red-500/40 p-6">
+            <div className="w-16 h-16 bg-red-500/15 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <User className="w-8 h-8 text-red-400" />
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">Error al Cargar</h2>
-            <p className="text-gray-400 mb-6">{error}</p>
+            <h2 className="text-lg font-semibold text-white mb-2 text-center">Error al Cargar</h2>
+            <p className="text-sm text-gray-400 mb-6 text-center">{error}</p>
             <Button 
               onClick={() => window.location.reload()} 
-              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg"
+              className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
               Reintentar
@@ -139,84 +140,109 @@ export function ClientesList() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
-      {/* Header con gradiente */}
-      <div className="bg-gradient-to-r from-gray-900/95 to-gray-800/95 backdrop-blur-sm border-b border-gray-700/50 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-gray-900">
+      {/* Contenedor principal - Mobile first con padding mínimo */}
+      <div className="w-full p-3 sm:p-4 md:p-6 max-w-7xl mx-auto">
+        <div className="bg-gray-800/40 rounded-xl border border-gray-700/50 overflow-hidden">
+          {/* Header - Optimizado para móvil */}
+          <div className="px-4 py-3 sm:px-5 sm:py-4 border-b border-gray-700/50 bg-gray-800/60">
+            <div className="flex items-start sm:items-center justify-between gap-3 flex-col sm:flex-row">
+              {/* Título y contador */}
+              <div className="flex items-center gap-3 min-w-0 flex-1 w-full sm:w-auto">
+                <div className="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-5 h-5 text-blue-400" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-base font-semibold text-white truncate">Gestión de Clientes</h3>
+                  <p className="text-xs text-gray-400 truncate">
+                    {filteredClientes.length} de {clientes.length} {clientes.length === 1 ? 'cliente' : 'clientes'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                  Gestión de Clientes
-                </h1>
-                <p className="text-gray-400 text-sm">
-                  {filteredClientes.length} de {clientes.length} {clientes.length === 1 ? 'cliente' : 'clientes'}
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Button
-                size="sm"
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="bg-gradient-to-r from-blue-20 to-indigo-10 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg  transition-all duration-200 shadow-lg"
-              >
-                <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-                Actualizar
-              </Button>
-              <Button 
-                asChild 
-                className="bg-gradient-to-r from-blue-20 to-indigo-10 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg  transition-all duration-200 shadow-lg"
-              >
-                <Link href="/clientes/nuevo">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Nuevo Cliente
+              
+              {/* Botones de acción - Stack en móvil, inline en desktop */}
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-700/50 hover:bg-gray-700 transition-colors disabled:opacity-50 text-sm"
+                  title="Actualizar"
+                >
+                  <RefreshCw className={`w-4 h-4 text-gray-400 ${refreshing ? 'animate-spin' : ''}`} />
+                  <span className="text-gray-300 hidden xs:inline">Actualizar</span>
+                </button>
+                
+                <Link href="/clientes/nuevo" className="flex-1 sm:flex-initial">
+                  <button
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 transition-all text-sm"
+                  >
+                    <PlusCircle className="w-4 h-4 text-blue-400" />
+                    <span className="text-blue-400 font-medium">Nuevo Cliente</span>
+                  </button>
                 </Link>
-              </Button>
+              </div>
             </div>
+          </div>
+
+          {/* Barra de búsqueda - Ajustada para móvil */}
+          <div className="px-4 py-3 sm:px-5 border-b border-gray-700/50 bg-gray-800/30">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+              <Input
+                type="text"
+                placeholder="Buscar cliente..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-lg"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Contenido principal - Mobile first */}
+          <div className="p-4 sm:p-5">
+            {filteredClientes.length === 0 && clientes.length === 0 ? (
+              <div className="text-center py-8 sm:py-12">
+                <div className="w-16 h-16 bg-gray-700/50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-gray-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2 px-4">¡Comienza tu gestión!</h3>
+                <p className="text-sm text-gray-400 mb-6 max-w-sm mx-auto px-4">
+                  No tienes clientes registrados aún. Agrega tu primer cliente para comenzar a gestionar dispositivos y órdenes de mantenimiento.
+                </p>
+                <Link href="/clientes/nuevo">
+                  <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 rounded-lg text-blue-400 font-medium transition-all active:scale-95">
+                    <PlusCircle className="w-5 h-5" />
+                    <span>Crear Primer Cliente</span>
+                  </button>
+                </Link>
+              </div>
+            ) : filteredClientes.length === 0 ? (
+              <div className="text-center py-8 sm:py-12">
+                <div className="w-16 h-16 bg-gray-700/50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Filter className="w-8 h-8 text-gray-500" />
+                </div>
+                <h3 className="text-base font-medium text-gray-300 mb-2">No se encontraron resultados</h3>
+                <p className="text-sm text-gray-500 px-4">Intenta ajustar tus criterios de búsqueda.</p>
+              </div>
+            ) : (
+              <div className="bg-gray-800/30 rounded-lg border border-gray-700/50 overflow-hidden">
+                <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <div className="inline-block min-w-full align-middle">
+                    <ClientesDataTable data={filteredClientes} />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto p-4 sm:p-6">
-        {/* Controles de búsqueda y filtros */}
-        
-        {/* Contenido principal */}
-        {filteredClientes.length === 0 && clientes.length === 0 ? (
-          <div className="bg-gradient-to-r from-blue-20 to-indigo-10 border-black p-3 rounded-lg dark:from-blue-900/20 dark:to-indigo-900/20 text-center shadow-xl">
-            <div className="w-24 h-24 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Users className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-2xl font-semibold text-white mb-3">¡Comienza tu gestión!</h3>
-            <p className="text-gray-400 mb-8 max-w-md mx-auto">
-              No tienes clientes registrados aún. Agrega tu primer cliente para comenzar a gestionar dispositivos y órdenes de mantenimiento.
-            </p>
-            <Button 
-              asChild 
-              size="lg"
-              className="bg-gradient-to-r from-blue-20 to-indigo-10 dark:from-blue-900/20 dark:to-indigo-900/20 border-black rounded-lg text-xm font-semibold shadow-xl transition-all duration-200 hover:scale-105"
-            >
-              <Link href="/clientes/nuevo">
-                <PlusCircle className="mr-2 h-5 w-5" />
-                Crear Primer Cliente
-              </Link>
-            </Button>
-          </div>
-        ) : filteredClientes.length === 0 ? (
-          <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8 text-center">
-            <Filter className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-300 mb-2">No se encontraron resultados</h3>
-            <p className="text-gray-500">Intenta ajustar tus criterios de búsqueda o filtros.</p>
-          </div>
-        ) : (
-          <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl border border-gray-700/50 overflow-hidden shadow-xl">
-            <ClientesDataTable data={filteredClientes} />
-          </div>
-        )}
       </div>
     </div>
   );

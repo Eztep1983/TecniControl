@@ -1,5 +1,6 @@
+//mantenimiento/formulario.tsx
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { OrdenMantenimiento, Cliente, Dispositivo } from '@/types/orden'
 import { ArrowLeft, Monitor, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench, ClipboardCheck, GaugeCircle, Laptop, ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -22,19 +23,60 @@ interface FormularioMantenimientoProps {
   onSuccess: () => void
 }
 
+// Interface de Pieza compatible con PiezasInput optimizado
 interface Pieza {
   pieza: string
   cantidad: number
+  tipo?: 'predefinida' | 'personalizada'
+  idPredefinida?: string
 }
 
 // Definir los pasos del formulario
 type FormStep = 'cliente' | 'dispositivo' | 'mantenimiento' | 'contador' | 'garantia' | 'resumen'
 
+// Configuración de pasos
+const STEPS_CONFIG = [
+  {
+    key: 'cliente' as FormStep,
+    title: 'Cliente',
+    description: 'Selecciona el cliente',
+    icon: <Users className="w-5 h-5" />
+  },
+  {
+    key: 'dispositivo' as FormStep,
+    title: 'Dispositivo',
+    description: 'Elige el dispositivo',
+    icon: <Laptop className="w-5 h-5" />
+  },
+  {
+    key: 'mantenimiento' as FormStep,
+    title: 'Trabajo',
+    description: 'Detalla el trabajo',
+    icon: <Wrench className="w-5 h-5" />
+  },
+  {
+    key: 'contador' as FormStep,
+    title: 'Contador',
+    description: 'Registro opcional',
+    icon: <GaugeCircle className="w-5 h-5" />
+  },
+  {
+    key: 'garantia' as FormStep,
+    title: 'Garantía',
+    description: 'Configura garantía',
+    icon: <ShieldCheck className="w-5 h-5" />
+  },
+  {
+    key: 'resumen' as FormStep,
+    title: 'Resumen',
+    description: 'Revisa y confirma',
+    icon: <ClipboardCheck className="w-5 h-5" />
+  }
+] as const
+
 export default function FormularioMantenimiento({ onClose, onSuccess }: FormularioMantenimientoProps) {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
-  
-  // Estado para el paso actual
   const [currentStep, setCurrentStep] = useState<FormStep>('cliente')
   
   // Estado para clientes y dispositivos
@@ -50,11 +92,10 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   const [mostrarTareasPredefinidas, setMostrarTareasPredefinidas] = useState(true)
   const [piezasUsadas, setPiezasUsadas] = useState<Pieza[]>([])
   
-  // NUEVO: Estados para diagnóstico
+  // Estados para diagnóstico
   const [observacionesIniciales, setObservacionesIniciales] = useState('')
   const [pruebasRealizadas, setPruebasRealizadas] = useState('')
   const [diagnosticoFinal, setDiagnosticoFinal] = useState('')
-  const [recomendaciones, setRecomendaciones] = useState('')
   const [contadorMaquina, setContadorMaquina] = useState<number | undefined>(undefined)
   
   // Estado para garantía
@@ -67,52 +108,37 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   const [contador, setContador] = useState<Contador | null>(null)
   const [mostrarContador, setMostrarContador] = useState(false)
 
-  // Configuración de los pasos
-  const steps: { key: FormStep; title: string; description: string; icon?: JSX.Element }[] = [
-    {
-      key: 'cliente',
-      title: 'Cliente',
-      description: 'Selecciona el cliente',
-      icon: <Users className="w-5 h-5" />
-    },
-    {
-      key: 'dispositivo',
-      title: 'Dispositivo',
-      description: 'Elige el dispositivo',
-      icon: <Laptop className="w-5 h-5" />
-    },
-    {
-      key: 'mantenimiento',
-      title: 'Trabajo',
-      description: 'Detalla el trabajo',
-      icon: <Wrench className="w-5 h-5" />
-    },
-    {
-      key: 'contador',
-      title: 'Contador',
-      description: 'Registro opcional',
-      icon: <GaugeCircle className="w-5 h-5" />
-    },
-    {
-      key: 'garantia',
-      title: 'Garantía',
-      description: 'Configura garantía',
-      icon: <ShieldCheck className="w-5 h-5" />
-    },
-    {
-      key: 'resumen',
-      title: 'Resumen',
-      description: 'Revisa y confirma',
-      icon: <ClipboardCheck className="w-5 h-5" />
-    }
-  ];
-
+  // Cargar clientes al montar
   useEffect(() => {
+    if (!user?.uid) return
+    
+    let mounted = true
+    
+    const cargarClientes = async () => {
+      try {
+        const clientesData = await getClientesPorUsuario(user.uid)
+        if (mounted) {
+          setClientes(clientesData)
+        }
+      } catch (error) {
+        console.error('Error cargando clientes:', error)
+      }
+    }
+
     cargarClientes()
-    const hoy = new Date().toISOString().split('T')[0]
-    setGarantiaTiempoDesde(hoy)
+    
+    return () => {
+      mounted = false
+    }
   }, [user?.uid])
 
+  // Inicializar fecha de garantía
+  useEffect(() => {
+    const hoy = new Date().toISOString().split('T')[0]
+    setGarantiaTiempoDesde(hoy)
+  }, [])
+
+  // Calcular fecha hasta de garantía
   useEffect(() => {
     if (mesesGarantia > 0 && garantiaTiempoDesde) {
       const fechaDesde = new Date(garantiaTiempoDesde)
@@ -124,55 +150,43 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     }
   }, [mesesGarantia, garantiaTiempoDesde])
 
-  // ACTUALIZADO: Limpiar datos al cambiar tipo de mantenimiento
+  // Limpiar datos al cambiar tipo de mantenimiento
   useEffect(() => {
     setTareasSeleccionadas([])
     setTareasPersonalizadas([''])
     setPiezasUsadas([])
     
-    // Limpiar campos específicos según el tipo
-    if (tipoMantenimiento === 'diagnostico') {
-      // No limpiar campos de diagnóstico, solo los de mantenimiento
-    } else {
-      // Limpiar campos de diagnóstico
+    if (tipoMantenimiento !== 'diagnostico') {
       setObservacionesIniciales('')
       setPruebasRealizadas('')
       setDiagnosticoFinal('')
-      setRecomendaciones('')
       setContadorMaquina(undefined)
     }
   }, [tipoMantenimiento])
 
-  const cargarClientes = async () => {
-    if (!user?.uid) return
-    
-    try {
-      const clientesData = await getClientesPorUsuario(user.uid)
-      setClientes(clientesData)
-    } catch (error) {
-      console.error('Error cargando clientes:', error)
-    }
-  }
-
-  // Navegación entre pasos
-  const nextStep = () => {
-    const currentIndex = steps.findIndex(step => step.key === currentStep)
-    if (currentIndex < steps.length - 1) {
-      setCurrentStep(steps[currentIndex + 1].key)
+  // ============================================================================
+  // HANDLERS - Navegación
+  // ============================================================================
+  const nextStep = useCallback(() => {
+    const currentIndex = STEPS_CONFIG.findIndex(step => step.key === currentStep)
+    if (currentIndex < STEPS_CONFIG.length - 1) {
+      setCurrentStep(STEPS_CONFIG[currentIndex + 1].key)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }
+  }, [currentStep])
 
-  const prevStep = () => {
-    const currentIndex = steps.findIndex(step => step.key === currentStep)
+  const prevStep = useCallback(() => {
+    const currentIndex = STEPS_CONFIG.findIndex(step => step.key === currentStep)
     if (currentIndex > 0) {
-      setCurrentStep(steps[currentIndex - 1].key)
+      setCurrentStep(STEPS_CONFIG[currentIndex - 1].key)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }
+  }, [currentStep])
 
-  // ACTUALIZADO: Validaciones para cada paso
-  const canProceedToNextStep = (): boolean => {
+  // ============================================================================
+  // VALIDACIONES
+  // ============================================================================
+  const canProceedToNextStep = useCallback((): boolean => {
     switch (currentStep) {
       case 'cliente':
         return clienteSeleccionado !== null
@@ -180,53 +194,66 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
         return dispositivoSeleccionado !== null
       case 'mantenimiento':
         if (tipoMantenimiento === 'diagnostico') {
-          // Para diagnóstico validar campos específicos
-          return observacionesIniciales.trim() !== '' &&
-                 pruebasRealizadas.trim() !== '' &&
-                 diagnosticoFinal.trim() !== '' &&
-                 recomendaciones.trim() !== ''
+          return !!(
+            observacionesIniciales.trim() &&
+            pruebasRealizadas.trim() &&
+            diagnosticoFinal.trim()
+          )
         } else {
-          // Para preventivo/correctivo validar tareas
           const todasLasTareas = [
             ...tareasSeleccionadas,
-            ...tareasPersonalizadas.filter(tarea => tarea.trim() !== '')
+            ...tareasPersonalizadas.filter(t => t.trim())
           ]
           return todasLasTareas.length > 0
         }
       case 'contador':
-        return true
       case 'garantia':
-        return true
       case 'resumen':
         return true
       default:
         return false
     }
-  }
+  }, [
+    currentStep,
+    clienteSeleccionado,
+    dispositivoSeleccionado,
+    tipoMantenimiento,
+    observacionesIniciales,
+    pruebasRealizadas,
+    diagnosticoFinal,
+    tareasSeleccionadas,
+    tareasPersonalizadas
+  ])
 
-  // Handlers para cliente
-  const handleSeleccionarCliente = (cliente: Cliente) => {
+  // ============================================================================
+  // HANDLERS - Cliente
+  // ============================================================================
+  const handleSeleccionarCliente = useCallback((cliente: Cliente) => {
     setClienteSeleccionado(cliente)
     setDispositivoSeleccionado(null)
     setBusquedaCliente('')
-  }
+  }, [])
 
-  const handleDesseleccionarCliente = () => {
+  const handleDesseleccionarCliente = useCallback(() => {
     setClienteSeleccionado(null)
     setDispositivoSeleccionado(null)
-  }
+  }, [])
 
-  // Handlers para dispositivo
-  const handleSeleccionarDispositivo = (dispositivo: Dispositivo) => {
+  // ============================================================================
+  // HANDLERS - Dispositivo
+  // ============================================================================
+  const handleSeleccionarDispositivo = useCallback((dispositivo: Dispositivo) => {
     setDispositivoSeleccionado(dispositivo)
-  }
+  }, [])
 
-  const handleDesseleccionarDispositivo = () => {
+  const handleDesseleccionarDispositivo = useCallback(() => {
     setDispositivoSeleccionado(null)
-  }
+  }, [])
 
-  // Handlers para tareas
-  const handleToggleTareaPredefinida = (tarea: string) => {
+  // ============================================================================
+  // HANDLERS - Tareas
+  // ============================================================================
+  const handleToggleTareaPredefinida = useCallback((tarea: string) => {
     setTareasSeleccionadas(prev => {
       if (prev.includes(tarea)) {
         return prev.filter(t => t !== tarea)
@@ -234,61 +261,78 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
         return [...prev, tarea]
       }
     })
-  }
+  }, [])
 
-  const handleActualizarTareaPersonalizada = (index: number, valor: string) => {
-    const nuevasTareas = [...tareasPersonalizadas]
-    nuevasTareas[index] = valor
-    setTareasPersonalizadas(nuevasTareas)
-  }
+  const handleActualizarTareaPersonalizada = useCallback((index: number, valor: string) => {
+    setTareasPersonalizadas(prev => {
+      const nuevasTareas = [...prev]
+      nuevasTareas[index] = valor
+      return nuevasTareas
+    })
+  }, [])
 
-  const handleAgregarTareaPersonalizada = () => {
-    setTareasPersonalizadas([...tareasPersonalizadas, ''])
-  }
+  const handleAgregarTareaPersonalizada = useCallback(() => {
+    setTareasPersonalizadas(prev => [...prev, ''])
+  }, [])
 
-  const handleEliminarTareaPersonalizada = (index: number) => {
-    setTareasPersonalizadas(tareasPersonalizadas.filter((_, i) => i !== index))
-  }
+  const handleEliminarTareaPersonalizada = useCallback((index: number) => {
+    setTareasPersonalizadas(prev => prev.filter((_, i) => i !== index))
+  }, [])
 
-  // Handlers para piezas
-  const handleActualizarPieza = (index: number, campo: string, valor: any) => {
-    const nuevasPiezas = [...piezasUsadas]
-    nuevasPiezas[index] = { ...nuevasPiezas[index], [campo]: valor }
-    setPiezasUsadas(nuevasPiezas)
-  }
+  // ============================================================================
+  // HANDLERS - Piezas (Compatible con PiezasInput optimizado)
+  // ============================================================================
+  const handleActualizarPieza = useCallback((index: number, campo: string, valor: any) => {
+    setPiezasUsadas(prev => {
+      const nuevasPiezas = [...prev]
+      if (!nuevasPiezas[index]) {
+        nuevasPiezas[index] = { pieza: '', cantidad: 1, tipo: 'personalizada' }
+      }
+      nuevasPiezas[index] = { ...nuevasPiezas[index], [campo]: valor }
+      return nuevasPiezas
+    })
+  }, [])
 
-  const handleAgregarPieza = () => {
-    setPiezasUsadas([...piezasUsadas, { pieza: '', cantidad: 1 }])
-  }
+  const handleAgregarPieza = useCallback(() => {
+    setPiezasUsadas(prev => [...prev, { pieza: '', cantidad: 1, tipo: 'personalizada' }])
+  }, [])
 
-  const handleEliminarPieza = (index: number) => {
-    setPiezasUsadas(piezasUsadas.filter((_, i) => i !== index))
-  }
+  const handleEliminarPieza = useCallback((index: number) => {
+    setPiezasUsadas(prev => prev.filter((_, i) => i !== index))
+  }, [])
 
-  // Handlers para contador
-  const handleToggleContador = () => {
-    const nuevoEstado = !mostrarContador
-    setMostrarContador(nuevoEstado)
-    
-    if (nuevoEstado && !contador) {
-      const hoy = new Date().toISOString().split('T')[0]
-      setContador({
-        tipo: 'unidades',
-        valor: 0,
-        fechaRegistro: hoy,
-        notas: ''
-      })
-    }
-    
-    if (!nuevoEstado) {
-      setContador(null)
-    }
-  }
+  // ============================================================================
+  // HANDLERS - Contador
+  // ============================================================================
+  const handleToggleContador = useCallback(() => {
+    setMostrarContador(prev => {
+      const nuevoEstado = !prev
+      
+      if (nuevoEstado && !contador) {
+        const hoy = new Date().toISOString().split('T')[0]
+        setContador({
+          tipo: 'unidades',
+          valor: 0,
+          fechaRegistro: hoy,
+          notas: ''
+        })
+      }
+      
+      if (!nuevoEstado) {
+        setContador(null)
+      }
+      
+      return nuevoEstado
+    })
+  }, [contador])
 
-  const handleCambiarContador = (nuevoContador: Contador | null) => {
+  const handleCambiarContador = useCallback((nuevoContador: Contador | null) => {
     setContador(nuevoContador)
-  }
+  }, [])
 
+  // ============================================================================
+  // SUBMIT
+  // ============================================================================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -305,47 +349,49 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
 
       const todasLasTareas = [
         ...tareasSeleccionadas,
-        ...tareasPersonalizadas.filter(tarea => tarea.trim() !== '')
+        ...tareasPersonalizadas.filter(t => t.trim())
       ]
 
+      // Filtrar y limpiar piezas antes de guardar
+      // IMPORTANTE: Removemos tipo e idPredefinida para la base de datos
       const piezasUsadasFiltradas = piezasUsadas
-        .filter(pieza => pieza.pieza.trim() !== '')
+        .filter(pieza => pieza?.pieza?.trim())
         .map(pieza => ({
           pieza: pieza.pieza,
-          cantidad: pieza.cantidad,
+          cantidad: pieza.cantidad || 1
+          // No incluir tipo ni idPredefinida
         }))
-        const nuevaOrden: Omit<OrdenMantenimiento, 'id'> = {
-          tipo: 'mantenimiento',
-          horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          cliente: clienteSeleccionado!,
-          dispositivo: dispositivoSeleccionado!,
-          contador: mostrarContador && contador ? {
-            ...contador,
-            fechaRegistro: new Date(contador.fechaRegistro)
-          } : undefined, 
-          fechaCreacion: new Date(),
-          tipoMantenimiento,
-          tareasRealizadas: todasLasTareas,
-          piezasUsadas: piezasUsadasFiltradas.length > 0 ? piezasUsadasFiltradas : [],
-          
-          // ✅ AGREGAR: Campos de diagnóstico
-          ...(tipoMantenimiento === 'diagnostico' && {
-            observacionesIniciales,
-            pruebasRealizadas,
-            diagnosticoFinal,
-            recomendaciones,
-            contadorMaquina
-          }),
-          
-          garantiaTiempoDesde: garantiaTiempoDesde ? new Date(garantiaTiempoDesde) : null,
-          garantiaTiempoHasta: garantiaTiempoHasta ? new Date(garantiaTiempoHasta) : null,
-          garantiaDescripcion: garantiaDescripcion || '',
-          idPersonalizado,
-          userId: user.uid,
-        }
+
+      const nuevaOrden: Omit<OrdenMantenimiento, 'id'> = {
+        tipo: 'mantenimiento',
+        horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        cliente: clienteSeleccionado!,
+        dispositivo: dispositivoSeleccionado!,
+        contador: mostrarContador && contador ? {
+          ...contador,
+          fechaRegistro: new Date(contador.fechaRegistro)
+        } : undefined, 
+        fechaCreacion: new Date(),
+        tipoMantenimiento,
+        tareasRealizadas: todasLasTareas,
+        piezasUsadas: piezasUsadasFiltradas,
+        
+        // Campos de diagnóstico
+        ...(tipoMantenimiento === 'diagnostico' && {
+          observacionesIniciales,
+          pruebasRealizadas,
+          diagnosticoFinal,
+          contadorMaquina
+        }),
+        
+        garantiaTiempoDesde: garantiaTiempoDesde ? new Date(garantiaTiempoDesde) : null,
+        garantiaTiempoHasta: garantiaTiempoHasta ? new Date(garantiaTiempoHasta) : null,
+        garantiaDescripcion: garantiaDescripcion || '',
+        idPersonalizado,
+        userId: user.uid,
+      }
 
       await crearOrden(nuevaOrden, user.uid)
-      console.log('Orden creada exitosamente con ID:', idPersonalizado)
       onSuccess()
     } catch (error) {
       console.error('Error creando orden:', error)
@@ -355,54 +401,75 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     }
   }
 
-  // Función para obtener el label del tipo de mantenimiento
-  const getTipoMantenimientoLabel = () => {
-    switch (tipoMantenimiento) {
-      case 'preventivo':
-        return 'Preventivo'
-      case 'correctivo':
-        return 'Correctivo'
-      case 'diagnostico':
-        return 'Diagnóstico'
-      default:
-        return tipoMantenimiento
+  // ============================================================================
+  // UTILIDADES
+  // ============================================================================
+  const getTipoMantenimientoLabel = useMemo(() => {
+    const labels = {
+      preventivo: 'Preventivo',
+      correctivo: 'Correctivo',
+      diagnostico: 'Diagnóstico'
     }
-  }
+    return labels[tipoMantenimiento]
+  }, [tipoMantenimiento])
 
-  // Función para obtener el color del badge según tipo
-  const getTipoMantenimientoColor = () => {
-    switch (tipoMantenimiento) {
-      case 'preventivo':
-        return 'bg-green-600/20 text-green-400'
-      case 'correctivo':
-        return 'bg-orange-600/20 text-orange-400'
-      case 'diagnostico':
-        return 'bg-blue-600/20 text-blue-400'
-      default:
-        return 'bg-purple-600/20 text-purple-400'
+  const getTipoMantenimientoColor = useMemo(() => {
+    const colors = {
+      preventivo: 'bg-green-600/20 text-green-400 border-green-500/30',
+      correctivo: 'bg-orange-600/20 text-orange-400 border-orange-500/30',
+      diagnostico: 'bg-blue-600/20 text-blue-400 border-blue-500/30'
     }
-  }
+    return colors[tipoMantenimiento]
+  }, [tipoMantenimiento])
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-gray-400">Debes iniciar sesión para crear órdenes.</p>
-        </div>
-      </div>
-    )
-  }
+  // Memoizar props para componentes
+  const mantenimientoInfoProps = useMemo(() => ({
+    tipoMantenimiento,
+    tareasSeleccionadas,
+    tareasPersonalizadas,
+    piezasUsadas,
+    mostrarTareasPredefinidas,
+    observacionesIniciales,
+    pruebasRealizadas,
+    diagnosticoFinal,
+    onCambiarTipoMantenimiento: setTipoMantenimiento,
+    onToggleTareaPredefinida: handleToggleTareaPredefinida,
+    onSetMostrarTareasPredefinidas: setMostrarTareasPredefinidas,
+    onActualizarTareaPersonalizada: handleActualizarTareaPersonalizada,
+    onAgregarTareaPersonalizada: handleAgregarTareaPersonalizada,
+    onEliminarTareaPersonalizada: handleEliminarTareaPersonalizada,
+    onActualizarPieza: handleActualizarPieza,
+    onAgregarPieza: handleAgregarPieza,
+    onEliminarPieza: handleEliminarPieza,
+    onCambiarObservaciones: setObservacionesIniciales,
+    onCambiarPruebas: setPruebasRealizadas,
+    onCambiarDiagnostico: setDiagnosticoFinal,
+  }), [
+    tipoMantenimiento,
+    tareasSeleccionadas,
+    tareasPersonalizadas,
+    piezasUsadas,
+    mostrarTareasPredefinidas,
+    observacionesIniciales,
+    pruebasRealizadas,
+    diagnosticoFinal,
+    handleToggleTareaPredefinida,
+    handleActualizarTareaPersonalizada,
+    handleAgregarTareaPersonalizada,
+    handleEliminarTareaPersonalizada,
+    handleActualizarPieza,
+    handleAgregarPieza,
+    handleEliminarPieza,
+  ])
 
-  // Renderizar el paso actual
+  // ============================================================================
+  // RENDER - Paso actual
+  // ============================================================================
   const renderCurrentStep = () => {
     switch (currentStep) {
       case 'cliente':
         return (
-          <Section
-            title="Selecciona el Cliente"
-            colorClass="bg-blue-500"
-            isOpen={true}
-          >
+          <Section title="Selecciona el Cliente" colorClass="bg-blue-500" isOpen={true}>
             <ClienteSelector
               clientes={clientes}
               clienteSeleccionado={clienteSeleccionado}
@@ -433,46 +500,14 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
 
       case 'mantenimiento':
         return (
-          <Section
-            title="Información del Mantenimiento"
-            colorClass="bg-purple-500"
-            isOpen={true}
-          >
-            <MantenimientoInfo
-              tipoMantenimiento={tipoMantenimiento}
-              tareasSeleccionadas={tareasSeleccionadas}
-              tareasPersonalizadas={tareasPersonalizadas}
-              piezasUsadas={piezasUsadas}
-              mostrarTareasPredefinidas={mostrarTareasPredefinidas}
-              // Props para diagnóstico
-              observacionesIniciales={observacionesIniciales}
-              pruebasRealizadas={pruebasRealizadas}
-              diagnosticoFinal={diagnosticoFinal}
-              // Handlers
-              onCambiarTipoMantenimiento={setTipoMantenimiento}
-              onToggleTareaPredefinida={handleToggleTareaPredefinida}
-              onSetMostrarTareasPredefinidas={setMostrarTareasPredefinidas}
-              onActualizarTareaPersonalizada={handleActualizarTareaPersonalizada}
-              onAgregarTareaPersonalizada={handleAgregarTareaPersonalizada}
-              onEliminarTareaPersonalizada={handleEliminarTareaPersonalizada}
-              onActualizarPieza={handleActualizarPieza}
-              onAgregarPieza={handleAgregarPieza}
-              onEliminarPieza={handleEliminarPieza}
-              // Handlers para diagnóstico
-              onCambiarObservaciones={setObservacionesIniciales}
-              onCambiarPruebas={setPruebasRealizadas}
-              onCambiarDiagnostico={setDiagnosticoFinal}
-            />
+          <Section title="Información del Mantenimiento" colorClass="bg-purple-500" isOpen={true}>
+            <MantenimientoInfo {...mantenimientoInfoProps} />
           </Section>
         )
 
       case 'contador':
         return (
-          <Section
-            title="Contador del Dispositivo (Opcional)"
-            colorClass="bg-amber-500"
-            isOpen={true}
-          >
+          <Section title="Contador del Dispositivo (Opcional)" colorClass="bg-amber-500" isOpen={true}>
             <ContadorInput
               contador={contador}
               mostrarContador={mostrarContador}
@@ -484,11 +519,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
 
       case 'garantia':
         return (
-          <Section
-            title="Garantía del Trabajo"
-            colorClass="bg-red-500"
-            isOpen={true}
-          >
+          <Section title="Garantía del Trabajo" colorClass="bg-red-500" isOpen={true}>
             <GarantiaInput
               garantiaTiempoDesde={garantiaTiempoDesde}
               garantiaTiempoHasta={garantiaTiempoHasta}
@@ -503,11 +534,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
 
       case 'resumen':
         return (
-          <Section
-            title="Resumen de la Orden"
-            colorClass="bg-indigo-500"
-            isOpen={true}
-          >
+          <Section title="Resumen de la Orden" colorClass="bg-indigo-500" isOpen={true}>
             <div className="space-y-6 text-white">
               {/* Información Principal */}
               <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-4">
@@ -536,21 +563,20 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                 </h3>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-400 text-sm">Tipo:</span>
-                  <span className={`text-base font-medium capitalize px-3 py-1 rounded-full ${getTipoMantenimientoColor()}`}>
-                    {getTipoMantenimientoLabel()}
+                  <span className={`text-base font-medium capitalize px-3 py-1 rounded-full border ${getTipoMantenimientoColor}`}>
+                    {getTipoMantenimientoLabel}
                   </span>
                 </div>
                 
                 {tipoMantenimiento === 'diagnostico' ? (
-                  // Resumen de diagnóstico
-                  <div className="pt-2 border-t border-gray-700 space-y-2">
+                  <div className="pt-2 border-t border-gray-700 space-y-3">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Observaciones iniciales</p>
-                      <p className="text-sm text-gray-300">{observacionesIniciales.substring(0, 100)}{observacionesIniciales.length > 100 ? '...' : ''}</p>
+                      <p className="text-sm text-gray-300 line-clamp-3">{observacionesIniciales}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Diagnóstico final</p>
-                      <p className="text-sm text-gray-300">{diagnosticoFinal.substring(0, 100)}{diagnosticoFinal.length > 100 ? '...' : ''}</p>
+                      <p className="text-sm text-gray-300 line-clamp-3">{diagnosticoFinal}</p>
                     </div>
                     {contadorMaquina !== undefined && (
                       <div>
@@ -560,22 +586,34 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                     )}
                   </div>
                 ) : (
-                  // Resumen de mantenimiento
                   <>
                     <div className="pt-2 border-t border-gray-700">
                       <p className="text-gray-400 text-sm mb-2">Tareas realizadas:</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-2xl font-bold text-purple-400">
-                          {[...tareasSeleccionadas, ...tareasPersonalizadas.filter(t => t.trim())].length}
-                        </span>
-                      </div>
+                      <span className="text-2xl font-bold text-purple-400">
+                        {[...tareasSeleccionadas, ...tareasPersonalizadas.filter(t => t.trim())].length}
+                      </span>
                     </div>
-                    {piezasUsadas.filter(p => p.pieza.trim()).length > 0 && (
+                    {piezasUsadas.filter(p => p?.pieza?.trim()).length > 0 && (
                       <div className="pt-2 border-t border-gray-700">
                         <p className="text-gray-400 text-sm mb-2">Piezas utilizadas:</p>
-                        <span className="text-lg font-medium text-purple-400">
-                          {piezasUsadas.filter(p => p.pieza.trim()).length} piezas
-                        </span>
+                        <div className="space-y-2">
+                          {piezasUsadas
+                            .filter(p => p?.pieza?.trim())
+                            .map((pieza, idx) => (
+                              <div key={idx} className="flex items-center justify-between bg-gray-700/30 px-3 py-2 rounded-lg">
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                  {pieza.tipo === 'predefinida' ? (
+                                    <span className="px-2 py-0.5 bg-green-500/20 text-green-300 rounded text-xs flex-shrink-0">Predef</span>
+                                  ) : (
+                                    <span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-xs flex-shrink-0">Person</span>
+                                  )}
+                                  <span className="text-sm text-white truncate">{pieza.pieza}</span>
+                                </div>
+                                <span className="text-sm font-medium text-gray-300 ml-2 flex-shrink-0">x{pieza.cantidad}</span>
+                              </div>
+                            ))
+                          }
+                        </div>
                       </div>
                     )}
                   </>
@@ -616,6 +654,20 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     }
   }
 
+  // Guard de autenticación
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <p className="text-gray-400">Debes iniciar sesión para crear órdenes.</p>
+        </div>
+      </div>
+    )
+  }
+
+  // ============================================================================
+  // RENDER PRINCIPAL
+  // ============================================================================
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pb-24 sm:pb-8">
       {/* Header */}
@@ -624,7 +676,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
           <div className="flex items-center space-x-2 sm:space-x-4">
             <button 
               onClick={onClose} 
-              className="text-blue-400 hover:text-blue-300 p-2 rounded-lg hover:bg-gray-800 transition-all active:scale-95"
+              className="text-blue-400 hover:text-blue-300 p-2 rounded-lg hover:bg-gray-800 transition-all active:scale-95 touch-manipulation"
               aria-label="Volver"
             >
               <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -634,7 +686,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                 Nueva Orden
               </h1>
               <p className="text-xs sm:text-sm text-gray-400 mt-0.5 truncate">
-                Paso {steps.findIndex(s => s.key === currentStep) + 1} de {steps.length}
+                Paso {STEPS_CONFIG.findIndex(s => s.key === currentStep) + 1} de {STEPS_CONFIG.length}
               </p>
             </div>
           </div>
@@ -642,11 +694,12 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       </div>
 
       <div className="max-w-4xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6">
-        {/* Progress Steps - Versión Desktop */}
+        {/* Progress Steps - Desktop */}
         <div className="hidden lg:block mb-8">
           <div className="flex items-center justify-between">
-            {steps.map((step, index) => {
-              const isCompleted = steps.findIndex(s => s.key === currentStep) > index
+            {STEPS_CONFIG.map((step, index) => {
+              const currentIndex = STEPS_CONFIG.findIndex(s => s.key === currentStep)
+              const isCompleted = currentIndex > index
               const isCurrent = currentStep === step.key
               
               return (
@@ -678,7 +731,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                       {step.description}
                     </span>
                   </div>
-                  {index < steps.length - 1 && (
+                  {index < STEPS_CONFIG.length - 1 && (
                     <div
                       className={`flex-1 h-1 mx-3 rounded transition-all ${
                         isCompleted ? 'bg-green-500' : 'bg-gray-700'
@@ -691,25 +744,25 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
           </div>
         </div>
 
-        {/* Progress Steps - Versión Móvil/Tablet */}
+        {/* Progress Steps - Mobile/Tablet */}
         <div className="lg:hidden mb-6">
           <div className="bg-gray-800 rounded-xl p-4 shadow-lg">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-xl">
-                  {steps[steps.findIndex(s => s.key === currentStep)].icon}
+                  {STEPS_CONFIG[STEPS_CONFIG.findIndex(s => s.key === currentStep)].icon}
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-white">
-                    {steps[steps.findIndex(s => s.key === currentStep)].title}
+                    {STEPS_CONFIG[STEPS_CONFIG.findIndex(s => s.key === currentStep)].title}
                   </h2>
                   <p className="text-xs text-gray-400">
-                    {steps[steps.findIndex(s => s.key === currentStep)].description}
+                    {STEPS_CONFIG[STEPS_CONFIG.findIndex(s => s.key === currentStep)].description}
                   </p>
                 </div>
               </div>
               <span className="text-sm font-semibold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full">
-                {steps.findIndex(s => s.key === currentStep) + 1}/{steps.length}
+                {STEPS_CONFIG.findIndex(s => s.key === currentStep) + 1}/{STEPS_CONFIG.length}
               </span>
             </div>
             
@@ -717,7 +770,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
             <div className="relative h-2 bg-gray-700 rounded-full overflow-hidden">
               <div 
                 className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-500 ease-out"
-                style={{ width: `${((steps.findIndex(s => s.key === currentStep) + 1) / steps.length) * 100}%` }}
+                style={{ width: `${((STEPS_CONFIG.findIndex(s => s.key === currentStep) + 1) / STEPS_CONFIG.length) * 100}%` }}
               >
                 <div className="absolute right-0 top-0 h-full w-8 bg-gradient-to-r from-transparent to-white/30 animate-pulse" />
               </div>
@@ -725,8 +778,9 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
 
             {/* Mini Steps Indicators */}
             <div className="flex justify-between mt-3 px-1">
-              {steps.map((step, index) => {
-                const isCompleted = steps.findIndex(s => s.key === currentStep) > index
+              {STEPS_CONFIG.map((step, index) => {
+                const currentIndex = STEPS_CONFIG.findIndex(s => s.key === currentStep)
+                const isCompleted = currentIndex > index
                 const isCurrent = currentStep === step.key
                 
                 return (
@@ -762,7 +816,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                   type="button"
                   onClick={prevStep}
                   disabled={currentStep === 'cliente'}
-                  className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-gray-300 bg-gray-800 rounded-lg sm:rounded-xl hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 disabled:active:scale-100 shadow-lg sm:shadow-none"
+                  className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-gray-300 bg-gray-800 rounded-lg sm:rounded-xl hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 disabled:active:scale-100 shadow-lg sm:shadow-none touch-manipulation"
                 >
                   <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
                   <span className="hidden sm:inline">Anterior</span>
@@ -775,14 +829,14 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                       type="button"
                       onClick={onClose}
                       disabled={loading}
-                      className="px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-gray-300 bg-gray-800 rounded-lg sm:rounded-xl hover:bg-gray-700 disabled:opacity-50 transition-all active:scale-95 disabled:active:scale-100 shadow-lg sm:shadow-none"
+                      className="px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-gray-300 bg-gray-800 rounded-lg sm:rounded-xl hover:bg-gray-700 disabled:opacity-50 transition-all active:scale-95 disabled:active:scale-100 shadow-lg sm:shadow-none touch-manipulation"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-white bg-gradient-to-r from-green-600 to-green-500 rounded-lg sm:rounded-xl hover:from-green-700 hover:to-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 disabled:active:scale-100 shadow-lg shadow-green-500/30"
+                      className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-white bg-gradient-to-r from-green-600 to-green-500 rounded-lg sm:rounded-xl hover:from-green-700 hover:to-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 disabled:active:scale-100 shadow-lg shadow-green-500/30 touch-manipulation"
                     >
                       {loading ? (
                         <>
@@ -805,7 +859,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                     type="button"
                     onClick={nextStep}
                     disabled={!canProceedToNextStep()}
-                    className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 disabled:active:scale-100 shadow-lg shadow-blue-500/30 flex-1 sm:flex-initial"
+                    className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 disabled:active:scale-100 shadow-lg shadow-blue-500/30 flex-1 sm:flex-initial touch-manipulation"
                   >
                     <span className="hidden sm:inline">Siguiente</span>
                     <span className="sm:hidden">Continuar</span>
@@ -846,6 +900,13 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
           animation: fadeIn 0.3s ease-out;
         }
 
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
         /* Mejora del scroll en móviles */
         @media (max-width: 640px) {
           body {
@@ -861,6 +922,10 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
         /* Mejorar la experiencia táctil */
         button, a, [role="button"] {
           -webkit-tap-highlight-color: transparent;
+        }
+
+        .touch-manipulation {
+          touch-action: manipulation;
         }
       `}</style>
     </div>
