@@ -1,4 +1,5 @@
 //mantenimiento/formulario.tsx
+//Formulario padre
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { OrdenMantenimiento, Cliente, Dispositivo } from '@/types/orden'
@@ -280,28 +281,6 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   }, [])
 
   // ============================================================================
-  // HANDLERS - Piezas (Compatible con PiezasInput optimizado)
-  // ============================================================================
-  const handleActualizarPieza = useCallback((index: number, campo: string, valor: any) => {
-    setPiezasUsadas(prev => {
-      const nuevasPiezas = [...prev]
-      if (!nuevasPiezas[index]) {
-        nuevasPiezas[index] = { pieza: '', cantidad: 1, tipo: 'personalizada' }
-      }
-      nuevasPiezas[index] = { ...nuevasPiezas[index], [campo]: valor }
-      return nuevasPiezas
-    })
-  }, [])
-
-  const handleAgregarPieza = useCallback(() => {
-    setPiezasUsadas(prev => [...prev, { pieza: '', cantidad: 1, tipo: 'personalizada' }])
-  }, [])
-
-  const handleEliminarPieza = useCallback((index: number) => {
-    setPiezasUsadas(prev => prev.filter((_, i) => i !== index))
-  }, [])
-
-  // ============================================================================
   // HANDLERS - Contador
   // ============================================================================
   const handleToggleContador = useCallback(() => {
@@ -423,44 +402,40 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   }, [tipoMantenimiento])
 
   // Memoizar props para componentes
-  const mantenimientoInfoProps = useMemo(() => ({
-    tipoMantenimiento,
-    tareasSeleccionadas,
-    tareasPersonalizadas,
-    piezasUsadas,
-    mostrarTareasPredefinidas,
-    observacionesIniciales,
-    pruebasRealizadas,
-    diagnosticoFinal,
-    onCambiarTipoMantenimiento: setTipoMantenimiento,
-    onToggleTareaPredefinida: handleToggleTareaPredefinida,
-    onSetMostrarTareasPredefinidas: setMostrarTareasPredefinidas,
-    onActualizarTareaPersonalizada: handleActualizarTareaPersonalizada,
-    onAgregarTareaPersonalizada: handleAgregarTareaPersonalizada,
-    onEliminarTareaPersonalizada: handleEliminarTareaPersonalizada,
-    onActualizarPieza: handleActualizarPieza,
-    onAgregarPieza: handleAgregarPieza,
-    onEliminarPieza: handleEliminarPieza,
-    onCambiarObservaciones: setObservacionesIniciales,
-    onCambiarPruebas: setPruebasRealizadas,
-    onCambiarDiagnostico: setDiagnosticoFinal,
-  }), [
-    tipoMantenimiento,
-    tareasSeleccionadas,
-    tareasPersonalizadas,
-    piezasUsadas,
-    mostrarTareasPredefinidas,
-    observacionesIniciales,
-    pruebasRealizadas,
-    diagnosticoFinal,
-    handleToggleTareaPredefinida,
-    handleActualizarTareaPersonalizada,
-    handleAgregarTareaPersonalizada,
-    handleEliminarTareaPersonalizada,
-    handleActualizarPieza,
-    handleAgregarPieza,
-    handleEliminarPieza,
-  ])
+const mantenimientoInfoProps = useMemo(() => ({
+  tipoMantenimiento,
+  tareasSeleccionadas,
+  tareasPersonalizadas,
+  piezasUsadas,
+  setPiezasUsadas,  // ✅ Agregar esto
+  mostrarTareasPredefinidas,
+  observacionesIniciales,
+  pruebasRealizadas,
+  diagnosticoFinal,
+  onCambiarTipoMantenimiento: setTipoMantenimiento,
+  onToggleTareaPredefinida: handleToggleTareaPredefinida,
+  onSetMostrarTareasPredefinidas: setMostrarTareasPredefinidas,
+  onActualizarTareaPersonalizada: handleActualizarTareaPersonalizada,
+  onAgregarTareaPersonalizada: handleAgregarTareaPersonalizada,
+  onEliminarTareaPersonalizada: handleEliminarTareaPersonalizada,
+  // ❌ ELIMINAR: onActualizarPieza, onAgregarPieza, onEliminarPieza
+  onCambiarObservaciones: setObservacionesIniciales,
+  onCambiarPruebas: setPruebasRealizadas,
+  onCambiarDiagnostico: setDiagnosticoFinal,
+}), [
+  tipoMantenimiento,
+  tareasSeleccionadas,
+  tareasPersonalizadas,
+  piezasUsadas,
+  mostrarTareasPredefinidas,
+  observacionesIniciales,
+  pruebasRealizadas,
+  diagnosticoFinal,
+  handleToggleTareaPredefinida,
+  handleActualizarTareaPersonalizada,
+  handleAgregarTareaPersonalizada,
+  handleEliminarTareaPersonalizada,
+])
 
   // ============================================================================
   // RENDER - Paso actual

@@ -4,11 +4,13 @@ import { Settings, Wrench, Zap, Shield, Stethoscope, Package, CheckCircle2, Chev
 import TareasInput from './TareasInput'
 import PiezasInput from './PiezasInput'
 import DiagnosticoInfo from './DiagnosticoInfo'
-import { useMemo, memo, useState } from 'react'
+import { useMemo, memo, useState, SetStateAction, Dispatch } from 'react'
 
 interface Pieza {
   pieza: string
   cantidad: number
+  tipo?: 'predefinida' | 'personalizada'
+  idPredefinida?: string
 }
 
 interface MantenimientoInfoProps {
@@ -16,6 +18,7 @@ interface MantenimientoInfoProps {
   tareasSeleccionadas: string[]
   tareasPersonalizadas: string[]
   piezasUsadas: Pieza[]
+  setPiezasUsadas: Dispatch<SetStateAction<Pieza[]>> 
   mostrarTareasPredefinidas: boolean
   observacionesIniciales?: string
   pruebasRealizadas?: string
@@ -27,9 +30,6 @@ interface MantenimientoInfoProps {
   onActualizarTareaPersonalizada: (index: number, valor: string) => void
   onAgregarTareaPersonalizada: () => void
   onEliminarTareaPersonalizada: (index: number) => void
-  onActualizarPieza: (index: number, campo: string, valor: any) => void
-  onAgregarPieza: () => void
-  onEliminarPieza: (index: number) => void
   onCambiarObservaciones?: (valor: string) => void
   onCambiarPruebas?: (valor: string) => void
   onCambiarDiagnostico?: (valor: string) => void
@@ -138,6 +138,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   tareasSeleccionadas,
   tareasPersonalizadas,
   piezasUsadas,
+  setPiezasUsadas,
   mostrarTareasPredefinidas,
   observacionesIniciales = '',
   pruebasRealizadas = '',
@@ -148,9 +149,6 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   onActualizarTareaPersonalizada,
   onAgregarTareaPersonalizada,
   onEliminarTareaPersonalizada,
-  onActualizarPieza,
-  onAgregarPieza,
-  onEliminarPieza,
   onCambiarObservaciones = () => {},
   onCambiarPruebas = () => {},
   onCambiarDiagnostico = () => {},
@@ -197,12 +195,12 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
     onEliminarTareaPersonalizada
   ])
 
+  // CRÍTICO: Mantener la referencia estable del objeto de props
   const piezasInputProps = useMemo(() => ({
     piezasUsadas,
-    onActualizarPieza,
-    onAgregarPieza,
-    onEliminarPieza
-  }), [piezasUsadas, onActualizarPieza, onAgregarPieza, onEliminarPieza])
+    setPiezasUsadas,
+    error: undefined
+  }), [piezasUsadas])
 
   const diagnosticoProps = useMemo(() => ({
     observacionesIniciales,
@@ -377,7 +375,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                           <p className="text-xs text-gray-400">
                             Registro de piezas y materiales empleados (opcional)
                           </p>
-                          <PiezasInput {...(piezasInputProps as any)} />
+                          <PiezasInput {...piezasInputProps} />
                         </div>
                       )}
                     </div>

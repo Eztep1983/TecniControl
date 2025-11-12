@@ -1,7 +1,7 @@
 // components/forms/PiezasInput.tsx
 'use client'
-import { Plus, Trash2, Package, Wrench, Settings, AlertCircle, Search, X } from 'lucide-react'
-import { useCallback, memo, useState, useEffect, useMemo } from 'react'
+import { Plus, Trash2, Package, Settings, AlertCircle, Search, X, Pencil } from 'lucide-react'
+import { useCallback, memo, useState, useEffect, useMemo, Dispatch, SetStateAction } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { obtenerPiezasPredefinidas, PiezaPredefinida } from '@/lib/configuracionTareasR-helpers'
 import Link from 'next/link'
@@ -15,9 +15,7 @@ interface Pieza {
 
 interface PiezasInputProps {
   piezasUsadas: Pieza[]
-  onActualizarPieza: (index: number, campo: string, valor: any) => void
-  onAgregarPieza: () => void
-  onEliminarPieza: (index: number) => void
+  setPiezasUsadas: Dispatch<SetStateAction<Pieza[]>>
   error?: string
 }
 
@@ -122,9 +120,9 @@ const ItemPiezaPredefinida = memo(({
         }
       `}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         {/* Info de la pieza */}
-        <div className="flex-1 min-w-0 flex items-center gap-3">
+        <div className="flex-1 min-w-0 flex items-center gap-3 w-full sm:w-auto">
           <div className={`
             w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0
             ${estaSeleccionada ? 'bg-green-500/30' : 'bg-gray-700/50'}
@@ -145,21 +143,23 @@ const ItemPiezaPredefinida = memo(({
         </div>
 
         {/* Controles */}
-        {estaSeleccionada ? (
-          <SelectorCantidadPredefinida
-            cantidadActual={cantidad}
-            onCambiarCantidad={onCambiarCantidad}
-            onEliminar={onDeseleccionar}
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={onSeleccionar}
-            className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 active:bg-green-500/40 text-green-300 rounded-lg border border-green-500/30 text-sm font-medium transition-colors touch-manipulation"
-          >
-            Seleccionar
-          </button>
-        )}
+        <div className="w-full sm:w-auto flex justify-end">
+          {estaSeleccionada ? (
+            <SelectorCantidadPredefinida
+              cantidadActual={cantidad}
+              onCambiarCantidad={onCambiarCantidad}
+              onEliminar={onDeseleccionar}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={onSeleccionar}
+              className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 active:bg-green-500/40 text-green-300 rounded-lg border border-green-500/30 text-sm font-medium transition-colors touch-manipulation"
+            >
+              Seleccionar
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -288,7 +288,7 @@ const SeccionPiezasPredefinidas = memo(({
 
       {/* Contador de seleccionadas */}
       {totalSeleccionadas > 0 && (
-        <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
           <span className="text-green-300 text-sm font-medium">
             {totalSeleccionadas} {totalSeleccionadas === 1 ? 'pieza' : 'piezas'} seleccionada{totalSeleccionadas !== 1 ? 's' : ''}
           </span>
@@ -354,10 +354,10 @@ const ItemPiezaPersonalizada = memo(({
 
   return (
     <div className="p-4 bg-purple-500/10 border-2 border-purple-500/30 rounded-lg">
-      <div className="flex items-center gap-3">
-        <div className="flex-1 min-w-0 flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="flex-1 min-w-0 flex items-center gap-3 w-full sm:w-auto">
           <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Wrench className="w-5 h-5 text-purple-300" />
+            <Pencil className="w-5 h-5 text-purple-300" />
           </div>
           <div className="min-w-0 flex-1">
             <input
@@ -372,7 +372,7 @@ const ItemPiezaPersonalizada = memo(({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
           <SelectorCantidadPredefinida
             cantidadActual={pieza.cantidad || 1}
             onCambiarCantidad={handleCambiarCantidad}
@@ -459,7 +459,7 @@ const SeccionPiezasPersonalizadas = memo(({
         <div className="space-y-3">
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-              <Wrench className="w-4 h-4 text-purple-400" />
+              <Pencil className="w-4 h-4 text-purple-400" />
               Nombre de la pieza
             </label>
             <input
@@ -487,7 +487,7 @@ const SeccionPiezasPersonalizadas = memo(({
               <button
                 type="button"
                 onClick={() => setNuevaCantidad(Math.max(1, nuevaCantidad - 1))}
-                className="w-10 h-10 flex items-center justify-center bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-lg text-white transition-colors touch-manipulation"
+                className="w-10 h-10 flex items-center justify-center bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-lg text-white transition-colors touch-manipulation flex-shrink-0"
               >
                 <span className="text-lg font-medium">-</span>
               </button>
@@ -501,13 +501,13 @@ const SeccionPiezasPersonalizadas = memo(({
                 }}
                 min="1"
                 max="999"
-                className="flex-1 bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2.5 text-white text-center focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                className="flex-1 min-w-0 bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2.5 text-white text-center focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               />
               
               <button
                 type="button"
                 onClick={() => setNuevaCantidad(Math.min(999, nuevaCantidad + 1))}
-                className="w-10 h-10 flex items-center justify-center bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-lg text-white transition-colors touch-manipulation"
+                className="w-10 h-10 flex items-center justify-center bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-lg text-white transition-colors touch-manipulation flex-shrink-0"
               >
                 <span className="text-lg font-medium">+</span>
               </button>
@@ -537,7 +537,7 @@ const SeccionPiezasPersonalizadas = memo(({
       {piezasPersonalizadas.length > 0 && (
         <div className="space-y-3">
           <h5 className="text-sm font-medium text-gray-300 flex items-center gap-2">
-            <Wrench className="w-4 h-4 text-purple-400" />
+            <Pencil className="w-4 h-4 text-purple-400" />
             Piezas personalizadas ({piezasPersonalizadas.length})
           </h5>
           
@@ -564,9 +564,7 @@ SeccionPiezasPersonalizadas.displayName = 'SeccionPiezasPersonalizadas'
 // ============================================================================
 const PiezasInput = memo(function PiezasInput({
   piezasUsadas,
-  onActualizarPieza,
-  onAgregarPieza,
-  onEliminarPieza,
+  setPiezasUsadas,
   error
 }: PiezasInputProps) {
   const { user } = useAuth()
@@ -609,49 +607,67 @@ const PiezasInput = memo(function PiezasInput({
     }
   }, [user?.uid])
 
-  // Optimización: agregar pieza directamente sin requestAnimationFrame
+  // ========================================================================
+  // SOLUCIÓN DEFINITIVA: Usar setPiezasUsadas directamente con forma funcional
+  // ========================================================================
+  
   const handleSeleccionarPredefinida = useCallback((pieza: PiezaPredefinida) => {
-    const nuevoIndex = piezasUsadas.length
-    onAgregarPieza()
-    // Batch updates
-    Promise.resolve().then(() => {
-      onActualizarPieza(nuevoIndex, 'pieza', pieza.nombre)
-      onActualizarPieza(nuevoIndex, 'cantidad', 1)
-      onActualizarPieza(nuevoIndex, 'tipo', 'predefinida')
-      onActualizarPieza(nuevoIndex, 'idPredefinida', pieza.id)
-    })
-  }, [onAgregarPieza, onActualizarPieza, piezasUsadas.length])
+    setPiezasUsadas(prev => [
+      ...prev,
+      {
+        pieza: pieza.nombre,
+        cantidad: 1,
+        tipo: 'predefinida' as const,
+        idPredefinida: pieza.id
+      }
+    ])
+  }, [setPiezasUsadas])
 
   const handleDeseleccionarPredefinida = useCallback((idPieza: string) => {
-    const index = piezasUsadas.findIndex(
-      p => p?.tipo === 'predefinida' && p.idPredefinida === idPieza
+    setPiezasUsadas(prev => 
+      prev.filter(p => !(p?.tipo === 'predefinida' && p.idPredefinida === idPieza))
     )
-    if (index !== -1) {
-      onEliminarPieza(index)
-    }
-  }, [piezasUsadas, onEliminarPieza])
+  }, [setPiezasUsadas])
 
   const handleCambiarCantidadPredefinida = useCallback((idPieza: string, cantidad: number) => {
-    const index = piezasUsadas.findIndex(
-      p => p?.tipo === 'predefinida' && p.idPredefinida === idPieza
+    setPiezasUsadas(prev => 
+      prev.map(p => 
+        p?.tipo === 'predefinida' && p.idPredefinida === idPieza
+          ? { ...p, cantidad }
+          : p
+      )
     )
-    if (index !== -1) {
-      onActualizarPieza(index, 'cantidad', cantidad)
-    }
-  }, [piezasUsadas, onActualizarPieza])
+  }, [setPiezasUsadas])
 
   const handleAgregarPersonalizada = useCallback((nombre: string, cantidad: number) => {
-    const nuevoIndex = piezasUsadas.length
-    onAgregarPieza()
-    Promise.resolve().then(() => {
-      onActualizarPieza(nuevoIndex, 'pieza', nombre)
-      onActualizarPieza(nuevoIndex, 'cantidad', cantidad)
-      onActualizarPieza(nuevoIndex, 'tipo', 'personalizada')
-    })
-  }, [onAgregarPieza, onActualizarPieza, piezasUsadas.length])
+    setPiezasUsadas(prev => [
+      ...prev,
+      {
+        pieza: nombre,
+        cantidad: cantidad,
+        tipo: 'personalizada' as const
+      }
+    ])
+  }, [setPiezasUsadas])
+
+  const handleEliminarPieza = useCallback((index: number) => {
+    setPiezasUsadas(prev => prev.filter((_, i) => i !== index))
+  }, [setPiezasUsadas])
+
+  const handleActualizarNombre = useCallback((index: number, nombre: string) => {
+    setPiezasUsadas(prev => 
+      prev.map((p, i) => i === index ? { ...p, pieza: nombre } : p)
+    )
+  }, [setPiezasUsadas])
+
+  const handleActualizarCantidad = useCallback((index: number, cantidad: number) => {
+    setPiezasUsadas(prev => 
+      prev.map((p, i) => i === index ? { ...p, cantidad } : p)
+    )
+  }, [setPiezasUsadas])
 
   // Memoizar contadores y estadísticas
-      const estadisticas = useMemo(() => {
+  const estadisticas = useMemo(() => {
     const predefinidas = piezasUsadas.filter(p => p?.tipo === 'predefinida').length
     const personalizadasConIndex: Array<{ pieza: Pieza, indexReal: number }> = []
     
@@ -692,7 +708,7 @@ const PiezasInput = memo(function PiezasInput({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
             <Package className="w-5 h-5 text-purple-400" />
@@ -706,8 +722,6 @@ const PiezasInput = memo(function PiezasInput({
             </p>
           </div>
         </div>
-        
-
       </div>
 
       {/* Mensajes de error */}
@@ -761,7 +775,7 @@ const PiezasInput = memo(function PiezasInput({
         >
           <div className="flex items-center justify-center gap-2">
             <Package className="w-4 h-4 flex-shrink-0" />
-            <span className="truncate">Predefinidas</span>
+            <span className="truncate">Predef</span>
             {estadisticas.predefinidas > 0 && (
               <span className="px-1.5 py-0.5 bg-green-500/30 rounded-full text-xs font-bold flex-shrink-0">
                 {estadisticas.predefinidas}
@@ -782,8 +796,8 @@ const PiezasInput = memo(function PiezasInput({
           `}
         >
           <div className="flex items-center justify-center gap-2">
-            <Wrench className="w-4 h-4 flex-shrink-0" />
-            <span className="truncate">Personalizadas</span>
+            <Pencil className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Person</span>
             {estadisticas.personalizadas.length > 0 && (
               <span className="px-1.5 py-0.5 bg-purple-500/30 rounded-full text-xs font-bold flex-shrink-0">
                 {estadisticas.personalizadas.length}
@@ -813,32 +827,31 @@ const PiezasInput = memo(function PiezasInput({
             <SeccionPiezasPersonalizadas
               piezasPersonalizadas={estadisticas.personalizadas}
               onAgregar={handleAgregarPersonalizada}
-              onEliminar={onEliminarPieza}
-              onActualizarNombre={(indexReal, nombre) => onActualizarPieza(indexReal, 'pieza', nombre)}
-              onActualizarCantidad={(indexReal, cantidad) => onActualizarPieza(indexReal, 'cantidad', cantidad)}
+              onEliminar={handleEliminarPieza}
+              onActualizarNombre={handleActualizarNombre}
+              onActualizarCantidad={handleActualizarCantidad}
             />
           )}
         </div>
-
       )}
 
-            {/* Resumen de piezas agregadas */}
+      {/* Resumen de piezas agregadas */}
       {estadisticas.total > 0 && (
         <div className="p-3 bg-gray-800/40 border border-gray-700/50 rounded-lg">
-          <div className="flex flex-wrap items-center gap-3 text-sm">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
             <div className="flex items-center gap-2">
-              <Package className="w-4 h-4 text-green-400" />
+              <Package className="w-4 h-4 text-green-400 flex-shrink-0" />
               <span className="text-gray-300">
                 <span className="font-semibold text-white">{estadisticas.predefinidas}</span> predef.
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Wrench className="w-4 h-4 text-purple-400" />
+              <Pencil className="w-4 h-4 text-purple-400 flex-shrink-0" />
               <span className="text-gray-300">
                 <span className="font-semibold text-white">{estadisticas.personalizadas.length}</span> person.
               </span>
             </div>
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center gap-2 sm:ml-auto">
               <span className="text-gray-300">
                 Total: <span className="font-semibold text-white">{estadisticas.total}</span>
               </span>
@@ -846,7 +859,6 @@ const PiezasInput = memo(function PiezasInput({
           </div>
         </div>
       )}
-
     </div>
   )
 })
