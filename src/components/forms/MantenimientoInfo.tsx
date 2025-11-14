@@ -219,9 +219,8 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   ])
 
   return (
-    <div className="bg-gray-800/40 rounded-xl border border-gray-700/50 overflow-hidden">
+    <div className="bg-gray-800/40 rounded-xl border-gray-700/50 overflow-hidden">
       {/* Header */}
-      <div className="px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-700/50 bg-gray-800/60">
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gray-700/50 flex items-center justify-center flex-shrink-0">
             <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
@@ -231,7 +230,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
             <p className="text-xs sm:text-sm text-gray-400 truncate">Selecciona el tipo y completa los detalles</p>
           </div>
         </div>
-      </div>
+
 
       {/* Contenedor con flujo horizontal/vertical según dispositivo */}
       <div className="lg:flex overflow-hidden">

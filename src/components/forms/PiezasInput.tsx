@@ -1,10 +1,45 @@
 // components/forms/PiezasInput.tsx
 'use client'
 import { Plus, Trash2, Package, Settings, AlertCircle, Search, X, Pencil } from 'lucide-react'
-import { useCallback, memo, useState, useEffect, useMemo, Dispatch, SetStateAction } from 'react'
+import { useCallback, memo, useState, useEffect, useMemo, Dispatch, SetStateAction, useRef } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { obtenerPiezasPredefinidas, PiezaPredefinida } from '@/lib/configuracionTareasR-helpers'
 import Link from 'next/link'
+
+// ============================================================================
+// ESTILOS CONSTANTES - Evita recrear strings en cada render
+// ============================================================================
+const ESTILOS = {
+  boton: {
+    base: 'flex items-center justify-center rounded-lg transition-colors touch-manipulation',
+    contador: 'w-9 h-9 bg-gray-700 hover:bg-gray-600 active:bg-gray-500 text-white',
+    contadorGrande: 'w-10 h-10 bg-gray-700 hover:bg-gray-600 active:bg-gray-500 text-white flex-shrink-0',
+    seleccionar: 'px-4 py-2 bg-green-500/20 rounded-lg hover:bg-green-500/30 active:bg-green-500/40 text-green-300 border border-green-500/30 text-sm font-medium',
+    eliminar: 'w-9 h-9 text-red-400 rounded-lg hover:text-red-300 hover:bg-red-500/10',
+    agregar: 'w-full rounded-sm px-4 py-2.5 bg-purple-500/20 hover:bg-purple-500/30 active:bg-purple-500/40 text-purple-300 border border-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2'
+  },
+  input: {
+    cantidad: 'w-16 bg-gray-700 border border-gray-600 rounded-lg px-2 py-2 text-white text-center text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all',
+    cantidadFlex: 'flex-1 min-w-0 bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2.5 text-white text-center focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all',
+    buscar: 'w-full pl-10 pr-10 py-2.5 bg-gray-800/60 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all',
+    texto: 'w-full px-4 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all',
+    transparente: 'w-full bg-transparent border-none text-white font-medium focus:outline-none focus:ring-0 px-0 placeholder-gray-500'
+  },
+  contenedor: {
+    card: 'p-4 rounded-lg border-2 transition-all duration-200',
+    cardPredefinida: (seleccionada: boolean) => 
+      `p-4 rounded-lg border-2 transition-all duration-200 ${seleccionada ? 'bg-green-500/20 border-green-500/50' : 'bg-gray-800/40 border-gray-700/50 active:bg-gray-800/60'}`,
+    cardPersonalizada: 'p-4 bg-purple-500/10 border-2 border-purple-500/30 rounded-lg',
+    icono: (seleccionada: boolean) => 
+      `w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${seleccionada ? 'bg-green-500/30' : 'bg-gray-700/50'}`,
+    iconoPurple: 'w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0'
+  },
+  tab: {
+    activo: 'flex-1 px-3 py-2.5 rounded-md font-medium text-sm transition-all touch-manipulation bg-green-500/20 text-green-300 border border-green-500/30',
+    inactivo: 'flex-1 px-3 py-2.5 rounded-md font-medium text-sm transition-all touch-manipulation text-gray-400 hover:text-gray-300 hover:bg-gray-700/30',
+    activoPurple: 'flex-1 px-3 py-2.5 rounded-md font-medium text-sm transition-all touch-manipulation bg-purple-500/20 text-purple-300 border border-purple-500/30'
+  }
+} as const
 
 interface Pieza {
   pieza: string
@@ -59,7 +94,7 @@ const SelectorCantidadPredefinida = memo(({
       <button
         type="button"
         onClick={handleDecremento}
-        className="w-9 h-9 flex items-center justify-center bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-lg text-white transition-colors touch-manipulation"
+        className={ESTILOS.boton.contador}
         aria-label="Reducir cantidad"
       >
         {cantidadActual === 1 ? <Trash2 className="w-4 h-4" /> : <span className="text-lg font-medium">-</span>}
@@ -71,7 +106,7 @@ const SelectorCantidadPredefinida = memo(({
         onChange={handleInputChange}
         min="1"
         max="999"
-        className="w-16 bg-gray-700 border border-gray-600 rounded-lg px-2 py-2 text-white text-center text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+        className={ESTILOS.input.cantidad}
         aria-label="Cantidad"
       />
       
@@ -79,7 +114,7 @@ const SelectorCantidadPredefinida = memo(({
         type="button"
         onClick={handleIncremento}
         disabled={cantidadActual >= 999}
-        className="w-9 h-9 flex items-center justify-center bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-lg text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed touch-manipulation"
+        className={`${ESTILOS.boton.contador} disabled:opacity-40 disabled:cursor-not-allowed`}
         aria-label="Aumentar cantidad"
       >
         <span className="text-lg font-medium">+</span>
@@ -111,22 +146,10 @@ const ItemPiezaPredefinida = memo(({
   onDeseleccionar: () => void
 }) => {
   return (
-    <div
-      className={`
-        p-4 rounded-lg border-2 transition-all duration-200
-        ${estaSeleccionada 
-          ? 'bg-green-500/20 border-green-500/50' 
-          : 'bg-gray-800/40 border-gray-700/50 active:bg-gray-800/60'
-        }
-      `}
-    >
+    <div className={ESTILOS.contenedor.cardPredefinida(estaSeleccionada)}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        {/* Info de la pieza */}
         <div className="flex-1 min-w-0 flex items-center gap-3 w-full sm:w-auto">
-          <div className={`
-            w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0
-            ${estaSeleccionada ? 'bg-green-500/30' : 'bg-gray-700/50'}
-          `}>
+          <div className={ESTILOS.contenedor.icono(estaSeleccionada)}>
             <Package className={`w-5 h-5 ${estaSeleccionada ? 'text-green-300' : 'text-gray-400'}`} />
           </div>
           
@@ -142,7 +165,6 @@ const ItemPiezaPredefinida = memo(({
           </div>
         </div>
 
-        {/* Controles */}
         <div className="w-full sm:w-auto flex justify-end">
           {estaSeleccionada ? (
             <SelectorCantidadPredefinida
@@ -154,7 +176,7 @@ const ItemPiezaPredefinida = memo(({
             <button
               type="button"
               onClick={onSeleccionar}
-              className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 active:bg-green-500/40 text-green-300 rounded-lg border border-green-500/30 text-sm font-medium transition-colors touch-manipulation"
+              className={ESTILOS.boton.seleccionar}
             >
               Seleccionar
             </button>
@@ -192,13 +214,17 @@ const SeccionPiezasPredefinidas = memo(({
   const [busqueda, setBusqueda] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState<string>('todas')
 
-  // Memoizar categorías únicas
+  // OPTIMIZACIÓN: Usar useRef para evitar recrear el array en cada render
+  const busquedaLowerRef = useRef('')
+  busquedaLowerRef.current = busqueda.toLowerCase()
+
+  // OPTIMIZACIÓN: Memoizar categorías únicas
   const categorias = useMemo(() => 
     Array.from(new Set(piezasPredefinidas.map(p => p.categoria || 'General'))),
     [piezasPredefinidas]
   )
 
-  // Memoizar mapa de piezas seleccionadas para búsqueda O(1)
+  // OPTIMIZACIÓN: Crear map de seleccionadas solo cuando cambia piezasUsadas
   const piezasSeleccionadasMap = useMemo(() => {
     const map = new Map<string, { cantidad: number, index: number }>()
     piezasUsadas.forEach((pieza, index) => {
@@ -209,22 +235,31 @@ const SeccionPiezasPredefinidas = memo(({
     return map
   }, [piezasUsadas])
 
-  // Memoizar piezas filtradas
+  // OPTIMIZACIÓN: Filtrado más eficiente
   const piezasFiltradas = useMemo(() => {
-    const busquedaLower = busqueda.toLowerCase()
+    if (!busqueda && categoriaFiltro === 'todas') {
+      return piezasPredefinidas
+    }
+
+    const busquedaLower = busquedaLowerRef.current
+    
     return piezasPredefinidas.filter(pieza => {
-      const matchBusqueda = !busqueda || pieza.nombre.toLowerCase().includes(busquedaLower)
-      const matchCategoria = categoriaFiltro === 'todas' || pieza.categoria === categoriaFiltro
-      return matchBusqueda && matchCategoria
+      if (busqueda && !pieza.nombre.toLowerCase().includes(busquedaLower)) {
+        return false
+      }
+      if (categoriaFiltro !== 'todas' && pieza.categoria !== categoriaFiltro) {
+        return false
+      }
+      return true
     })
   }, [piezasPredefinidas, busqueda, categoriaFiltro])
 
   const totalSeleccionadas = piezasSeleccionadasMap.size
 
+  // OPTIMIZACIÓN: Limpiar todo de forma más eficiente
   const handleLimpiarTodo = useCallback(() => {
-    Array.from(piezasSeleccionadasMap.keys()).forEach(id => {
-      onDeseleccionar(id)
-    })
+    const ids = Array.from(piezasSeleccionadasMap.keys())
+    ids.forEach(onDeseleccionar)
   }, [piezasSeleccionadasMap, onDeseleccionar])
 
   if (piezasPredefinidas.length === 0) {
@@ -259,7 +294,7 @@ const SeccionPiezasPredefinidas = memo(({
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder="Buscar piezas..."
-            className="w-full pl-10 pr-10 py-2.5 bg-gray-800/60 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+            className={ESTILOS.input.buscar}
           />
           {busqueda && (
             <button
@@ -353,10 +388,10 @@ const ItemPiezaPersonalizada = memo(({
   }, [onActualizarCantidad])
 
   return (
-    <div className="p-4 bg-purple-500/10 border-2 border-purple-500/30 rounded-lg">
+    <div className={ESTILOS.contenedor.cardPersonalizada}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <div className="flex-1 min-w-0 flex items-center gap-3 w-full sm:w-auto">
-          <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className={ESTILOS.contenedor.iconoPurple}>
             <Pencil className="w-5 h-5 text-purple-300" />
           </div>
           <div className="min-w-0 flex-1">
@@ -364,7 +399,7 @@ const ItemPiezaPersonalizada = memo(({
               type="text"
               value={pieza.pieza || ''}
               onChange={(e) => onActualizarNombre(e.target.value.slice(0, 100))}
-              className="w-full bg-transparent border-none text-white font-medium focus:outline-none focus:ring-0 px-0 placeholder-gray-500"
+              className={ESTILOS.input.transparente}
               placeholder="Nombre de la pieza"
               maxLength={100}
             />
@@ -382,7 +417,7 @@ const ItemPiezaPersonalizada = memo(({
           <button
             type="button"
             onClick={onEliminar}
-            className="w-9 h-9 flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors touch-manipulation"
+            className={ESTILOS.boton.eliminar}
             aria-label="Eliminar pieza"
           >
             <Trash2 className="w-4 h-4" />
@@ -471,7 +506,7 @@ const SeccionPiezasPersonalizadas = memo(({
               }}
               onKeyPress={handleKeyPress}
               placeholder="Ej: Tornillo especial..."
-              className="w-full px-4 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+              className={ESTILOS.input.texto}
               maxLength={100}
             />
             <span className="text-xs text-gray-500">
@@ -487,7 +522,7 @@ const SeccionPiezasPersonalizadas = memo(({
               <button
                 type="button"
                 onClick={() => setNuevaCantidad(Math.max(1, nuevaCantidad - 1))}
-                className="w-10 h-10 flex items-center justify-center bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-lg text-white transition-colors touch-manipulation flex-shrink-0"
+                className={ESTILOS.boton.contadorGrande}
               >
                 <span className="text-lg font-medium">-</span>
               </button>
@@ -501,13 +536,13 @@ const SeccionPiezasPersonalizadas = memo(({
                 }}
                 min="1"
                 max="999"
-                className="flex-1 min-w-0 bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2.5 text-white text-center focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                className={ESTILOS.input.cantidadFlex}
               />
               
               <button
                 type="button"
                 onClick={() => setNuevaCantidad(Math.min(999, nuevaCantidad + 1))}
-                className="w-10 h-10 flex items-center justify-center bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-lg text-white transition-colors touch-manipulation flex-shrink-0"
+                className={ESTILOS.boton.contadorGrande}
               >
                 <span className="text-lg font-medium">+</span>
               </button>
@@ -525,7 +560,7 @@ const SeccionPiezasPersonalizadas = memo(({
             type="button"
             onClick={handleAgregar}
             disabled={!nuevoNombre.trim()}
-            className="w-full px-4 py-2.5 bg-purple-500/20 hover:bg-purple-500/30 active:bg-purple-500/40 text-purple-300 rounded-lg border border-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors touch-manipulation flex items-center justify-center gap-2"
+            className={ESTILOS.boton.agregar}
           >
             <Plus className="w-5 h-5" />
             Agregar Pieza
@@ -608,7 +643,7 @@ const PiezasInput = memo(function PiezasInput({
   }, [user?.uid])
 
   // ========================================================================
-  // SOLUCIÓN DEFINITIVA: Usar setPiezasUsadas directamente con forma funcional
+  // CALLBACKS OPTIMIZADOS
   // ========================================================================
   
   const handleSeleccionarPredefinida = useCallback((pieza: PiezaPredefinida) => {
@@ -666,31 +701,50 @@ const PiezasInput = memo(function PiezasInput({
     )
   }, [setPiezasUsadas])
 
-  // Memoizar contadores y estadísticas
+  // ========================================================================
+  // OPTIMIZACIÓN: Cálculo de estadísticas en una sola pasada O(n)
+  // ========================================================================
   const estadisticas = useMemo(() => {
-    const predefinidas = piezasUsadas.filter(p => p?.tipo === 'predefinida').length
+    let predefinidas = 0
     const personalizadasConIndex: Array<{ pieza: Pieza, indexReal: number }> = []
+    const nombresLower = new Set<string>()
     
+    // Validaciones
+    let piezasDuplicadas = false
+    let piezasSinNombre = false
+    let cantidadesInvalidas = false
+
+    // Una sola iteración para todo
     piezasUsadas.forEach((pieza, index) => {
-      if (pieza?.tipo === 'personalizada') {
+      if (!pieza) return
+
+      // Contar tipos
+      if (pieza.tipo === 'predefinida') {
+        predefinidas++
+      } else if (pieza.tipo === 'personalizada') {
         personalizadasConIndex.push({ pieza, indexReal: index })
       }
+
+      // Validar nombre
+      const nombreTrim = pieza.pieza?.trim()
+      if (!nombreTrim) {
+        piezasSinNombre = true
+      } else {
+        const nombreLower = nombreTrim.toLowerCase()
+        if (nombresLower.has(nombreLower)) {
+          piezasDuplicadas = true
+        }
+        nombresLower.add(nombreLower)
+      }
+
+      // Validar cantidad
+      if (!pieza.cantidad || pieza.cantidad < 1 || pieza.cantidad > 999) {
+        cantidadesInvalidas = true
+      }
     })
-    
+
     const total = piezasUsadas.length
-
-    // Validaciones
-    const piezasDuplicadas = piezasUsadas.some((pieza, index) => {
-      if (!pieza?.pieza?.trim()) return false
-      return piezasUsadas.findIndex((p, i) => 
-        i !== index && p?.pieza?.toLowerCase() === pieza?.pieza?.toLowerCase()
-      ) !== -1
-    })
-
-    const piezasSinNombre = piezasUsadas.some(pieza => !pieza?.pieza?.trim())
-    const cantidadesInvalidas = piezasUsadas.some(pieza => 
-      !pieza?.cantidad || pieza.cantidad < 1 || pieza.cantidad > 999
-    )
+    const tieneErrores = piezasDuplicadas || piezasSinNombre || cantidadesInvalidas
 
     return {
       predefinidas,
@@ -701,7 +755,7 @@ const PiezasInput = memo(function PiezasInput({
         piezasSinNombre,
         cantidadesInvalidas
       },
-      tieneErrores: piezasDuplicadas || piezasSinNombre || cantidadesInvalidas
+      tieneErrores
     }
   }, [piezasUsadas])
 
@@ -710,7 +764,7 @@ const PiezasInput = memo(function PiezasInput({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className={ESTILOS.contenedor.iconoPurple}>
             <Package className="w-5 h-5 text-purple-400" />
           </div>
           <div className="min-w-0">
@@ -765,13 +819,7 @@ const PiezasInput = memo(function PiezasInput({
         <button
           type="button"
           onClick={() => setTabActiva('predefinidas')}
-          className={`
-            flex-1 px-3 py-2.5 rounded-md font-medium text-sm transition-all touch-manipulation
-            ${tabActiva === 'predefinidas'
-              ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-              : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/30'
-            }
-          `}
+          className={tabActiva === 'predefinidas' ? ESTILOS.tab.activo : ESTILOS.tab.inactivo}
         >
           <div className="flex items-center justify-center gap-2">
             <Package className="w-4 h-4 flex-shrink-0" />
@@ -787,13 +835,7 @@ const PiezasInput = memo(function PiezasInput({
         <button
           type="button"
           onClick={() => setTabActiva('personalizadas')}
-          className={`
-            flex-1 px-3 py-2.5 rounded-md font-medium text-sm transition-all touch-manipulation
-            ${tabActiva === 'personalizadas'
-              ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-              : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/30'
-            }
-          `}
+          className={tabActiva === 'personalizadas' ? ESTILOS.tab.activoPurple : ESTILOS.tab.inactivo}
         >
           <div className="flex items-center justify-center gap-2">
             <Pencil className="w-4 h-4 flex-shrink-0" />

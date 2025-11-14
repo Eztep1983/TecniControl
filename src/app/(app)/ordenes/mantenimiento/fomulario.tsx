@@ -312,73 +312,116 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   // ============================================================================
   // SUBMIT
   // ============================================================================
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!user?.uid) {
-      alert('Usuario no autenticado')
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      const proximoNumero = await obtenerProximoNumeroOrden('mantenimiento')
-      const idPersonalizado = formatearIdOrden(proximoNumero, 'mantenimiento')
-
-      const todasLasTareas = [
-        ...tareasSeleccionadas,
-        ...tareasPersonalizadas.filter(t => t.trim())
-      ]
-
-      // Filtrar y limpiar piezas antes de guardar
-      // IMPORTANTE: Removemos tipo e idPredefinida para la base de datos
-      const piezasUsadasFiltradas = piezasUsadas
-        .filter(pieza => pieza?.pieza?.trim())
-        .map(pieza => ({
-          pieza: pieza.pieza,
-          cantidad: pieza.cantidad || 1
-          // No incluir tipo ni idPredefinida
-        }))
-
-      const nuevaOrden: Omit<OrdenMantenimiento, 'id'> = {
-        tipo: 'mantenimiento',
-        horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        cliente: clienteSeleccionado!,
-        dispositivo: dispositivoSeleccionado!,
-        contador: mostrarContador && contador ? {
-          ...contador,
-          fechaRegistro: new Date(contador.fechaRegistro)
-        } : undefined, 
-        fechaCreacion: new Date(),
-        tipoMantenimiento,
-        tareasRealizadas: todasLasTareas,
-        piezasUsadas: piezasUsadasFiltradas,
-        
-        // Campos de diagnóstico
-        ...(tipoMantenimiento === 'diagnostico' && {
-          observacionesIniciales,
-          pruebasRealizadas,
-          diagnosticoFinal,
-          contadorMaquina
-        }),
-        
-        garantiaTiempoDesde: garantiaTiempoDesde ? new Date(garantiaTiempoDesde) : null,
-        garantiaTiempoHasta: garantiaTiempoHasta ? new Date(garantiaTiempoHasta) : null,
-        garantiaDescripcion: garantiaDescripcion || '',
-        idPersonalizado,
-        userId: user.uid,
-      }
-
-      await crearOrden(nuevaOrden, user.uid)
-      onSuccess()
-    } catch (error) {
-      console.error('Error creando orden:', error)
-      alert('Error al crear la orden: ' + (error instanceof Error ? error.message : 'Error desconocido'))
-    } finally {
-      setLoading(false)
-    }
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  
+  if (!user?.uid) {
+    alert('Usuario no autenticado')
+    return
   }
+
+  setLoading(true)
+
+  try {
+    const proximoNumero = await obtenerProximoNumeroOrden('mantenimiento')
+    const idPersonalizado = formatearIdOrden(proximoNumero, 'mantenimiento')
+
+    const todasLasTareas = [
+      ...tareasSeleccionadas,
+      ...tareasPersonalizadas.filter(t => t.trim())
+    ]
+
+    // Filtrar y limpiar piezas antes de guardar
+    const piezasUsadasFiltradas = piezasUsadas
+      .filter(pieza => pieza?.pieza?.trim())
+      .map(pieza => ({
+        pieza: pieza.pieza,
+        cantidad: pieza.cantidad || 1
+      }))
+
+    // ✅ PREPARAR CONTADOR CORRECTAMENTE - EVITAR undefined
+    let contadorParaGuardar: any = null
+    
+    if (mostrarContador && contador) {
+      // Solo incluir contador si está activo Y tiene datos válidos
+      contadorParaGuardar = {
+        tipo: contador.tipo,
+        valor: contador.valor || 0,
+        fechaRegistro: new Date(contador.fechaRegistro)
+      }
+      
+      // Solo agregar campos opcionales si tienen valor
+      if (contador.unidadPersonalizada && contador.unidadPersonalizada.trim()) {
+        contadorParaGuardar.unidadPersonalizada = contador.unidadPersonalizada.trim()
+      }
+      
+      if (contador.notas && contador.notas.trim()) {
+        contadorParaGuardar.notas = contador.notas.trim()
+      }
+    }
+
+    // ✅ CREAR OBJETO BASE SIN CAMPOS UNDEFINED
+    const nuevaOrden: any = {
+      tipo: 'mantenimiento',
+      horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      cliente: clienteSeleccionado!,
+      dispositivo: dispositivoSeleccionado!,
+      fechaCreacion: new Date(),
+      tipoMantenimiento,
+      tareasRealizadas: todasLasTareas,
+      piezasUsadas: piezasUsadasFiltradas,
+      idPersonalizado,
+      userId: user.uid,
+    }
+
+    // ✅ SOLO AGREGAR CONTADOR SI EXISTE
+    if (contadorParaGuardar) {
+      nuevaOrden.contador = contadorParaGuardar
+    }
+    
+    // ✅ Campos de diagnóstico - Solo si es diagnóstico
+    if (tipoMantenimiento === 'diagnostico') {
+      nuevaOrden.observacionesIniciales = observacionesIniciales.trim()
+      nuevaOrden.pruebasRealizadas = pruebasRealizadas.trim()
+      nuevaOrden.diagnosticoFinal = diagnosticoFinal.trim()
+      
+      // Solo agregar contadorMaquina si tiene valor
+      if (contadorMaquina !== undefined && contadorMaquina !== null) {
+        nuevaOrden.contadorMaquina = contadorMaquina
+      }
+    }
+    
+    // ✅ Garantía - Solo agregar si tienen valores
+    if (garantiaTiempoDesde) {
+      nuevaOrden.garantiaTiempoDesde = new Date(garantiaTiempoDesde)
+    }
+    
+    if (garantiaTiempoHasta) {
+      nuevaOrden.garantiaTiempoHasta = new Date(garantiaTiempoHasta)
+    }
+    
+    if (garantiaDescripcion && garantiaDescripcion.trim()) {
+      nuevaOrden.garantiaDescripcion = garantiaDescripcion.trim()
+    }
+
+    // ✅ VALIDACIÓN FINAL: Eliminar cualquier campo undefined
+    Object.keys(nuevaOrden).forEach(key => {
+      if (nuevaOrden[key] === undefined) {
+        delete nuevaOrden[key]
+      }
+    })
+
+    console.log('📦 Datos a guardar:', nuevaOrden) // Para debug
+
+    await crearOrden(nuevaOrden, user.uid)
+    onSuccess()
+  } catch (error) {
+    console.error('Error creando orden:', error)
+    alert('Error al crear la orden: ' + (error instanceof Error ? error.message : 'Error desconocido'))
+  } finally {
+    setLoading(false)
+  }
+}
 
   // ============================================================================
   // UTILIDADES
@@ -418,7 +461,6 @@ const mantenimientoInfoProps = useMemo(() => ({
   onActualizarTareaPersonalizada: handleActualizarTareaPersonalizada,
   onAgregarTareaPersonalizada: handleAgregarTareaPersonalizada,
   onEliminarTareaPersonalizada: handleEliminarTareaPersonalizada,
-  // ❌ ELIMINAR: onActualizarPieza, onAgregarPieza, onEliminarPieza
   onCambiarObservaciones: setObservacionesIniciales,
   onCambiarPruebas: setPruebasRealizadas,
   onCambiarDiagnostico: setDiagnosticoFinal,
