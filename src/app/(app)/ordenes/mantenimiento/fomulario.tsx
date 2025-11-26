@@ -87,7 +87,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   const [busquedaCliente, setBusquedaCliente] = useState('')
   
   // Estado para mantenimiento
-  const [tipoMantenimiento, setTipoMantenimiento] = useState<'preventivo' | 'correctivo' | 'diagnostico'>('preventivo')
+const [tipoMantenimiento, setTipoMantenimiento] = useState<'preventivo' | 'correctivo' | 'diagnostico' | ''>('')
   const [tareasPersonalizadas, setTareasPersonalizadas] = useState<string[]>([''])
   const [tareasSeleccionadas, setTareasSeleccionadas] = useState<string[]>([])
   const [mostrarTareasPredefinidas, setMostrarTareasPredefinidas] = useState(true)
@@ -411,7 +411,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       }
     })
 
-    console.log('📦 Datos a guardar:', nuevaOrden) // Para debug
+    console.log('Datos a guardar:', nuevaOrden) // Para debug
 
     await crearOrden(nuevaOrden, user.uid)
     onSuccess()
@@ -426,31 +426,34 @@ const handleSubmit = async (e: React.FormEvent) => {
   // ============================================================================
   // UTILIDADES
   // ============================================================================
-  const getTipoMantenimientoLabel = useMemo(() => {
-    const labels = {
-      preventivo: 'Preventivo',
-      correctivo: 'Correctivo',
-      diagnostico: 'Diagnóstico'
-    }
-    return labels[tipoMantenimiento]
-  }, [tipoMantenimiento])
+const getTipoMantenimientoLabel = useMemo(() => {
+  const labels = {
+    preventivo: 'Preventivo',
+    correctivo: 'Correctivo',
+    diagnostico: 'Diagnóstico',
+    '': 'Sin especificar'
+  } as const
+  
+  return labels[tipoMantenimiento]
+}, [tipoMantenimiento])
 
-  const getTipoMantenimientoColor = useMemo(() => {
-    const colors = {
-      preventivo: 'bg-green-600/20 text-green-400 border-green-500/30',
-      correctivo: 'bg-orange-600/20 text-orange-400 border-orange-500/30',
-      diagnostico: 'bg-blue-600/20 text-blue-400 border-blue-500/30'
-    }
-    return colors[tipoMantenimiento]
-  }, [tipoMantenimiento])
-
+const getTipoMantenimientoColor = useMemo(() => {
+  const colors = {
+    preventivo: 'bg-green-600/20 text-green-400 border-green-500/30',
+    correctivo: 'bg-orange-600/20 text-orange-400 border-orange-500/30',
+    diagnostico: 'bg-blue-600/20 text-blue-400 border-blue-500/30',
+    '': 'bg-gray-600/20 text-gray-400 border-gray-500/30'
+  } as const
+  
+  return colors[tipoMantenimiento]
+}, [tipoMantenimiento])
   // Memoizar props para componentes
 const mantenimientoInfoProps = useMemo(() => ({
   tipoMantenimiento,
   tareasSeleccionadas,
   tareasPersonalizadas,
   piezasUsadas,
-  setPiezasUsadas,  // ✅ Agregar esto
+  setPiezasUsadas,  
   mostrarTareasPredefinidas,
   observacionesIniciales,
   pruebasRealizadas,
@@ -517,9 +520,7 @@ const mantenimientoInfoProps = useMemo(() => ({
 
       case 'mantenimiento':
         return (
-          <Section title="Información del Mantenimiento" colorClass="bg-purple-500" isOpen={true}>
             <MantenimientoInfo {...mantenimientoInfoProps} />
-          </Section>
         )
 
       case 'contador':

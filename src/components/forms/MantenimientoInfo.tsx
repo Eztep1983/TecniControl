@@ -1,10 +1,10 @@
 // components/forms/MantenimientoInfo.tsx
 'use client'
-import { Settings, Wrench, Zap, Shield, Stethoscope, Package, CheckCircle2, ChevronRight } from 'lucide-react'
+import { Settings, ArrowUp, Wrench, Zap, Shield, Stethoscope, Package, CheckCircle2, ChevronRight } from 'lucide-react'
 import TareasInput from './TareasInput'
 import PiezasInput from './PiezasInput'
 import DiagnosticoInfo from './DiagnosticoInfo'
-import { useMemo, memo, useState, SetStateAction, Dispatch } from 'react'
+import { useMemo, memo, useState, SetStateAction, Dispatch, useCallback } from 'react'
 
 interface Pieza {
   pieza: string
@@ -14,7 +14,7 @@ interface Pieza {
 }
 
 interface MantenimientoInfoProps {
-  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico'
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | ''
   tareasSeleccionadas: string[]
   tareasPersonalizadas: string[]
   piezasUsadas: Pieza[]
@@ -24,7 +24,7 @@ interface MantenimientoInfoProps {
   pruebasRealizadas?: string
   diagnosticoFinal?: string
   
-  onCambiarTipoMantenimiento: (tipo: 'preventivo' | 'correctivo' | 'diagnostico') => void
+  onCambiarTipoMantenimiento: (tipo: 'preventivo' | 'correctivo' | 'diagnostico' | '') => void
   onToggleTareaPredefinida: (tarea: string) => void
   onSetMostrarTareasPredefinidas: (mostrar: boolean) => void
   onActualizarTareaPersonalizada: (index: number, valor: string) => void
@@ -98,33 +98,46 @@ const TipoMantenimientoCard = memo(({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full text-left rounded-lg sm:rounded-xl border-2 transition-all duration-300 group ${
-        esSeleccionado 
-          ? `${config.colorBorder} ${config.colorBg} ring-2 sm:ring-4 ${config.colorRing} scale-[1.01] sm:scale-[1.02]` 
-          : `border-gray-700 bg-gray-800/50 ${config.colorHover} active:scale-[0.98]`
-      }`}
+      className={`
+        w-full text-left rounded-xl border-2 transition-all duration-300 group
+        touch-manipulation
+        ${esSeleccionado 
+          ? `${config.colorBorder} ${config.colorBg} ring-2 sm:ring-4 ${config.colorRing} scale-[1.02]` 
+          : `border-gray-700/50 bg-gray-800/30 ${config.colorHover} hover:scale-[1.01] active:scale-[0.98]`
+        }
+      `}
     >
-      <div className="p-3 sm:p-4">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
-            esSeleccionado ? config.colorIcon : 'bg-gray-700/50 text-gray-500 group-hover:bg-gray-700 group-hover:text-gray-400'
-          }`}>
-            <Icono className="w-5 h-5 sm:w-6 sm:h-6" />
+      <div className="p-4">
+        <div className="flex items-center gap-3">
+          <div className={`
+            w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300
+            ${esSeleccionado ? config.colorIcon : 'bg-gray-700/30 text-gray-500 group-hover:bg-gray-700/50 group-hover:text-gray-400'}
+          `}>
+            <Icono className="w-6 h-6" />
           </div>
+          
           <div className="flex-1 min-w-0">
-            <div className={`text-sm sm:text-base font-semibold transition-colors flex items-center gap-1.5 sm:gap-2 ${
-              esSeleccionado ? config.colorText : 'text-gray-300 group-hover:text-white'
-            }`}>
+            <div className={`
+              text-base font-semibold transition-colors flex items-center gap-2
+              ${esSeleccionado ? config.colorText : 'text-gray-300 group-hover:text-white'}
+            `}>
               <span className="truncate">{config.nombre}</span>
-              {tieneContenido && <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />}
+              {tieneContenido && (
+                <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+              )}
             </div>
-            <p className="text-xs sm:text-sm text-gray-400 mt-0.5 truncate">
+            <p className="text-sm text-gray-400 mt-0.5 truncate">
               {config.descripcion}
             </p>
           </div>
-          <ChevronRight className={`w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300 flex-shrink-0 ${
-            esSeleccionado ? `${config.colorText} rotate-0` : 'text-gray-600 -rotate-90 group-hover:rotate-0 group-hover:text-gray-400'
-          }`} />
+          
+          <ChevronRight className={`
+            w-5 h-5 transition-all duration-300 flex-shrink-0
+            ${esSeleccionado 
+              ? `${config.colorText} rotate-0` 
+              : 'text-gray-600 -rotate-90 group-hover:rotate-0 group-hover:text-gray-400'
+            }
+          `} />
         </div>
       </div>
     </button>
@@ -156,34 +169,47 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   
   const [tabActiva, setTabActiva] = useState<'tareas' | 'piezas'>('tareas')
 
-  // Determinar si hay tipo seleccionado
-  const hasTipoSeleccionado = ['preventivo', 'correctivo', 'diagnostico'].includes(tipoMantenimiento)
+  // Estados derivados optimizados
+  const hasTipoSeleccionado = useMemo(
+    () => tipoMantenimiento !== '' && ['preventivo', 'correctivo', 'diagnostico'].includes(tipoMantenimiento),
+    [tipoMantenimiento]
+  )
 
-  // Verificar si hay contenido para cada tipo
-  const tieneTareasPreventivo = tipoMantenimiento === 'preventivo' && 
-    (tareasSeleccionadas.length > 0 || tareasPersonalizadas.some(t => t.trim() !== ''))
-  
-  const tieneTareasCorrectivo = tipoMantenimiento === 'correctivo' && 
-    (tareasSeleccionadas.length > 0 || tareasPersonalizadas.some(t => t.trim() !== ''))
-  
-  const tieneDiagnostico = tipoMantenimiento === 'diagnostico' && 
-    observacionesIniciales.trim() !== '' && 
-    pruebasRealizadas.trim() !== '' && 
-    diagnosticoFinal.trim() !== ''
+  const contenidoPorTipo = useMemo(() => ({
+    preventivo: tipoMantenimiento === 'preventivo' && (tareasSeleccionadas.length > 0 || tareasPersonalizadas.some(t => t.trim())),
+    correctivo: tipoMantenimiento === 'correctivo' && (tareasSeleccionadas.length > 0 || tareasPersonalizadas.some(t => t.trim())),
+    diagnostico: tipoMantenimiento === 'diagnostico' && Boolean(observacionesIniciales.trim() && pruebasRealizadas.trim() && diagnosticoFinal.trim())
+  }), [tipoMantenimiento, tareasSeleccionadas, tareasPersonalizadas, observacionesIniciales, pruebasRealizadas, diagnosticoFinal])
 
-  const config = useMemo(() => TIPO_CONFIG[tipoMantenimiento], [tipoMantenimiento])
+  const config = useMemo(() => 
+    tipoMantenimiento ? TIPO_CONFIG[tipoMantenimiento as keyof typeof TIPO_CONFIG] : null
+  , [tipoMantenimiento])
 
-  const tareasInputProps = useMemo(() => ({
-    tipoMantenimiento,
-    tareasSeleccionadas,
-    tareasPersonalizadas,
-    mostrarTareasPredefinidas,
-    setMostrarTareasPredefinidas: onSetMostrarTareasPredefinidas,
-    onToggleTareaPredefinida,
-    onActualizarTareaPersonalizada,
-    onAgregarTareaPersonalizada,
-    onEliminarTareaPersonalizada
-  }), [
+  // Callbacks memoizados
+  const handleVolverMobile = useCallback(() => {
+    onCambiarTipoMantenimiento('')
+  }, [onCambiarTipoMantenimiento])
+
+  const handleCambiarTab = useCallback((tab: 'tareas' | 'piezas') => {
+    setTabActiva(tab)
+  }, [])
+
+  // Props memoizadas
+  const tareasInputProps = useMemo(() => {
+    if (tipoMantenimiento === '') return null
+    
+    return {
+      tipoMantenimiento: tipoMantenimiento as 'preventivo' | 'correctivo' | 'diagnostico',
+      tareasSeleccionadas,
+      tareasPersonalizadas,
+      mostrarTareasPredefinidas,
+      setMostrarTareasPredefinidas: onSetMostrarTareasPredefinidas,
+      onToggleTareaPredefinida,
+      onActualizarTareaPersonalizada,
+      onAgregarTareaPersonalizada,
+      onEliminarTareaPersonalizada
+    }
+  }, [
     tipoMantenimiento,
     tareasSeleccionadas,
     tareasPersonalizadas,
@@ -195,12 +221,11 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
     onEliminarTareaPersonalizada
   ])
 
-  // CRÍTICO: Mantener la referencia estable del objeto de props
   const piezasInputProps = useMemo(() => ({
     piezasUsadas,
     setPiezasUsadas,
     error: undefined
-  }), [piezasUsadas])
+  }), [piezasUsadas, setPiezasUsadas])
 
   const diagnosticoProps = useMemo(() => ({
     observacionesIniciales,
@@ -219,120 +244,128 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   ])
 
   return (
-    <div className="bg-gray-800/40 rounded-xl border-gray-700/50 overflow-hidden">
-      {/* Header */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gray-700/50 flex items-center justify-center flex-shrink-0">
-            <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+    <div className="bg-gray-800/40 rounded-xl border border-gray-700/50 overflow-hidden">
+      {/* Header Principal */}
+      <div className="p-5 border-b border-gray-700/50">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-gray-700/50 flex items-center justify-center flex-shrink-0">
+            <Settings className="w-5 h-5 text-gray-400" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-sm sm:text-base font-semibold text-white truncate">Información del Trabajo</h3>
-            <p className="text-xs sm:text-sm text-gray-400 truncate">Selecciona el tipo y completa los detalles</p>
+            <h3 className="text-base font-semibold text-white truncate">Información del Trabajo</h3>
+            <p className="text-sm text-gray-400 truncate">Selecciona el tipo y completa los detalles</p>
           </div>
         </div>
+      </div>
 
-
-      {/* Contenedor con flujo horizontal/vertical según dispositivo */}
-      <div className="lg:flex overflow-hidden">
-        {/* Panel izquierdo - Selector de tipo (siempre visible en desktop, condicional en móvil) */}
-        <div className={`flex-shrink-0 transition-all duration-500 ease-in-out ${
-          hasTipoSeleccionado 
-            ? 'lg:w-80 w-full lg:block' + (hasTipoSeleccionado ? ' hidden' : ' block')
-            : 'w-full'
-        }`}>
-          <div className="p-3 sm:p-5 space-y-2 sm:space-y-3 h-full">
-            <div className="space-y-2 sm:space-y-3">
-              <TipoMantenimientoCard 
-                tipo="preventivo"
-                esSeleccionado={tipoMantenimiento === 'preventivo'}
-                onClick={() => onCambiarTipoMantenimiento('preventivo')}
-                tieneContenido={tieneTareasPreventivo}
-              />
-              
-              <TipoMantenimientoCard 
-                tipo="correctivo"
-                esSeleccionado={tipoMantenimiento === 'correctivo'}
-                onClick={() => onCambiarTipoMantenimiento('correctivo')}
-                tieneContenido={tieneTareasCorrectivo}
-              />
-              
-              <TipoMantenimientoCard 
-                tipo="diagnostico"
-                esSeleccionado={tipoMantenimiento === 'diagnostico'}
-                onClick={() => onCambiarTipoMantenimiento('diagnostico')}
-                tieneContenido={tieneDiagnostico}
-              />
-            </div>
+      {/* Contenedor Principal con Layout Responsivo */}
+      <div className="lg:flex overflow-hidden relative min-h-[500px]">
+        {/* Panel Izquierdo - Selector de Tipo */}
+        <div className={`
+          flex-shrink-0 transition-all duration-500 ease-in-out bg-gray-800/20
+          lg:relative absolute inset-0 lg:inset-auto z-10
+          ${hasTipoSeleccionado 
+            ? 'lg:w-80 lg:translate-x-0 -translate-x-full lg:opacity-100 opacity-0 pointer-events-none lg:pointer-events-auto' 
+            : 'w-full translate-x-0 opacity-100 pointer-events-auto'
+          }
+          lg:border-r border-gray-700/50
+        `}>
+          <div className="p-5 space-y-3 h-full overflow-y-auto">
+            <TipoMantenimientoCard 
+              tipo="preventivo"
+              esSeleccionado={tipoMantenimiento === 'preventivo'}
+              onClick={() => onCambiarTipoMantenimiento('preventivo')}
+              tieneContenido={contenidoPorTipo.preventivo}
+            />
+            
+            <TipoMantenimientoCard 
+              tipo="correctivo"
+              esSeleccionado={tipoMantenimiento === 'correctivo'}
+              onClick={() => onCambiarTipoMantenimiento('correctivo')}
+              tieneContenido={contenidoPorTipo.correctivo}
+            />
+            
+            <TipoMantenimientoCard 
+              tipo="diagnostico"
+              esSeleccionado={tipoMantenimiento === 'diagnostico'}
+              onClick={() => onCambiarTipoMantenimiento('diagnostico')}
+              tieneContenido={contenidoPorTipo.diagnostico}
+            />
 
             {!hasTipoSeleccionado && (
-              <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-700/30 rounded-lg border border-gray-700/50">
-                <p className="text-xs sm:text-sm text-gray-400 text-center">
-                  👆 Selecciona un tipo de trabajo para comenzar
+              <div className="mt-6 p-4 bg-gray-700/20 rounded-lg border border-gray-700/50">
+                <p className="text-sm text-gray-400 text-center">
+                  <ArrowUp className="w-4 h-4 mx-auto mb-2 text-gray-500 animate-bounce" />
+                   Selecciona un tipo de trabajo para comenzar
                 </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Panel derecho - Contenido (se desliza desde la derecha en desktop, reemplaza en móvil) */}
-        <div className={`flex-1 lg:border-l border-gray-700/50 bg-gray-800/30 transition-all duration-500 ease-in-out ${
-          hasTipoSeleccionado 
-            ? 'lg:translate-x-0 opacity-100 block' 
-            : 'lg:translate-x-full opacity-0 hidden lg:block'
-        }`}>
-          {hasTipoSeleccionado && (
+        {/* Panel Derecho - Contenido Detallado */}
+        <div className={`
+          flex-1 bg-gray-800/30 backdrop-blur-sm
+          transition-all duration-500 ease-in-out
+          lg:relative absolute inset-0 lg:inset-auto z-20
+          ${hasTipoSeleccionado 
+            ? 'translate-x-0 opacity-100 pointer-events-auto' 
+            : 'translate-x-full opacity-0 pointer-events-none'
+          }
+        `}>
+          {hasTipoSeleccionado && config && (
             <div className="h-full flex flex-col">
-              {/* Header del panel con botón de regreso en móvil */}
-              <div className={`px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-700/50 ${config.colorBg}`}>
-                <div className="flex items-center gap-2 sm:gap-3">
-                  {/* Botón de regreso solo en móvil */}
+              {/* Header del Panel Seleccionado */}
+              <div className={`px-5 py-4 border-b border-gray-700/50 ${config.colorBg} backdrop-blur-sm`}>
+                <div className="flex items-center gap-3">
+                  {/* Botón Volver (Solo Móvil) */}
                   <button
                     type="button"
-                    onClick={() => onCambiarTipoMantenimiento('' as any)}
-                    className="lg:hidden w-8 h-8 rounded-lg bg-gray-700/50 hover:bg-gray-700 flex items-center justify-center flex-shrink-0 transition-colors"
+                    onClick={handleVolverMobile}
+                    className="lg:hidden w-9 h-9 rounded-lg bg-gray-700/50 hover:bg-gray-700 active:scale-95 flex items-center justify-center flex-shrink-0 transition-all touch-manipulation"
+                    aria-label="Volver a selección"
                   >
                     <ChevronRight className="w-4 h-4 text-gray-400 rotate-180" />
                   </button>
                   
-                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${config.colorIcon}`}>
-                    <config.icono className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${config.colorIcon}`}>
+                    <config.icono className="w-5 h-5" />
                   </div>
+                  
                   <div className="flex-1 min-w-0">
-                    <h4 className={`text-sm sm:text-base font-semibold ${config.colorText} truncate`}>
+                    <h4 className={`text-base font-semibold ${config.colorText} truncate`}>
                       {config.labelTareas}
                     </h4>
-                    <p className="text-xs sm:text-sm text-gray-400 truncate">{config.descripcionTareas}</p>
+                    <p className="text-sm text-gray-400 truncate">{config.descripcionTareas}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Contenido scrollable */}
+              {/* Contenido Scrollable */}
               <div className="flex-1 overflow-y-auto">
                 {tipoMantenimiento === 'diagnostico' ? (
-                  // Vista de diagnóstico
-                  <div className="p-3 sm:p-5">
+                  // Vista de Diagnóstico (Sin Tabs)
+                  <div className="p-5">
                     <DiagnosticoInfo {...diagnosticoProps} />
                   </div>
                 ) : (
-                  // Vista con tabs para preventivo/correctivo
+                  // Vista con Tabs (Preventivo/Correctivo)
                   <>
-                    {/* Tabs */}
-                    <div className="flex border-b border-gray-700/50 bg-gray-800/40 sticky top-0 z-10">
+                    {/* Navegación de Tabs */}
+                    <div className="flex border-b border-gray-700/50 bg-gray-800/50 sticky top-0 z-10 backdrop-blur-sm">
                       <button
                         type="button"
-                        onClick={() => setTabActiva('tareas')}
-                        className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-all relative ${
-                          tabActiva === 'tareas'
-                            ? 'text-white'
-                            : 'text-gray-400 hover:text-gray-300'
-                        }`}
+                        onClick={() => handleCambiarTab('tareas')}
+                        className={`
+                          flex-1 px-4 py-3 text-sm font-medium transition-all relative
+                          ${tabActiva === 'tareas' ? 'text-white' : 'text-gray-400 hover:text-gray-300'}
+                        `}
                       >
-                        <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                          <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          <span className="hidden xs:inline">Tareas</span>
-                          <span className="xs:hidden">Tareas</span>
+                        <div className="flex items-center justify-center gap-2">
+                          <Zap className="w-4 h-4" />
+                          <span>Tareas</span>
                           {(tareasSeleccionadas.length > 0 || tareasPersonalizadas.some(t => t.trim())) && (
-                            <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-green-400" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
                           )}
                         </div>
                         {tabActiva === 'tareas' && (
@@ -342,17 +375,15 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
 
                       <button
                         type="button"
-                        onClick={() => setTabActiva('piezas')}
-                        className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-all relative ${
-                          tabActiva === 'piezas'
-                            ? 'text-white'
-                            : 'text-gray-400 hover:text-gray-300'
-                        }`}
+                        onClick={() => handleCambiarTab('piezas')}
+                        className={`
+                          flex-1 px-4 py-3 text-sm font-medium transition-all relative
+                          ${tabActiva === 'piezas' ? 'text-white' : 'text-gray-400 hover:text-gray-300'}
+                        `}
                       >
-                        <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                          <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          <span className="hidden xs:inline">Repuestos</span>
-                          <span className="xs:hidden">Repuestos</span>
+                        <div className="flex items-center justify-center gap-2">
+                          <Package className="w-4 h-4" />
+                          <span>Repuestos</span>
                           {piezasUsadas.length > 0 && (
                             <span className="text-xs bg-gray-700 px-1.5 py-0.5 rounded-full">
                               {piezasUsadas.length}
@@ -365,12 +396,14 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                       </button>
                     </div>
 
-                    {/* Contenido de tabs */}
-                    <div className="p-3 sm:p-5">
+                    {/* Contenido de Tabs */}
+                    <div className="p-5">
                       {tabActiva === 'tareas' ? (
-                        <TareasInput {...tareasInputProps} />
+                        tareasInputProps ? (
+                          <TareasInput {...tareasInputProps} />
+                        ) : null
                       ) : (
-                        <div className="space-y-2 sm:space-y-3">
+                        <div className="space-y-3">
                           <p className="text-xs text-gray-400">
                             Registro de piezas y materiales empleados (opcional)
                           </p>
