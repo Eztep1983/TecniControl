@@ -3,7 +3,7 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { OrdenMantenimiento, Cliente, Dispositivo } from '@/types/orden'
-import { ArrowLeft, Monitor, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench, ClipboardCheck, GaugeCircle, Laptop, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, Monitor, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench, ClipboardCheck, GaugeCircle, Laptop, ShieldCheck, Check } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { 
   getClientesPorUsuario, 
@@ -168,21 +168,40 @@ const [tipoMantenimiento, setTipoMantenimiento] = useState<'preventivo' | 'corre
   // ============================================================================
   // HANDLERS - Navegación
   // ============================================================================
-  const nextStep = useCallback(() => {
-    const currentIndex = STEPS_CONFIG.findIndex(step => step.key === currentStep)
-    if (currentIndex < STEPS_CONFIG.length - 1) {
-      setCurrentStep(STEPS_CONFIG[currentIndex + 1].key)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, [currentStep])
+// ============================================================================
+// HANDLERS - Navegación
+// ============================================================================
+const nextStep = useCallback(() => {
+  const currentIndex = STEPS_CONFIG.findIndex(step => step.key === currentStep)
+  if (currentIndex < STEPS_CONFIG.length - 1) {
+    setCurrentStep(STEPS_CONFIG[currentIndex + 1].key)
+    // Scroll inmediato al top
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Backup: scroll al contenedor principal si existe
+    setTimeout(() => {
+      const mainContainer = document.querySelector('.min-h-screen')
+      if (mainContainer) {
+        mainContainer.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 50)
+  }
+}, [currentStep])
 
-  const prevStep = useCallback(() => {
-    const currentIndex = STEPS_CONFIG.findIndex(step => step.key === currentStep)
-    if (currentIndex > 0) {
-      setCurrentStep(STEPS_CONFIG[currentIndex - 1].key)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, [currentStep])
+const prevStep = useCallback(() => {
+  const currentIndex = STEPS_CONFIG.findIndex(step => step.key === currentStep)
+  if (currentIndex > 0) {
+    setCurrentStep(STEPS_CONFIG[currentIndex - 1].key)
+    // Scroll inmediato al top
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Backup: scroll al contenedor principal si existe
+    setTimeout(() => {
+      const mainContainer = document.querySelector('.min-h-screen')
+      if (mainContainer) {
+        mainContainer.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 50)
+  }
+}, [currentStep])
 
   // ============================================================================
   // VALIDACIONES
@@ -489,7 +508,6 @@ const mantenimientoInfoProps = useMemo(() => ({
     switch (currentStep) {
       case 'cliente':
         return (
-          <Section title="Selecciona el Cliente" colorClass="bg-blue-500" isOpen={true}>
             <ClienteSelector
               clientes={clientes}
               clienteSeleccionado={clienteSeleccionado}
@@ -498,24 +516,17 @@ const mantenimientoInfoProps = useMemo(() => ({
               onSeleccionarCliente={handleSeleccionarCliente}
               onDesseleccionarCliente={handleDesseleccionarCliente}
             />
-          </Section>
         )
 
       case 'dispositivo':
         return (
-          <Section
-            title="Selecciona el Dispositivo del Cliente"
-            icon={<Monitor className="w-5 h-5 text-green-400" />}
-            colorClass="bg-green-500"
-            isOpen={true}
-          >
+
             <DispositivoSelector
               cliente={clienteSeleccionado!}
               dispositivoSeleccionado={dispositivoSeleccionado}
               onSeleccionarDispositivo={handleSeleccionarDispositivo}
               onDesseleccionarDispositivo={handleDesseleccionarDispositivo}
             />
-          </Section>
         )
 
       case 'mantenimiento':
@@ -525,19 +536,17 @@ const mantenimientoInfoProps = useMemo(() => ({
 
       case 'contador':
         return (
-          <Section title="Contador del Dispositivo (Opcional)" colorClass="bg-amber-500" isOpen={true}>
             <ContadorInput
               contador={contador}
               mostrarContador={mostrarContador}
               onToggleContador={handleToggleContador}
               onChangeContador={handleCambiarContador}
             />
-          </Section>
+
         )
 
       case 'garantia':
         return (
-          <Section title="Garantía del Trabajo" colorClass="bg-red-500" isOpen={true}>
             <GarantiaInput
               garantiaTiempoDesde={garantiaTiempoDesde}
               garantiaTiempoHasta={garantiaTiempoHasta}
@@ -547,14 +556,15 @@ const mantenimientoInfoProps = useMemo(() => ({
               onCambiarMeses={setMesesGarantia}
               onCambiarDescripcion={setGarantiaDescripcion}
             />
-          </Section>
         )
 
       case 'resumen':
         return (
-          <Section title="Resumen de la Orden" colorClass="bg-indigo-500" isOpen={true}>
             <div className="space-y-6 text-white">
               {/* Información Principal */}
+              <div className='bg-gray-800/50 rounded-xl p-4'>
+                <p className="text-xl text-white font-medium">Verifica la Información</p>
+              </div>
               <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
@@ -607,9 +617,26 @@ const mantenimientoInfoProps = useMemo(() => ({
                   <>
                     <div className="pt-2 border-t border-gray-700">
                       <p className="text-gray-400 text-sm mb-2">Tareas realizadas:</p>
-                      <span className="text-2xl font-bold text-purple-400">
-                        {[...tareasSeleccionadas, ...tareasPersonalizadas.filter(t => t.trim())].length}
-                      </span>
+                      <div className="space-y-2">
+                        {tareasSeleccionadas.map((tarea, idx) => (
+                          <div key={`pred-${idx}`} className="flex items-start gap-2 bg-gray-700/30 px-3 py-2 rounded-lg">
+                            <span className="px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded text-xs flex-shrink-0 mt-0.5">Predef</span>
+                            <span className="text-sm text-white">{tarea}</span>
+                          </div>
+                        ))}
+                        {tareasPersonalizadas.filter(t => t.trim()).map((tarea, idx) => (
+                          <div key={`custom-${idx}`} className="flex items-start gap-2 bg-gray-700/30 px-3 py-2 rounded-lg">
+                            <span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-xs flex-shrink-0 mt-0.5">Person</span>
+                            <span className="text-sm text-white">{tarea}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-gray-700/50">
+                        <span className="text-xs text-gray-500">Total: </span>
+                        <span className="text-lg font-bold text-purple-400">
+                          {[...tareasSeleccionadas, ...tareasPersonalizadas.filter(t => t.trim())].length} tareas
+                        </span>
+                      </div>
                     </div>
                     {piezasUsadas.filter(p => p?.pieza?.trim()).length > 0 && (
                       <div className="pt-2 border-t border-gray-700">
@@ -667,7 +694,6 @@ const mantenimientoInfoProps = useMemo(() => ({
                 </div>
               )}
             </div>
-          </Section>
         )
     }
   }
@@ -806,13 +832,13 @@ const mantenimientoInfoProps = useMemo(() => ({
                     key={step.key}
                     className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all ${
                       isCompleted 
-                        ? 'bg-green-500 text-white' 
+                        ? 'bg-green-400 text-white' 
                         : isCurrent 
                         ? 'bg-blue-500 text-white ring-2 ring-blue-400 ring-offset-2 ring-offset-gray-800' 
                         : 'bg-gray-700 text-gray-500'
                     }`}
                   >
-                    {isCompleted ? '✓' : index + 1}
+                    {isCompleted ? <Check/> : index + 1}
                   </div>
                 )
               })}

@@ -8,6 +8,7 @@ export interface Dispositivo {
   numeroSerie: string;
   fechaCompra?: Date;
   observaciones?: string;
+  estado?: string;
 }
 
 export interface Cliente {

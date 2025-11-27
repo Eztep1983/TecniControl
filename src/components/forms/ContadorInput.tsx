@@ -1,7 +1,7 @@
 // components/forms/ContadorInput.tsx
 'use client'
 
-import { Calendar, Hash, Clock, Printer, Copy, ScanLine, Timer, Package, Sparkles, Target, Edit3, MessageSquare, Minus, Plus, CheckCircle } from 'lucide-react'
+import { Calendar, Hash, Clock, Printer, Copy, ScanLine, Timer, Package, Sparkles, Target, Edit3, MessageSquare, Minus, Plus, CheckCircle, Info } from 'lucide-react'
 import React from 'react'
 
 export interface Contador {
@@ -172,7 +172,7 @@ export default function ContadorInput({
             <Hash className="w-5 h-5 text-amber-400" />
           </div>
           <div>
-            <label className="text-sm font-semibold text-gray-200 block">
+            <label className="text-xl text-gray-300 font-medium">
               ¿Registrar contador del dispositivo?
             </label>
             <p className="text-xs text-gray-500 mt-0.5">
@@ -436,8 +436,8 @@ export default function ContadorInput({
       {!mostrarContador && (
         <div className="bg-gray-800/20 rounded-xl p-5 border-2 border-dashed border-gray-700 hover:border-amber-500/30 transition-all group">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-              <Hash className="w-6 h-6 text-amber-400" />
+            <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+              <Info className="w-6 h-6 text-blue-400" />
             </div>
             <div className="flex-1">
               <h4 className="text-sm font-semibold text-gray-300 mb-1">
