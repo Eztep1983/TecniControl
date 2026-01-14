@@ -1,178 +1,511 @@
-import { OrdenMantenimiento } from "@/types/orden";
-import { X, Calendar, Clock, Printer } from "lucide-react";
-import { useCallback, useMemo, memo } from "react";
+// ModalOrden.tsx - Versión Optimizada
 
-// CONSTANTES EXTERNAS PARA REUTILIZACIÓN
+import { OrdenMantenimiento } from "@/types/orden";
+import { X, Calendar, Clock, Printer, Wrench, AlertCircle } from "lucide-react";
+import { useCallback, useMemo, memo, useEffect, useRef } from "react";
+
+// ============================================================================
+// CONSTANTES Y TIPOS
+// ============================================================================
+
 const DATE_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = { 
   year: 'numeric', 
   month: 'long', 
   day: 'numeric' 
-};
+} as const;
 
 const DEFAULT_TEXTS = {
   noDate: 'Fecha no disponible',
   invalidDate: 'Fecha inválida',
   noTasks: 'No se registraron tareas',
   noWarranty: 'No se especificó garantía',
-  notAvailable: 'N/A'
+  notAvailable: 'N/A',
+  noParts: 'No se utilizaron piezas',
+  noCounter: 'No se registró contador'
 } as const;
 
-// COMPONENTES MEMOIZADOS PEQUEÑOS
-const ModalHeader = memo(({ 
-  idPersonalizado, 
-  onClose 
-}: { 
-  idPersonalizado: string; 
-  onClose: () => void;
-}) => (
-  <div className="flex justify-between items-center mb-4 sticky top-0 bg-gray-800/90 backdrop-blur-md py-2 z-10">
-    <h3 className="text-xl font-semibold text-white">
-      Orden de Mantenimiento #{idPersonalizado}
-    </h3>
-    <button
-      onClick={onClose}
-      className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-gray-700 transition-colors"
-      aria-label="Cerrar modal"
-    >
-      <X className="w-6 h-6" />
-    </button>
+const TIPO_COLORS = {
+  preventivo: 'bg-green-500/20 text-green-400 border-green-500/30',
+  correctivo: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  diagnostico: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  default: 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+} as const;
+
+const UNIDAD_LABELS: Record<string, string> = {
+  unidades: 'unidades',
+  copias: 'copias',
+  impresiones: 'impresiones',
+  horas: 'horas',
+  kilometros: 'kilómetros'
+} as const;
+
+// ============================================================================
+// UTILIDADES
+// ============================================================================
+
+const formatDate = (fecha: unknown): string => {
+  if (!fecha) return DEFAULT_TEXTS.noDate;
+  
+  try {
+    let date: Date;
+    
+    if (fecha && typeof fecha === 'object') {
+      if ('seconds' in fecha) {
+        date = new Date((fecha as any).seconds * 1000);
+      } else if (fecha instanceof Date) {
+        date = fecha;
+      } else {
+        return DEFAULT_TEXTS.invalidDate;
+      }
+    } else if (typeof fecha === 'string' || typeof fecha === 'number') {
+      date = new Date(fecha);
+    } else {
+      return DEFAULT_TEXTS.invalidDate;
+    }
+    
+    return isNaN(date.getTime()) 
+      ? DEFAULT_TEXTS.invalidDate 
+      : date.toLocaleDateString('es-ES', DATE_FORMAT_OPTIONS);
+  } catch {
+    return DEFAULT_TEXTS.invalidDate;
+  }
+};
+
+const getTipoColor = (tipo: string): string => {
+  return TIPO_COLORS[tipo as keyof typeof TIPO_COLORS] || TIPO_COLORS.default;
+};
+
+const getUnidadLabel = (tipo: string, unidadPersonalizada?: string): string => {
+  if (tipo === 'personalizado' && unidadPersonalizada) {
+    return unidadPersonalizada;
+  }
+  return UNIDAD_LABELS[tipo] || tipo;
+};
+
+// ============================================================================
+// COMPONENTES BÁSICOS
+// ============================================================================
+
+const EmptyState = memo(({ message }: { message: string }) => (
+  <div className="flex items-center justify-center py-4 text-gray-500">
+    <AlertCircle className="w-4 h-4 mr-2" />
+    <p className="text-sm">{message}</p>
   </div>
 ));
+EmptyState.displayName = 'EmptyState';
 
-ModalHeader.displayName = 'ModalHeader';
+const InfoField = memo(({ 
+  label, 
+  value, 
+  fallback = DEFAULT_TEXTS.notAvailable 
+}: { 
+  label: string; 
+  value?: string | null;
+  fallback?: string;
+}) => (
+  <p className="text-sm">
+    <span className="font-medium text-gray-200">{label}:</span>{' '}
+    <span className="text-gray-300">{value || fallback}</span>
+  </p>
+));
+InfoField.displayName = 'InfoField';
 
 const InfoSection = memo(({ 
   title, 
   icon: Icon, 
-  children 
+  children,
+  className = ""
 }: { 
   title: string; 
-  icon?: React.ComponentType<any>;
+  icon?: React.ComponentType<{ className?: string }>;
   children: React.ReactNode;
+  className?: string;
 }) => (
-  <div className="bg-gray-700/30 p-4 rounded-xl border border-gray-600/50">
-    <h4 className="font-semibold text-white border-b border-gray-600 pb-2 mb-2 flex items-center">
+  <section 
+    className={`bg-gray-700/30 p-4 rounded-xl border border-gray-600/50 ${className}`}
+    aria-labelledby={`section-${title.toLowerCase().replace(/\s+/g, '-')}`}
+  >
+    <h4 
+      id={`section-${title.toLowerCase().replace(/\s+/g, '-')}`}
+      className="font-semibold text-white border-b border-gray-600 pb-2 mb-3 flex items-center"
+    >
       {Icon && <Icon className="w-4 h-4 mr-2" />}
       {title}
     </h4>
     {children}
-  </div>
+  </section>
 ));
-
 InfoSection.displayName = 'InfoSection';
 
-const TareasList = memo(({ tareasRealizadas }: { tareasRealizadas: string[] }) => {
+// ============================================================================
+// COMPONENTES COMPLEJOS
+// ============================================================================
+
+const ModalHeader = memo(({ 
+  idPersonalizado, 
+  tipoMantenimiento,
+  onClose 
+}: { 
+  idPersonalizado: string;
+  tipoMantenimiento: string;
+  onClose: () => void;
+}) => (
+  <header className="flex justify-between items-start mb-4 sticky top-0 bg-gray-800/95 backdrop-blur-md py-3 z-10 border-b border-gray-700/50">
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-3 mb-2">
+        <Wrench className="w-5 h-5 text-blue-400 flex-shrink-0" aria-hidden="true" />
+        <h3 className="text-xl font-semibold text-white truncate">
+          Orden #{idPersonalizado}
+        </h3>
+      </div>
+      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border capitalize ${getTipoColor(tipoMantenimiento)}`}>
+        {tipoMantenimiento}
+      </span>
+    </div>
+    <button
+      onClick={onClose}
+      className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-700 transition-colors ml-2 flex-shrink-0"
+      aria-label="Cerrar modal"
+    >
+      <X className="w-6 h-6" />
+    </button>
+  </header>
+));
+ModalHeader.displayName = 'ModalHeader';
+
+const TareasList = memo(({ tareasRealizadas }: { tareasRealizadas?: string[] }) => {
   if (!tareasRealizadas?.length) {
-    return <p className="text-sm text-gray-400">{DEFAULT_TEXTS.noTasks}</p>;
+    return <EmptyState message={DEFAULT_TEXTS.noTasks} />;
   }
 
   return (
-    <ol className="list-decimal list-inside space-y-1 text-sm text-gray-300">
-      {tareasRealizadas.map((tarea, index) => (
-        <li key={`${index}-${tarea.substring(0, 20)}`}>{tarea}</li>
+    <ol className="list-decimal list-inside space-y-2 text-sm text-gray-300">
+      {tareasRealizadas.map((tarea, idx) => (
+        <li key={`tarea-${idx}`} className="pl-2 py-1">
+          {tarea}
+        </li>
       ))}
     </ol>
   );
 });
-
 TareasList.displayName = 'TareasList';
 
-const PiezasList = memo(({ piezasUsadas }: { piezasUsadas?: Array<{ cantidad: number; pieza: string }> }) => {
-  if (!piezasUsadas?.length) return null;
+const PiezasList = memo(({ piezasUsadas }: { 
+  piezasUsadas?: Array<{ cantidad: number; pieza: string }> 
+}) => {
+  if (!piezasUsadas?.length) {
+    return <EmptyState message={DEFAULT_TEXTS.noParts} />;
+  }
 
   return (
-    <ul className="space-y-1 text-sm text-gray-300">
-      {piezasUsadas.map((pieza, index) => (
-        <li key={`${index}-${pieza.pieza.substring(0, 15)}`}>
-          <span className="font-medium text-gray-200">{pieza.cantidad}x</span> {pieza.pieza}
+    <ul className="space-y-2 text-sm">
+      {piezasUsadas.map((pieza, idx) => (
+        <li 
+          key={`pieza-${idx}`}
+          className="flex items-center justify-between bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-600/30"
+        >
+          <span className="text-gray-300 flex-1">{pieza.pieza}</span>
+          <span className="font-medium text-blue-400 ml-3">x{pieza.cantidad}</span>
         </li>
       ))}
     </ul>
   );
 });
-
 PiezasList.displayName = 'PiezasList';
 
-// HOOK PERSONALIZADO PARA FORMATEO DE FECHAS
-const useDateFormatter = () => {
-  const formatFecha = useCallback((fecha: unknown): string => {
-    if (!fecha) return DEFAULT_TEXTS.noDate;
+const DiagnosticoInfo = memo(({ 
+  observacionesIniciales,
+  pruebasRealizadas,
+  diagnosticoFinal,
+  contadorMaquina
+}: {
+  observacionesIniciales?: string;
+  pruebasRealizadas?: string;
+  diagnosticoFinal?: string;
+  contadorMaquina?: number;
+}) => (
+  <div className="space-y-4">
+    {observacionesIniciales && (
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+          Observaciones Iniciales
+        </p>
+        <p className="text-sm text-gray-300 bg-gray-800/50 p-3 rounded-lg border border-gray-600/30">
+          {observacionesIniciales}
+        </p>
+      </div>
+    )}
     
-    try {
-      let date: Date;
-      
-      if (fecha && typeof fecha === 'object') {
-        if ('seconds' in fecha && 'nanoseconds' in fecha) {
-          date = new Date((fecha as any).seconds * 1000);
-        } else if (fecha instanceof Date) {
-          date = fecha;
-        } else {
-          return DEFAULT_TEXTS.invalidDate;
-        }
-      } else if (typeof fecha === 'string') {
-        date = new Date(fecha);
-      } else if (typeof fecha === 'number') {
-        date = new Date(fecha);
-      } else {
-        return DEFAULT_TEXTS.invalidDate;
-      }
-      
-      return isNaN(date.getTime()) 
-        ? DEFAULT_TEXTS.invalidDate 
-        : date.toLocaleDateString('es-ES', DATE_FORMAT_OPTIONS);
-    } catch {
-      return DEFAULT_TEXTS.invalidDate;
-    }
-  }, []);
+    {pruebasRealizadas && (
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+          Pruebas Realizadas
+        </p>
+        <p className="text-sm text-gray-300 bg-gray-800/50 p-3 rounded-lg border border-gray-600/30">
+          {pruebasRealizadas}
+        </p>
+      </div>
+    )}
+    
+    {diagnosticoFinal && (
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+          Diagnóstico Final
+        </p>
+        <p className="text-sm text-gray-300 bg-blue-500/10 p-3 rounded-lg border border-blue-500/30">
+          {diagnosticoFinal}
+        </p>
+      </div>
+    )}
+    
+    {contadorMaquina != null && (
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+          Contador de Máquina
+        </p>
+        <p className="text-2xl font-bold text-purple-400">
+          {contadorMaquina.toLocaleString()} unidades
+        </p>
+      </div>
+    )}
+  </div>
+));
+DiagnosticoInfo.displayName = 'DiagnosticoInfo';
 
-  return formatFecha;
-};
+const ContadorInfo = memo(({ contador }: { contador?: any }) => {
+  if (!contador) {
+    return <EmptyState message={DEFAULT_TEXTS.noCounter} />;
+  }
 
-// HOOK PARA DATOS DEL MODAL
+  return (
+    <div className="space-y-3">
+      <div className="flex items-baseline space-x-3">
+        <span className="text-4xl font-bold text-amber-400">
+          {contador.valor?.toLocaleString() ?? '0'}
+        </span>
+        <span className="text-lg text-gray-400 capitalize">
+          {getUnidadLabel(contador.tipo, contador.unidadPersonalizada)}
+        </span>
+      </div>
+      
+      {contador.fechaRegistro && (
+        <p className="text-sm text-gray-400">
+          Registrado: {formatDate(contador.fechaRegistro)}
+        </p>
+      )}
+      
+      {contador.notas && (
+        <div className="pt-3 border-t border-gray-600">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+            Notas
+          </p>
+          <p className="text-sm text-gray-300">{contador.notas}</p>
+        </div>
+      )}
+    </div>
+  );
+});
+ContadorInfo.displayName = 'ContadorInfo';
+
+const ClienteInfo = memo(({ cliente }: { cliente?: any }) => (
+  <InfoSection title="Información del Cliente">
+    <div className="space-y-2">
+      <InfoField label="Nombre" value={cliente?.name} />
+      <InfoField label="Cédula" value={cliente?.cedula} />
+      <InfoField label="Teléfono" value={cliente?.phone} />
+      <InfoField label="Email" value={cliente?.email} />
+      <InfoField label="Dirección" value={cliente?.address} />
+    </div>
+  </InfoSection>
+));
+ClienteInfo.displayName = 'ClienteInfo';
+
+const DispositivoInfo = memo(({ dispositivo }: { dispositivo?: any }) => {
+  const marcaModelo = useMemo(() => 
+    `${dispositivo?.marca || ''} ${dispositivo?.modelo || ''}`.trim() || undefined,
+    [dispositivo?.marca, dispositivo?.modelo]
+  );
+
+  return (
+    <InfoSection title="Información del Dispositivo">
+      <div className="space-y-2">
+        <InfoField label="Tipo" value={dispositivo?.tipo} />
+        <InfoField label="Marca/Modelo" value={marcaModelo} />
+        <InfoField label="Número de Serie" value={dispositivo?.numeroSerie} />
+      </div>
+    </InfoSection>
+  );
+});
+DispositivoInfo.displayName = 'DispositivoInfo';
+
+const GarantiaInfo = memo(({ 
+  garantiaDescripcion,
+  garantiaDesde,
+  garantiaHasta
+}: {
+  garantiaDescripcion?: string;
+  garantiaDesde?: string;
+  garantiaHasta?: string;
+}) => (
+  <InfoSection title="Garantía" icon={Clock}>
+    <div className="space-y-3">
+      {garantiaDescripcion && (
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+            Descripción
+          </p>
+          <p className="text-sm text-gray-300 bg-gray-800/50 p-3 rounded-lg border border-gray-600/30">
+            {garantiaDescripcion}
+          </p>
+        </div>
+      )}
+      
+      {(garantiaDesde || garantiaHasta) && (
+        <div className="grid grid-cols-2 gap-3">
+          {garantiaDesde && (
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                Desde
+              </p>
+              <p className="text-sm text-gray-300">{garantiaDesde}</p>
+            </div>
+          )}
+          {garantiaHasta && (
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                Hasta
+              </p>
+              <p className="text-sm text-gray-300">{garantiaHasta}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  </InfoSection>
+));
+GarantiaInfo.displayName = 'GarantiaInfo';
+
+const ModalFooter = memo(({ 
+  onPrint, 
+  onClose 
+}: { 
+  onPrint: () => void; 
+  onClose: () => void;
+}) => (
+  <footer className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-700 sticky bottom-0 bg-gray-800/95 backdrop-blur-md">
+    <button
+      onClick={onPrint}
+      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-md hover:shadow-lg order-2 sm:order-1"
+      aria-label="Imprimir orden"
+    >
+      <Printer className="w-4 h-4" />
+      <span>Imprimir</span>
+    </button>
+    <button
+      onClick={onClose}
+      className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2.5 rounded-lg transition-colors shadow-md hover:shadow-lg order-1 sm:order-2"
+    >
+      Cerrar
+    </button>
+  </footer>
+));
+ModalFooter.displayName = 'ModalFooter';
+
+// ============================================================================
+// HOOKS PERSONALIZADOS
+// ============================================================================
+
 const useModalData = (orden: OrdenMantenimiento) => {
-  const formatFecha = useDateFormatter();
-  
-  const {
-    idPersonalizado,
-    fechaCreacion,
-    horaCreacion,
-    cliente,
-    dispositivo,
-    tareasRealizadas = [],
-    piezasUsadas = [],
-    garantiaDescripcion,
-    tipoMantenimiento,
-    garantiaTiempoDesde,
-    garantiaTiempoHasta
-  } = orden;
+  return useMemo(() => {
+    const {
+      idPersonalizado,
+      fechaCreacion,
+      horaCreacion,
+      cliente,
+      dispositivo,
+      tareasRealizadas = [],
+      piezasUsadas = [],
+      garantiaDescripcion,
+      tipoMantenimiento,
+      garantiaTiempoDesde,
+      garantiaTiempoHasta,
+      observacionesIniciales,
+      pruebasRealizadas,
+      diagnosticoFinal,
+      contadorMaquina,
+      contador
+    } = orden;
 
-  // MEMOIZAR TODOS LOS VALORES COMPUTADOS
-  const formattedData = useMemo(() => ({
-    fechaCreacion: formatFecha(fechaCreacion),
-    garantiaDesde: formatFecha(garantiaTiempoDesde),
-    garantiaHasta: formatFecha(garantiaTiempoHasta),
-    tipoColorClass: tipoMantenimiento === 'preventivo' 
-      ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-      : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-  }), [fechaCreacion, garantiaTiempoDesde, garantiaTiempoHasta, tipoMantenimiento, formatFecha]);
-
-  const hasPiezas = piezasUsadas.length > 0;
-
-  return {
-    idPersonalizado,
-    horaCreacion,
-    cliente,
-    dispositivo,
-    tareasRealizadas,
-    piezasUsadas,
-    garantiaDescripcion,
-    tipoMantenimiento,
-    hasPiezas,
-    ...formattedData
-  };
+    return {
+      idPersonalizado,
+      horaCreacion,
+      cliente,
+      dispositivo,
+      tareasRealizadas,
+      piezasUsadas,
+      garantiaDescripcion,
+      tipoMantenimiento,
+      observacionesIniciales,
+      pruebasRealizadas,
+      diagnosticoFinal,
+      contadorMaquina,
+      contador,
+      fechaCreacion: formatDate(fechaCreacion),
+      garantiaDesde: formatDate(garantiaTiempoDesde),
+      garantiaHasta: formatDate(garantiaTiempoHasta),
+      hasPiezas: piezasUsadas.length > 0,
+      hasTareas: tareasRealizadas.length > 0,
+      hasGarantia: !!(garantiaDescripcion || garantiaTiempoDesde || garantiaTiempoHasta),
+      hasContador: !!contador,
+      esDiagnostico: tipoMantenimiento === 'diagnostico'
+    };
+  }, [orden]);
 };
 
-// COMPONENTE PRINCIPAL OPTIMIZADO
+const useFocusTrap = (isOpen: boolean) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const modal = modalRef.current;
+    if (!modal) return;
+
+    const focusableElements = modal.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0] as HTMLElement;
+    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement?.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement?.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    modal.addEventListener('keydown', handleTab);
+    firstElement?.focus();
+
+    return () => modal.removeEventListener('keydown', handleTab);
+  }, [isOpen]);
+
+  return modalRef;
+};
+
+// ============================================================================
+// COMPONENTE PRINCIPAL
+// ============================================================================
+
 const ModalOrden = ({ 
   orden, 
   onClose, 
@@ -182,127 +515,106 @@ const ModalOrden = ({
   onClose: () => void; 
   onPrint: (orden: OrdenMantenimiento) => void;
 }) => {
-  // EVITAR RENDERIZADO SI NO HAY ORDEN
   if (!orden) return null;
 
-  const modalData = useModalData(orden);
+  const data = useModalData(orden);
+  const modalRef = useFocusTrap(true);
 
   const handlePrint = useCallback(() => {
     onPrint(orden);
   }, [onPrint, orden]);
 
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onClose();
+    }
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800/90 backdrop-blur-md border border-gray-700/50 rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2 sm:p-4"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div 
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`orden-${data.idPersonalizado}`}
+        className="bg-gray-800/95 backdrop-blur-md border border-gray-700/50 rounded-xl p-4 sm:p-6 max-w-4xl w-full max-h-[95vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={handleKeyDown}
+      >
         <ModalHeader 
-          idPersonalizado={modalData.idPersonalizado} 
+          idPersonalizado={data.idPersonalizado}
+          tipoMantenimiento={data.tipoMantenimiento}
           onClose={onClose} 
         />
         
-        {/* CONTENIDO PRINCIPAL CON MEJOR ESTRUCTURA */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          {/* COLUMNA IZQUIERDA */}
-          <div className="space-y-4">
-            <InfoSection title="Fecha de orden" icon={Calendar}>
-              <p className="text-sm text-gray-300">
-                {modalData.fechaCreacion} {modalData.horaCreacion || ''}
-              </p>  
-            </InfoSection>
+        <main className="space-y-4">
+          {/* Fecha de Orden */}
+          <InfoSection title="Fecha de Orden" icon={Calendar}>
+            <p className="text-sm text-gray-300">
+              {data.fechaCreacion} {data.horaCreacion || ''}
+            </p>
+          </InfoSection>
+
+          {/* Grid principal */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Columna izquierda */}
+            <div className="space-y-4">
+              <ClienteInfo cliente={data.cliente} />
+              <DispositivoInfo dispositivo={data.dispositivo} />
+            </div>
             
-            <InfoSection title="Información del Cliente">
-              <div className="space-y-2 text-sm text-gray-300">
-                <InfoField label="Nombre" value={modalData.cliente?.name} />
-                <InfoField label="Cédula" value={modalData.cliente?.cedula} />
-                <InfoField label="Teléfono" value={modalData.cliente?.phone} />
-                <InfoField label="Email" value={modalData.cliente?.email} />
-                <InfoField label="Dirección" value={modalData.cliente?.address} />
-              </div>
-            </InfoSection>
-            
-            <InfoSection title="Información del Dispositivo">
-              <div className="space-y-2 text-sm text-gray-300">
-                <InfoField label="Tipo" value={modalData.dispositivo?.tipo} />
-                <InfoField 
-                  label="Marca/Modelo" 
-                  value={`${modalData.dispositivo?.marca || ''} ${modalData.dispositivo?.modelo || ''}`.trim()} 
-                />
-                <InfoField label="Número de Serie" value={modalData.dispositivo?.numeroSerie} />
-                <p className="flex items-center">
-                  <span className="font-medium text-gray-200 mr-2">Tipo de Mantenimiento:</span>
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${modalData.tipoColorClass}`}>
-                    {modalData.tipoMantenimiento}
-                  </span>
-                </p>
-              </div>
-            </InfoSection>
+            {/* Columna derecha */}
+            <div className="space-y-4">
+              {data.esDiagnostico ? (
+                <InfoSection title="Diagnóstico Realizado">
+                  <DiagnosticoInfo 
+                    observacionesIniciales={data.observacionesIniciales}
+                    pruebasRealizadas={data.pruebasRealizadas}
+                    diagnosticoFinal={data.diagnosticoFinal}
+                    contadorMaquina={data.contadorMaquina}
+                  />
+                </InfoSection>
+              ) : (
+                <>
+                  <InfoSection title="Tareas Realizadas">
+                    <TareasList tareasRealizadas={data.tareasRealizadas} />
+                  </InfoSection>
+                  
+                  {data.hasPiezas && (
+                    <InfoSection title="Piezas Utilizadas">
+                      <PiezasList piezasUsadas={data.piezasUsadas} />
+                    </InfoSection>
+                  )}
+                </>
+              )}
+            </div>
           </div>
+
+          {/* Contador */}
+          {data.hasContador && (
+            <InfoSection title="Contador Registrado" icon={Clock}>
+              <ContadorInfo contador={data.contador} />
+            </InfoSection>
+          )}
           
-          {/* COLUMNA DERECHA */}
-          <div className="space-y-4">
-            <InfoSection title="Tareas Realizadas">
-              <TareasList tareasRealizadas={modalData.tareasRealizadas} />
-            </InfoSection>
-            
-            {modalData.hasPiezas && (
-              <InfoSection title="Piezas Utilizadas">
-                <PiezasList piezasUsadas={modalData.piezasUsadas} />
-              </InfoSection>
-            )}
-          </div>
-        </div>
-        
-        {/* GARANTÍA */}
-        <InfoSection title="Garantía" icon={Clock}>
-          <div className="text-sm text-gray-300 space-y-2">
-            <InfoField label="Desde" value={modalData.garantiaDesde} />
-            <InfoField label="Hasta" value={modalData.garantiaHasta} />
-            <InfoField 
-              label="Descripción" 
-              value={modalData.garantiaDescripcion || DEFAULT_TEXTS.noWarranty} 
+          {/* Garantía */}
+          {data.hasGarantia && (
+            <GarantiaInfo 
+              garantiaDescripcion={data.garantiaDescripcion}
+              garantiaDesde={data.garantiaDesde}
+              garantiaHasta={data.garantiaHasta}
             />
-          </div>
-        </InfoSection>
+          )}
+        </main>
         
-        {/* BOTONES */}
         <ModalFooter onPrint={handlePrint} onClose={onClose} />
       </div>
     </div>
   );
 };
-
-// COMPONENTES AUXILIARES MEMOIZADOS
-const InfoField = memo(({ label, value }: { label: string; value?: string }) => (
-  <p>
-    <span className="font-medium text-gray-200">{label}:</span> {value || DEFAULT_TEXTS.notAvailable}
-  </p>
-));
-
-InfoField.displayName = 'InfoField';
-
-const ModalFooter = memo(({ 
-  onPrint, 
-  onClose 
-}: { 
-  onPrint: () => void; 
-  onClose: () => void;
-}) => (
-  <div className="flex justify-end space-x-3 pt-4 border-t border-gray-700">
-    <button
-      onClick={onPrint}
-      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors shadow-md hover:shadow-lg"
-    >
-      <Printer className="w-4 h-4" />
-      <span>Imprimir</span>
-    </button>
-    <button
-      onClick={onClose}
-      className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors shadow-md hover:shadow-lg"
-    >
-      Cerrar
-    </button>
-  </div>
-));
-
-ModalFooter.displayName = 'ModalFooter';
 
 export default memo(ModalOrden);

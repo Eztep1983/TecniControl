@@ -56,7 +56,7 @@ export default function ClienteSelector({
 
   useEffect(() => {
     if (!clienteSeleccionado && inputRef.current) {
-      inputRef.current.focus()
+      inputRef.current.blur()
     }
   }, [clienteSeleccionado])
 
@@ -68,7 +68,7 @@ export default function ClienteSelector({
   const handleClearSearch = () => {
     setBusquedaCliente('')
     setPaginaActual(1)
-    inputRef.current?.focus()
+    inputRef.current?.blur()
   }
 
   const handleSeleccionarCliente = (cliente: Cliente) => {
