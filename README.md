@@ -1,5 +1,3 @@
-# Firebase Studio
+TecniControl 
 
-This is a NextJS starter in Firebase Studio.
-
-To get started, take a look at src/app/page.tsx.
+Is a sistem created to manage and create tecnhical orders to keep everything in its place
