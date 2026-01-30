@@ -1,42 +1,69 @@
-// src/components/AuthGuard.tsx
+// components/auth/AuthGuard.tsx
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { Loader2 } from 'lucide-react'
 
 interface AuthGuardProps {
   children: React.ReactNode
 }
 
+const PUBLIC_ROUTES = ['/login']
+
 export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   const { user, loading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
-  const hasRedirected = useRef(false)
+  const [isNavigating, setIsNavigating] = useState(false)
+
+  const isPublicRoute = PUBLIC_ROUTES.some(route => pathname?.startsWith(route))
 
   useEffect(() => {
-    if (loading || hasRedirected.current) return
+    // No hacer nada mientras está cargando
+    if (loading) return
 
-    const isLoginPage = pathname === '/login'
-    const isAuthenticated = !!user
-
-    // Usuario no autenticado fuera del login -> redirigir a login
-    if (!isAuthenticated && !isLoginPage) {
-      hasRedirected.current = true
-      router.push('/login')
-      return
+    const shouldRedirect = () => {
+      // Usuario no autenticado intentando acceder a ruta protegida
+      if (!user && !isPublicRoute) {
+        return '/login'
+      }
+      
+      // Usuario autenticado en página de login
+      if (user && pathname === '/login') {
+        return '/ordenes'
+      }
+      
+      return null
     }
 
-    // Usuario autenticado en login -> redirigir a app
-    if (isAuthenticated && isLoginPage) {
-      hasRedirected.current = true
-      router.push('/ordenes')
-      return
+    const redirectTo = shouldRedirect()
+    
+    if (redirectTo) {
+      setIsNavigating(true)
+      router.replace(redirectTo)
     }
+  }, [user, loading, pathname, isPublicRoute, router])
 
-    hasRedirected.current = false
-  }, [user, loading, pathname, router])
+  // Mostrar loading durante verificación inicial
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-900 to-gray-950">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-10 w-10 animate-spin text-blue-500 mx-auto" />
+          <p className="text-gray-400 text-sm">Verificando autenticación...</p>
+        </div>
+      </div>
+    )
+  }
 
-  // Renderizar contenido inmediatamente sin pantalla de carga
-  return <>{children}</>
+  // Mostrar loading durante navegación
+
+  // Renderizar contenido apropiado
+  if (isPublicRoute || user) {
+    return <>{children}</>
+  }
+
+  // Estado de espera (no debería llegar aquí normalmente)
+  return null
 }

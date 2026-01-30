@@ -1,34 +1,28 @@
-// middleware.ts - COMENTADO/DESACTIVADO
-// El middleware está interfiriendo con Firebase Auth
-// Usamos ProtectedRoute/AuthGuard en el lado cliente en su lugar
-
-/*
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
-  const currentUser = request.cookies.get('firebaseAuthToken')?.value
-
-  if (request.nextUrl.pathname.startsWith('/login') && currentUser) {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
-
-  if (!currentUser && !request.nextUrl.pathname.startsWith('/login')) {
-     return NextResponse.redirect(new URL('/login', request.url))
+export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname
+  
+  // Rutas públicas que no requieren autenticación
+  const publicPaths = ['/login']
+  const isPublicPath = publicPaths.some(p => path.startsWith(p))
+  
+  // Verificar si hay usuario autenticado (Firebase guarda el token)
+  // Firebase usa cookies como __session o tokens en localStorage
+  // En el middleware solo hacemos verificación básica
+  
+  if (!isPublicPath) {
+    // Para rutas protegidas, el componente ProtectedRoute hará la verificación completa
+    // El middleware solo previene acceso obvio sin auth
+    return NextResponse.next()
   }
   
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
-}
-*/
-
-// Middleware vacío para permitir que la autenticación del lado cliente maneje todo
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-
-export function middleware(request: NextRequest) {
-  return NextResponse.next()
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ]
 }

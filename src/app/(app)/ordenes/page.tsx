@@ -1,131 +1,97 @@
-//ordenes/page.tsx
-
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { 
   Shield, 
   Wrench, 
-  Search, 
   Truck,
-  PlusCircle,
   UserPlus,
   ArrowRight,
   FileCheck,
-
+  TrendingUp,
+  Clock,
   Loader2
 } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
-// USAR LOS HOOKS MULTI-USUARIO
 import { useOrdenesUsuario, useEstadisticasUsuario } from '@/hooks/useMultiUser'
 
 export default function OrdenesPage() {
   const { user, loading: authLoading } = useAuth()
-  // USAR LOS HOOKS MULTI-USUARIO PARA OBTENER DATOS FILTRADOS POR USUARIO
   const { ordenes, loading: ordenesLoading } = useOrdenesUsuario()
   const { estadisticas, loading: statsLoading } = useEstadisticasUsuario()
 
-  const [ordenesCount, setOrdenesCount] = useState({
-    garantia: 0,
-    mantenimiento: 0,
-    diagnostico: 0,
-    entrega: 0
-  })
-
-  useEffect(() => {
-    // CONTAR ÓRDENES POR TIPO USANDO LOS DATOS YA FILTRADOS POR USUARIO
-    if (ordenes.length > 0) {
-      const counts = {
-        garantia: 0,
-        mantenimiento: 0,
-        diagnostico: 0,
-        entrega: 0
-      }
-      
-      ordenes.forEach((orden) => {
-        const tipo = orden.tipo
-        if (counts.hasOwnProperty(tipo)) {
-          counts[tipo as keyof typeof counts]++
-        }
-      })
-      
-      setOrdenesCount(counts)
-    } else {
-      setOrdenesCount({
-        garantia: 0,
-        mantenimiento: 0,
-        diagnostico: 0,
-        entrega: 0
-      })
+  // Memoizar conteo de órdenes para evitar recálculos innecesarios
+  const ordenesCount = useMemo(() => {
+    if (ordenes.length === 0) {
+      return { garantia: 0, mantenimiento: 0, entrega: 0 }
     }
+
+    return ordenes.reduce((acc, orden) => {
+      const tipo = orden.tipo as 'garantia' | 'mantenimiento' | 'entrega'
+      if (acc.hasOwnProperty(tipo)) {
+        acc[tipo]++
+      }
+      return acc
+    }, { garantia: 0, mantenimiento: 0, entrega: 0 })
   }, [ordenes])
 
-  const tiposOrden = [
+  // Configuración de tipos de orden (constante, no cambia)
+  const tiposOrden = useMemo(() => [
     {
       tipo: 'garantia',
-      titulo: 'Orden de Garantía',
-      descripcion: 'Gestión de reclamos y servicios bajo garantía',
+      titulo: 'Garantía',
+      descripcion: 'Reclamos y servicios bajo garantía',
       icono: Shield,
       color: 'bg-blue-600/20 hover:bg-blue-600/30 border-blue-500/30',
       colorIcon: 'text-blue-400',
-      colorText: 'text-blue-100',
-      ruta: '/ordenes/garantia',
-      count: ordenesCount.garantia
+      colorBadge: 'bg-blue-500/20 text-blue-300',
+      ruta: '/ordenes/garantia'
     },
     {
       tipo: 'mantenimiento',
-      titulo: 'Orden de Mantenimiento',
-      descripcion: 'Mantenimiento preventivo y correctivo de equipos',
+      titulo: 'Mantenimiento',
+      descripcion: 'Preventivo y correctivo de equipos',
       icono: Wrench,
       color: 'bg-green-600/20 hover:bg-green-600/30 border-green-500/30',
       colorIcon: 'text-green-400',
-      colorText: 'text-green-100',
-      ruta: '/ordenes/mantenimiento',
-      count: ordenesCount.mantenimiento
-    },
-    {
-      tipo: 'diagnostico',
-      titulo: 'Orden de Diagnóstico',
-      descripcion: 'Evaluación técnica y diagnóstico de problemas',
-      icono: Search,
-      color: 'bg-orange-600/20 hover:bg-orange-600/30 border-orange-500/30',
-      colorIcon: 'text-orange-400',
-      colorText: 'text-orange-100',
-      ruta: '/ordenes/diagnostico',
-      count: ordenesCount.diagnostico
+      colorBadge: 'bg-green-500/20 text-green-300',
+      ruta: '/ordenes/mantenimiento'
     },
     {
       tipo: 'entrega',
-      titulo: 'Orden de Entrega',
-      descripción: 'Entrega de equipos reparados al cliente',
+      titulo: 'Entrega',
+      descripcion: 'Entrega de equipos al cliente',
       icono: Truck,
       color: 'bg-purple-600/20 hover:bg-purple-600/30 border-purple-500/30',
       colorIcon: 'text-purple-400',
-      colorText: 'text-purple-100',
-      ruta: '/ordenes/entrega',
-      count: ordenesCount.entrega
-    },
-  ]
+      colorBadge: 'bg-purple-500/20 text-purple-300',
+      ruta: '/ordenes/entrega'
+    }
+  ] as const, [])
 
-  // Mostrar loading si está cargando auth o datos
+  // Loading state
   if (authLoading || (ordenesLoading && user?.uid)) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-blue-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">
-            {authLoading ? 'Verificando autenticación...' : 'Cargando datos de órdenes...'}
+          <p className="text-gray-400 text-sm">
+            {authLoading ? 'Verificando autenticación...' : 'Cargando órdenes...'}
           </p>
         </div>
       </div>
     )
   }
 
-  // Mostrar mensaje si no hay usuario autenticado
+  // No authenticated
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+        <div className="text-center bg-gray-800/50 rounded-xl p-8 max-w-md">
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Shield className="w-8 h-8 text-red-400" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">Acceso Restringido</h2>
           <p className="text-gray-400">Debes iniciar sesión para acceder a esta página.</p>
         </div>
       </div>
@@ -133,82 +99,144 @@ export default function OrdenesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-              Gestión de Órdenes de Servicio
-            </h1>
-            <p className="text-gray-400 text-sm sm:text-base">
-              Crea un Cliente y selecciona el tipo de orden que deseas generar o gestionar.
-            </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      {/* Header con gradiente */}
+      <div className="bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
+                Órdenes de Servicio
+              </h1>
+              <p className="text-sm sm:text-base text-gray-400">
+                Selecciona el tipo de orden que deseas gestionar
+              </p>
+            </div>
+            
+            <Link 
+              href="/clientes/nuevo"
+              className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-medium py-2.5 px-4 sm:px-5 rounded-lg transition-all duration-200 w-full sm:w-auto shadow-lg shadow-blue-500/30 active:scale-95 touch-manipulation"
+            >
+              <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>Nuevo Cliente</span>
+            </Link>
           </div>
-          
-          <Link 
-            href="/clientes/nuevo"
-            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 w-full sm:w-auto shadow-md hover:shadow-lg"
-          >
-            <UserPlus size={20} />
-            <span>Añadir Cliente</span>
-          </Link>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Estadística total destacada */}
+        <div className="mb-8">
+          <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/40 rounded-xl p-6 border border-gray-700/50 shadow-xl backdrop-blur-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                  <FileCheck className="w-6 h-6 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400 mb-1">Total de Órdenes</p>
+                  <p className="text-3xl font-bold text-white">
+                    {statsLoading ? (
+                      <span className="text-gray-600">...</span>
+                    ) : (
+                      estadisticas.totalOrdenes
+                    )}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Indicador de actividad */}
+              {!statsLoading && estadisticas.totalOrdenes > 0 && (
+                <div className="hidden sm:flex items-center gap-2 bg-green-500/10 px-4 py-2 rounded-lg border border-green-500/20">
+                  <TrendingUp className="w-4 h-4 text-green-400" />
+                  <span className="text-sm font-medium text-green-400">Activo</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Grid de órdenes */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+        {/* Grid de tipos de orden */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {tiposOrden.map((orden) => {
             const IconComponent = orden.icono
+            const count = ordenesCount[orden.tipo as keyof typeof ordenesCount]
+            
             return (
               <Link
                 key={orden.tipo}
                 href={orden.ruta}
-                className={`${orden.color} border text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col h-full group`}
+                className={`${orden.color} border rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] group touch-manipulation`}
               >
-                <div className="p-5 sm:p-6 flex flex-col flex-grow">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-2 rounded-lg bg-white/5 backdrop-blur-sm">
-                      <IconComponent className={`w-6 h-6 sm:w-7 sm:h-7 ${orden.colorIcon}`} />
+                <div className="p-5 sm:p-6">
+                  {/* Header de la tarjeta */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`p-2.5 rounded-lg bg-white/5 backdrop-blur-sm ring-1 ring-white/10 group-hover:scale-110 transition-transform duration-300`}>
+                      <IconComponent className={`w-6 h-6 ${orden.colorIcon}`} />
                     </div>
-                    <div className="bg-black/20 text-white text-sm font-bold px-2.5 py-1 rounded-full">
-                      {orden.count}
+                    <div className={`${orden.colorBadge} px-3 py-1 rounded-full font-bold text-sm`}>
+                      {count}
                     </div>
                   </div>
-                  <h3 className={`text-lg sm:text-xl font-semibold mb-2 ${orden.colorText} group-hover:text-white`}>
-                    {orden.titulo}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-gray-300 opacity-90 mt-auto mb-2">
-                    {orden.descripcion}
-                  </p>
-                  <div className="flex items-center mt-2 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-gray-400">
-                    <span>Gestionar ahora</span>
-                    <ArrowRight className="ml-1 w-3 h-3" />
+
+                  {/* Contenido */}
+                  <div className="space-y-2 mb-4">
+                    <h3 className="text-xl font-bold text-white group-hover:text-white transition-colors">
+                      {orden.titulo}
+                    </h3>
+                    <p className="text-sm text-gray-300/90 leading-relaxed">
+                      {orden.descripcion}
+                    </p>
+                  </div>
+
+                  {/* Footer con acción */}
+                  <div className="flex items-center justify-between pt-3 border-t border-white/10">
+                    <span className="text-xs font-medium text-gray-400 group-hover:text-gray-300 transition-colors">
+                      {count === 0 ? 'Sin órdenes' : count === 1 ? '1 orden' : `${count} órdenes`}
+                    </span>
+                    <div className="flex items-center gap-1 text-xs font-medium text-gray-400 group-hover:text-white transition-all">
+                      <span>Gestionar</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
                 </div>
               </Link>
             )
           })}
         </div>
-        <br />
-        {/* Estadísticas generales */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="col-span-full flex justify-center">
-            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700 w-full max-w-sm">
-              <div className="flex items-center justify-center">
-                <div className="flex items-center">
-                  <FileCheck className="w-5 h-5 text-blue-400 mr-2" />
-                  <span className="text-sm text-gray-400">Total</span>
-                </div>
-              </div>
-              <p className="text-2xl font-bold text-white mt-2 text-center">
-                {statsLoading ? '...' : estadisticas.totalOrdenes}
-              </p>
-              <p className="text-xs text-gray-500 text-center">Órdenes totales</p>
-            </div>
-          </div>
-        </div>
 
+        {/* Sección de ayuda/información adicional */}
+        {!statsLoading && estadisticas.totalOrdenes === 0 && (
+          <div className="mt-8 bg-gray-800/30 border border-gray-700/50 rounded-xl p-6 text-center">
+            <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Clock className="w-8 h-8 text-blue-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Comienza creando tu primera orden
+            </h3>
+            <p className="text-sm text-gray-400 max-w-md mx-auto">
+              Selecciona uno de los tipos de orden arriba para comenzar a gestionar tus servicios
+            </p>
+          </div>
+        )}
       </div>
+
+      {/* Estilos optimizados */}
+      <style jsx global>{`
+        .touch-manipulation {
+          touch-action: manipulation;
+        }
+
+        @media (max-width: 640px) {
+          input, textarea, select {
+            font-size: 16px !important;
+          }
+        }
+
+        button, a, [role="button"] {
+          -webkit-tap-highlight-color: transparent;
+        }
+      `}</style>
     </div>
   )
-};
+}

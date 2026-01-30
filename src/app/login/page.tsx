@@ -1,12 +1,14 @@
-// app/login/page.tsx
+//app/login/page.tsx
+
 "use client"
 
 import { useAuth } from "@/components/auth/AuthProvider"
 import { Button } from "@/components/ui/basic/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/basic/card"
 import { Alert, AlertDescription } from "@/components/ui/basic/alert"
-import { Loader2, Wrench, Shield, AlertCircle, Moon, Sun, Smartphone } from "lucide-react"
+import { Loader2, Wrench, Shield, AlertCircle, Moon, Sun } from "lucide-react"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 function GoogleIcon({ className = "" }: { className?: string }) {
   return (
@@ -29,207 +31,227 @@ function GoogleIcon({ className = "" }: { className?: string }) {
 
 export default function LoginPage() {
   const { user, signInWithGoogle, loading } = useAuth()
+  const router = useRouter()
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [isClient, setIsClient] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
-  // Detectar preferencia de tema del sistema y configurar el tema oscuro
+  // Inicializar cuando el componente se monte en el cliente
   useEffect(() => {
-    setIsClient(true)
+    setMounted(true)
     
-    // Verificar si hay una preferencia guardada en localStorage
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true'
-    
-    // Si no hay preferencia guardada, usar la preferencia del sistema
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    
-    setDarkMode(savedDarkMode || systemPrefersDark)
+    // Detectar preferencia del sistema
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    setDarkMode(prefersDark)
     
     // Escuchar cambios en la preferencia del sistema
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     const handleChange = (e: MediaQueryListEvent) => {
-      // Solo cambiar si no hay preferencia guardada en localStorage
-      if (!localStorage.getItem('darkMode')) {
-        setDarkMode(e.matches)
-      }
+      setDarkMode(e.matches)
     }
     
     mediaQuery.addEventListener('change', handleChange)
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
 
-  // Aplicar tema oscuro al documento
+  // Aplicar tema al documento
   useEffect(() => {
-    if (isClient) {
-      if (darkMode) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
+    if (mounted) {
+      document.documentElement.classList.toggle('dark', darkMode)
     }
-  }, [darkMode, isClient])
+  }, [darkMode, mounted])
+
+  // Manejar redirección cuando el usuario está autenticado
+  useEffect(() => {
+    if (!loading && user && mounted && !isRedirecting) {
+      console.log(' User authenticated, redirecting to /ordenes')
+      setIsRedirecting(true)
+      router.push('/ordenes')
+    }
+  }, [user, loading, mounted, router, isRedirecting])
 
   const toggleDarkMode = () => {
-    const newDarkMode = !darkMode
-    setDarkMode(newDarkMode)
-    localStorage.setItem('darkMode', String(newDarkMode))
-  }
-
-  // Si hay usuario, el ProtectedRoute se encargará de la redirección
-  if (user && !loading && isClient) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 dark:bg-gray-900">
-        <div className="flex flex-col items-center justify-center space-y-4">
-          <Loader2 className="h-12 w-12 animate-spin text-primary dark:text-blue-400" />
-          <p className="text-lg font-medium dark:text-white">Redirigiendo a la aplicación...</p>
-        </div>
-      </div>
-    )
+    setDarkMode(!darkMode)
   }
 
   const handleSignIn = async () => {
     try {
       setIsSigningIn(true)
       setError(null)
-      console.log('🔐 Attempting Google sign in...')
+      console.log(' Attempting Google sign in...')
       await signInWithGoogle()
-      console.log('✅ Sign in successful, ProtectedRoute will handle redirect')
+      console.log(' Sign in successful')
+      // El useEffect manejará la redirección
     } catch (error: any) {
-      console.error('❌ Sign in failed:', error)
+      setError(error.message || 'Error al iniciar sesión')      
       
-      // Mensajes de error más específicos
+      // Mensajes de error específicos
       if (error.code === 'auth/popup-closed-by-user') {
         setError('El inicio de sesión fue cancelado. Por favor, intenta de nuevo.')
       } else if (error.code === 'auth/network-request-failed') {
         setError('Error de conexión. Verifica tu conexión a internet e intenta de nuevo.')
+      } else if (error.code === 'auth/unauthorized-domain') {
+        setError('Dominio no autorizado. Contacta al administrador.')
       } else {
         setError('Error al iniciar sesión. Por favor, intenta de nuevo.')
       }
-    } finally {
       setIsSigningIn(false)
     }
   }
 
-  // Manejar la tecla Enter para iniciar sesión
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !loading && !isSigningIn) {
       handleSignIn()
     }
   }
 
+  // Evitar parpadeo durante la hidratación
+  if (!mounted) {
+    return null
+  }
+
+  // Mostrar pantalla de redireccionamiento
+  if ((user && !loading) || isRedirecting) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 p-4 transition-colors duration-300">
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
+            <Wrench className="h-12 w-12 text-white" />
+          </div>
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
+          <p className="text-lg font-semibold text-slate-900 dark:text-white">Redirigiendo a TecniControl...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background to-muted/30 p-4 dark:from-gray-900 dark:to-gray-800">
-      {/* Botón de toggle para tema oscuro */}
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 p-4 transition-colors duration-300">
+      {/* Toggle de tema - Fixed para mejor accesibilidad */}
       <button
         onClick={toggleDarkMode}
-        className="absolute top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+        className="fixed top-6 right-6 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 border border-gray-200 dark:border-gray-700 z-50"
         aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
       >
         {darkMode ? (
-          <Sun className="h-5 w-5 text-yellow-500" />
+          <Sun className="h-5 w-5 text-amber-500" />
         ) : (
-          <Moon className="h-5 w-5 text-gray-700" />
+          <Moon className="h-5 w-5 text-slate-700" />
         )}
       </button>
       
-      <div className="absolute top-4 left-4 flex items-center space-x-2 text-sm text-muted-foreground dark:text-gray-400">
-        <Shield className="h-4 w-4" />
-        <span>Conexión segura</span>
+      {/* Indicador de seguridad */}
+      <div className="fixed top-6 left-6 flex items-center gap-2 px-3 py-2 rounded-full bg-white dark:bg-gray-800 shadow-md text-sm text-slate-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 z-50">
+        <Shield className="h-4 w-4 text-green-600 dark:text-green-400" />
+        <span className="font-medium">Conexión segura</span>
       </div>
       
-      <Card className="w-full max-w-md shadow-lg rounded-2xl overflow-hidden border-0 dark:bg-gray-800 dark:border-gray-700">
-        <div className="bg-primary dark:bg-blue-600 h-2 w-full"></div>
-        <CardHeader className="text-center space-y-4 pb-6">
-          <div className="flex justify-center items-center gap-3">
-            <div className="p-2 bg-primary/10 dark:bg-blue-500/20 rounded-full">
-              <Wrench className="h-10 w-10 text-primary dark:text-blue-400" />
-            </div>
-            <CardTitle className="text-4xl font-headline bg-gradient-to-r from-primary to-primary/70 dark:from-blue-400 dark:to-blue-600 bg-clip-text text-transparent">
-              TecniControl
-            </CardTitle>
-          </div>
-          <CardDescription className="text-lg dark:text-gray-300">
-            Inicia sesión para gestionar tus órdenes de servicio
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent className="space-y-6">
-          {error && (
-            <Alert variant="destructive" className="mb-4 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+      {/* Card principal */}
+      <div className="w-full max-w-md">
+        <Card className="shadow-2xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors duration-300">
+          {/* Barra superior decorativa */}
+          <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600"></div>
           
-          <div 
-            className="flex flex-col space-y-4"
-            onKeyPress={handleKeyPress}
-            tabIndex={0}
-          >
-            <Button
-              onClick={handleSignIn}
-              className="w-full py-6 text-base font-medium transition-all duration-300 hover:shadow-md dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 dark:border-gray-300"
-              disabled={loading || isSigningIn}
-              size="lg"
-              variant="outline"
-            >
-              {loading || isSigningIn ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Iniciando sesión...
-                </>
-              ) : (
-                <>
-                  <GoogleIcon className="dark:invert" />
-                  <span className="ml-2">Continuar con Google</span>
-                </>
-              )}
-            </Button>
-          </div>
-          
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t dark:border-gray-700" />
+          {/* Header */}
+          <CardHeader className="text-center px-8 pt-10 pb-6">
+            <div className="flex justify-center items-center gap-3 mb-4">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
+                <Wrench className="h-8 w-8 text-white" />
+              </div>
+              <CardTitle className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                TecniControl
+              </CardTitle>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground dark:bg-gray-800 dark:text-gray-400">
-                Acceso seguro
-              </span>
-            </div>
-          </div>
+            <CardDescription className="text-slate-600 dark:text-gray-300 text-lg">
+              Gestiona tus órdenes de servicio
+            </CardDescription>
+          </CardHeader>
           
-          <div className="rounded-lg bg-muted/30 p-4 dark:bg-gray-700/30">
-            <div className="flex items-start space-x-3">
-              <Shield className="h-5 w-5 text-primary dark:text-blue-400 mt-0.5" />
-              <div className="space-y-1 text-sm">
-                <p className="font-medium dark:text-white">Tu privacidad está protegida</p>
-                <p className="text-muted-foreground dark:text-gray-400">
-                  Solo utilizamos tu información para autenticarte en la aplicación y 
-                  no compartimos tus datos con terceros.
-                </p>
+          {/* Contenido */}
+          <CardContent className="px-8 pb-10 space-y-6">
+            {/* Mensaje de error */}
+            {error && (
+              <Alert variant="destructive" className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                  <AlertDescription className="text-red-800 dark:text-red-200">
+                    {error}
+                  </AlertDescription>
+                </div>
+              </Alert>
+            )}
+            
+            {/* Botón de Google */}
+            <div onKeyDown={handleKeyPress}>
+              <Button
+                onClick={handleSignIn}
+                disabled={loading || isSigningIn}
+                size="lg"
+                variant="outline"
+                className="w-full py-6 text-base font-medium bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              >
+                {loading || isSigningIn ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    <span>Iniciando sesión...</span>
+                  </>
+                ) : (
+                  <>
+                    <GoogleIcon />
+                    <span className="ml-3">Continuar con Google</span>
+                  </>
+                )}
+              </Button>
+            </div>
+            
+            {/* Divisor */}
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-4 text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800">
+                  Acceso seguro
+                </span>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <footer className="mt-8 text-center text-sm text-muted-foreground max-w-md dark:text-gray-400">
-        <p>
-          Al iniciar sesión, aceptas nuestros{' '}
-          <a href="#" className="text-primary hover:underline font-medium dark:text-blue-400">
-            Términos de Servicio
-          </a>{' '}
-          y{' '}
-          <a href="#" className="text-primary hover:underline font-medium dark:text-blue-400">
-            Política de Privacidad
-          </a>
-          .
-        </p>
-        <p className="mt-2 text-xs">
-          {darkMode ? 'Modo oscuro' : 'Modo claro'} • v1.0.0
-        </p>
-      </footer>
+            
+            {/* Info de privacidad */}
+            <div className="rounded-xl bg-slate-50 dark:bg-gray-700/50 p-5 border border-slate-200 dark:border-gray-600">
+              <div className="flex gap-3">
+                <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <p className="font-semibold text-slate-900 dark:text-white text-sm">
+                    Tu privacidad está protegida
+                  </p>
+                  <p className="text-sm text-slate-600 dark:text-gray-300 leading-relaxed">
+                    Solo utilizamos tu información para autenticarte. Tus datos no se comparten con terceros.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Footer */}
+        <footer className="mt-8 text-center space-y-3 px-4">
+          <p className="text-sm text-slate-600 dark:text-gray-400">
+            Al iniciar sesión, aceptas nuestros{' '}
+            <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline font-medium transition-colors">
+              Términos de Servicio
+            </a>
+            {' '}y{' '}
+            <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline font-medium transition-colors">
+              Política de Privacidad
+            </a>
+          </p>
+          <p className="text-xs text-slate-500 dark:text-gray-500">
+            TecniControl v1.0.0 • {darkMode ? ' Modo oscuro' : ' Modo claro'}
+          </p>
+        </footer>
+      </div>
     </main>
   )
 }

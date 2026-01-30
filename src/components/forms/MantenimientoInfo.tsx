@@ -305,7 +305,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
 
         {/* Panel Derecho - Contenido Detallado */}
         <div className={`
-          flex-1 bg-gray-800/30 backdrop-blur-sm
+          flex-1 bg-gray-800/30
           transition-all duration-500 ease-in-out
           lg:relative absolute inset-0 lg:inset-auto z-20
           ${hasTipoSeleccionado 
@@ -316,7 +316,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
           {hasTipoSeleccionado && config && (
             <div className="h-full flex flex-col">
               {/* Header del Panel Seleccionado */}
-              <div className={`px-5 py-4 border-b border-gray-700/50 ${config.colorBg} backdrop-blur-sm`}>
+              <div className={`px-5 py-4 border-b border-gray-700/50 ${config.colorBg}`}>
                 <div className="flex items-center gap-3">
                   {/* Botón Volver (Solo Móvil) */}
                   <button
@@ -352,7 +352,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                   // Vista con Tabs (Preventivo/Correctivo)
                   <>
                     {/* Navegación de Tabs */}
-                    <div className="flex border-b border-gray-700/50 bg-gray-800/50 sticky top-0 z-10 backdrop-blur-sm">
+                    <div className="flex border-b border-gray-700/50 bg-gray-800/50">
                       <button
                         type="button"
                         onClick={() => handleCambiarTab('tareas')}

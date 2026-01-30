@@ -4,6 +4,16 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -200,27 +210,29 @@ const Sidebar = React.forwardRef<
 
     if (isMobile) {
       return (
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
-          <SheetContent
+        <Drawer open={openMobile} onOpenChange={setOpenMobile} direction="left">
+          <DrawerContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            /* bg-sidebar/60 + blur + fixed inset-y-0 left-0 para que sea lateral izquierdo */
+            className="fixed inset-y-0 left-0 z-50 flex h-full w-[--sidebar-width] flex-col border-r bg-sidebar/60 backdrop-blur-md text-sidebar-foreground"
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+                "border-radius": "0px", // Sin bordes redondeados para look de sidebar real
               } as React.CSSProperties
             }
-            side={side}
           >
-            <SheetHeader className="sr-only">
-              <SheetTitle>Sidebar</SheetTitle>
-              <SheetDescription>Displays the mobile sidebar.</SheetDescription>
-            </SheetHeader>
-            <div className="flex h-full w-full flex-col">{children}</div>
-          </SheetContent>
-        </Sheet>
+            {/* Contenido con Scroll */}
+            <div className="flex-1 padding-top overflow-y-auto no-scrollbar p-2">
+              {children}
+            </div>
+            
+          </DrawerContent>
+        </Drawer>
       )
     }
+
 
     return (
       <div

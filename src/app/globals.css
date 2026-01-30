@@ -40,13 +40,13 @@ body {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
     /* Sidebar variables */
-    --sidebar-background: 250.2 100.2% 15.8%; /* gray-950 */
+    --sidebar-background: 224 71% 4%; 
     --sidebar-foreground: 210 40% 98%; /* gray-50 */
     --sidebar-primary: 217.2 91.2% 59.8%; /* blue-500 */
     --sidebar-primary-foreground: 222.47 84% 4.9%; /* white text on primary */
     --sidebar-accent: 217.2 32.6% 17.5%; /* gray-800 */
     --sidebar-accent-foreground: 210 40% 98%; /* gray-50 */
-    --sidebar-border: 217.2 32.6% 17.5%; /* gray-800 */
+    --sidebar-border: 240 3.7% 15.9% / 0.5;/* gray-800 */
     --sidebar-ring: 217.2 91.2% 59.8%; /* blue-500 */
   }
   .dark {

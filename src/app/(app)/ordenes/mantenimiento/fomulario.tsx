@@ -1,7 +1,8 @@
-//mantenimiento/formulario.tsx
-//Formulario padre
+// VERSIÓN OPTIMIZADA DEL FORMULARIO DE MANTENIMIENTO
+// Implementa useReducer, React.memo, y optimizaciones de rendimiento
+
 'use client'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useReducer } from 'react'
 import { OrdenMantenimiento, Cliente, Dispositivo } from '@/types/orden'
 import { ArrowLeft, Monitor, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench, ClipboardCheck, GaugeCircle, Laptop, ShieldCheck, Check } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -12,7 +13,6 @@ import {
 import { obtenerProximoNumeroOrden, formatearIdOrden } from '@/lib/firebase-utils'
 
 // Componentes importados
-import Section from '@/components/ui/basic/Section'
 import ClienteSelector from '@/components/forms/ClienteSelector'
 import DispositivoSelector from '@/components/forms/DispositivoSelector'
 import MantenimientoInfo from '@/components/forms/MantenimientoInfo'
@@ -24,7 +24,6 @@ interface FormularioMantenimientoProps {
   onSuccess: () => void
 }
 
-// Interface de Pieza compatible con PiezasInput optimizado
 interface Pieza {
   pieza: string
   cantidad: number
@@ -32,8 +31,219 @@ interface Pieza {
   idPredefinida?: string
 }
 
-// Definir los pasos del formulario
 type FormStep = 'cliente' | 'dispositivo' | 'mantenimiento' | 'contador' | 'garantia' | 'resumen'
+
+// ============================================================================
+// STATE MANAGEMENT CON USEREDUCER
+// ============================================================================
+interface FormState {
+  currentStep: FormStep
+  loading: boolean
+  
+  // Cliente y Dispositivo
+  clientes: Cliente[]
+  clienteSeleccionado: Cliente | null
+  dispositivoSeleccionado: Dispositivo | null
+  busquedaCliente: string
+  
+  // Mantenimiento
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | ''
+  tareasSeleccionadas: string[]
+  tareasPersonalizadas: string[]
+  mostrarTareasPredefinidas: boolean
+  piezasUsadas: Pieza[]
+  
+  // Diagnóstico
+  observacionesIniciales: string
+  pruebasRealizadas: string
+  diagnosticoFinal: string
+  contadorMaquina?: number
+  
+  // Garantía
+  garantiaDescripcion: string
+  garantiaTiempoDesde: string
+  garantiaTiempoHasta: string
+  mesesGarantia: number
+  
+  // Contador
+  contador: Contador | null
+  mostrarContador: boolean
+}
+
+type FormAction =
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_CURRENT_STEP'; payload: FormStep }
+  | { type: 'SET_CLIENTES'; payload: Cliente[] }
+  | { type: 'SET_CLIENTE_SELECCIONADO'; payload: Cliente | null }
+  | { type: 'SET_DISPOSITIVO_SELECCIONADO'; payload: Dispositivo | null }
+  | { type: 'SET_BUSQUEDA_CLIENTE'; payload: string }
+  | { type: 'SET_TIPO_MANTENIMIENTO'; payload: FormState['tipoMantenimiento'] }
+  | { type: 'TOGGLE_TAREA_PREDEFINIDA'; payload: string }
+  | { type: 'SET_TAREAS_PERSONALIZADAS'; payload: string[] }
+  | { type: 'UPDATE_TAREA_PERSONALIZADA'; payload: { index: number; valor: string } }
+  | { type: 'ADD_TAREA_PERSONALIZADA' }
+  | { type: 'REMOVE_TAREA_PERSONALIZADA'; payload: number }
+  | { type: 'SET_PIEZAS_USADAS'; payload: Pieza[] }
+  | { type: 'SET_MOSTRAR_TAREAS_PREDEFINIDAS'; payload: boolean }
+  | { type: 'SET_OBSERVACIONES_INICIALES'; payload: string }
+  | { type: 'SET_PRUEBAS_REALIZADAS'; payload: string }
+  | { type: 'SET_DIAGNOSTICO_FINAL'; payload: string }
+  | { type: 'SET_CONTADOR_MAQUINA'; payload: number | undefined }
+  | { type: 'SET_GARANTIA_DESCRIPCION'; payload: string }
+  | { type: 'SET_GARANTIA_TIEMPO_DESDE'; payload: string }
+  | { type: 'SET_GARANTIA_TIEMPO_HASTA'; payload: string }
+  | { type: 'SET_MESES_GARANTIA'; payload: number }
+  | { type: 'SET_CONTADOR'; payload: Contador | null }
+  | { type: 'TOGGLE_CONTADOR' }
+  | { type: 'RESET_MANTENIMIENTO_DATA' }
+
+const initialState: FormState = {
+  currentStep: 'cliente',
+  loading: false,
+  clientes: [],
+  clienteSeleccionado: null,
+  dispositivoSeleccionado: null,
+  busquedaCliente: '',
+  tipoMantenimiento: '',
+  tareasSeleccionadas: [],
+  tareasPersonalizadas: [''],
+  mostrarTareasPredefinidas: true,
+  piezasUsadas: [],
+  observacionesIniciales: '',
+  pruebasRealizadas: '',
+  diagnosticoFinal: '',
+  contadorMaquina: undefined,
+  garantiaDescripcion: '',
+  garantiaTiempoDesde: '',
+  garantiaTiempoHasta: '',
+  mesesGarantia: 3,
+  contador: null,
+  mostrarContador: false,
+}
+
+function formReducer(state: FormState, action: FormAction): FormState {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload }
+    
+    case 'SET_CURRENT_STEP':
+      return { ...state, currentStep: action.payload }
+    
+    case 'SET_CLIENTES':
+      return { ...state, clientes: action.payload }
+    
+    case 'SET_CLIENTE_SELECCIONADO':
+      return { 
+        ...state, 
+        clienteSeleccionado: action.payload,
+        dispositivoSeleccionado: null,
+        busquedaCliente: ''
+      }
+    
+    case 'SET_DISPOSITIVO_SELECCIONADO':
+      return { ...state, dispositivoSeleccionado: action.payload }
+    
+    case 'SET_BUSQUEDA_CLIENTE':
+      return { ...state, busquedaCliente: action.payload }
+    
+    case 'SET_TIPO_MANTENIMIENTO':
+      return { ...state, tipoMantenimiento: action.payload }
+    
+    case 'TOGGLE_TAREA_PREDEFINIDA':
+      return {
+        ...state,
+        tareasSeleccionadas: state.tareasSeleccionadas.includes(action.payload)
+          ? state.tareasSeleccionadas.filter(t => t !== action.payload)
+          : [...state.tareasSeleccionadas, action.payload]
+      }
+    
+    case 'SET_TAREAS_PERSONALIZADAS':
+      return { ...state, tareasPersonalizadas: action.payload }
+    
+    case 'UPDATE_TAREA_PERSONALIZADA':
+      return {
+        ...state,
+        tareasPersonalizadas: state.tareasPersonalizadas.map((tarea, i) =>
+          i === action.payload.index ? action.payload.valor : tarea
+        )
+      }
+    
+    case 'ADD_TAREA_PERSONALIZADA':
+      return {
+        ...state,
+        tareasPersonalizadas: [...state.tareasPersonalizadas, '']
+      }
+    
+    case 'REMOVE_TAREA_PERSONALIZADA':
+      return {
+        ...state,
+        tareasPersonalizadas: state.tareasPersonalizadas.filter((_, i) => i !== action.payload)
+      }
+    
+    case 'SET_PIEZAS_USADAS':
+      return { ...state, piezasUsadas: action.payload }
+    
+    case 'SET_MOSTRAR_TAREAS_PREDEFINIDAS':
+      return { ...state, mostrarTareasPredefinidas: action.payload }
+    
+    case 'SET_OBSERVACIONES_INICIALES':
+      return { ...state, observacionesIniciales: action.payload }
+    
+    case 'SET_PRUEBAS_REALIZADAS':
+      return { ...state, pruebasRealizadas: action.payload }
+    
+    case 'SET_DIAGNOSTICO_FINAL':
+      return { ...state, diagnosticoFinal: action.payload }
+    
+    case 'SET_CONTADOR_MAQUINA':
+      return { ...state, contadorMaquina: action.payload }
+    
+    case 'SET_GARANTIA_DESCRIPCION':
+      return { ...state, garantiaDescripcion: action.payload }
+    
+    case 'SET_GARANTIA_TIEMPO_DESDE':
+      return { ...state, garantiaTiempoDesde: action.payload }
+    
+    case 'SET_GARANTIA_TIEMPO_HASTA':
+      return { ...state, garantiaTiempoHasta: action.payload }
+    
+    case 'SET_MESES_GARANTIA':
+      return { ...state, mesesGarantia: action.payload }
+    
+    case 'SET_CONTADOR':
+      return { ...state, contador: action.payload }
+    
+    case 'TOGGLE_CONTADOR':
+      const nuevoMostrarContador = !state.mostrarContador
+      return {
+        ...state,
+        mostrarContador: nuevoMostrarContador,
+        contador: nuevoMostrarContador && !state.contador
+          ? {
+              tipo: 'unidades',
+              valor: 0,
+              fechaRegistro: new Date().toISOString().split('T')[0],
+              notas: ''
+            }
+          : nuevoMostrarContador ? state.contador : null
+      }
+    
+    case 'RESET_MANTENIMIENTO_DATA':
+      return {
+        ...state,
+        tareasSeleccionadas: [],
+        tareasPersonalizadas: [''],
+        piezasUsadas: [],
+        observacionesIniciales: '',
+        pruebasRealizadas: '',
+        diagnosticoFinal: '',
+        contadorMaquina: undefined
+      }
+    
+    default:
+      return state
+  }
+}
 
 // Configuración de pasos
 const STEPS_CONFIG = [
@@ -77,38 +287,12 @@ const STEPS_CONFIG = [
 
 export default function FormularioMantenimiento({ onClose, onSuccess }: FormularioMantenimientoProps) {
   const { user } = useAuth()
-  const [loading, setLoading] = useState(false)
-  const [currentStep, setCurrentStep] = useState<FormStep>('cliente')
-  
-  // Estado para clientes y dispositivos
-  const [clientes, setClientes] = useState<Cliente[]>([])
-  const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null)
-  const [dispositivoSeleccionado, setDispositivoSeleccionado] = useState<Dispositivo | null>(null)
-  const [busquedaCliente, setBusquedaCliente] = useState('')
-  
-  // Estado para mantenimiento
-const [tipoMantenimiento, setTipoMantenimiento] = useState<'preventivo' | 'correctivo' | 'diagnostico' | ''>('')
-  const [tareasPersonalizadas, setTareasPersonalizadas] = useState<string[]>([''])
-  const [tareasSeleccionadas, setTareasSeleccionadas] = useState<string[]>([])
-  const [mostrarTareasPredefinidas, setMostrarTareasPredefinidas] = useState(true)
-  const [piezasUsadas, setPiezasUsadas] = useState<Pieza[]>([])
-  
-  // Estados para diagnóstico
-  const [observacionesIniciales, setObservacionesIniciales] = useState('')
-  const [pruebasRealizadas, setPruebasRealizadas] = useState('')
-  const [diagnosticoFinal, setDiagnosticoFinal] = useState('')
-  const [contadorMaquina, setContadorMaquina] = useState<number | undefined>(undefined)
-  
-  // Estado para garantía
-  const [garantiaDescripcion, setGarantiaDescripcion] = useState('')
-  const [garantiaTiempoDesde, setGarantiaTiempoDesde] = useState<string>('')
-  const [garantiaTiempoHasta, setGarantiaTiempoHasta] = useState<string>('')
-  const [mesesGarantia, setMesesGarantia] = useState<number>(3)
-  
-  // Estado para contador
-  const [contador, setContador] = useState<Contador | null>(null)
-  const [mostrarContador, setMostrarContador] = useState(false)
+  const [state, dispatch] = useReducer(formReducer, initialState)
 
+  // ============================================================================
+  // EFFECTS
+  // ============================================================================
+  
   // Cargar clientes al montar
   useEffect(() => {
     if (!user?.uid) return
@@ -119,7 +303,7 @@ const [tipoMantenimiento, setTipoMantenimiento] = useState<'preventivo' | 'corre
       try {
         const clientesData = await getClientesPorUsuario(user.uid)
         if (mounted) {
-          setClientes(clientesData)
+          dispatch({ type: 'SET_CLIENTES', payload: clientesData })
         }
       } catch (error) {
         console.error('Error cargando clientes:', error)
@@ -136,564 +320,573 @@ const [tipoMantenimiento, setTipoMantenimiento] = useState<'preventivo' | 'corre
   // Inicializar fecha de garantía
   useEffect(() => {
     const hoy = new Date().toISOString().split('T')[0]
-    setGarantiaTiempoDesde(hoy)
+    dispatch({ type: 'SET_GARANTIA_TIEMPO_DESDE', payload: hoy })
   }, [])
 
-  // Calcular fecha hasta de garantía
-  useEffect(() => {
-    if (mesesGarantia > 0 && garantiaTiempoDesde) {
-      const fechaDesde = new Date(garantiaTiempoDesde)
+  // Calcular fecha hasta de garantía (optimizado)
+  const fechaGarantiaHasta = useMemo(() => {
+    if (state.mesesGarantia > 0 && state.garantiaTiempoDesde) {
+      const fechaDesde = new Date(state.garantiaTiempoDesde)
       const fechaHasta = new Date(fechaDesde)
-      fechaHasta.setMonth(fechaHasta.getMonth() + mesesGarantia)
-      setGarantiaTiempoHasta(fechaHasta.toISOString().split('T')[0])
-    } else {
-      setGarantiaTiempoHasta('')
+      fechaHasta.setMonth(fechaHasta.getMonth() + state.mesesGarantia)
+      return fechaHasta.toISOString().split('T')[0]
     }
-  }, [mesesGarantia, garantiaTiempoDesde])
+    return ''
+  }, [state.mesesGarantia, state.garantiaTiempoDesde])
+
+  useEffect(() => {
+    if (fechaGarantiaHasta !== state.garantiaTiempoHasta) {
+      dispatch({ type: 'SET_GARANTIA_TIEMPO_HASTA', payload: fechaGarantiaHasta })
+    }
+  }, [fechaGarantiaHasta, state.garantiaTiempoHasta])
 
   // Limpiar datos al cambiar tipo de mantenimiento
   useEffect(() => {
-    setTareasSeleccionadas([])
-    setTareasPersonalizadas([''])
-    setPiezasUsadas([])
-    
-    if (tipoMantenimiento !== 'diagnostico') {
-      setObservacionesIniciales('')
-      setPruebasRealizadas('')
-      setDiagnosticoFinal('')
-      setContadorMaquina(undefined)
+    dispatch({ type: 'RESET_MANTENIMIENTO_DATA' })
+  }, [state.tipoMantenimiento])
+
+  // Manejar el botón back del navegador/Android
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      event.preventDefault()
+      
+      const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
+      
+      if (currentIndex > 0) {
+        prevStep()
+        window.history.pushState(null, '', window.location.pathname)
+      } else {
+        onClose()
+      }
     }
-  }, [tipoMantenimiento])
+
+    window.history.pushState(null, '', window.location.pathname)
+    window.addEventListener('popstate', handlePopState)
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [state.currentStep, onClose])
 
   // ============================================================================
-  // HANDLERS - Navegación
+  // UTILIDADES MEMOIZADAS
   // ============================================================================
-// ============================================================================
-// HANDLERS - Navegación
-// ============================================================================
-const nextStep = useCallback(() => {
-  const currentIndex = STEPS_CONFIG.findIndex(step => step.key === currentStep)
-  if (currentIndex < STEPS_CONFIG.length - 1) {
-    setCurrentStep(STEPS_CONFIG[currentIndex + 1].key)
-    // Scroll inmediato al top
+  
+  // Función de scroll reutilizable
+  const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    // Backup: scroll al contenedor principal si existe
     setTimeout(() => {
       const mainContainer = document.querySelector('.min-h-screen')
       if (mainContainer) {
         mainContainer.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
     }, 50)
-  }
-}, [currentStep])
-
-const prevStep = useCallback(() => {
-  const currentIndex = STEPS_CONFIG.findIndex(step => step.key === currentStep)
-  if (currentIndex > 0) {
-    setCurrentStep(STEPS_CONFIG[currentIndex - 1].key)
-    // Scroll inmediato al top
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-    // Backup: scroll al contenedor principal si existe
-    setTimeout(() => {
-      const mainContainer = document.querySelector('.min-h-screen')
-      if (mainContainer) {
-        mainContainer.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    }, 50)
-  }
-}, [currentStep])
+  }, [])
 
   // ============================================================================
-  // VALIDACIONES
+  // HANDLERS OPTIMIZADOS
   // ============================================================================
-  const canProceedToNextStep = useCallback((): boolean => {
-    switch (currentStep) {
-      case 'cliente':
-        return clienteSeleccionado !== null
-      case 'dispositivo':
-        return dispositivoSeleccionado !== null
-      case 'mantenimiento':
-        if (tipoMantenimiento === 'diagnostico') {
-          return !!(
-            observacionesIniciales.trim() &&
-            pruebasRealizadas.trim() &&
-            diagnosticoFinal.trim()
-          )
-        } else {
-          const todasLasTareas = [
-            ...tareasSeleccionadas,
-            ...tareasPersonalizadas.filter(t => t.trim())
-          ]
-          return todasLasTareas.length > 0
-        }
-      case 'contador':
-      case 'garantia':
-      case 'resumen':
-        return true
-      default:
-        return false
+  
+  const nextStep = useCallback(() => {
+    const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
+    if (currentIndex < STEPS_CONFIG.length - 1) {
+      dispatch({ type: 'SET_CURRENT_STEP', payload: STEPS_CONFIG[currentIndex + 1].key })
+      scrollToTop()
     }
-  }, [
-    currentStep,
-    clienteSeleccionado,
-    dispositivoSeleccionado,
-    tipoMantenimiento,
-    observacionesIniciales,
-    pruebasRealizadas,
-    diagnosticoFinal,
-    tareasSeleccionadas,
-    tareasPersonalizadas
-  ])
+  }, [state.currentStep, scrollToTop])
 
-  // ============================================================================
-  // HANDLERS - Cliente
-  // ============================================================================
+  const prevStep = useCallback(() => {
+    const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
+    if (currentIndex > 0) {
+      dispatch({ type: 'SET_CURRENT_STEP', payload: STEPS_CONFIG[currentIndex - 1].key })
+      scrollToTop()
+    }
+  }, [state.currentStep, scrollToTop])
+
+  // Handlers de Cliente
   const handleSeleccionarCliente = useCallback((cliente: Cliente) => {
-    setClienteSeleccionado(cliente)
-    setDispositivoSeleccionado(null)
-    setBusquedaCliente('')
+    dispatch({ type: 'SET_CLIENTE_SELECCIONADO', payload: cliente })
   }, [])
 
   const handleDesseleccionarCliente = useCallback(() => {
-    setClienteSeleccionado(null)
-    setDispositivoSeleccionado(null)
+    dispatch({ type: 'SET_CLIENTE_SELECCIONADO', payload: null })
   }, [])
 
-  // ============================================================================
-  // HANDLERS - Dispositivo
-  // ============================================================================
+  const handleBusquedaCliente = useCallback((busqueda: string) => {
+    dispatch({ type: 'SET_BUSQUEDA_CLIENTE', payload: busqueda })
+  }, [])
+
+  // Handlers de Dispositivo
   const handleSeleccionarDispositivo = useCallback((dispositivo: Dispositivo) => {
-    setDispositivoSeleccionado(dispositivo)
+    dispatch({ type: 'SET_DISPOSITIVO_SELECCIONADO', payload: dispositivo })
   }, [])
 
   const handleDesseleccionarDispositivo = useCallback(() => {
-    setDispositivoSeleccionado(null)
+    dispatch({ type: 'SET_DISPOSITIVO_SELECCIONADO', payload: null })
   }, [])
 
-  // ============================================================================
-  // HANDLERS - Tareas
-  // ============================================================================
+  // Handlers de Tareas
   const handleToggleTareaPredefinida = useCallback((tarea: string) => {
-    setTareasSeleccionadas(prev => {
-      if (prev.includes(tarea)) {
-        return prev.filter(t => t !== tarea)
-      } else {
-        return [...prev, tarea]
-      }
-    })
+    dispatch({ type: 'TOGGLE_TAREA_PREDEFINIDA', payload: tarea })
   }, [])
 
   const handleActualizarTareaPersonalizada = useCallback((index: number, valor: string) => {
-    setTareasPersonalizadas(prev => {
-      const nuevasTareas = [...prev]
-      nuevasTareas[index] = valor
-      return nuevasTareas
-    })
+    dispatch({ type: 'UPDATE_TAREA_PERSONALIZADA', payload: { index, valor } })
   }, [])
 
   const handleAgregarTareaPersonalizada = useCallback(() => {
-    setTareasPersonalizadas(prev => [...prev, ''])
+    dispatch({ type: 'ADD_TAREA_PERSONALIZADA' })
   }, [])
 
   const handleEliminarTareaPersonalizada = useCallback((index: number) => {
-    setTareasPersonalizadas(prev => prev.filter((_, i) => i !== index))
+    dispatch({ type: 'REMOVE_TAREA_PERSONALIZADA', payload: index })
   }, [])
 
-  // ============================================================================
-  // HANDLERS - Contador
-  // ============================================================================
+  // Handlers de Contador
   const handleToggleContador = useCallback(() => {
-    setMostrarContador(prev => {
-      const nuevoEstado = !prev
-      
-      if (nuevoEstado && !contador) {
-        const hoy = new Date().toISOString().split('T')[0]
-        setContador({
-          tipo: 'unidades',
-          valor: 0,
-          fechaRegistro: hoy,
-          notas: ''
-        })
-      }
-      
-      if (!nuevoEstado) {
-        setContador(null)
-      }
-      
-      return nuevoEstado
-    })
-  }, [contador])
+    dispatch({ type: 'TOGGLE_CONTADOR' })
+  }, [])
 
   const handleCambiarContador = useCallback((nuevoContador: Contador | null) => {
-    setContador(nuevoContador)
+    dispatch({ type: 'SET_CONTADOR', payload: nuevoContador })
   }, [])
 
   // ============================================================================
-  // SUBMIT
+  // VALIDACIONES OPTIMIZADAS
   // ============================================================================
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
   
-  if (!user?.uid) {
-    alert('Usuario no autenticado')
-    return
-  }
+  const stepValidations = useMemo(() => ({
+    cliente: () => state.clienteSeleccionado !== null,
+    dispositivo: () => state.dispositivoSeleccionado !== null,
+    mantenimiento: () => {
+      if (state.tipoMantenimiento === 'diagnostico') {
+        return !!(
+          state.observacionesIniciales.trim() &&
+          state.pruebasRealizadas.trim() &&
+          state.diagnosticoFinal.trim()
+        )
+      }
+      const todasLasTareas = [
+        ...state.tareasSeleccionadas,
+        ...state.tareasPersonalizadas.filter(t => t.trim())
+      ]
+      return todasLasTareas.length > 0
+    },
+    contador: () => true,
+    garantia: () => true,
+    resumen: () => true,
+  }), [
+    state.clienteSeleccionado,
+    state.dispositivoSeleccionado,
+    state.tipoMantenimiento,
+    state.observacionesIniciales,
+    state.pruebasRealizadas,
+    state.diagnosticoFinal,
+    state.tareasSeleccionadas,
+    state.tareasPersonalizadas
+  ])
 
-  setLoading(true)
+  const canProceedToNextStep = useCallback((): boolean => {
+    return stepValidations[state.currentStep]()
+  }, [state.currentStep, stepValidations])
 
-  try {
-    const proximoNumero = await obtenerProximoNumeroOrden('mantenimiento')
-    const idPersonalizado = formatearIdOrden(proximoNumero, 'mantenimiento')
-
-    const todasLasTareas = [
-      ...tareasSeleccionadas,
-      ...tareasPersonalizadas.filter(t => t.trim())
-    ]
-
-    // Filtrar y limpiar piezas antes de guardar
-    const piezasUsadasFiltradas = piezasUsadas
-      .filter(pieza => pieza?.pieza?.trim())
-      .map(pieza => ({
-        pieza: pieza.pieza,
-        cantidad: pieza.cantidad || 1
-      }))
-
-    // ✅ PREPARAR CONTADOR CORRECTAMENTE - EVITAR undefined
-    let contadorParaGuardar: any = null
+  // ============================================================================
+  // SUBMIT OPTIMIZADO
+  // ============================================================================
+  
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault()
     
-    if (mostrarContador && contador) {
-      // Solo incluir contador si está activo Y tiene datos válidos
-      contadorParaGuardar = {
-        tipo: contador.tipo,
-        valor: contador.valor || 0,
-        fechaRegistro: new Date(contador.fechaRegistro)
+    if (!user?.uid) {
+      alert('Usuario no autenticado')
+      return
+    }
+
+    dispatch({ type: 'SET_LOADING', payload: true })
+
+    try {
+      const proximoNumero = await obtenerProximoNumeroOrden('mantenimiento')
+      const idPersonalizado = formatearIdOrden(proximoNumero, 'mantenimiento')
+
+      const todasLasTareas = [
+        ...state.tareasSeleccionadas,
+        ...state.tareasPersonalizadas.filter(t => t.trim())
+      ]
+
+      const piezasUsadasFiltradas = state.piezasUsadas
+        .filter(pieza => pieza?.pieza?.trim())
+        .map(pieza => ({
+          pieza: pieza.pieza,
+          cantidad: pieza.cantidad || 1
+        }))
+
+      let contadorParaGuardar: any = null
+      
+      if (state.mostrarContador && state.contador) {
+        contadorParaGuardar = {
+          tipo: state.contador.tipo,
+          valor: state.contador.valor || 0,
+          fechaRegistro: new Date(state.contador.fechaRegistro)
+        }
+        
+        if (state.contador.unidadPersonalizada && state.contador.unidadPersonalizada.trim()) {
+          contadorParaGuardar.unidadPersonalizada = state.contador.unidadPersonalizada.trim()
+        }
+        
+        if (state.contador.notas && state.contador.notas.trim()) {
+          contadorParaGuardar.notas = state.contador.notas.trim()
+        }
+      }
+
+      const nuevaOrden: any = {
+        tipo: 'mantenimiento',
+        horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        cliente: state.clienteSeleccionado!,
+        dispositivo: state.dispositivoSeleccionado!,
+        fechaCreacion: new Date(),
+        tipoMantenimiento: state.tipoMantenimiento,
+        tareasRealizadas: todasLasTareas,
+        piezasUsadas: piezasUsadasFiltradas,
+        idPersonalizado,
+        userId: user.uid,
+      }
+
+      if (contadorParaGuardar) {
+        nuevaOrden.contador = contadorParaGuardar
       }
       
-      // Solo agregar campos opcionales si tienen valor
-      if (contador.unidadPersonalizada && contador.unidadPersonalizada.trim()) {
-        contadorParaGuardar.unidadPersonalizada = contador.unidadPersonalizada.trim()
+      if (state.tipoMantenimiento === 'diagnostico') {
+        nuevaOrden.observacionesIniciales = state.observacionesIniciales.trim()
+        nuevaOrden.pruebasRealizadas = state.pruebasRealizadas.trim()
+        nuevaOrden.diagnosticoFinal = state.diagnosticoFinal.trim()
+        
+        if (state.contadorMaquina !== undefined && state.contadorMaquina !== null) {
+          nuevaOrden.contadorMaquina = state.contadorMaquina
+        }
       }
       
-      if (contador.notas && contador.notas.trim()) {
-        contadorParaGuardar.notas = contador.notas.trim()
+      if (state.garantiaTiempoDesde) {
+        nuevaOrden.garantiaTiempoDesde = new Date(state.garantiaTiempoDesde)
       }
-    }
-
-    // ✅ CREAR OBJETO BASE SIN CAMPOS UNDEFINED
-    const nuevaOrden: any = {
-      tipo: 'mantenimiento',
-      horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      cliente: clienteSeleccionado!,
-      dispositivo: dispositivoSeleccionado!,
-      fechaCreacion: new Date(),
-      tipoMantenimiento,
-      tareasRealizadas: todasLasTareas,
-      piezasUsadas: piezasUsadasFiltradas,
-      idPersonalizado,
-      userId: user.uid,
-    }
-
-    // ✅ SOLO AGREGAR CONTADOR SI EXISTE
-    if (contadorParaGuardar) {
-      nuevaOrden.contador = contadorParaGuardar
-    }
-    
-    // ✅ Campos de diagnóstico - Solo si es diagnóstico
-    if (tipoMantenimiento === 'diagnostico') {
-      nuevaOrden.observacionesIniciales = observacionesIniciales.trim()
-      nuevaOrden.pruebasRealizadas = pruebasRealizadas.trim()
-      nuevaOrden.diagnosticoFinal = diagnosticoFinal.trim()
       
-      // Solo agregar contadorMaquina si tiene valor
-      if (contadorMaquina !== undefined && contadorMaquina !== null) {
-        nuevaOrden.contadorMaquina = contadorMaquina
+      if (state.garantiaTiempoHasta) {
+        nuevaOrden.garantiaTiempoHasta = new Date(state.garantiaTiempoHasta)
       }
-    }
-    
-    // ✅ Garantía - Solo agregar si tienen valores
-    if (garantiaTiempoDesde) {
-      nuevaOrden.garantiaTiempoDesde = new Date(garantiaTiempoDesde)
-    }
-    
-    if (garantiaTiempoHasta) {
-      nuevaOrden.garantiaTiempoHasta = new Date(garantiaTiempoHasta)
-    }
-    
-    if (garantiaDescripcion && garantiaDescripcion.trim()) {
-      nuevaOrden.garantiaDescripcion = garantiaDescripcion.trim()
-    }
+      
+      if (state.garantiaDescripcion && state.garantiaDescripcion.trim()) {
+        nuevaOrden.garantiaDescripcion = state.garantiaDescripcion.trim()
+      }
 
-    // ✅ VALIDACIÓN FINAL: Eliminar cualquier campo undefined
-    Object.keys(nuevaOrden).forEach(key => {
-      if (nuevaOrden[key] === undefined) {
-        delete nuevaOrden[key]
-      }
+      Object.keys(nuevaOrden).forEach(key => {
+        if (nuevaOrden[key] === undefined) {
+          delete nuevaOrden[key]
+        }
+      })
+
+      await crearOrden(nuevaOrden, user.uid)
+      onSuccess()
+    } catch (error) {
+      console.error('Error creando orden:', error)
+      alert('Error al crear la orden: ' + (error instanceof Error ? error.message : 'Error desconocido'))
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false })
+    }
+  }, [user?.uid, state, onSuccess])
+
+  // ============================================================================
+  // UTILIDADES MEMOIZADAS
+  // ============================================================================
+  
+  const getTipoMantenimientoLabel = useMemo(() => {
+    const labels = {
+      preventivo: 'Preventivo',
+      correctivo: 'Correctivo',
+      diagnostico: 'Diagnóstico',
+      '': 'Sin especificar'
+    } as const
+    
+    return labels[state.tipoMantenimiento]
+  }, [state.tipoMantenimiento])
+
+  const getTipoMantenimientoColor = useMemo(() => {
+    const colors = {
+      preventivo: 'bg-green-600/20 text-green-400 border-green-500/30',
+      correctivo: 'bg-orange-600/20 text-orange-400 border-orange-500/30',
+      diagnostico: 'bg-blue-600/20 text-blue-400 border-blue-500/30',
+      '': 'bg-gray-600/20 text-gray-400 border-gray-500/30'
+    } as const
+    
+    return colors[state.tipoMantenimiento]
+  }, [state.tipoMantenimiento])
+
+const handleSetPiezasUsadas = useCallback((value: React.SetStateAction<Pieza[]>) => {
+  if (typeof value === 'function') {
+    dispatch({ 
+      type: 'SET_PIEZAS_USADAS', 
+      payload: value(state.piezasUsadas) 
     })
-
-    console.log('Datos a guardar:', nuevaOrden) // Para debug
-
-    await crearOrden(nuevaOrden, user.uid)
-    onSuccess()
-  } catch (error) {
-    console.error('Error creando orden:', error)
-    alert('Error al crear la orden: ' + (error instanceof Error ? error.message : 'Error desconocido'))
-  } finally {
-    setLoading(false)
+  } else {
+    dispatch({ type: 'SET_PIEZAS_USADAS', payload: value })
   }
-}
+}, [state.piezasUsadas])
 
-  // ============================================================================
-  // UTILIDADES
-  // ============================================================================
-const getTipoMantenimientoLabel = useMemo(() => {
-  const labels = {
-    preventivo: 'Preventivo',
-    correctivo: 'Correctivo',
-    diagnostico: 'Diagnóstico',
-    '': 'Sin especificar'
-  } as const
-  
-  return labels[tipoMantenimiento]
-}, [tipoMantenimiento])
+const handleCambiarTipoMantenimiento = useCallback((tipo: typeof state.tipoMantenimiento) => {
+  dispatch({ type: 'SET_TIPO_MANTENIMIENTO', payload: tipo })
+}, [])
 
-const getTipoMantenimientoColor = useMemo(() => {
-  const colors = {
-    preventivo: 'bg-green-600/20 text-green-400 border-green-500/30',
-    correctivo: 'bg-orange-600/20 text-orange-400 border-orange-500/30',
-    diagnostico: 'bg-blue-600/20 text-blue-400 border-blue-500/30',
-    '': 'bg-gray-600/20 text-gray-400 border-gray-500/30'
-  } as const
-  
-  return colors[tipoMantenimiento]
-}, [tipoMantenimiento])
-  // Memoizar props para componentes
+const handleSetMostrarTareasPredefinidas = useCallback((mostrar: boolean) => {
+  dispatch({ type: 'SET_MOSTRAR_TAREAS_PREDEFINIDAS', payload: mostrar })
+}, [])
+
+const handleCambiarObservaciones = useCallback((valor: string) => {
+  dispatch({ type: 'SET_OBSERVACIONES_INICIALES', payload: valor })
+}, [])
+
+const handleCambiarPruebas = useCallback((valor: string) => {
+  dispatch({ type: 'SET_PRUEBAS_REALIZADAS', payload: valor })
+}, [])
+
+const handleCambiarDiagnostico = useCallback((valor: string) => {
+  dispatch({ type: 'SET_DIAGNOSTICO_FINAL', payload: valor })
+}, [])
+
+// ============================================================================
+// PROPS MEMOIZADAS
+// ============================================================================
+
+// Memoizar props para componentes
 const mantenimientoInfoProps = useMemo(() => ({
-  tipoMantenimiento,
-  tareasSeleccionadas,
-  tareasPersonalizadas,
-  piezasUsadas,
-  setPiezasUsadas,  
-  mostrarTareasPredefinidas,
-  observacionesIniciales,
-  pruebasRealizadas,
-  diagnosticoFinal,
-  onCambiarTipoMantenimiento: setTipoMantenimiento,
+  tipoMantenimiento: state.tipoMantenimiento,
+  tareasSeleccionadas: state.tareasSeleccionadas,
+  tareasPersonalizadas: state.tareasPersonalizadas,
+  piezasUsadas: state.piezasUsadas,
+  setPiezasUsadas: handleSetPiezasUsadas, // ✅ Usar el handler creado arriba
+  mostrarTareasPredefinidas: state.mostrarTareasPredefinidas,
+  observacionesIniciales: state.observacionesIniciales,
+  pruebasRealizadas: state.pruebasRealizadas,
+  diagnosticoFinal: state.diagnosticoFinal,
+  onCambiarTipoMantenimiento: handleCambiarTipoMantenimiento,
   onToggleTareaPredefinida: handleToggleTareaPredefinida,
-  onSetMostrarTareasPredefinidas: setMostrarTareasPredefinidas,
+  onSetMostrarTareasPredefinidas: handleSetMostrarTareasPredefinidas,
   onActualizarTareaPersonalizada: handleActualizarTareaPersonalizada,
   onAgregarTareaPersonalizada: handleAgregarTareaPersonalizada,
   onEliminarTareaPersonalizada: handleEliminarTareaPersonalizada,
-  onCambiarObservaciones: setObservacionesIniciales,
-  onCambiarPruebas: setPruebasRealizadas,
-  onCambiarDiagnostico: setDiagnosticoFinal,
+  onCambiarObservaciones: handleCambiarObservaciones,
+  onCambiarPruebas: handleCambiarPruebas,
+  onCambiarDiagnostico: handleCambiarDiagnostico,
 }), [
-  tipoMantenimiento,
-  tareasSeleccionadas,
-  tareasPersonalizadas,
-  piezasUsadas,
-  mostrarTareasPredefinidas,
-  observacionesIniciales,
-  pruebasRealizadas,
-  diagnosticoFinal,
+  state.tipoMantenimiento,
+  state.tareasSeleccionadas,
+  state.tareasPersonalizadas,
+  state.piezasUsadas,
+  state.mostrarTareasPredefinidas,
+  state.observacionesIniciales,
+  state.pruebasRealizadas,
+  state.diagnosticoFinal,
+  handleSetPiezasUsadas,
+  handleCambiarTipoMantenimiento,
   handleToggleTareaPredefinida,
+  handleSetMostrarTareasPredefinidas,
   handleActualizarTareaPersonalizada,
   handleAgregarTareaPersonalizada,
   handleEliminarTareaPersonalizada,
+  handleCambiarObservaciones,
+  handleCambiarPruebas,
+  handleCambiarDiagnostico,
 ])
 
   // ============================================================================
   // RENDER - Paso actual
   // ============================================================================
   const renderCurrentStep = () => {
-    switch (currentStep) {
+    switch (state.currentStep) {
       case 'cliente':
         return (
-            <ClienteSelector
-              clientes={clientes}
-              clienteSeleccionado={clienteSeleccionado}
-              busquedaCliente={busquedaCliente}
-              setBusquedaCliente={setBusquedaCliente}
-              onSeleccionarCliente={handleSeleccionarCliente}
-              onDesseleccionarCliente={handleDesseleccionarCliente}
-            />
+          <ClienteSelector
+            clientes={state.clientes}
+            clienteSeleccionado={state.clienteSeleccionado}
+            busquedaCliente={state.busquedaCliente}
+            setBusquedaCliente={handleBusquedaCliente}
+            onSeleccionarCliente={handleSeleccionarCliente}
+            onDesseleccionarCliente={handleDesseleccionarCliente}
+          />
         )
 
       case 'dispositivo':
         return (
-
-            <DispositivoSelector
-              cliente={clienteSeleccionado!}
-              dispositivoSeleccionado={dispositivoSeleccionado}
-              onSeleccionarDispositivo={handleSeleccionarDispositivo}
-              onDesseleccionarDispositivo={handleDesseleccionarDispositivo}
-            />
+          <DispositivoSelector
+            cliente={state.clienteSeleccionado!}
+            dispositivoSeleccionado={state.dispositivoSeleccionado}
+            onSeleccionarDispositivo={handleSeleccionarDispositivo}
+            onDesseleccionarDispositivo={handleDesseleccionarDispositivo}
+          />
         )
 
       case 'mantenimiento':
-        return (
-            <MantenimientoInfo {...mantenimientoInfoProps} />
-        )
+        return <MantenimientoInfo {...mantenimientoInfoProps} />
 
       case 'contador':
         return (
-            <ContadorInput
-              contador={contador}
-              mostrarContador={mostrarContador}
-              onToggleContador={handleToggleContador}
-              onChangeContador={handleCambiarContador}
-            />
-
+          <ContadorInput
+            contador={state.contador}
+            mostrarContador={state.mostrarContador}
+            onToggleContador={handleToggleContador}
+            onChangeContador={handleCambiarContador}
+          />
         )
 
       case 'garantia':
         return (
-            <GarantiaInput
-              garantiaTiempoDesde={garantiaTiempoDesde}
-              garantiaTiempoHasta={garantiaTiempoHasta}
-              mesesGarantia={mesesGarantia}
-              garantiaDescripcion={garantiaDescripcion}
-              onCambiarFechaDesde={setGarantiaTiempoDesde}
-              onCambiarMeses={setMesesGarantia}
-              onCambiarDescripcion={setGarantiaDescripcion}
-            />
+          <GarantiaInput
+            garantiaTiempoDesde={state.garantiaTiempoDesde}
+            garantiaTiempoHasta={state.garantiaTiempoHasta}
+            mesesGarantia={state.mesesGarantia}
+            garantiaDescripcion={state.garantiaDescripcion}
+            onCambiarFechaDesde={(fecha: string) => 
+              dispatch({ type: 'SET_GARANTIA_TIEMPO_DESDE', payload: fecha })}
+            onCambiarMeses={(meses: number) => 
+              dispatch({ type: 'SET_MESES_GARANTIA', payload: meses })}
+            onCambiarDescripcion={(desc: string) => 
+              dispatch({ type: 'SET_GARANTIA_DESCRIPCION', payload: desc })}
+          />
         )
 
       case 'resumen':
         return (
-            <div className="space-y-6 text-white">
-              {/* Información Principal */}
-              <div className='bg-gray-800/50 rounded-xl p-4'>
-                <p className="text-xl text-white font-medium">Verifica la Información</p>
-              </div>
-              <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <h3 className="text-xs sm:text-sm font-semibold text-blue-300 uppercase tracking-wide">Cliente</h3>
-                    <p className="text-base sm:text-lg font-medium">{clienteSeleccionado?.name}</p>
-                    {clienteSeleccionado?.phone && (
-                      <p className="text-xs sm:text-sm text-gray-400">{clienteSeleccionado.phone}</p>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-xs sm:text-sm font-semibold text-green-300 uppercase tracking-wide">Dispositivo</h3>
-                    <p className="text-base sm:text-lg font-medium">{dispositivoSeleccionado?.tipo}</p>
-                    {dispositivoSeleccionado?.numeroSerie && (
-                      <p className="text-xs sm:text-sm text-gray-400">S/N: {dispositivoSeleccionado.numeroSerie}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Mantenimiento/Diagnóstico */}
-              <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-3">
-                <h3 className="text-xs sm:text-sm font-semibold text-purple-300 uppercase tracking-wide">
-                  {tipoMantenimiento === 'diagnostico' ? 'Diagnóstico' : 'Mantenimiento'}
-                </h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400 text-sm">Tipo:</span>
-                  <span className={`text-base font-medium capitalize px-3 py-1 rounded-full border ${getTipoMantenimientoColor}`}>
-                    {getTipoMantenimientoLabel}
-                  </span>
-                </div>
-                
-                {tipoMantenimiento === 'diagnostico' ? (
-                  <div className="pt-2 border-t border-gray-700 space-y-3">
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Observaciones iniciales</p>
-                      <p className="text-sm text-gray-300 line-clamp-3">{observacionesIniciales}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Diagnóstico final</p>
-                      <p className="text-sm text-gray-300 line-clamp-3">{diagnosticoFinal}</p>
-                    </div>
-                    {contadorMaquina !== undefined && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Contador de máquina</p>
-                        <p className="text-lg font-semibold text-purple-400">{contadorMaquina.toLocaleString()} unidades</p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <div className="pt-2 border-t border-gray-700">
-                      <p className="text-gray-400 text-sm mb-2">Tareas realizadas:</p>
-                      <div className="space-y-2">
-                        {tareasSeleccionadas.map((tarea, idx) => (
-                          <div key={`pred-${idx}`} className="flex items-start gap-2 bg-gray-700/30 px-3 py-2 rounded-lg">
-                            <span className="px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded text-xs flex-shrink-0 mt-0.5">Predef</span>
-                            <span className="text-sm text-white">{tarea}</span>
-                          </div>
-                        ))}
-                        {tareasPersonalizadas.filter(t => t.trim()).map((tarea, idx) => (
-                          <div key={`custom-${idx}`} className="flex items-start gap-2 bg-gray-700/30 px-3 py-2 rounded-lg">
-                            <span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-xs flex-shrink-0 mt-0.5">Person</span>
-                            <span className="text-sm text-white">{tarea}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-3 pt-3 border-t border-gray-700/50">
-                        <span className="text-xs text-gray-500">Total: </span>
-                        <span className="text-lg font-bold text-purple-400">
-                          {[...tareasSeleccionadas, ...tareasPersonalizadas.filter(t => t.trim())].length} tareas
-                        </span>
-                      </div>
-                    </div>
-                    {piezasUsadas.filter(p => p?.pieza?.trim()).length > 0 && (
-                      <div className="pt-2 border-t border-gray-700">
-                        <p className="text-gray-400 text-sm mb-2">Piezas utilizadas:</p>
-                        <div className="space-y-2">
-                          {piezasUsadas
-                            .filter(p => p?.pieza?.trim())
-                            .map((pieza, idx) => (
-                              <div key={idx} className="flex items-center justify-between bg-gray-700/30 px-3 py-2 rounded-lg">
-                                <div className="flex items-center gap-2 min-w-0 flex-1">
-                                  {pieza.tipo === 'predefinida' ? (
-                                    <span className="px-2 py-0.5 bg-green-500/20 text-green-300 rounded text-xs flex-shrink-0">Predef</span>
-                                  ) : (
-                                    <span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-xs flex-shrink-0">Person</span>
-                                  )}
-                                  <span className="text-sm text-white truncate">{pieza.pieza}</span>
-                                </div>
-                                <span className="text-sm font-medium text-gray-300 ml-2 flex-shrink-0">x{pieza.cantidad}</span>
-                              </div>
-                            ))
-                          }
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-
-              {/* Contador */}
-              {mostrarContador && contador && (
-                <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-3">
-                  <h3 className="text-xs sm:text-sm font-semibold text-amber-300 uppercase tracking-wide">Contador</h3>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-bold text-amber-400">{contador.valor.toLocaleString()}</span>
-                    <span className="text-base text-gray-400 capitalize">{contador.tipo}</span>
-                  </div>
-                  {contador.notas && (
-                    <p className="text-sm text-gray-400 pt-2 border-t border-gray-700">{contador.notas}</p>
+          <div className="space-y-6 text-white">
+            {/* Información Principal */}
+            <div className='bg-gray-800/50 rounded-xl p-4'>
+              <p className="text-xl text-white font-medium">Verifica la Información</p>
+            </div>
+            <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <h3 className="text-xs sm:text-sm font-semibold text-blue-300 uppercase tracking-wide">Cliente</h3>
+                  <p className="text-base sm:text-lg font-medium">{state.clienteSeleccionado?.name}</p>
+                  {state.clienteSeleccionado?.phone && (
+                    <p className="text-xs sm:text-sm text-gray-400">{state.clienteSeleccionado.phone}</p>
                   )}
                 </div>
-              )}
-
-              {/* Garantía */}
-              {garantiaDescripcion && (
-                <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-3">
-                  <h3 className="text-xs sm:text-sm font-semibold text-red-300 uppercase tracking-wide">Garantía</h3>
-                  <p className="text-base">{garantiaDescripcion}</p>
-                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-700 text-sm">
-                    <span className="text-gray-400">Vigencia:</span>
-                    <span className="bg-red-600/20 px-3 py-1 rounded-full font-medium">
-                      {new Date(garantiaTiempoDesde).toLocaleDateString()} - {new Date(garantiaTiempoHasta).toLocaleDateString()}
-                    </span>
-                    <span className="text-gray-500">({mesesGarantia} meses)</span>
-                  </div>
+                <div className="space-y-1">
+                  <h3 className="text-xs sm:text-sm font-semibold text-green-300 uppercase tracking-wide">Dispositivo</h3>
+                  <p className="text-base sm:text-lg font-medium">{state.dispositivoSeleccionado?.tipo}</p>
+                  {state.dispositivoSeleccionado?.numeroSerie && (
+                    <p className="text-xs sm:text-sm text-gray-400">S/N: {state.dispositivoSeleccionado.numeroSerie}</p>
+                  )}
                 </div>
+              </div>
+            </div>
+
+            {/* Mantenimiento/Diagnóstico */}
+            <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-3">
+              <h3 className="text-xs sm:text-sm font-semibold text-purple-300 uppercase tracking-wide">
+                {state.tipoMantenimiento === 'diagnostico' ? 'Diagnóstico' : 'Mantenimiento'}
+              </h3>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400 text-sm">Tipo:</span>
+                <span className={`text-base font-medium capitalize px-3 py-1 rounded-full border ${getTipoMantenimientoColor}`}>
+                  {getTipoMantenimientoLabel}
+                </span>
+              </div>
+              
+              {state.tipoMantenimiento === 'diagnostico' ? (
+                <div className="pt-2 border-t border-gray-700 space-y-3">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Observaciones iniciales</p>
+                    <p className="text-sm text-gray-300 line-clamp-3">{state.observacionesIniciales}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Diagnóstico final</p>
+                    <p className="text-sm text-gray-300 line-clamp-3">{state.diagnosticoFinal}</p>
+                  </div>
+                  {state.contadorMaquina !== undefined && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Contador de máquina</p>
+                      <p className="text-lg font-semibold text-purple-400">{state.contadorMaquina.toLocaleString()} unidades</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="pt-2 border-t border-gray-700">
+                    <p className="text-gray-400 text-sm mb-2">Tareas realizadas:</p>
+                    <div className="space-y-2">
+                      {state.tareasSeleccionadas.map((tarea, idx) => (
+                        <div key={`pred-${idx}`} className="flex items-start gap-2 bg-gray-700/30 px-3 py-2 rounded-lg">
+                          <span className="px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded text-xs flex-shrink-0 mt-0.5">Predef</span>
+                          <span className="text-sm text-white">{tarea}</span>
+                        </div>
+                      ))}
+                      {state.tareasPersonalizadas.filter(t => t.trim()).map((tarea, idx) => (
+                        <div key={`custom-${idx}`} className="flex items-start gap-2 bg-gray-700/30 px-3 py-2 rounded-lg">
+                          <span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-xs flex-shrink-0 mt-0.5">Person</span>
+                          <span className="text-sm text-white">{tarea}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-gray-700/50">
+                      <span className="text-xs text-gray-500">Total: </span>
+                      <span className="text-lg font-bold text-purple-400">
+                        {[...state.tareasSeleccionadas, ...state.tareasPersonalizadas.filter(t => t.trim())].length} tareas
+                      </span>
+                    </div>
+                  </div>
+                  {state.piezasUsadas.filter(p => p?.pieza?.trim()).length > 0 && (
+                    <div className="pt-2 border-t border-gray-700">
+                      <p className="text-gray-400 text-sm mb-2">Piezas utilizadas:</p>
+                      <div className="space-y-2">
+                        {state.piezasUsadas
+                          .filter(p => p?.pieza?.trim())
+                          .map((pieza, idx) => (
+                            <div key={idx} className="flex items-center justify-between bg-gray-700/30 px-3 py-2 rounded-lg">
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
+                                {pieza.tipo === 'predefinida' ? (
+                                  <span className="px-2 py-0.5 bg-green-500/20 text-green-300 rounded text-xs flex-shrink-0">Predef</span>
+                                ) : (
+                                  <span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-xs flex-shrink-0">Person</span>
+                                )}
+                                <span className="text-sm text-white truncate">{pieza.pieza}</span>
+                              </div>
+                              <span className="text-sm font-medium text-gray-300 ml-2 flex-shrink-0">x{pieza.cantidad}</span>
+                            </div>
+                          ))
+                        }
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
+
+            {/* Contador */}
+            {state.mostrarContador && state.contador && (
+              <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-3">
+                <h3 className="text-xs sm:text-sm font-semibold text-amber-300 uppercase tracking-wide">Contador</h3>
+                <div className="flex items-baseline space-x-2">
+                  <span className="text-3xl font-bold text-amber-400">{state.contador.valor.toLocaleString()}</span>
+                  <span className="text-base text-gray-400 capitalize">{state.contador.tipo}</span>
+                </div>
+                {state.contador.notas && (
+                  <p className="text-sm text-gray-400 pt-2 border-t border-gray-700">{state.contador.notas}</p>
+                )}
+              </div>
+            )}
+
+            {/* Garantía */}
+            {state.garantiaDescripcion && (
+              <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-3">
+                <h3 className="text-xs sm:text-sm font-semibold text-red-300 uppercase tracking-wide">Garantía</h3>
+                <p className="text-base">{state.garantiaDescripcion}</p>
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-700 text-sm">
+                  <span className="text-gray-400">Vigencia:</span>
+                  <span className="bg-red-600/20 px-3 py-1 rounded-full font-medium">
+                    {new Date(state.garantiaTiempoDesde).toLocaleDateString()} - {new Date(state.garantiaTiempoHasta).toLocaleDateString()}
+                  </span>
+                  <span className="text-gray-500">({state.mesesGarantia} meses)</span>
+                </div>
+              </div>
+            )}
+          </div>
         )
     }
   }
@@ -715,7 +908,7 @@ const mantenimientoInfoProps = useMemo(() => ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pb-24 sm:pb-8">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 shadow-lg">
+      <div className="bg-gray-900/95 border-b border-gray-800 shadow-lg">
         <div className="max-w-4xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center space-x-2 sm:space-x-4">
             <button 
@@ -730,7 +923,7 @@ const mantenimientoInfoProps = useMemo(() => ({
                 Nueva Orden
               </h1>
               <p className="text-xs sm:text-sm text-gray-400 mt-0.5 truncate">
-                Paso {STEPS_CONFIG.findIndex(s => s.key === currentStep) + 1} de {STEPS_CONFIG.length}
+                Paso {STEPS_CONFIG.findIndex(s => s.key === state.currentStep) + 1} de {STEPS_CONFIG.length}
               </p>
             </div>
           </div>
@@ -742,9 +935,9 @@ const mantenimientoInfoProps = useMemo(() => ({
         <div className="hidden lg:block mb-8">
           <div className="flex items-center justify-between">
             {STEPS_CONFIG.map((step, index) => {
-              const currentIndex = STEPS_CONFIG.findIndex(s => s.key === currentStep)
+              const currentIndex = STEPS_CONFIG.findIndex(s => s.key === state.currentStep)
               const isCompleted = currentIndex > index
-              const isCurrent = currentStep === step.key
+              const isCurrent = state.currentStep === step.key
               
               return (
                 <div key={step.key} className="flex items-center flex-1">
@@ -794,19 +987,19 @@ const mantenimientoInfoProps = useMemo(() => ({
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-xl">
-                  {STEPS_CONFIG[STEPS_CONFIG.findIndex(s => s.key === currentStep)].icon}
+                  {STEPS_CONFIG[STEPS_CONFIG.findIndex(s => s.key === state.currentStep)].icon}
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-white">
-                    {STEPS_CONFIG[STEPS_CONFIG.findIndex(s => s.key === currentStep)].title}
+                    {STEPS_CONFIG[STEPS_CONFIG.findIndex(s => s.key === state.currentStep)].title}
                   </h2>
                   <p className="text-xs text-gray-400">
-                    {STEPS_CONFIG[STEPS_CONFIG.findIndex(s => s.key === currentStep)].description}
+                    {STEPS_CONFIG[STEPS_CONFIG.findIndex(s => s.key === state.currentStep)].description}
                   </p>
                 </div>
               </div>
               <span className="text-sm font-semibold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full">
-                {STEPS_CONFIG.findIndex(s => s.key === currentStep) + 1}/{STEPS_CONFIG.length}
+                {STEPS_CONFIG.findIndex(s => s.key === state.currentStep) + 1}/{STEPS_CONFIG.length}
               </span>
             </div>
             
@@ -814,7 +1007,7 @@ const mantenimientoInfoProps = useMemo(() => ({
             <div className="relative h-2 bg-gray-700 rounded-full overflow-hidden">
               <div 
                 className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-500 ease-out"
-                style={{ width: `${((STEPS_CONFIG.findIndex(s => s.key === currentStep) + 1) / STEPS_CONFIG.length) * 100}%` }}
+                style={{ width: `${((STEPS_CONFIG.findIndex(s => s.key === state.currentStep) + 1) / STEPS_CONFIG.length) * 100}%` }}
               >
                 <div className="absolute right-0 top-0 h-full w-8 bg-gradient-to-r from-transparent to-white/30 animate-pulse" />
               </div>
@@ -823,9 +1016,9 @@ const mantenimientoInfoProps = useMemo(() => ({
             {/* Mini Steps Indicators */}
             <div className="flex justify-between mt-3 px-1">
               {STEPS_CONFIG.map((step, index) => {
-                const currentIndex = STEPS_CONFIG.findIndex(s => s.key === currentStep)
+                const currentIndex = STEPS_CONFIG.findIndex(s => s.key === state.currentStep)
                 const isCompleted = currentIndex > index
-                const isCurrent = currentStep === step.key
+                const isCurrent = state.currentStep === step.key
                 
                 return (
                   <div 
@@ -853,13 +1046,13 @@ const mantenimientoInfoProps = useMemo(() => ({
           </div>
 
           {/* Navegación entre Pasos - Fixed en móvil */}
-          <div className="fixed bottom-0 left-0 right-0 sm:relative bg-gray-900/95 sm:bg-transparent backdrop-blur-sm sm:backdrop-blur-none border-t sm:border-t-0 border-gray-800 sm:border-gray-700 mt-0 sm:mt-8 pt-0 sm:pt-6 z-20">
+          <div className="fixed bottom-0 left-0 right-0 sm:relative bg-gray-900/95 sm:bg-transparent border-t sm:border-t-0 border-gray-800 sm:border-gray-700 mt-0 sm:mt-8 pt-0 sm:pt-6 z-20">
             <div className="max-w-4xl mx-auto px-3 sm:px-0 py-3 sm:py-0">
               <div className="flex justify-between items-center gap-3">
                 <button
                   type="button"
                   onClick={prevStep}
-                  disabled={currentStep === 'cliente'}
+                  disabled={state.currentStep === 'cliente'}
                   className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-gray-300 bg-gray-800 rounded-lg sm:rounded-xl hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 disabled:active:scale-100 shadow-lg sm:shadow-none touch-manipulation"
                 >
                   <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
@@ -867,22 +1060,22 @@ const mantenimientoInfoProps = useMemo(() => ({
                   <span className="sm:hidden">Atrás</span>
                 </button>
 
-                {currentStep === 'resumen' ? (
+                {state.currentStep === 'resumen' ? (
                   <div className="flex gap-2 sm:gap-3 flex-1 sm:flex-initial justify-end">
                     <button
                       type="button"
                       onClick={onClose}
-                      disabled={loading}
+                      disabled={state.loading}
                       className="px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-gray-300 bg-gray-800 rounded-lg sm:rounded-xl hover:bg-gray-700 disabled:opacity-50 transition-all active:scale-95 disabled:active:scale-100 shadow-lg sm:shadow-none touch-manipulation"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
-                      disabled={loading}
+                      disabled={state.loading}
                       className="flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-white bg-gradient-to-r from-green-600 to-green-500 rounded-lg sm:rounded-xl hover:from-green-700 hover:to-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 disabled:active:scale-100 shadow-lg shadow-green-500/30 touch-manipulation"
                     >
-                      {loading ? (
+                      {state.loading ? (
                         <>
                           <svg className="animate-spin -ml-1 mr-2 h-4 w-4 sm:h-5 sm:w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -913,13 +1106,13 @@ const mantenimientoInfoProps = useMemo(() => ({
               </div>
 
               {/* Hint Text - Solo visible en móvil cuando el botón está deshabilitado */}
-              {!canProceedToNextStep() && currentStep !== 'resumen' && (
+              {!canProceedToNextStep() && state.currentStep !== 'resumen' && (
                 <div className="sm:hidden mt-2 text-center">
                   <p className="text-xs text-amber-400 bg-amber-500/10 rounded-lg py-2 px-3">
-                    {currentStep === 'cliente' && 'Selecciona un cliente para continuar'}
-                    {currentStep === 'dispositivo' && 'Selecciona un dispositivo para continuar'}
-                    {currentStep === 'mantenimiento' && tipoMantenimiento === 'diagnostico' && 'Completa todos los campos del diagnóstico'}
-                    {currentStep === 'mantenimiento' && tipoMantenimiento !== 'diagnostico' && 'Agrega al menos una tarea para continuar'}
+                    {state.currentStep === 'cliente' && 'Selecciona un cliente para continuar'}
+                    {state.currentStep === 'dispositivo' && 'Selecciona un dispositivo para continuar'}
+                    {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'diagnostico' && 'Completa todos los campos del diagnóstico'}
+                    {state.currentStep === 'mantenimiento' && state.tipoMantenimiento !== 'diagnostico' && 'Agrega al menos una tarea para continuar'}
                   </p>
                 </div>
               )}
@@ -951,19 +1144,16 @@ const mantenimientoInfoProps = useMemo(() => ({
           overflow: hidden;
         }
 
-        /* Mejora del scroll en móviles */
         @media (max-width: 640px) {
           body {
             overflow-x: hidden;
           }
         }
 
-        /* Asegurar que los inputs sean accesibles en móvil */
         input, textarea, select {
           font-size: 16px !important;
         }
 
-        /* Mejorar la experiencia táctil */
         button, a, [role="button"] {
           -webkit-tap-highlight-color: transparent;
         }

@@ -10,8 +10,6 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-
-import { cn } from "@/lib/utils"
 import {
   Sidebar,
   SidebarContent,
@@ -24,7 +22,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { UserProfile } from '@/components/auth/UserProfile'
 
 const navigation = [
   { 
