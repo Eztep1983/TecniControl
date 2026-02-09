@@ -20,7 +20,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar"
 
 const navigation = [
@@ -51,10 +50,9 @@ const secondaryNavigation = [
 
 export function AppSidebar() {
   const pathname = usePathname()
-  const { open } = useSidebar()
 
   return (
-    <Sidebar side="left" collapsible="icon">
+    <Sidebar side="left">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -84,7 +82,6 @@ export function AppSidebar() {
                     <SidebarMenuButton 
                       asChild
                       isActive={isActive}
-                      tooltip={item.name}
                     >
                       <Link href={item.href}>
                         <item.icon className="h-5 w-5" />
@@ -110,7 +107,6 @@ export function AppSidebar() {
                     <SidebarMenuButton 
                       asChild
                       isActive={isActive}
-                      tooltip={item.name}
                     >
                       <Link href={item.href}>
                         <item.icon className="h-5 w-5" />
@@ -127,3 +123,5 @@ export function AppSidebar() {
     </Sidebar>
   )
 }
+
+
