@@ -1,3 +1,5 @@
+//ClientesList.tsx se renderiza este componente en la pagina principal de clientes.
+
 "use client";
 import { useState, useEffect } from "react";
 import { ClientesDataTable } from "./ClientesDataTable";
@@ -233,12 +235,8 @@ export function ClientesList() {
                 <p className="text-sm text-gray-500 px-4">Intenta ajustar tus criterios de búsqueda.</p>
               </div>
             ) : (
-              <div className="bg-gray-800/30 rounded-lg border border-gray-700/50 overflow-hidden">
-                <div className="overflow-x-auto -mx-4 sm:mx-0">
-                  <div className="inline-block min-w-full align-middle">
+              <div>
                     <ClientesDataTable data={filteredClientes} />
-                  </div>
-                </div>
               </div>
             )}
           </div>

@@ -1,16 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/basic/table";
 import { Button } from "@/components/ui/basic/button";
-import { Input } from "@/components/ui/basic/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,20 +27,19 @@ import {
   Mail,
   Phone,
   MapPin,
-  Search,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
   Users,
-  X,
+  IdCard,
 } from "lucide-react";
 import type { Cliente } from "@/types/orden";
 import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 interface ClientesDataTableProps {
   data: Cliente[];
@@ -60,7 +50,7 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
   const router = useRouter();
   const [loadingStates, setLoadingStates] = useState<Record<string, string>>({});
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clienteToDelete, setClienteToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -131,7 +121,7 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
     router.push(path);
   };
 
-  const handleRowClick = async (id: string) => {
+  const handleCardClick = async (id: string) => {
     await handleNavigation(`/clientes/${id}`, id, "viewing");
   };
 
@@ -213,22 +203,22 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
         </DialogContent>
       </Dialog>
       
-      {/* Estadísticas - Mobile first */}
-      <div className="bg-gray-800/40 rounded-lg border border-gray-700/50 p-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-500/15 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Users className="w-5 h-5 text-blue-400" />
+      {/* Estadísticas */}
+      <div className="bg-gradient-to-br from-blue-300/10 to-blue-800/10 rounded-xl border border-blue-500/20 p-2 sm:p-6">
+        <div className="flex items-center gap-4">
+          <div>
+            <Users className="w-6 h-6 sm:w-7 sm:h-7 text-blue-400" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-medium text-gray-400 truncate">Total de Clientes</h3>
-            <p className="text-2xl font-bold text-white">{data.length}</p>
+            <h3 className="text-sm sm:text-base font-medium text-gray-400 truncate">Total de Clientes</h3>
+            <p className="text-3xl sm:text-4xl font-bold text-white">{data.length}</p>
           </div>
         </div>
       </div>
       
-      {/* Controles - Mobile first */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-center sm:justify-between">
-        <div className="text-xs sm:text-sm text-gray-400">
+      {/* Controles superiores */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+        <div className="text-sm text-gray-400">
           {data.length === 0 
             ? "No hay clientes registrados" 
             : `Mostrando ${((currentPage - 1) * itemsPerPage) + 1}-${Math.min(currentPage * itemsPerPage, data.length)} de ${data.length}`
@@ -238,215 +228,195 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
         <div className="flex items-center gap-2 self-end sm:self-auto">
           <span className="text-xs text-gray-500">Mostrar</span>
           <select
-            className="h-8 rounded-lg border border-gray-700 bg-gray-800/50 px-2 text-sm text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 outline-none"
+            className="h-9 rounded-lg border border-gray-700 bg-gray-800/50 px-3 text-sm text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 outline-none"
             value={itemsPerPage}
             onChange={(e) => {
               setItemsPerPage(Number(e.target.value));
               setCurrentPage(1);
             }}
           >
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
+            <option value="6">6</option>
+            <option value="12">12</option>
+            <option value="24">24</option>
+            <option value="48">48</option>
           </select>
         </div>
       </div>
 
-      {/* Tabla responsive - Mobile first */}
-      <div className="bg-gray-800/40 rounded-lg border border-gray-700/50 overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table className="min-w-full">
-            <TableHeader>
-              <TableRow className="border-gray-700/50 hover:bg-transparent">
-                <TableHead className="text-gray-400 font-medium h-10 px-3 text-xs sm:text-sm">Nombre</TableHead>
-                <TableHead className="text-gray-400 font-medium h-10 px-3 text-xs sm:text-sm hidden md:table-cell">Email</TableHead>
-                <TableHead className="text-gray-400 font-medium h-10 px-3 text-xs sm:text-sm">Teléfono</TableHead>
-                <TableHead className="text-gray-400 font-medium h-10 px-3 text-xs sm:text-sm hidden sm:table-cell">Dirección</TableHead>
-                <TableHead className="text-gray-400 font-medium h-10 px-3 text-xs sm:text-sm text-right w-[80px]">
-                  <span className="sr-only">Acciones</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedClientes.length > 0 ? (
-                paginatedClientes.map((client) => {
-                  const isLoading = loadingStates[client.id!];
-                  const isDeleting = isLoading === "deleting";
-                  const isViewing = isLoading === "viewing";
-                  const isEditing = isLoading === "editing";
+      {/* Grid de Cards */}
+      {paginatedClientes.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {paginatedClientes.map((client) => {
+            const isLoading = loadingStates[client.id!];
+            const isViewing = isLoading === "viewing";
+            const isEditing = isLoading === "editing";
+            
+            return (
+              <div
+                key={client.id}
+                onClick={() => !isLoading && handleCardClick(client.id!)}
+                className={`group relative bg-gray-800/40 rounded-xl border border-gray-700/50 p-5 transition-all duration-200 ${
+                  isLoading 
+                    ? "opacity-50 cursor-not-allowed" 
+                    : "cursor-pointer hover:bg-gray-800/60 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/5 active:scale-[0.98]"
+                }`}
+              >
+                {/* Loading Overlay */}
+                {isLoading && (
+                  <div className="absolute inset-0 bg-gray-900/50 rounded-xl flex items-center justify-center z-10">
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+                      <span className="text-xs text-gray-400">
+                        {isViewing ? "Cargando..." : "Abriendo editor..."}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Header del Card */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0 ring-2 ring-blue-500/20 group-hover:ring-blue-500/40 transition-all">
+                      <User className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-white text-sm sm:text-base truncate group-hover:text-blue-400 transition-colors">
+                        {client.name}
+                      </h3>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <IdCard className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                        <p className="text-xs text-gray-500 truncate">{client.cedula}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Menú de acciones */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <button
+                        disabled={!!isLoading}
+                        className="w-8 h-8 rounded-lg bg-gray-700/50 hover:bg-gray-700 flex items-center justify-center transition-colors disabled:opacity-50 opacity-0 group-hover:opacity-100"
+                      >
+                        <span className="sr-only">Abrir menú</span>
+                        <MoreHorizontal className="w-4 h-4 text-gray-400" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-gray-800 border-gray-700">
+                      <DropdownMenuLabel className="text-gray-400">Acciones</DropdownMenuLabel>
+                      
+                      <DropdownMenuItem 
+                        onClick={(e) => handleEditClick(client.id!, e)}
+                        disabled={!!isLoading}
+                        className="text-gray-300 focus:bg-gray-700 focus:text-white cursor-pointer"
+                      >
+                        {isEditing ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Edit className="mr-2 h-4 w-4" />
+                        )}
+                        Editar
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem 
+                        onClick={() => handleCardClick(client.id!)}
+                        disabled={!!isLoading}
+                        className="text-gray-300 focus:bg-gray-700 focus:text-white cursor-pointer"
+                      >
+                        {isViewing ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Eye className="mr-2 h-4 w-4" />
+                        )}
+                        Ver detalles
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem 
+                        onClick={(e) => handleDeleteClick(client.id!, e)}
+                        disabled={!!isLoading}
+                        className="text-red-400 focus:bg-red-500/20 focus:text-red-400 cursor-pointer"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Eliminar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {/* Información de contacto */}
+                <div className="space-y-3">
+                  {/* Email */}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-7 h-7 rounded-lg bg-gray-700/30 flex items-center justify-center flex-shrink-0">
+                      <Mail className="w-3.5 h-3.5 text-gray-500" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-gray-500">Email</p>
+                      <p className="text-sm text-gray-300 truncate">{client.email}</p>
+                    </div>
+                  </div>
+
+                  {/* Teléfono */}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-7 h-7 rounded-lg bg-gray-700/30 flex items-center justify-center flex-shrink-0">
+                      <Phone className="w-3.5 h-3.5 text-gray-500" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-gray-500">Teléfono</p>
+                      <p className="text-sm text-gray-300 truncate">{client.phone}</p>
+                    </div>
+                  </div>
+
+                  {/* Dirección */}
+                  {client.address && (
+                    <div className="flex items-start gap-2 min-w-0">
+                      <div className="w-7 h-7 rounded-lg bg-gray-700/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <MapPin className="w-3.5 h-3.5 text-gray-500" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs text-gray-500">Dirección</p>
+                        <p className="text-sm text-gray-300 line-clamp-2">{client.address}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer con botones de acción (visible en hover en desktop) */}
+                <div className="hidden sm:flex items-center gap-2 mt-4 pt-4 border-t border-gray-700/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => handleEditClick(client.id!, e)}
+                    disabled={!!isLoading}
+                    className="flex-1 h-9 rounded-lg bg-gray-700/50 hover:bg-gray-700 flex items-center justify-center gap-2 transition-colors disabled:opacity-50 text-sm text-gray-300"
+                  >
+                    <Edit className="w-4 h-4" />
+                    <span>Editar</span>
+                  </button>
                   
-                  return (
-                    <TableRow 
-                      key={client.id}
-                      onClick={() => !isLoading && handleRowClick(client.id!)}
-                      className={`border-gray-700/50 transition-colors ${
-                        isLoading 
-                          ? "opacity-50 cursor-not-allowed" 
-                          : "cursor-pointer hover:bg-gray-700/30 active:bg-gray-700/50"
-                      }`}
-                    >
-                      <TableCell className="px-3 py-2 sm:py-3">
-                        <div className="flex items-center gap-2">
-                          {isViewing ? (
-                            <Loader2 className="w-4 h-4 animate-spin text-blue-400 flex-shrink-0" />
-                          ) : (
-                            <User className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                          )}
-                          <div className="min-w-0">
-                            <div className="font-medium text-white text-sm truncate">{client.name}</div>
-                            <div className="text-xs text-gray-500 truncate">{client.cedula}</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell className="px-3 py-2 sm:py-3 hidden md:table-cell">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Mail className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                          <span className="text-sm text-gray-300 truncate">{client.email}</span>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell className="px-3 py-2 sm:py-3">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                          <span className="text-sm text-gray-300 truncate">{client.phone}</span>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell className="px-3 py-2 sm:py-3 hidden sm:table-cell">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <MapPin className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                          <span className="text-sm text-gray-300 truncate">{client.address || "-"}</span>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell className="px-3 py-2 sm:py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-end gap-1">
-                          {/* Botones de acción visibles en desktop */}
-                          <div className="hidden md:flex gap-1">
-                            <button
-                              onClick={(e) => handleEditClick(client.id!, e)}
-                              disabled={!!isLoading}
-                              className="w-8 h-8 rounded-lg bg-gray-700/50 hover:bg-gray-700 flex items-center justify-center transition-colors disabled:opacity-50"
-                              title="Editar"
-                            >
-                              {isEditing ? (
-                                <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
-                              ) : (
-                                <Edit className="w-4 h-4 text-gray-400" />
-                              )}
-                            </button>
-                            
-                            <button
-                              onClick={() => handleRowClick(client.id!)}
-                              disabled={!!isLoading}
-                              className="w-8 h-8 rounded-lg bg-gray-700/50 hover:bg-gray-700 flex items-center justify-center transition-colors disabled:opacity-50"
-                              title="Ver"
-                            >
-                              {isViewing ? (
-                                <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
-                              ) : (
-                                <Eye className="w-4 h-4 text-gray-400" />
-                              )}
-                            </button>
-                            
-                            <button
-                              onClick={(e) => handleDeleteClick(client.id!, e)}
-                              disabled={!!isLoading}
-                              className="w-8 h-8 rounded-lg bg-gray-700/50 hover:bg-red-500/20 flex items-center justify-center transition-colors disabled:opacity-50 group"
-                              title="Eliminar"
-                            >
-                              {isDeleting ? (
-                                <Loader2 className="w-4 h-4 animate-spin text-red-400" />
-                              ) : (
-                                <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-400" />
-                              )}
-                            </button>
-                          </div>
-                          
-                          {/* Menú desplegable para móvil */}
-                          <div className="md:hidden">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                <button
-                                  disabled={!!isLoading}
-                                  className="w-8 h-8 rounded-lg bg-gray-700/50 hover:bg-gray-700 flex items-center justify-center transition-colors disabled:opacity-50"
-                                >
-                                  {isLoading ? (
-                                    <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
-                                  ) : (
-                                    <>
-                                      <span className="sr-only">Abrir menú</span>
-                                      <MoreHorizontal className="w-4 h-4 text-gray-400" />
-                                    </>
-                                  )}
-                                </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48 bg-gray-800 border-gray-700">
-                                <DropdownMenuLabel className="text-gray-400">Acciones</DropdownMenuLabel>
-                                
-                                <DropdownMenuItem 
-                                  onClick={(e) => handleEditClick(client.id!, e)}
-                                  disabled={!!isLoading}
-                                  className="text-gray-300 focus:bg-gray-700 focus:text-white cursor-pointer"
-                                >
-                                  {isEditing ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Edit className="mr-2 h-4 w-4" />
-                                  )}
-                                  Editar
-                                </DropdownMenuItem>
-                                
-                                <DropdownMenuItem 
-                                  onClick={() => handleRowClick(client.id!)}
-                                  disabled={!!isLoading}
-                                  className="text-gray-300 focus:bg-gray-700 focus:text-white cursor-pointer"
-                                >
-                                  {isViewing ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Eye className="mr-2 h-4 w-4" />
-                                  )}
-                                  Ver detalles
-                                </DropdownMenuItem>
-                                
-                                <DropdownMenuItem 
-                                  onClick={(e) => handleDeleteClick(client.id!, e)}
-                                  disabled={!!isLoading}
-                                  className="text-red-400 focus:bg-red-500/20 focus:text-red-400 cursor-pointer"
-                                >
-                                  {isDeleting ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                  )}
-                                  Eliminar
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              ) : (
-                <TableRow className="border-gray-700/50">
-                  <TableCell colSpan={5} className="h-24 text-center text-sm text-gray-400">
-                    No hay clientes registrados.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                  <button
+                    onClick={(e) => handleDeleteClick(client.id!, e)}
+                    disabled={!!isLoading}
+                    className="flex-1 h-9 rounded-lg bg-red-500/10 hover:bg-red-500/20 flex items-center justify-center gap-2 transition-colors disabled:opacity-50 text-sm text-red-400"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Eliminar</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
+      ) : (
+        <div className="bg-gray-800/40 rounded-xl border border-gray-700/50 p-12 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-700/30 flex items-center justify-center">
+            <Users className="w-8 h-8 text-gray-600" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-400 mb-2">No hay clientes registrados</h3>
+          <p className="text-sm text-gray-500">Comienza agregando tu primer cliente</p>
+        </div>
+      )}
       
-      {/* Paginación - Mobile first */}
+      {/* Paginación */}
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
           <div className="text-xs sm:text-sm text-gray-400 order-2 sm:order-1">
             Página {currentPage} de {totalPages}
           </div>
@@ -455,7 +425,7 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
             <button
               onClick={() => goToPage(1)}
               disabled={currentPage === 1}
-              className="hidden sm:flex items-center justify-center w-8 h-8 rounded-lg bg-gray-700/50 hover:bg-gray-700 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="hidden sm:flex items-center justify-center w-9 h-9 rounded-lg bg-gray-700/50 hover:bg-gray-700 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <ChevronsLeft className="w-4 h-4" />
             </button>
@@ -463,7 +433,7 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
             <button
               onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage === 1}
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-700/50 hover:bg-gray-700 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-700/50 hover:bg-gray-700 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -472,14 +442,14 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
             {renderPaginationButtons()}
             
             {/* Indicador móvil */}
-            <div className="sm:hidden flex items-center justify-center px-2 text-xs text-gray-400">
+            <div className="sm:hidden flex items-center justify-center px-3 text-xs font-medium text-gray-400 bg-gray-700/30 rounded-lg h-9">
               {currentPage} / {totalPages}
             </div>
             
             <button
               onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-700/50 hover:bg-gray-700 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-700/50 hover:bg-gray-700 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -487,7 +457,7 @@ export function ClientesDataTable({ data }: ClientesDataTableProps) {
             <button
               onClick={() => goToPage(totalPages)}
               disabled={currentPage === totalPages}
-              className="hidden sm:flex items-center justify-center w-8 h-8 rounded-lg bg-gray-700/50 hover:bg-gray-700 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="hidden sm:flex items-center justify-center w-9 h-9 rounded-lg bg-gray-700/50 hover:bg-gray-700 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <ChevronsRight className="w-4 h-4" />
             </button>
