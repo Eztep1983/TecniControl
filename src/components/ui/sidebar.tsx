@@ -193,6 +193,29 @@ const Sidebar = React.forwardRef<
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
+    // CRITICAL FIX: Move all hooks outside conditional blocks
+    // React hooks must be called in the same order every render
+    const [touchStart, setTouchStart] = React.useState(0)
+    const [touchEnd, setTouchEnd] = React.useState(0)
+
+    // Handle browser back gesture - only active when mobile and open
+    React.useEffect(() => {
+      if (isMobile && openMobile) {
+        // Add history entry when sidebar opens
+        window.history.pushState({ sidebarOpen: true }, '')
+        
+        const handlePopState = (event: PopStateEvent) => {
+          setOpenMobile(false)
+        }
+        
+        window.addEventListener('popstate', handlePopState)
+        
+        return () => {
+          window.removeEventListener('popstate', handlePopState)
+        }
+      }
+    }, [isMobile, openMobile, setOpenMobile])
+
     if (collapsible === "none") {
       return (
         <div
@@ -208,92 +231,78 @@ const Sidebar = React.forwardRef<
       )
     }
 
-if (isMobile) {
-  // Manejar el gesto de "atrás" del navegador
-  React.useEffect(() => {
-    if (openMobile) {
-      // Agregar una entrada en el historial cuando se abre el sidebar
-      window.history.pushState({ sidebarOpen: true }, '')
-      
-      const handlePopState = (event: PopStateEvent) => {
-        setOpenMobile(false)
+    if (isMobile) {
+      const handleTouchStart = (e: React.TouchEvent) => {
+        setTouchStart(e.targetTouches[0].clientX)
       }
-      
-      window.addEventListener('popstate', handlePopState)
-      
-      return () => {
-        window.removeEventListener('popstate', handlePopState)
+
+      const handleTouchMove = (e: React.TouchEvent) => {
+        setTouchEnd(e.targetTouches[0].clientX)
       }
-    }
-  }, [openMobile, setOpenMobile])
 
-  const [touchStart, setTouchStart] = React.useState(0)
-  const [touchEnd, setTouchEnd] = React.useState(0)
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX)
-  }
-
-  const handleTouchEnd = () => {
-    if (touchStart - touchEnd > 75) {
-      // Deslizar hacia la izquierda (cerrar)
-      setOpenMobile(false)
-      // Retroceder en el historial para mantener sincronizado
-      if (window.history.state?.sidebarOpen) {
-        window.history.back()
-      }
-    }
-    setTouchStart(0)
-    setTouchEnd(0)
-  }
-
-  const handleOverlayClick = () => {
-    setOpenMobile(false)
-    // Retroceder en el historial
-    if (window.history.state?.sidebarOpen) {
-      window.history.back()
-    }
-  }
-
-  return (
-    <>
-      {/* Overlay/Backdrop */}
-      {openMobile && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50"
-          onClick={handleOverlayClick}
-        />
-      )}
-      
-      {/* Sidebar */}
-      <div
-        data-sidebar="sidebar"
-        data-mobile="true"
-        className={cn(
-          "fixed top-0 left-0 z-50 flex h-screen w-[--sidebar-width] flex-col border-r bg-sidebar text-sidebar-foreground transition-transform duration-300 ease-in-out",
-          openMobile ? "translate-x-0" : "-translate-x-full"
-        )}
-        style={
-          {
-            "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-          } as React.CSSProperties
+      const handleTouchEnd = () => {
+        if (touchStart - touchEnd > 75) {
+          // Swipe left to close
+          setOpenMobile(false)
+          // Use replaceState instead of back() to avoid navigation conflicts
+          if (window.history.state?.sidebarOpen) {
+            window.history.replaceState(
+              { ...window.history.state, sidebarOpen: false },
+              ''
+            )
+          }
         }
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* Contenido con Scroll */}
-        <div className="flex-1 overflow-y-auto p-2">
-          {children}
-        </div>
-      </div>
-    </>
-  )
-}
+        setTouchStart(0)
+        setTouchEnd(0)
+      }
+
+      const handleOverlayClick = () => {
+        setOpenMobile(false)
+        // Use replaceState to avoid navigation conflicts
+        if (window.history.state?.sidebarOpen) {
+          window.history.replaceState(
+            { ...window.history.state, sidebarOpen: false },
+            ''
+          )
+        }
+      }
+
+      return (
+        <>
+          {/* Overlay/Backdrop */}
+          {openMobile && (
+            <div
+              className="fixed inset-0 z-40 bg-black/50"
+              onClick={handleOverlayClick}
+            />
+          )}
+          
+          {/* Sidebar */}
+          <div
+            data-sidebar="sidebar"
+            data-mobile="true"
+            className={cn(
+              "fixed top-0 left-0 z-50 flex h-screen w-[--sidebar-width] flex-col border-r bg-sidebar text-sidebar-foreground transition-transform duration-300 ease-in-out",
+              openMobile ? "translate-x-0" : "-translate-x-full"
+            )}
+            style={
+              {
+                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+              } as React.CSSProperties
+            }
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* Content with Scroll */}
+            <div className="flex-1 overflow-y-auto p-2">
+              {children}
+            </div>
+          </div>
+        </>
+      )
+    }
+
     return (
       <div
         ref={ref}

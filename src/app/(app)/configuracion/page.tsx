@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/basic/input";
 import { Button } from "@/components/ui/basic/button";
 import { Label } from "@/components/ui/basic/label";
 import { Switch } from "@/components/ui/basic/switch";
-import { Save, User, Building, FileText, Loader2, Settings, Upload, Check, Mail, Bell, Camera } from 'lucide-react';
+import { Save, Building, Loader2, Settings, Upload, Check, Mail, Bell, Camera } from 'lucide-react';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -139,8 +139,8 @@ export default function ConfiguracionPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 sm:p-6 lg:p-8">
       <div className="max-w-5xl mx-auto">
-        {/* Header mejorado */}
-        <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+        {/* Header */}
+        <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
               <Settings className="w-6 h-6 text-blue-400" />
@@ -153,7 +153,7 @@ export default function ConfiguracionPage() {
         </div>
 
         {/* Información del Negocio */}
-        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500 hover:border-gray-600/50 transition-all">
+        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 mb-6 transition-colors hover:border-gray-600/50">
           <CardHeader className="border-b border-gray-700/50 bg-gradient-to-r from-gray-800/50 to-transparent">
             <div className="flex items-center justify-between">
               <div>
@@ -168,7 +168,7 @@ export default function ConfiguracionPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
-            {/* Logo del Negocio - Mejorado */}
+            {/* Logo del Negocio */}
             <div className="space-y-3">
               <Label className="text-gray-300 font-medium flex items-center gap-2">
                 <Camera className="w-4 h-4" />
@@ -181,14 +181,14 @@ export default function ConfiguracionPage() {
                       <img 
                         src={negocio.logoUrl} 
                         alt="Logo del negocio" 
-                        className="w-24 h-24 rounded-xl object-cover border-2 border-gray-600 group-hover:border-blue-500/50 transition-all shadow-lg"
+                        className="w-24 h-24 rounded-xl object-cover border-2 border-gray-600 transition-colors group-hover:border-blue-500/50 shadow-lg"
                       />
                       <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <Upload className="w-6 h-6 text-white" />
                       </div>
                     </div>
                   ) : (
-                    <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 border-2 border-dashed border-gray-600 flex items-center justify-center group-hover:border-blue-500/50 transition-all">
+                    <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 border-2 border-dashed border-gray-600 flex items-center justify-center transition-colors group-hover:border-blue-500/50">
                       <Building className="w-10 h-10 text-gray-400" />
                     </div>
                   )}
@@ -201,7 +201,7 @@ export default function ConfiguracionPage() {
                 <div className="flex-1 space-y-2">
                   <label 
                     htmlFor="business-logo" 
-                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-gray-700/50 hover:bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-300 transition-all hover:border-blue-500/50 hover:text-white"
+                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-gray-700/50 hover:bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-300 transition-colors hover:border-blue-500/50 hover:text-white"
                   >
                     <Upload className="w-4 h-4" />
                     {uploading ? 'Subiendo...' : negocio.logoUrl ? 'Cambiar Logo' : 'Subir Logo'}
@@ -223,7 +223,7 @@ export default function ConfiguracionPage() {
 
             <div className="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent"></div>
 
-            {/* Información Básica - Grid mejorado */}
+            {/* Información Básica */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
                 <Label htmlFor="business-name" className="text-gray-300 font-medium">
@@ -233,7 +233,7 @@ export default function ConfiguracionPage() {
                   id="business-name" 
                   value={negocio.nombre}
                   onChange={(e) => handleInputChange('nombre', e.target.value)}
-                  className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   placeholder="Ej: TecniControl S.A.S"
                 />
               </div>
@@ -245,7 +245,7 @@ export default function ConfiguracionPage() {
                   id="business-nit" 
                   value={negocio.nit}
                   onChange={(e) => handleInputChange('nit', e.target.value)}
-                  className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   placeholder="123456789-0"
                 />
               </div>
@@ -260,7 +260,7 @@ export default function ConfiguracionPage() {
                   id="business-phone" 
                   value={negocio.telefono}
                   onChange={(e) => handleInputChange('telefono', e.target.value)}
-                  className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   placeholder="+57 300 123 4567"
                 />
               </div>
@@ -273,7 +273,7 @@ export default function ConfiguracionPage() {
                   type="email"
                   value={negocio.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   placeholder="contacto@empresa.com"
                 />
               </div>
@@ -287,15 +287,15 @@ export default function ConfiguracionPage() {
                 id="business-address" 
                 value={negocio.direccion}
                 onChange={(e) => handleInputChange('direccion', e.target.value)}
-                className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                 placeholder="Calle 123 #45-67, Ciudad"
               />
             </div>
 
-            {/* Botón de guardar mejorado */}
+            {/* Botón de guardar */}
             <div className="flex items-center justify-between pt-4 border-t border-gray-700/50">
               {saved && (
-                <div className="flex items-center gap-2 text-green-400 text-sm animate-in fade-in slide-in-from-left-2 duration-300">
+                <div className="flex items-center gap-2 text-green-400 text-sm">
                   <Check className="w-4 h-4" />
                   <span>Cambios guardados correctamente</span>
                 </div>
@@ -323,8 +323,8 @@ export default function ConfiguracionPage() {
           </CardContent>
         </Card>
 
-        {/* Preferencias del Sistema - Mejorado */}
-        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 hover:border-gray-600/50 transition-all">
+        {/* Preferencias del Sistema */}
+        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 mb-6 transition-colors hover:border-gray-600/50">
           <CardHeader className="border-b border-gray-700/50 bg-gradient-to-r from-gray-800/50 to-transparent">
             <CardTitle className="text-white flex items-center gap-2 text-xl">
               <Bell className="w-5 h-5 text-purple-400" />
@@ -336,7 +336,7 @@ export default function ConfiguracionPage() {
           </CardHeader>
           <CardContent className="pt-6">
             <div className="space-y-5">
-              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-700/20 border border-gray-700/50 hover:border-gray-600/50 transition-all group">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-700/20 border border-gray-700/50 transition-colors hover:border-gray-600/50">
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-blue-400" />
@@ -347,7 +347,7 @@ export default function ConfiguracionPage() {
                 <Switch className="data-[state=checked]:bg-blue-600" />
               </div>
               
-              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-700/20 border border-gray-700/50 hover:border-gray-600/50 transition-all group">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-700/20 border border-gray-700/50 transition-colors hover:border-gray-600/50">
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center gap-2">
                     <Bell className="w-4 h-4 text-purple-400" />
@@ -362,7 +362,7 @@ export default function ConfiguracionPage() {
         </Card>
 
         {/* Footer informativo */}
-        <div className="text-center text-sm text-gray-500 mt-8 animate-in fade-in duration-1000">
+        <div className="text-center text-sm text-gray-500 mt-8">
           <p>Los cambios se guardan en la base de datos en tiempo real</p>
         </div>
       </div>

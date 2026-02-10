@@ -20,6 +20,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 
 const navigation = [
@@ -50,6 +51,23 @@ const secondaryNavigation = [
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const { setOpenMobile, isMobile } = useSidebar()
+
+  // Close sidebar on mobile when clicking a link
+  const handleLinkClick = () => {
+    if (isMobile) {
+      // Close the sidebar without interfering with Next.js navigation
+      // Remove the history entry if it exists
+      if (window.history.state?.sidebarOpen) {
+        // Use replaceState instead of back() to avoid navigation conflicts
+        window.history.replaceState(
+          { ...window.history.state, sidebarOpen: false },
+          ''
+        )
+      }
+      setOpenMobile(false)
+    }
+  }
 
   return (
     <Sidebar side="left">
@@ -57,7 +75,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild size="lg">
-              <Link href="/ordenes" className="flex items-center gap-2">
+              <Link href="/ordenes" className="flex items-center gap-2" onClick={handleLinkClick}>
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-600 text-white">
                   <span className="font-bold">TC</span>
                 </div>
@@ -83,7 +101,7 @@ export function AppSidebar() {
                       asChild
                       isActive={isActive}
                     >
-                      <Link href={item.href}>
+                      <Link href={item.href} onClick={handleLinkClick}>
                         <item.icon className="h-5 w-5" />
                         <span>{item.name}</span>
                       </Link>
@@ -108,7 +126,7 @@ export function AppSidebar() {
                       asChild
                       isActive={isActive}
                     >
-                      <Link href={item.href}>
+                      <Link href={item.href} onClick={handleLinkClick}>
                         <item.icon className="h-5 w-5" />
                         <span>{item.name}</span>
                       </Link>
@@ -123,5 +141,3 @@ export function AppSidebar() {
     </Sidebar>
   )
 }
-
-
