@@ -1,3 +1,5 @@
+// Este archivo es la página de detalles de un cliente específico. Muestra la información del cliente, sus dispositivos asociados, y ofrece acciones para editar el cliente o agregar nuevos dispositivos. También maneja el caso cuando el cliente no existe, mostrando un mensaje amigable al usuario.
+
 "use client";
 
 import { useState, useEffect } from "react";

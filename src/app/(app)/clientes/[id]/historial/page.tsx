@@ -1,3 +1,5 @@
+// Este archivo es la página de historial de órdenes de un cliente específico. Muestra una lista de todas las órdenes asociadas al cliente, con filtros para tipo de orden y fecha, y una barra de búsqueda para encontrar órdenes específicas. También incluye estadísticas rápidas sobre el número total de órdenes y su distribución por tipo, así como información básica del cliente en un panel lateral. Cada orden se muestra en una tarjeta con detalles clave y un enlace para ver más información.
+
 "use client";
 
 import { useState, useEffect } from "react";

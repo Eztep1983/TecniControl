@@ -1,3 +1,5 @@
+// Este archivo es la página de edición de un cliente específico. Permite modificar la información del cliente, así como sus dispositivos asociados. Utiliza un formulario prellenado con los datos actuales del cliente, y maneja el caso cuando el cliente no existe, mostrando un mensaje amigable al usuario.
+
 import { ClienteForm } from "@/components/clientes/ClienteForm";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";

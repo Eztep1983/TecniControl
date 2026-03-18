@@ -1,3 +1,5 @@
+/// Este componente es el formulario para crear o editar clientes. Se divide en dos pasos: el primero para la información general del cliente y el segundo para los dispositivos asociados. Utiliza react-hook-form con validación de Zod, y se integra con los helpers multiusuario para guardar los datos en Firebase. También incluye un sistema de pasos con validación antes de avanzar al siguiente paso, y un diseño responsivo con indicadores de progreso.
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
