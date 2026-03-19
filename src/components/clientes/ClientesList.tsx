@@ -1,23 +1,12 @@
 // components/clientes/ClientesList.tsx
-// Orquestador principal. Maneja el estado de clientes y coordina
-// los tres modales: vista, creación y edición.
-// Todas las operaciones CRUD actualizan el estado local sin recargar.
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { ClientesDataTable } from "./ClientesDataTable";
 import { ClienteViewModal } from "@/components/clientes/ClienteViewModal";
 import { ClienteFormModal } from "@/components/clientes/ClienteFormModal";
 import { Input } from "@/components/ui/basic/input";
-import {
-  PlusCircle,
-  User,
-  Search,
-  Users,
-  Filter,
-  RefreshCw,
-} from "lucide-react";
+import { PlusCircle, User, Search, Users, Filter, RefreshCw, X } from "lucide-react";
 import type { Cliente } from "@/types/orden";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { getClientesPorUsuario } from "@/lib/multiuser-helpers";
@@ -62,65 +51,65 @@ function ClientesSkeleton() {
 // ── Componente principal ──────────────────────────────────────────────────────
 export function ClientesList() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [filteredClientes, setFilteredClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { user } = useAuth();
-
   const modal = useClienteModal();
 
   // ── Fetch ───────────────────────────────────────────────────────────────────
   useEffect(() => {
+    if (!user?.uid) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
     const fetchClientes = async () => {
-      if (!user?.uid) { setLoading(false); return; }
       try {
         setLoading(true);
         setError(null);
         const data = await getClientesPorUsuario(user.uid);
-        setClientes(data);
+        if (!cancelled) setClientes(data);
       } catch {
-        setError("No se pudieron cargar los clientes. Intente nuevamente.");
+        if (!cancelled) setError("No se pudieron cargar los clientes. Intente nuevamente.");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     fetchClientes();
+    return () => { cancelled = true; };
   }, [user?.uid]);
 
-  // ── Filtrado reactivo ───────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!searchTerm) { setFilteredClientes(clientes); return; }
+  // ── Filtrado reactivo (memoizado) ───────────────────────────────────────────
+  const filteredClientes = useMemo(() => {
+    if (!searchTerm.trim()) return clientes;
     const q = searchTerm.toLowerCase();
-    setFilteredClientes(
-      clientes.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.email?.toLowerCase().includes(q) ||
-          c.phone?.includes(q)
-      )
+    return clientes.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.email?.toLowerCase().includes(q) ||
+        c.phone?.includes(q)
     );
   }, [clientes, searchTerm]);
 
-  // ── Callbacks CRUD (tiempo real, sin reload) ────────────────────────────────
-
-  /** Eliminar: ya manejado en ClientesDataTable */
-  const handleDelete = (id: string) => {
+  // ── Callbacks CRUD estables ─────────────────────────────────────────────────
+  const handleDelete = useCallback((id: string) => {
     setClientes((prev) => prev.filter((c) => c.id !== id));
-  };
+  }, []);
 
-  /** Crear o actualizar: recibe el cliente completo desde el modal */
-  const handleSuccess = (cliente: Cliente) => {
+  const handleSuccess = useCallback((cliente: Cliente) => {
     setClientes((prev) => {
-      const exists = prev.find((c) => c.id === cliente.id);
-      if (exists) {
-        // Edición: reemplazar en su posición
-        return prev.map((c) => (c.id === cliente.id ? cliente : c));
+      const idx = prev.findIndex((c) => c.id === cliente.id);
+      if (idx !== -1) {
+        const next = [...prev];
+        next[idx] = cliente;
+        return next;
       }
-      // Creación: insertar al principio
       return [cliente, ...prev];
     });
-  };
+  }, []);
+
+  const clearSearch = useCallback(() => setSearchTerm(""), []);
 
   // ── Guards ──────────────────────────────────────────────────────────────────
   if (!user) {
@@ -160,17 +149,16 @@ export function ClientesList() {
     );
   }
 
-  // ── Render principal ────────────────────────────────────────────────────────
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <>
-      {/* ── Modales ─────────────────────────────────────────────────────────── */}
+      {/* Modales */}
       <ClienteViewModal
         open={modal.isView}
         cliente={modal.cliente}
         onClose={modal.close}
         onEdit={modal.switchToEdit}
       />
-
       <ClienteFormModal
         open={modal.isCreate || modal.isEdit}
         initialData={modal.isEdit ? modal.cliente : null}
@@ -178,15 +166,14 @@ export function ClientesList() {
         onSuccess={handleSuccess}
       />
 
-      {/* ── Layout ──────────────────────────────────────────────────────────── */}
+      {/* Layout */}
       <div className="min-h-screen bg-gray-900">
         <div className="w-full p-3 sm:p-4 md:p-6 max-w-7xl mx-auto">
           <div className="bg-gray-800/40 rounded-2xl border border-gray-700/50 overflow-hidden">
 
-            {/* Header compacto */}
+            {/* Header */}
             <div className="px-4 py-3 sm:px-5 sm:py-4 border-b border-gray-700/50 bg-gray-800/60">
               <div className="flex items-center gap-3">
-
                 <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
                   <Users className="w-4.5 h-4.5 text-blue-400" />
                 </div>
@@ -196,11 +183,13 @@ export function ClientesList() {
                   <p className="text-xs text-gray-500 leading-tight mt-0.5">
                     {loading
                       ? "Cargando…"
-                      : `${filteredClientes.length} de ${clientes.length} ${clientes.length === 1 ? "cliente" : "clientes"}`}
+                      : `${filteredClientes.length} de ${clientes.length} ${
+                          clientes.length === 1 ? "cliente" : "clientes"
+                        }`}
                   </p>
                 </div>
 
-                {/* Búsqueda inline desktop */}
+                {/* Búsqueda inline — desktop */}
                 <div className="relative hidden sm:block w-52 lg:w-64 flex-shrink-0">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
                   <Input
@@ -208,17 +197,20 @@ export function ClientesList() {
                     placeholder="Buscar…"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-8 pr-3 h-8 text-sm bg-gray-700/40 border-gray-600/50 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-lg"
+                    className="w-full pl-8 pr-8 h-8 text-sm bg-gray-700/40 border-gray-600/50 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-lg"
                   />
                   {searchTerm && (
                     <button
-                      onClick={() => setSearchTerm("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 text-base leading-none"
-                    >×</button>
+                      onClick={clearSearch}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                      aria-label="Limpiar búsqueda"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                   )}
                 </div>
 
-                {/* CTA nuevo cliente — abre modal */}
+                {/* CTA nuevo cliente */}
                 <button
                   onClick={modal.openCreate}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/30 transition-colors text-sm flex-shrink-0"
@@ -228,7 +220,7 @@ export function ClientesList() {
                 </button>
               </div>
 
-              {/* Búsqueda mobile */}
+              {/* Búsqueda — mobile */}
               <div className="relative mt-3 sm:hidden">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
                 <Input
@@ -240,9 +232,12 @@ export function ClientesList() {
                 />
                 {searchTerm && (
                   <button
-                    onClick={() => setSearchTerm("")}
+                    onClick={clearSearch}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
-                  >×</button>
+                    aria-label="Limpiar búsqueda"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 )}
               </div>
             </div>
@@ -250,7 +245,8 @@ export function ClientesList() {
             {/* Contenido */}
             {loading ? (
               <ClientesSkeleton />
-            ) : filteredClientes.length === 0 && clientes.length === 0 ? (
+            ) : clientes.length === 0 ? (
+              // Estado vacío — sin clientes aún
               <div className="text-center py-14 px-4">
                 <div className="w-16 h-16 bg-gray-700/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Users className="w-8 h-8 text-gray-500" />
@@ -268,12 +264,20 @@ export function ClientesList() {
                 </button>
               </div>
             ) : filteredClientes.length === 0 ? (
+              // Sin resultados de búsqueda
               <div className="text-center py-14 px-4">
                 <div className="w-16 h-16 bg-gray-700/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Filter className="w-8 h-8 text-gray-500" />
                 </div>
                 <h3 className="text-sm font-medium text-gray-300 mb-1">Sin resultados</h3>
-                <p className="text-sm text-gray-500">Ajusta los criterios de búsqueda.</p>
+                <p className="text-sm text-gray-500 mb-4">Ajusta los criterios de búsqueda.</p>
+                <button
+                  onClick={clearSearch}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/40 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Limpiar búsqueda
+                </button>
               </div>
             ) : (
               <div className="p-4 sm:p-5">

@@ -20,7 +20,6 @@ import {
   Calendar,
   FileText,
   Edit,
-  Plus,
   X,
   History,
   ChevronRight,
@@ -28,6 +27,8 @@ import {
 } from "lucide-react";
 import type { Cliente } from "@/types/orden";
 import Link from "next/link";
+import { useAndroidBack } from "@/hooks/useAndroidBack";
+
 
 interface ClienteViewModalProps {
   cliente: Cliente | null;
@@ -52,6 +53,7 @@ export function ClienteViewModal({
       day: "numeric",
     });
   };
+  useAndroidBack(open, onClose);
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -228,16 +230,6 @@ export function ClienteViewModal({
           </section>
         </div>
 
-        {/* ── Footer fijo ──────────────────────────────────────────────── */}
-        <div className="px-5 py-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900">
-          <button
-            onClick={onEdit}
-            className="w-full h-11 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/25 text-blue-400 text-sm font-medium flex items-center justify-center gap-2 transition-colors"
-          >
-            <Edit className="w-4 h-4" />
-            Editar cliente
-          </button>
-        </div>
       </DialogContent>
     </Dialog>
   );

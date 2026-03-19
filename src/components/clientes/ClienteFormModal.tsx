@@ -1,8 +1,4 @@
 // components/clientes/ClienteFormModal.tsx
-// Modal de 2 pasos para crear o editar un cliente.
-// Paso 1: datos de contacto. Paso 2: dispositivos.
-// Notifica al padre con onSuccess(cliente) para actualizar la lista en tiempo real.
-
 "use client";
 
 import {
@@ -38,13 +34,26 @@ import {
   X,
 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 import type { Cliente } from "@/types/orden";
 import { crearCliente, actualizarCliente } from "@/lib/multiuser-helpers";
+import { useAndroidBack } from "@/hooks/useAndroidBack";
+
+// ── Constantes ────────────────────────────────────────────────────────────────
+const TIPO_OPTIONS = [
+  "impresora",
+  "fotocopiadora",
+  "multifuncional",
+  "escaner",
+  "plotter",
+  "otro",
+] as const;
+
+const DISPOSITIVO_VACIO = { tipo: "", marca: "", modelo: "", numeroSerie: "" } as const;
 
 // ── Validación ────────────────────────────────────────────────────────────────
 const dispositivoSchema = z.object({
@@ -75,7 +84,6 @@ interface ClienteFormModalProps {
   open: boolean;
   initialData?: Cliente | null;
   onClose: () => void;
-  /** Llamado con el cliente creado/actualizado para actualizar la lista sin reload */
   onSuccess: (cliente: Cliente) => void;
 }
 
@@ -89,12 +97,14 @@ function buildDefaults(data?: Cliente | null): FormValues {
       phone: data.phone ?? "",
       address: data.address ?? "",
       dispositivos:
-        data.dispositivos?.map((d) => ({
-          tipo: d.tipo ?? "",
-          marca: d.marca ?? "",
-          modelo: d.modelo ?? "",
-          numeroSerie: d.numeroSerie ?? "",
-        })) ?? [{ tipo: "", marca: "", modelo: "", numeroSerie: "" }],
+        data.dispositivos?.length
+          ? data.dispositivos.map((d) => ({
+              tipo: d.tipo ?? "",
+              marca: d.marca ?? "",
+              modelo: d.modelo ?? "",
+              numeroSerie: d.numeroSerie ?? "",
+            }))
+          : [{ ...DISPOSITIVO_VACIO }],
     };
   }
   return {
@@ -103,12 +113,12 @@ function buildDefaults(data?: Cliente | null): FormValues {
     email: "",
     phone: "",
     address: "",
-    dispositivos: [{ tipo: "", marca: "", modelo: "", numeroSerie: "" }],
+    dispositivos: [{ ...DISPOSITIVO_VACIO }],
   };
 }
 
 // ── Indicador de pasos ────────────────────────────────────────────────────────
-function StepIndicator({ step }: { step: number }) {
+const StepIndicator = memo(function StepIndicator({ step }: { step: number }) {
   return (
     <div className="flex items-center gap-2">
       {[
@@ -135,7 +145,7 @@ function StepIndicator({ step }: { step: number }) {
       ))}
     </div>
   );
-}
+});
 
 // ── Componente principal ──────────────────────────────────────────────────────
 export function ClienteFormModal({
@@ -151,13 +161,20 @@ export function ClienteFormModal({
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Intercepta el botón/gesto de atrás en Android para cerrar el modal
+  useAndroidBack(open, onClose);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: buildDefaults(initialData),
-    mode: "onChange",
+    mode: "onTouched", // menos re-renders que "onChange"
   });
 
-  const dispositivos = form.watch("dispositivos") ?? [];
+  // useFieldArray para manejo correcto sin mutación directa
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "dispositivos",
+  });
 
   // Reset cuando cambia el cliente o se abre
   useEffect(() => {
@@ -165,88 +182,94 @@ export function ClienteFormModal({
       form.reset(buildDefaults(initialData));
       setStep(1);
     }
-  }, [open, initialData]);
+  }, [open, initialData, form]);
 
   // ── Dispositivos ──────────────────────────────────────────────────────────
-  const addDispositivo = () => {
-    const current = form.getValues("dispositivos");
-    form.setValue(
-      "dispositivos",
-      [...current, { tipo: "", marca: "", modelo: "", numeroSerie: "" }],
-      { shouldValidate: false }
-    );
-  };
+  const addDispositivo = useCallback(() => {
+    append({ ...DISPOSITIVO_VACIO });
+  }, [append]);
 
-  const removeDispositivo = (idx: number) => {
-    const current = form.getValues("dispositivos");
-    if (current.length <= 1) {
-      toast({ title: "Debe haber al menos un dispositivo", variant: "destructive" });
-      return;
-    }
-    form.setValue(
-      "dispositivos",
-      current.filter((_, i) => i !== idx),
-      { shouldValidate: true }
-    );
-  };
+  const removeDispositivo = useCallback(
+    (idx: number) => {
+      if (fields.length <= 1) {
+        toast({ title: "Debe haber al menos un dispositivo", variant: "destructive" });
+        return;
+      }
+      remove(idx);
+    },
+    [fields.length, remove, toast]
+  );
 
   // ── Navegación entre pasos ────────────────────────────────────────────────
-  const goToStep2 = async () => {
+  const goToStep2 = useCallback(async () => {
     const ok = await form.trigger(["name", "cedula", "email", "phone"]);
     if (ok) setStep(2);
-  };
+  }, [form]);
+
+  const goToStep1 = useCallback(() => setStep(1), []);
 
   // ── Submit ────────────────────────────────────────────────────────────────
-  const onSubmit = async (data: FormValues) => {
-    if (!user?.uid) return;
-    setIsLoading(true);
+  const onSubmit = useCallback(
+    async (data: FormValues) => {
+      if (!user?.uid) return;
+      setIsLoading(true);
 
-    try {
-      const dispositivosConId = data.dispositivos.map((d, i) => ({
-        id: initialData?.dispositivos?.[i]?.id ?? `${Date.now()}-${i}`,
-        tipo: d.tipo,
-        marca: d.marca,
-        modelo: d.modelo,
-        numeroSerie: d.numeroSerie,
-      }));
+      try {
+        const dispositivosConId = data.dispositivos.map((d, i) => ({
+          id: initialData?.dispositivos?.[i]?.id ?? `${Date.now()}-${i}`,
+          tipo: d.tipo,
+          marca: d.marca,
+          modelo: d.modelo,
+          numeroSerie: d.numeroSerie,
+        }));
 
-      const payload: any = {
-        name: data.name,
-        cedula: data.cedula,
-        email: data.email,
-        phone: data.phone,
-        dispositivos: dispositivosConId,
-        updatedAt: new Date().toISOString(),
-        userId: user.uid,
-      };
-      if (data.address?.trim()) payload.address = data.address.trim();
+        const payload: Omit<Cliente, "id"> & { updatedAt: string; userId: string } = {
+          name: data.name,
+          cedula: data.cedula,
+          email: data.email,
+          phone: data.phone,
+          dispositivos: dispositivosConId,
+          updatedAt: new Date().toISOString(),
+          userId: user.uid,
+        };
+        if (data.address?.trim()) {
+          (payload as any).address = data.address.trim();
+        }
 
-      if (isEditing && initialData?.id) {
-        await actualizarCliente(initialData.id, payload, user.uid);
-        toast({ title: " Cliente actualizado", description: `${data.name} actualizado correctamente.` });
-        onSuccess({ ...initialData, ...payload, id: initialData.id } as Cliente);
-      } else {
-        const newId = await crearCliente(
-          { ...payload, createdAt: new Date().toISOString() },
-          user.uid
-        );
-        toast({ title: " Cliente creado", description: `${data.name} creado correctamente.` });
-        onSuccess({ ...payload, id: newId } as Cliente);
+        if (isEditing && initialData?.id) {
+          await actualizarCliente(initialData.id, payload, user.uid);
+          toast({
+            title: "Cliente actualizado",
+            description: `${data.name} actualizado correctamente.`,
+          });
+          onSuccess({ ...initialData, ...payload, id: initialData.id } as Cliente);
+        } else {
+          const newId = await crearCliente(
+            { ...payload, createdAt: new Date().toISOString() },
+            user.uid
+          );
+          toast({
+            title: "Cliente creado",
+            description: `${data.name} creado correctamente.`,
+          });
+          onSuccess({ ...payload, id: newId } as Cliente);
+        }
+
+        onClose();
+      } catch (error) {
+        toast({
+          title: "Error",
+          description:
+            "No se pudo guardar el cliente. " +
+            (error instanceof Error ? error.message : "Intente nuevamente."),
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
-
-      onClose();
-    } catch (error) {
-      toast({
-        title: " Error",
-        description:
-          "No se pudo guardar el cliente. " +
-          (error instanceof Error ? error.message : "Intente nuevamente."),
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [user, initialData, isEditing, onClose, onSuccess, toast]
+  );
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -260,8 +283,10 @@ export function ClienteFormModal({
               {isEditing ? "Editar cliente" : "Nuevo cliente"}
             </DialogTitle>
             <button
+              type="button"
               onClick={onClose}
               className="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors"
+              aria-label="Cerrar"
             >
               <X className="w-4 h-4 text-gray-400" />
             </button>
@@ -271,15 +296,20 @@ export function ClienteFormModal({
 
         {/* Form */}
         <Form {...form}>
+          {/*
+            Arquitectura de submit:
+            - El <form> tiene onSubmit={e => e.preventDefault()} → bloquea Enter y submit nativo.
+            - Todos los botones son type="button" → ninguno dispara submit del form.
+            - El botón "Guardar/Crear" del paso 2 llama form.handleSubmit(onSubmit)() manualmente.
+            - Resultado: el envío SOLO ocurre cuando el usuario está en el paso 2 y hace clic.
+          */}
+          {/*
+            El <form> no tiene onSubmit activo: todos los botones son type="button"
+            y el envío se dispara manualmente desde el onClick del botón "Guardar/Crear".
+            Esto elimina el submit accidental por tecla Enter o comportamiento del navegador.
+          */}
           <form
-            onSubmit={(e) => {
-              // Bloquear submit si no estamos en el paso 2
-              if (step !== 3) {
-                e.preventDefault();
-                return;
-              }
-              form.handleSubmit(onSubmit)(e);
-            }}
+            onSubmit={(e) => e.preventDefault()}
             className="flex flex-col flex-1 overflow-hidden"
           >
             {/* Scroll area */}
@@ -395,12 +425,11 @@ export function ClienteFormModal({
               {/* ── Paso 2: Dispositivos ───────────────────────────────── */}
               {step === 2 && (
                 <div className="space-y-3 animate-in fade-in duration-200">
-                  {/* Encabezado del listado */}
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-gray-400">
-                      {dispositivos.length}{" "}
-                      {dispositivos.length === 1 ? "dispositivo" : "dispositivos"} registrado
-                      {dispositivos.length !== 1 ? "s" : ""}
+                      {fields.length}{" "}
+                      {fields.length === 1 ? "dispositivo" : "dispositivos"} registrado
+                      {fields.length !== 1 ? "s" : ""}
                     </p>
                     <button
                       type="button"
@@ -412,9 +441,9 @@ export function ClienteFormModal({
                     </button>
                   </div>
 
-                  {dispositivos.map((d, idx) => (
+                  {fields.map((field, idx) => (
                     <div
-                      key={idx}
+                      key={field.id}
                       className="bg-gray-800/50 rounded-xl border border-gray-700/40 p-3.5 space-y-3"
                     >
                       {/* Cabecera tarjeta dispositivo */}
@@ -427,11 +456,12 @@ export function ClienteFormModal({
                             Dispositivo {idx + 1}
                           </span>
                         </div>
-                        {dispositivos.length > 1 && (
+                        {fields.length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeDispositivo(idx)}
                             className="w-6 h-6 rounded-lg bg-red-500/15 hover:bg-red-500/25 flex items-center justify-center transition-colors"
+                            aria-label="Eliminar dispositivo"
                           >
                             <X className="w-3 h-3 text-red-400" />
                           </button>
@@ -439,111 +469,109 @@ export function ClienteFormModal({
                       </div>
 
                       {/* Tipo */}
-                      <div>
-                        <label className="text-xs text-gray-400 mb-1 block">Tipo *</label>
-                        <Select
-                          value={d.tipo}
-                          onValueChange={(val) => {
-                            const cur = form.getValues("dispositivos");
-                            cur[idx].tipo = val;
-                            form.setValue("dispositivos", cur, { shouldValidate: true });
-                          }}
-                          disabled={isLoading}
-                        >
-                          <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white h-9 text-sm rounded-xl">
-                            <SelectValue placeholder="Seleccionar…" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-gray-800 border-gray-700">
-                            {["impresora", "fotocopiadora", "multifuncional", "escaner", "plotter", "otro"].map((t) => (
-                              <SelectItem key={t} value={t} className="capitalize">
-                                {t.charAt(0).toUpperCase() + t.slice(1)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {form.formState.errors.dispositivos?.[idx]?.tipo && (
-                          <p className="text-xs text-red-400 mt-1">
-                            {form.formState.errors.dispositivos[idx]?.tipo?.message}
-                          </p>
+                      <FormField
+                        control={form.control}
+                        name={`dispositivos.${idx}.tipo`}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs text-gray-400">Tipo *</FormLabel>
+                            <Select
+                              value={f.value}
+                              onValueChange={f.onChange}
+                              disabled={isLoading}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white h-9 text-sm rounded-xl">
+                                  <SelectValue placeholder="Seleccionar…" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="bg-gray-800 border-gray-700">
+                                {TIPO_OPTIONS.map((t) => (
+                                  <SelectItem key={t} value={t} className="capitalize">
+                                    {t.charAt(0).toUpperCase() + t.slice(1)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage className="text-xs" />
+                          </FormItem>
                         )}
-                      </div>
+                      />
 
                       {/* Marca + Modelo */}
                       <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-xs text-gray-400 mb-1 block">Marca *</label>
-                          <Input
-                            value={d.marca}
-                            onChange={(e) => {
-                              const cur = form.getValues("dispositivos");
-                              cur[idx].marca = e.target.value;
-                              form.setValue("dispositivos", cur, { shouldValidate: true });
-                            }}
-                            placeholder="HP, Canon…"
-                            disabled={isLoading}
-                            className="bg-gray-700/50 border-gray-600/50 text-white placeholder:text-gray-600 h-9 text-sm rounded-xl"
-                          />
-                          {form.formState.errors.dispositivos?.[idx]?.marca && (
-                            <p className="text-xs text-red-400 mt-1">
-                              {form.formState.errors.dispositivos[idx]?.marca?.message}
-                            </p>
+                        <FormField
+                          control={form.control}
+                          name={`dispositivos.${idx}.marca`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs text-gray-400">Marca *</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...f}
+                                  placeholder="HP, Canon…"
+                                  disabled={isLoading}
+                                  className="bg-gray-700/50 border-gray-600/50 text-white placeholder:text-gray-600 h-9 text-sm rounded-xl"
+                                />
+                              </FormControl>
+                              <FormMessage className="text-xs" />
+                            </FormItem>
                           )}
-                        </div>
+                        />
 
-                        <div>
-                          <label className="text-xs text-gray-400 mb-1 block">Modelo *</label>
-                          <Input
-                            value={d.modelo}
-                            onChange={(e) => {
-                              const cur = form.getValues("dispositivos");
-                              cur[idx].modelo = e.target.value;
-                              form.setValue("dispositivos", cur, { shouldValidate: true });
-                            }}
-                            placeholder="LX-3200…"
-                            disabled={isLoading}
-                            className="bg-gray-700/50 border-gray-600/50 text-white placeholder:text-gray-600 h-9 text-sm rounded-xl"
-                          />
-                          {form.formState.errors.dispositivos?.[idx]?.modelo && (
-                            <p className="text-xs text-red-400 mt-1">
-                              {form.formState.errors.dispositivos[idx]?.modelo?.message}
-                            </p>
+                        <FormField
+                          control={form.control}
+                          name={`dispositivos.${idx}.modelo`}
+                          render={({ field: f }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs text-gray-400">Modelo *</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...f}
+                                  placeholder="LX-3200…"
+                                  disabled={isLoading}
+                                  className="bg-gray-700/50 border-gray-600/50 text-white placeholder:text-gray-600 h-9 text-sm rounded-xl"
+                                />
+                              </FormControl>
+                              <FormMessage className="text-xs" />
+                            </FormItem>
                           )}
-                        </div>
+                        />
                       </div>
 
                       {/* Serie */}
-                      <div>
-                        <label className="text-xs text-gray-400 mb-1 block">Número de serie *</label>
-                        <Input
-                          value={d.numeroSerie}
-                          onChange={(e) => {
-                            const cur = form.getValues("dispositivos");
-                            cur[idx].numeroSerie = e.target.value;
-                            form.setValue("dispositivos", cur, { shouldValidate: true });
-                          }}
-                          placeholder="ABC123XYZ"
-                          disabled={isLoading}
-                          className="bg-gray-700/50 border-gray-600/50 text-white placeholder:text-gray-600 h-9 text-sm rounded-xl font-mono"
-                        />
-                        {form.formState.errors.dispositivos?.[idx]?.numeroSerie && (
-                          <p className="text-xs text-red-400 mt-1">
-                            {form.formState.errors.dispositivos[idx]?.numeroSerie?.message}
-                          </p>
+                      <FormField
+                        control={form.control}
+                        name={`dispositivos.${idx}.numeroSerie`}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs text-gray-400">Número de serie *</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...f}
+                                placeholder="ABC123XYZ"
+                                disabled={isLoading}
+                                className="bg-gray-700/50 border-gray-600/50 text-white placeholder:text-gray-600 h-9 text-sm rounded-xl font-mono"
+                              />
+                            </FormControl>
+                            <FormMessage className="text-xs" />
+                          </FormItem>
                         )}
-                      </div>
+                      />
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* ── Footer con CTAs ──────────────────────────────────────── */}
+            {/* ── Footer con CTAs ────────────────────────────────────────── */}
             <div className="px-5 py-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900 flex gap-2">
               {step === 1 ? (
                 <>
                   <button
                     type="button"
                     onClick={onClose}
+                    disabled={isLoading}
                     className="flex-1 h-11 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-colors"
                   >
                     Cancelar
@@ -551,6 +579,7 @@ export function ClienteFormModal({
                   <button
                     type="button"
                     onClick={goToStep2}
+                    disabled={isLoading}
                     className="flex-1 h-11 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/25 text-blue-400 text-sm font-medium flex items-center justify-center gap-2 transition-colors"
                   >
                     Siguiente
@@ -561,15 +590,22 @@ export function ClienteFormModal({
                 <>
                   <button
                     type="button"
-                    onClick={() => setStep(1)}
+                    onClick={goToStep1}
+                    disabled={isLoading}
                     className="flex-1 h-11 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium flex items-center justify-center gap-2 transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Atrás
                   </button>
+                  {/*
+                    Todos los botones son type="button" para que el <form>
+                    nunca haga submit por teclado (Enter) ni por el navegador.
+                    El envío se dispara manualmente aquí, solo en el paso 2.
+                  */}
                   <button
-                    type="submit"
+                    type="button"
                     disabled={isLoading}
+                    onClick={() => form.handleSubmit(onSubmit)()}
                     className="flex-1 h-11 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/25 text-blue-400 text-sm font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? (
