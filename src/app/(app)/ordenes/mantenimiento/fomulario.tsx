@@ -81,7 +81,7 @@ type FormAction =
   | { type: 'TOGGLE_TAREA_PREDEFINIDA'; payload: string }
   | { type: 'SET_TAREAS_PERSONALIZADAS'; payload: string[] }
   | { type: 'UPDATE_TAREA_PERSONALIZADA'; payload: { index: number; valor: string } }
-  | { type: 'ADD_TAREA_PERSONALIZADA' }
+  | { type: 'ADD_TAREA_PERSONALIZADA'; payload?: string }
   | { type: 'REMOVE_TAREA_PERSONALIZADA'; payload: number }
   | { type: 'SET_PIEZAS_USADAS'; payload: Pieza[] }
   | { type: 'SET_MOSTRAR_TAREAS_PREDEFINIDAS'; payload: boolean }
@@ -171,7 +171,7 @@ function formReducer(state: FormState, action: FormAction): FormState {
     case 'ADD_TAREA_PERSONALIZADA':
       return {
         ...state,
-        tareasPersonalizadas: [...state.tareasPersonalizadas, '']
+        tareasPersonalizadas: [...state.tareasPersonalizadas, action.payload || '']
       }
     
     case 'REMOVE_TAREA_PERSONALIZADA':
@@ -434,8 +434,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     dispatch({ type: 'UPDATE_TAREA_PERSONALIZADA', payload: { index, valor } })
   }, [])
 
-  const handleAgregarTareaPersonalizada = useCallback(() => {
-    dispatch({ type: 'ADD_TAREA_PERSONALIZADA' })
+  const handleAgregarTareaPersonalizada = useCallback((valor?: string) => {
+    dispatch({ type: 'ADD_TAREA_PERSONALIZADA', payload: valor })
   }, [])
 
   const handleEliminarTareaPersonalizada = useCallback((index: number) => {

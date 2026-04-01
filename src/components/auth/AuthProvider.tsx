@@ -4,11 +4,11 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { 
   User, 
   onAuthStateChanged, 
-  signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult,
+  signInWithPopup,
   signOut, 
   GoogleAuthProvider,
-  setPersistence,
-  browserLocalPersistence,
   onIdTokenChanged
 } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
@@ -21,7 +21,8 @@ const SECURITY_CONFIG = {
   allowedDomains: null as string[] | null, // Ejemplo: ['tuempresa.com', 'gmail.com']
   
   // Tiempo máximo de inactividad antes de cerrar sesión (en ms)
-  sessionTimeout: 30 * 60 * 1000, // 30 minutos
+  // Ajustado a 30 días pensando en el empaquetado WebView (Capacitor)
+  sessionTimeout: 30 * 24 * 60 * 60 * 1000, // 30 días
   
   // Habilitar logs en desarrollo
   enableLogs: process.env.NODE_ENV === 'development',
@@ -162,55 +163,116 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async (): Promise<void> => {
     try {
-      logger.log('🔐 Starting Google sign in...')
-      
-      // Configurar persistencia
-      await setPersistence(auth, browserLocalPersistence)
+      logger.log('🔐 Starting Google sign in (Popup)...')
       
       const provider = new GoogleAuthProvider()
       provider.setCustomParameters({
         prompt: 'select_account',
-        // Solicitar solo permisos necesarios
         access_type: 'online',
       })
       
-      // Agregar scopes específicos si es necesario
-      // provider.addScope('profile')
-      // provider.addScope('email')
+      // Restablecemos a Popup, que es 100% estable en navegadores para desarrollo local Web.
+      // Cuando empaquetes en Android, este botón deberá llamar al Plugin Nativo de Capacitor en lugar del SDK Web.
+      const result = await signInWithPopup(auth, provider);
       
-      const result = await signInWithPopup(auth, provider)
-      
-      // Validar usuario antes de continuar
-      const validation = validateUser(result.user)
+      const validation = validateUser(result.user);
       if (!validation.valid) {
-        await signOut(auth)
-        throw new Error(validation.reason)
+        await signOut(auth);
+        throw new Error(validation.reason);
       }
       
-      logger.log('✅ Google sign in successful:', result.user.uid)
-      
-      await createUserDocument(result.user)
-      
-      // Actualizar última actividad
-      setLastActivity(Date.now())
+      logger.log('✅ Google sign in successful:', result.user.uid);
+      await createUserDocument(result.user);
+      setLastActivity(Date.now());
+      setLoading(false);
       
     } catch (error: any) {
-      logger.error('❌ Error signing in:', error)
-      
-      // Mapear errores comunes
-      if (error.code === 'auth/popup-closed-by-user') {
-        throw new Error('El inicio de sesión fue cancelado.')
-      } else if (error.code === 'auth/popup-blocked') {
-        throw new Error('Las ventanas emergentes están bloqueadas. Por favor habilítalas.')
-      } else if (error.code === 'auth/network-request-failed') {
-        throw new Error('Error de conexión. Verifica tu internet.')
-      } else if (error.code === 'auth/unauthorized-domain') {
-        throw new Error('Dominio no autorizado. Contacta al administrador.')
-      }
-      
+      logger.error('❌ Error initializing sign in:', error)
       throw error
     }
   }
+
+  // ==================== MONITOREO DEL ESTADO ====================
+
+  useEffect(() => {
+    let isRedirectPromiseResolved = false;
+
+    // Es crucial esperar o ejecutar en paralelo getRedirectResult
+    // para no "mostrar" el login por un segundo si el redirect va a devolver un usuario
+    const checkRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        
+        if (result?.user) {
+          logger.log('🔥 Redirect result captured:', result.user.uid);
+          
+          // Forzar la validación y actualización del estado directamente para React
+          // esto evita depender 100% del tiempo de reacción de onAuthStateChanged
+          const validation = validateUser(result.user);
+          if (validation.valid) {
+            await createUserDocument(result.user);
+            setUser(result.user);
+            setLastActivity(Date.now());
+            setLoading(false);
+          } else {
+            logger.warn('🚫 User validation failed after redirect:', validation.reason);
+            await signOut(auth);
+            setUser(null);
+            setLoading(false);
+          }
+        } else {
+          logger.log('ℹ️ No redirect result found (result is null).');
+        }
+      } catch (error: any) {
+        logger.error('❌ Error processing redirect result:', error);
+      } finally {
+        isRedirectPromiseResolved = true;
+        // Si onAuthStateChanged ya se ejecutó y no encontró usuario, destrabamos el loading aquí
+        if (auth.currentUser === null) {
+          setLoading(false);
+        }
+      }
+    };
+    checkRedirectResult();
+
+    logger.log('🔄 Setting up auth state listener');
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      logger.log('🔥 Auth state changed:', firebaseUser ? `User: ${firebaseUser.uid}` : 'No user');
+      
+      if (firebaseUser) {
+        const validation = validateUser(firebaseUser);
+        if (!validation.valid) {
+          logger.warn('🚫 User validation failed:', validation.reason);
+          await signOut(auth);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        
+        try {
+          await createUserDocument(firebaseUser);
+          setUser(firebaseUser);
+          setLastActivity(Date.now());
+        } catch (error) {
+          logger.error('❌ Error in auth state change:', error);
+          await signOut(auth);
+          setUser(null);
+        }
+        
+        setLoading(false);
+      } else {
+        setUser(null);
+        if (isRedirectPromiseResolved) {
+          setLoading(false);
+        }
+      }
+    });
+
+    return () => {
+      logger.log('🧹 Cleaning up auth listener');
+      unsubscribe();
+    };
+  }, []);
 
   const logout = async (): Promise<void> => {
     try {
@@ -318,46 +380,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe()
   }, [])
 
-  // ==================== ESTADO DE AUTENTICACIÓN ====================
-
-  useEffect(() => {
-    logger.log('🔄 Setting up auth state listener')
-    
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      logger.log('🔥 Auth state changed:', firebaseUser ? `User: ${firebaseUser.uid}` : 'No user')
-      
-      if (firebaseUser) {
-        // Validar usuario
-        const validation = validateUser(firebaseUser)
-        if (!validation.valid) {
-          logger.warn('🚫 User validation failed:', validation.reason)
-          await signOut(auth)
-          setUser(null)
-          setLoading(false)
-          return
-        }
-        
-        try {
-          await createUserDocument(firebaseUser)
-          setUser(firebaseUser)
-          setLastActivity(Date.now())
-        } catch (error) {
-          logger.error('❌ Error in auth state change:', error)
-          await signOut(auth)
-          setUser(null)
-        }
-      } else {
-        setUser(null)
-      }
-      
-      setLoading(false)
-    })
-
-    return () => {
-      logger.log('🧹 Cleaning up auth listener')
-      unsubscribe()
-    }
-  }, [])
 
   // ==================== VALOR DEL CONTEXTO ====================
 

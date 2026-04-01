@@ -19,6 +19,11 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
 
   const isPublicRoute = PUBLIC_ROUTES.some(route => pathname?.startsWith(route))
 
+  // Destrabar el loader si se logró la navegación o la ruta coincide
+  useEffect(() => {
+    setIsNavigating(false)
+  }, [pathname])
+
   useEffect(() => {
     // No hacer nada mientras está cargando
     if (loading) return
@@ -45,25 +50,25 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
     }
   }, [user, loading, pathname, isPublicRoute, router])
 
-  // Mostrar loading durante verificación inicial
-  if (loading) {
+  // Mostrar loading durante verificación inicial o mientras navega
+  if (loading || isNavigating) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-900 to-gray-950">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 p-4 transition-colors duration-300">
         <div className="text-center space-y-4">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-500 mx-auto" />
-          <p className="text-gray-400 text-sm">Verificando autenticación...</p>
+          <Loader2 className="h-10 w-10 animate-spin text-blue-600 dark:text-blue-400 mx-auto" />
+          <p className="text-slate-600 dark:text-gray-400 text-sm font-medium">
+            {isNavigating ? 'Redirigiendo...' : 'Verificando sesión...'}
+          </p>
         </div>
       </div>
     )
   }
-
-  // Mostrar loading durante navegación
 
   // Renderizar contenido apropiado
   if (isPublicRoute || user) {
     return <>{children}</>
   }
 
-  // Estado de espera (no debería llegar aquí normalmente)
+  // Fallback si no hay estado claro (no debería verse)
   return null
 }

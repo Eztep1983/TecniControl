@@ -43,6 +43,7 @@ export function ClienteViewModal({
   onClose,
   onEdit,
 }: ClienteViewModalProps) {
+  useAndroidBack(open, onClose, onEdit);
   if (!cliente) return null;
 
   const formatDate = (dateStr?: string) => {
@@ -53,7 +54,6 @@ export function ClienteViewModal({
       day: "numeric",
     });
   };
-  useAndroidBack(open, onClose);
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>

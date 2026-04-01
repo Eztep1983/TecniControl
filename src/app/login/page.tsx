@@ -80,22 +80,21 @@ export default function LoginPage() {
     try {
       setIsSigningIn(true)
       setError(null)
-      console.log(' Attempting Google sign in...')
+      console.log(' Attempting Google sign in via Popup...')
       await signInWithGoogle()
-      console.log(' Sign in successful')
-      // El useEffect manejará la redirección
+      // En modo Popup, la promesa se resuelve exitosamente aquí.
+      // Firebase onAuthStateChanged se disparará, y AuthGuard nos redirigirá de inmediato.
     } catch (error: any) {
-      setError(error.message || 'Error al iniciar sesión')      
+      setError(error.message || 'Error al conectar con Google')      
       
-      // Mensajes de error específicos
-      if (error.code === 'auth/popup-closed-by-user') {
+      if (error.code === 'auth/popup-closed-by-user' || error.message.includes('cancelado')) {
         setError('El inicio de sesión fue cancelado. Por favor, intenta de nuevo.')
       } else if (error.code === 'auth/network-request-failed') {
-        setError('Error de conexión. Verifica tu conexión a internet e intenta de nuevo.')
+        setError('Error de conexión. Verifica tu red e intenta de nuevo.')
       } else if (error.code === 'auth/unauthorized-domain') {
         setError('Dominio no autorizado. Contacta al administrador.')
       } else {
-        setError('Error al iniciar sesión. Por favor, intenta de nuevo.')
+        setError('Operación cancelada o hubo un error inesperado. Intenta de nuevo.')
       }
       setIsSigningIn(false)
     }

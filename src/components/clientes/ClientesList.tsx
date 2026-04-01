@@ -1,7 +1,7 @@
 // components/clientes/ClientesList.tsx
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { ClientesDataTable } from "./ClientesDataTable";
 import { ClienteViewModal } from "@/components/clientes/ClienteViewModal";
 import { ClienteFormModal } from "@/components/clientes/ClienteFormModal";
@@ -12,8 +12,11 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { getClientesPorUsuario } from "@/lib/multiuser-helpers";
 import { useClienteModal } from "@/hooks/useClienteModal";
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
-function ClientesSkeleton() {
+// ── Skeleton — defined OUTSIDE with memo to keep static flags stable ──────────
+// Declaring this as a named const outside the parent component prevents React
+// from seeing it as a new component type on every render, which is one source
+// of the "Expected static flag was missing" error.
+const ClientesSkeleton = memo(function ClientesSkeleton() {
   return (
     <div className="p-4 sm:p-5 space-y-3">
       <div className="h-[60px] rounded-2xl bg-gray-700/30 animate-pulse" />
@@ -46,19 +49,23 @@ function ClientesSkeleton() {
       </div>
     </div>
   );
-}
+});
 
 // ── Componente principal ──────────────────────────────────────────────────────
 export function ClientesList() {
+  // ── ALL hooks must be called unconditionally, in the same order, every render ─
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // These hooks are always called — never inside conditions or after early returns
   const { user } = useAuth();
   const modal = useClienteModal();
 
   // ── Fetch ───────────────────────────────────────────────────────────────────
   useEffect(() => {
+    // Guard inside the effect body, NOT by skipping the hook call
     if (!user?.uid) {
       setLoading(false);
       return;
@@ -77,7 +84,9 @@ export function ClientesList() {
       }
     };
     fetchClientes();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user?.uid]);
 
   // ── Filtrado reactivo (memoizado) ───────────────────────────────────────────
@@ -92,7 +101,9 @@ export function ClientesList() {
     );
   }, [clientes, searchTerm]);
 
-  // ── Callbacks CRUD estables ─────────────────────────────────────────────────
+  // ── Callbacks CRUD — stable references, no dependency on modal object ───────
+  // Depending on the whole `modal` object is risky if useClienteModal returns
+  // a new object reference every render. Extract only the primitives needed.
   const handleDelete = useCallback((id: string) => {
     setClientes((prev) => prev.filter((c) => c.id !== id));
   }, []);
@@ -111,8 +122,16 @@ export function ClientesList() {
 
   const clearSearch = useCallback(() => setSearchTerm(""), []);
 
-  // ── Guards ──────────────────────────────────────────────────────────────────
-  if (!user) {
+  // ── Derived booleans — computed after all hooks ─────────────────────────────
+  // Pull these out so JSX stays clean and we don't call any hooks after this point
+  const isNoUser = !user;
+  const hasError = !!error;
+  const isEmpty = !loading && clientes.length === 0;
+  const isFiltered = !loading && clientes.length > 0 && filteredClientes.length === 0;
+  const showTable = !loading && filteredClientes.length > 0;
+
+  // ── Guards rendered via data, NOT via early return before hooks ─────────────
+  if (isNoUser) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <div className="bg-gray-800/40 rounded-2xl border border-gray-700/50 p-8 max-w-sm w-full text-center">
@@ -128,7 +147,7 @@ export function ClientesList() {
     );
   }
 
-  if (error) {
+  if (hasError) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <div className="bg-gray-800/40 rounded-2xl border border-red-500/30 p-8 max-w-sm w-full text-center">
@@ -152,7 +171,7 @@ export function ClientesList() {
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <>
-      {/* Modales */}
+      {/* Modales — always mounted so their own hooks never change count */}
       <ClienteViewModal
         open={modal.isView}
         cliente={modal.cliente}
@@ -213,9 +232,10 @@ export function ClientesList() {
                 {/* CTA nuevo cliente */}
                 <button
                   onClick={modal.openCreate}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/30 transition-colors text-sm flex-shrink-0"
+                  className="flex items-center text-white gap-1.5 px-3 py-2 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/30 transition-colors text-sm flex-shrink-0"
                 >
                   <PlusCircle className="w-4 h-4 text-blue-400" />
+                  Crear cliente
                   <span className="text-blue-400 font-medium hidden xs:inline">Nuevo</span>
                 </button>
               </div>
@@ -242,53 +262,56 @@ export function ClientesList() {
               </div>
             </div>
 
-            {/* Contenido */}
-            {loading ? (
-              <ClientesSkeleton />
-            ) : clientes.length === 0 ? (
-              // Estado vacío — sin clientes aún
-              <div className="text-center py-14 px-4">
-                <div className="w-16 h-16 bg-gray-700/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-8 h-8 text-gray-500" />
+            {/* Contenido — single conditional branch, no nested ternary chains */}
+            <div className="p-4 sm:p-5">
+              {loading && <ClientesSkeleton />}
+
+              {isEmpty && (
+                <div className="text-center py-14 px-4">
+                  <div className="w-16 h-16 bg-gray-700/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-8 h-8 text-gray-500" />
+                  </div>
+                  <h3 className="text-base font-semibold text-white mb-2">¡Comienza tu gestión!</h3>
+                  <p className="text-sm text-gray-400 mb-6 max-w-xs mx-auto">
+                    Agrega tu primer cliente para gestionar dispositivos y órdenes.
+                  </p>
+                  <button
+                    onClick={modal.openCreate}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 rounded-xl text-blue-400 font-medium transition-colors active:scale-95"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    Crear Primer Cliente
+                  </button>
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">¡Comienza tu gestión!</h3>
-                <p className="text-sm text-gray-400 mb-6 max-w-xs mx-auto">
-                  Agrega tu primer cliente para gestionar dispositivos y órdenes.
-                </p>
-                <button
-                  onClick={modal.openCreate}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 rounded-xl text-blue-400 font-medium transition-colors active:scale-95"
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  Crear Primer Cliente
-                </button>
-              </div>
-            ) : filteredClientes.length === 0 ? (
-              // Sin resultados de búsqueda
-              <div className="text-center py-14 px-4">
-                <div className="w-16 h-16 bg-gray-700/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Filter className="w-8 h-8 text-gray-500" />
+              )}
+
+              {isFiltered && (
+                <div className="text-center py-14 px-4">
+                  <div className="w-16 h-16 bg-gray-700/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Filter className="w-8 h-8 text-gray-500" />
+                  </div>
+                  <h3 className="text-sm font-medium text-gray-300 mb-1">Sin resultados</h3>
+                  <p className="text-sm text-gray-500 mb-4">Ajusta los criterios de búsqueda.</p>
+                  <button
+                    onClick={clearSearch}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/40 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    Limpiar búsqueda
+                  </button>
                 </div>
-                <h3 className="text-sm font-medium text-gray-300 mb-1">Sin resultados</h3>
-                <p className="text-sm text-gray-500 mb-4">Ajusta los criterios de búsqueda.</p>
-                <button
-                  onClick={clearSearch}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/40 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-colors"
-                >
-                  <X className="w-3.5 h-3.5" />
-                  Limpiar búsqueda
-                </button>
-              </div>
-            ) : (
-              <div className="p-4 sm:p-5">
+              )}
+
+              {showTable && (
                 <ClientesDataTable
                   data={filteredClientes}
                   onDelete={handleDelete}
                   onView={modal.openView}
                   onEdit={modal.openEdit}
                 />
-              </div>
-            )}
+              )}
+            </div>
+
           </div>
         </div>
       </div>
