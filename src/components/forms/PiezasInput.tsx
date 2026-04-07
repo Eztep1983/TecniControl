@@ -3,7 +3,7 @@
 import { Plus, Trash2, Package, Search, X, AlertCircle } from 'lucide-react'
 import { useCallback, memo, useState, useEffect, useMemo, useRef, Dispatch, SetStateAction } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { obtenerPiezasPredefinidas, PiezaPredefinida } from '@/lib/configuracionTareasR-helpers'
+import { obtenerPiezasPredefinidas, guardarPiezasPredefinidas, PiezaPredefinida } from '@/lib/configuracionTareasR-helpers'
 
 interface Pieza {
   pieza: string
@@ -84,7 +84,11 @@ export default memo(function PiezasInput({
       }
       try {
         const piezas = await obtenerPiezasPredefinidas(user.uid)
-        setPiezasPredefinidas(piezas || [])
+        const piezasSanitizadas = (piezas || []).filter(Boolean).map(p => ({
+          ...p,
+          nombre: p.nombre || ''
+        }))
+        setPiezasPredefinidas(piezasSanitizadas)
       } catch (err) {
         console.error('Error cargando piezas:', err)
         setErrorLocal('Error al cargar piezas predefinidas')
@@ -126,13 +130,13 @@ export default memo(function PiezasInput({
 
   const opcionesDisponibles = useMemo(() => {
     return piezasPredefinidas.filter(p => 
-      p.nombre.toLowerCase().includes(query.toLowerCase()) && !idsSeleccionadas.has(p.id)
+      (p.nombre || '').toLowerCase().includes(query.toLowerCase()) && !idsSeleccionadas.has(p.id)
     )
   }, [piezasPredefinidas, query, idsSeleccionadas])
 
   const queryLimpio = query.trim()
   const mostrarAgregar = queryLimpio !== '' && 
-    !piezasPredefinidas.some(p => p.nombre.toLowerCase() === queryLimpio.toLowerCase()) &&
+    !piezasPredefinidas.some(p => (p.nombre || '').toLowerCase() === queryLimpio.toLowerCase()) &&
     !nombresPersonalizadas.has(queryLimpio.toLowerCase())
 
   // Acciones
@@ -144,11 +148,28 @@ export default memo(function PiezasInput({
   }, [setPiezasUsadas])
 
   const handleAgregarPersonalizada = useCallback((nombre: string) => {
+    // Auto-guardado en background como predefinida
+    if (user?.uid) {
+      const nuevaPiezaPredefinida: PiezaPredefinida = {
+        id: Date.now().toString(),
+        nombre: nombre,
+        categoria: 'General'
+      }
+      obtenerPiezasPredefinidas(user.uid).then(todas => {
+        const todasSanitizadas = (todas || []).filter(Boolean);
+        const piezasActualizadas = [...todasSanitizadas, nuevaPiezaPredefinida];
+        guardarPiezasPredefinidas(user.uid, piezasActualizadas).catch(err => {
+          console.error("Error guardando nueva pieza predefinida", err);
+        });
+      });
+      setPiezasPredefinidas(prev => [...prev, nuevaPiezaPredefinida]);
+    }
+
     setPiezasUsadas(prev => [...prev, {
       pieza: nombre, cantidad: 1, tipo: 'personalizada'
     }])
     setQuery(''); setIsOpen(false); inputRef.current?.blur()
-  }, [setPiezasUsadas])
+  }, [setPiezasUsadas, user?.uid])
 
   const handleEliminar = useCallback((index: number) => {
     setPiezasUsadas(prev => prev.filter((_, i) => i !== index))

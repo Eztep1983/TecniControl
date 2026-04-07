@@ -3,7 +3,7 @@
 import { Check, AlertCircle, X, Search, Zap, Plus } from 'lucide-react'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { obtenerTareasPredefinidas, TareaPredefinida } from '@/lib/configuracionTareasR-helpers'
+import { obtenerTareasPredefinidas, guardarTareasPredefinidas, TareaPredefinida } from '@/lib/configuracionTareasR-helpers'
 
 interface TareasInputProps {
   tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico'
@@ -44,7 +44,12 @@ export default function TareasInput({
       setCargando(true)
       try {
         const tareas = await obtenerTareasPredefinidas(user.uid)
-        const filtradas = tareas.filter(t => t.tipo === tipoMantenimiento || t.tipo === 'ambos')
+        const tareasSanitizadas = (tareas || []).filter(Boolean).map(t => ({
+          ...t,
+          nombre: t.nombre || '',
+          tipo: t.tipo || 'preventivo'
+        }))
+        const filtradas = tareasSanitizadas.filter(t => t.tipo === tipoMantenimiento || t.tipo === 'ambos')
         setTareasPredefinidas(filtradas)
       } catch (err) {
         console.error('Error cargando tareas:', err)
@@ -79,14 +84,15 @@ export default function TareasInput({
   // Opciones filtradas descartando ya seleccionadas
   const opcionesDisponibles = useMemo(() => {
     return tareasPredefinidas.filter(t => {
-      const matchQuery = t.nombre.toLowerCase().includes(query.toLowerCase())
+      const nombreLimpio = (t.nombre || '').toLowerCase()
+      const matchQuery = nombreLimpio.includes(query.toLowerCase())
       const noSeleccionada = !tareasSeleccionadas.includes(t.nombre)
       return matchQuery && noSeleccionada
     })
   }, [tareasPredefinidas, query, tareasSeleccionadas])
 
   const mostrarOpcionAgregar = query.trim() !== '' && 
-    !tareasPredefinidas.some(t => t.nombre.toLowerCase() === query.trim().toLowerCase()) &&
+    !tareasPredefinidas.some(t => (t.nombre || '').toLowerCase() === query.trim().toLowerCase()) &&
     !tareasSeleccionadas.some(t => t.toLowerCase() === query.trim().toLowerCase()) &&
     !tareasPersonalizadas.some(t => t?.toLowerCase() === query.trim().toLowerCase())
 
@@ -97,11 +103,30 @@ export default function TareasInput({
       setTimeout(() => setError(null), 3000)
       return
     }
+
+    // Auto-guardado en background como predefinida
+    if (user?.uid) {
+      const nuevaTareaPredefinida: TareaPredefinida = {
+        id: Date.now().toString(),
+        nombre: nuevoValor,
+        tipo: (tipoMantenimiento === 'preventivo' || tipoMantenimiento === 'correctivo') ? tipoMantenimiento : 'preventivo',
+        categoria: 'General'
+      }
+      obtenerTareasPredefinidas(user.uid).then(todas => {
+        const todasSanitizadas = (todas || []).filter(Boolean);
+        const tareasActualizadas = [...todasSanitizadas, nuevaTareaPredefinida];
+        guardarTareasPredefinidas(user.uid, tareasActualizadas).catch(err => {
+          console.error("Error guardando nueva tarea predefinida", err);
+        });
+      });
+      setTareasPredefinidas(prev => [...prev, nuevaTareaPredefinida]);
+    }
+
     onAgregarTareaPersonalizada(nuevoValor)
     setQuery('')
     setIsOpen(false)
     inputRef.current?.blur()
-  }, [tareasPersonalizadas.length, onAgregarTareaPersonalizada])
+  }, [tareasPersonalizadas.length, onAgregarTareaPersonalizada, user?.uid, tipoMantenimiento])
 
   const handleSeleccionarPredefinida = useCallback((nombre: string) => {
     onToggleTareaPredefinida(nombre)

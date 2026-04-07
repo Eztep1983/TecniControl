@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation'
 interface TareaPredefinida {
   id: string
   nombre: string
-  tipo: 'preventivo' | 'correctivo'
+  tipo: 'preventivo' | 'correctivo' | 'ambos'
   categoria: string
 }
 
@@ -35,7 +35,7 @@ export default function TareasRepuestosPage() {
   const [editandoPieza, setEditandoPieza] = useState<string | null>(null)
   const [nuevaTarea, setNuevaTarea] = useState<{ 
     nombre: string; 
-    tipo: 'preventivo' | 'correctivo'; 
+    tipo: 'preventivo' | 'correctivo' | 'ambos'; 
     categoria: string 
   }>({ 
     nombre: '', 
@@ -48,7 +48,7 @@ export default function TareasRepuestosPage() {
   })
   const [tareaEditTemp, setTareaEditTemp] = useState<{ 
     nombre: string; 
-    tipo: 'preventivo' | 'correctivo'; 
+    tipo: 'preventivo' | 'correctivo' | 'ambos'; 
     categoria: string 
   }>({ nombre: '', tipo: 'preventivo', categoria: 'General' })
   const [piezaEditTemp, setPiezaEditTemp] = useState({ nombre: '', categoria: 'Categoria Generica' })
@@ -60,6 +60,9 @@ export default function TareasRepuestosPage() {
   // Estado para mostrar/ocultar formularios en móvil
   const [mostrarFormTareas, setMostrarFormTareas] = useState(false)
   const [mostrarFormPiezas, setMostrarFormPiezas] = useState(false)
+
+  // Estado de Tabs para Móvil
+  const [tabActiva, setTabActiva] = useState<'tareas' | 'piezas'>('tareas')
 
   // Estados unificados para retroalimentación
   const [guardando, setGuardando] = useState(false)
@@ -113,16 +116,17 @@ export default function TareasRepuestosPage() {
       const [tareasData, piezasData] = await Promise.all([
         obtenerTareasPredefinidas(user.uid),
         obtenerPiezasPredefinidas(user.uid)
-      ])
-      setTareas(
-        tareasData
-          .filter(t => t.tipo === 'preventivo' || t.tipo === 'correctivo')
-          .map(t => ({
-            ...t,
-            tipo: t.tipo === 'preventivo' || t.tipo === 'correctivo' ? t.tipo : 'preventivo'
-          }))
-      )
-      setPiezas(piezasData)
+      ]);
+      const tareasSanitizadas = (tareasData || []).filter(Boolean).map(t => ({
+        ...t,
+        nombre: t.nombre || '',
+        tipo: t.tipo || 'preventivo'
+      })) as TareaPredefinida[];
+      setTareas(tareasSanitizadas)
+      setPiezas((piezasData || []).filter(Boolean).map(p => ({
+        ...p,
+        nombre: p.nombre || ''
+      })) as PiezaPredefinida[])
       setUltimoGuardado(new Date())
     } catch (error) {
       console.error('Error cargando configuración:', error)
@@ -248,9 +252,9 @@ export default function TareasRepuestosPage() {
     if (!busquedaTareas.trim()) return tareas
     const termino = busquedaTareas.toLowerCase()
     return tareas.filter(tarea => 
-      tarea.nombre.toLowerCase().includes(termino) ||
-      tarea.categoria.toLowerCase().includes(termino) ||
-      tarea.tipo.toLowerCase().includes(termino)
+      (tarea.nombre || '').toLowerCase().includes(termino) ||
+      (tarea.categoria || '').toLowerCase().includes(termino) ||
+      (tarea.tipo || '').toLowerCase().includes(termino)
     )
   }, [tareas, busquedaTareas])
 
@@ -258,8 +262,8 @@ export default function TareasRepuestosPage() {
     if (!busquedaPiezas.trim()) return piezas
     const termino = busquedaPiezas.toLowerCase()
     return piezas.filter(pieza => 
-      pieza.nombre.toLowerCase().includes(termino) ||
-      pieza.categoria.toLowerCase().includes(termino)
+      (pieza.nombre || '').toLowerCase().includes(termino) ||
+      (pieza.categoria || '').toLowerCase().includes(termino)
     )
   }, [piezas, busquedaPiezas])
 
@@ -313,31 +317,28 @@ export default function TareasRepuestosPage() {
           </div>
         )}
 
-
-      {/* Información adicional - optimizada */}
-        <div className="mt-8 bg-gray-800/30 rounded-xl border border-gray-700/50 p-4 sm:p-6">
-          <div className="flex items-start space-x-3">
-            <Settings className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-            <div className="min-w-0 flex-1">
-              <h3 className="text-base sm:text-lg font-semibold text-white mb-2">¿Cómo funciona?</h3>
-              <p className="text-gray-300 text-sm mb-3">
-                Las tareas y piezas que agregues aquí estarán disponibles como opciones predefinidas 
-                cuando crees órdenes de mantenimiento, agilizando el proceso y manteniendo la consistencia.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-gray-400 text-sm">
-                <p>• Clasifica tareas como preventivas o correctivas</p>
-                <p>• Organiza con categorías personalizadas</p>
-                <p>• Busca elementos rápidamente</p>
-                <p>• Los cambios se sincronizan automáticamente</p>
-              </div>
-            </div>
-          </div>
+        {/* Layout adaptativo con Tabs en Móvil */}
+        
+        <div className="lg:hidden flex p-1 bg-gray-800/60 rounded-xl mb-6 border border-gray-700/50">
+          <button 
+            onClick={() => setTabActiva('tareas')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all touch-manipulation ${tabActiva === 'tareas' ? 'bg-blue-500/20 text-blue-300 shadow shadow-blue-500/10' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30'}`}
+          >
+            <ListChecks className="w-4 h-4" />
+            Tareas
+          </button>
+          <button 
+            onClick={() => setTabActiva('piezas')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all touch-manipulation ${tabActiva === 'piezas' ? 'bg-purple-500/20 text-purple-300 shadow shadow-purple-500/10' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30'}`}
+          >
+            <Package className="w-4 h-4" />
+            Repuestos
+          </button>
         </div>
-        <br />
-        {/* Layout adaptativo */}
-        <div className="space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-8">
+
+        <div className="lg:grid lg:grid-cols-2 lg:gap-8">
           {/* Sección Tareas */}
-          <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 sm:p-6">
+          <div className={`${tabActiva !== 'tareas' ? 'hidden' : 'block'} lg:block bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 sm:p-6`}>
             <div className="flex items-center space-x-3 mb-4 sm:mb-6">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                 <ListChecks className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
@@ -389,11 +390,12 @@ export default function TareasRepuestosPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <select
                     value={nuevaTarea.tipo}
-                    onChange={(e) => setNuevaTarea(prev => ({ ...prev, tipo: e.target.value as 'preventivo' | 'correctivo' }))}
+                    onChange={(e) => setNuevaTarea(prev => ({ ...prev, tipo: e.target.value as 'preventivo' | 'correctivo' | 'ambos' }))}
                     className="px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   >
                     <option value="preventivo">Preventivo</option>
                     <option value="correctivo">Correctivo</option>
+                    <option value="ambos">Ambos</option>
                   </select>
                   <input
                     type="text"
@@ -437,11 +439,12 @@ export default function TareasRepuestosPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <select
                             value={tareaEditTemp.tipo}
-                            onChange={(e) => setTareaEditTemp(prev => ({ ...prev, tipo: e.target.value as 'preventivo' | 'correctivo' }))}
+                            onChange={(e) => setTareaEditTemp(prev => ({ ...prev, tipo: e.target.value as 'preventivo' | 'correctivo' | 'ambos' }))}
                             className="px-2 py-1 bg-gray-600/50 border border-gray-500/50 rounded text-white text-sm"
                           >
                             <option value="preventivo">Preventivo</option>
                             <option value="correctivo">Correctivo</option>
+                            <option value="ambos">Ambos</option>
                           </select>
                           <input
                             type="text"
@@ -475,7 +478,8 @@ export default function TareasRepuestosPage() {
                             <span className="text-white text-sm font-medium truncate">{tarea.nombre}</span>
                             <span className={`px-2 py-1 rounded-full text-xs flex-shrink-0 ${
                               tarea.tipo === 'preventivo' ? 'bg-green-500/20 text-green-300' :
-                              'bg-orange-500/20 text-orange-300'
+                              tarea.tipo === 'correctivo' ? 'bg-orange-500/20 text-orange-300' :
+                              'bg-purple-500/20 text-purple-300'
                             }`}>
                               {tarea.tipo}
                             </span>
@@ -509,7 +513,7 @@ export default function TareasRepuestosPage() {
           </div>
 
           {/* Sección Piezas */}
-          <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 sm:p-6">
+          <div className={`${tabActiva !== 'piezas' ? 'hidden' : 'block'} lg:block bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 sm:p-6 mt-6 lg:mt-0`}>
             <div className="flex items-center space-x-3 mb-4 sm:mb-6">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Package className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
@@ -708,7 +712,11 @@ export default function TareasRepuestosPage() {
               <div className="text-xs text-gray-400">Correctivas</div>
             </div>
             <div className="bg-gray-800/30 rounded-lg p-4 text-center border border-gray-700/30">
-              <div className="text-2xl font-bold text-purple-400">{piezas.length}</div>
+              <div className="text-2xl font-bold text-purple-400">{tareas.filter(t => t.tipo === 'ambos').length}</div>
+              <div className="text-xs text-gray-400">Ambos</div>
+            </div>
+            <div className="bg-gray-800/30 rounded-lg p-4 text-center border border-gray-700/30">
+              <div className="text-2xl font-bold text-blue-400">{piezas.length}</div>
               <div className="text-xs text-gray-400">Total Piezas</div>
             </div>
           </div>
