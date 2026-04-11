@@ -74,36 +74,36 @@ export default function DispositivoSelector({
     const IconoDispositivo = getIconoDispositivo(dispositivoSeleccionado.tipo)
     
     return (
-      <div className="relative overflow-hidden bg-gradient-to-br from-green-500/15 to-green-600/10 p-5 rounded-xl border border-green-500/40 shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full -mr-16 -mt-16" />
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-500/15 to-blue-600/10 p-5 rounded-xl border border-blue-500/40 shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16" />
         
         <div className="relative flex justify-between items-start gap-4">
           <div className="flex-1 space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center animate-in zoom-in duration-200">
-                <IconoDispositivo className="w-6 h-6 text-green-300" />
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center animate-in zoom-in duration-200">
+                <IconoDispositivo className="w-6 h-6 text-blue-300" />
               </div>
               <div>
-                <h3 className="font-semibold text-green-200 text-lg">{dispositivoSeleccionado.tipo}</h3>
-                <p className="text-xs text-green-400/60">Dispositivo seleccionado</p>
+                <h3 className="font-semibold text-blue-200 text-lg">{dispositivoSeleccionado.tipo}</h3>
+                <p className="text-xs text-blue-400/60">Dispositivo seleccionado</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-14">
               <div className="flex items-center gap-2 text-sm">
-                <Cpu className="w-4 h-4 text-green-400/70" />
-                <span className="text-green-300/90">{dispositivoSeleccionado.marca} {dispositivoSeleccionado.modelo}</span>
+                <Cpu className="w-4 h-4 text-blue-400/70" />
+                <span className="text-blue-300/90">{dispositivoSeleccionado.marca} {dispositivoSeleccionado.modelo}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <Package className="w-4 h-4 text-green-400/70" />
-                <span className="text-green-300/90 font-mono text-xs">S/N: {dispositivoSeleccionado.numeroSerie}</span>
+                <Package className="w-4 h-4 text-blue-400/70" />
+                <span className="text-blue-300/90 font-mono text-xs">S/N: {dispositivoSeleccionado.numeroSerie}</span>
               </div>
             </div>
 
             {dispositivoSeleccionado.estado && (
               <div className="flex items-center gap-2 pl-14">
-                <div className="px-3 py-1.5 bg-green-500/20 rounded-full">
-                  <span className="text-xs text-green-300 font-medium">
+                <div className="px-3 py-1.5 bg-blue-500/20 rounded-full">
+                  <span className="text-xs text-blue-300 font-medium">
                     Estado: {dispositivoSeleccionado.estado}
                   </span>
                 </div>
@@ -114,7 +114,7 @@ export default function DispositivoSelector({
           <button
             type="button"
             onClick={onDesseleccionarDispositivo}
-            className="flex-shrink-0 bg-green-500/20 hover:bg-green-500/30 text-green-300 hover:text-green-200 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md active:scale-95"
+            className="flex-shrink-0 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 hover:text-blue-200 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md active:scale-95"
           >
             Cambiar
           </button>
@@ -148,7 +148,7 @@ export default function DispositivoSelector({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xl text-gray-300 font-medium">Seleccionar Dispositivo</p>
-          <p className="text-xs text-gray-500">Elige el dispositivo para esta orden de servicio</p>
+          <p className="text-xs text-gray-500">Elige el dispositivo del cliente para esta orden</p>
         </div>
         {dispositivos.length > 0 && (
           <div className="px-3 py-1.5 bg-gray-700/50 rounded-full">
@@ -167,17 +167,17 @@ export default function DispositivoSelector({
             <div
               key={dispositivo.id}
               onClick={() => handleSeleccionarDispositivo(dispositivo)}
-              className={`p-4 border border-gray-700/50 rounded-xl hover:bg-gray-700/40 cursor-pointer hover:border-green-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-green-500/10 group active:scale-[0.98] animate-in fade-in slide-in-from-bottom-2 ${
-                dispositivoAnimando === dispositivo.id ? 'bg-green-500/20 scale-[0.96] border-green-500/70' : ''
+              className={`p-4 border border-gray-700/50 rounded-xl hover:bg-gray-700/40 cursor-pointer hover:border-blue-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10 group active:scale-[0.98] animate-in fade-in slide-in-from-bottom-2 ${
+                dispositivoAnimando === dispositivo.id ? 'bg-blue-500/20 scale-[0.96] border-blue-500/70' : ''
               }`}
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className="flex items-start gap-3">
-                <div className="w-12 h-12 bg-gray-700/50 group-hover:bg-green-600/20 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:scale-110">
-                  <IconoDispositivo className="w-6 h-6 text-gray-400 group-hover:text-green-400 transition-colors" />
+                <div className="w-12 h-12 bg-gray-700/50 group-hover:bg-blue-600/20 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:scale-110">
+                  <IconoDispositivo className="w-6 h-6 text-gray-400 group-hover:text-blue-400 transition-colors" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-white group-hover:text-green-300 transition-colors mb-1">
+                  <div className="font-medium text-white group-hover:text-blue-300 transition-colors mb-1">
                     {dispositivo.tipo}
                   </div>
                   <div className="text-sm text-gray-300 group-hover:text-gray-200 transition-colors">
@@ -191,7 +191,7 @@ export default function DispositivoSelector({
                   </div>
                   {dispositivo.estado && (
                     <div className="mt-2">
-                      <span className="inline-flex items-center px-2 py-1 bg-gray-700/50 group-hover:bg-green-500/20 rounded-full text-xs text-gray-400 group-hover:text-green-300 transition-colors">
+                      <span className="inline-flex items-center px-2 py-1 bg-gray-700/50 group-hover:bg-blue-500/20 rounded-full text-xs text-gray-400 group-hover:text-blue-300 transition-colors">
                         {dispositivo.estado}
                       </span>
                     </div>

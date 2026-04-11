@@ -5,7 +5,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import { OrdenMantenimiento } from '@/types/orden'
 import { Plus, Search, Eye, Printer, ArrowLeft, Wrench, Filter, ChevronDown, ChevronUp } from 'lucide-react'
 import Link from 'next/link'
-import FormularioMantenimiento from '@/app/(app)/ordenes/mantenimiento/fomulario'
+import FormularioMantenimiento from '@/app/(app)/ordenes/mantenimiento/formulario'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { useOrdenesUsuario } from '@/hooks/useMultiUser'
 import { useNegocio } from '@/hooks/useNegocio'
@@ -31,7 +31,7 @@ const OrdenCard = ({ orden, onView, onPrint, getTipoColor, formatFecha }: {
   }
 
   return (
-    <div 
+    <div
       className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
       onClick={() => onView(orden)}
     >
@@ -48,7 +48,7 @@ const OrdenCard = ({ orden, onView, onPrint, getTipoColor, formatFecha }: {
           {getTipoLabel(orden.tipoMantenimiento)}
         </span>
       </div>
-      
+
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-gray-400">Teléfono:</span>
@@ -65,7 +65,7 @@ const OrdenCard = ({ orden, onView, onPrint, getTipoColor, formatFecha }: {
           <span className="text-white">{formatFecha(orden.fechaCreacion)}</span>
         </div>
       </div>
-      
+
       <div className="flex space-x-2 mt-4 pt-3 border-t border-gray-600/50">
         <button
           onClick={(e) => {
@@ -107,29 +107,35 @@ export default function OrdenesMantenimientoPage() {
   const { user, loading: authLoading } = useAuth()
   const { ordenes: todasLasOrdenes, loading, error, refrescarOrdenes } = useOrdenesUsuario()
   const { negocio, loading: loadingNegocio } = useNegocio()
-  
+
   const { imprimirOrden, formatFecha } = usePrintService({ negocio })
   const [busqueda, setBusqueda] = useState('')
   const [debouncedBusqueda] = useDebounce(busqueda, 300);
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
+  const [hayBorrador, setHayBorrador] = useState(false)
   const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenMantenimiento | null>(null)
   const [filtroTipo, setFiltroTipo] = useState<string>('todos')
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
   const [paginaActual, setPaginaActual] = useState(1)
   const [esMobile, setEsMobile] = useState(false)
   const [aplicandoFiltro, setAplicandoFiltro] = useState(false)
-  
+
   const elementosPorPagina = 10
 
-  // Detectar tamaño de pantalla
+  // Detectar tamaño de pantalla y confirmar si hay borrador
   useEffect(() => {
     const checkMobile = () => {
       setEsMobile(window.innerWidth < 768)
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    
+
+    // Check borrador
+    if (localStorage.getItem('draft_mantenimiento')) {
+      setHayBorrador(true)
+    }
+
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
@@ -146,7 +152,7 @@ export default function OrdenesMantenimientoPage() {
     setFiltroTipo(nuevoFiltro)
     setMostrarFiltros(false)
     setPaginaActual(1)
-    
+
     setTimeout(() => {
       setAplicandoFiltro(false)
     }, 300)
@@ -154,16 +160,16 @@ export default function OrdenesMantenimientoPage() {
 
   const ordenesFiltradas = useMemo(() => {
     return ordenes.filter(orden => {
-      const coincideBusqueda = 
+      const coincideBusqueda =
         (orden.cliente?.phone?.toLowerCase() || '').includes(debouncedBusqueda.toLowerCase()) ||
         (orden.cliente?.cedula?.toLowerCase() || '').includes(debouncedBusqueda.toLowerCase()) ||
         (orden.cliente?.name?.toLowerCase() || '').includes(debouncedBusqueda.toLowerCase()) ||
         (orden.dispositivo?.modelo?.toLowerCase() || '').includes(debouncedBusqueda.toLowerCase()) ||
         (orden.dispositivo?.numeroSerie?.toLowerCase() || '').includes(debouncedBusqueda.toLowerCase()) ||
         (orden.idPersonalizado?.toLowerCase() || '').includes(debouncedBusqueda.toLowerCase());
-      
+
       const coincideTipo = filtroTipo === 'todos' || orden.tipoMantenimiento === filtroTipo;
-      
+
       return coincideBusqueda && coincideTipo;
     });
   }, [ordenes, debouncedBusqueda, filtroTipo]);
@@ -208,10 +214,14 @@ export default function OrdenesMantenimientoPage() {
   if (mostrarFormulario) {
     return (
       <FormularioMantenimiento
-        onClose={() => setMostrarFormulario(false)}
+        onClose={() => {
+          setMostrarFormulario(false);
+          if (localStorage.getItem('draft_mantenimiento')) setHayBorrador(true);
+        }}
         onSuccess={() => {
           setMostrarFormulario(false);
-          refrescarOrdenes(); 
+          setHayBorrador(false);
+          refrescarOrdenes();
         }}
       />
     );
@@ -247,15 +257,15 @@ export default function OrdenesMantenimientoPage() {
         <div className="mb-4 sm:mb-6">
           <div className="flex flex-col gap-3 sm:gap-4">
             <div className="flex items-center justify-between">
-              <Link 
-                href="/ordenes" 
+              <Link
+                href="/ordenes"
                 className="text-blue-400 hover:text-blue-300 transition-colors p-2 rounded-full hover:bg-gray-800 flex-shrink-0"
                 aria-label="Volver a órdenes"
               >
                 <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
               </Link>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
               <div className="flex items-start sm:items-center gap-3 flex-1">
                 <div className="bg-blue-500/20 p-2 rounded-lg flex-shrink-0">
@@ -282,10 +292,37 @@ export default function OrdenesMantenimientoPage() {
           </div>
         </div>
 
+        {/* Banner de Borrador Pendiente */}
+        {hayBorrador && !mostrarFormulario && (
+          <div className="bg-blue-500/10 border border-blue-500/20 px-4 py-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-blue-400 font-medium">Tienes una nueva orden de mantenimiento en pausa.</span>
+            </div>
+            <div className="flex flex-row gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  localStorage.removeItem('draft_mantenimiento');
+                  setHayBorrador(false);
+                }}
+                className="flex-1 sm:flex-none border border-blue-600/30 text-blue-600 hover:text-blue-500 hover:bg-blue-500/10 px-3 py-1.5 rounded-lg text-sm transition-colors"
+                aria-label="Descartar borrador"
+              >
+                Descartar
+              </button>
+              <button
+                onClick={() => setMostrarFormulario(true)}
+                className="flex-1 sm:flex-none bg-blue-500 hover:bg-blue-600 text-gray-900 px-4 py-1.5 rounded-lg text-sm font-bold transition-all shadow-md shadow-blue-500/20 text-center"
+              >
+                Reanudar
+              </button>
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-4 sm:mb-6">
             <p className="text-sm sm:text-base">{error}</p>
-            <button 
+            <button
               onClick={refrescarOrdenes}
               className="mt-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
             >
@@ -297,7 +334,7 @@ export default function OrdenesMantenimientoPage() {
         {/* Controles de búsqueda y filtros */}
         <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-3 sm:p-4 mb-4 sm:mb-6 relative">
           {aplicandoFiltro && <FilterLoadingIndicator />}
-          
+
           <div className="flex flex-col gap-3">
             <div className="relative">
               <Search className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -310,7 +347,7 @@ export default function OrdenesMantenimientoPage() {
                 aria-label="Buscar registros"
               />
             </div>
-            
+
             <div className="relative">
               <button
                 onClick={() => setMostrarFiltros(!mostrarFiltros)}
@@ -329,7 +366,7 @@ export default function OrdenesMantenimientoPage() {
                 </div>
                 {mostrarFiltros ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
-              
+
               {mostrarFiltros && (
                 <div className="absolute top-full left-0 right-0 sm:left-0 sm:right-auto sm:min-w-56 mt-2 bg-gray-800/95 rounded-xl shadow-lg z-20 p-3 border border-gray-700/50 backdrop-blur-sm">
                   <p className="text-sm font-medium text-gray-300 mb-3">Tipo de mantenimiento</p>
@@ -340,8 +377,8 @@ export default function OrdenesMantenimientoPage() {
                       { value: 'correctivo', label: 'Correctivo', count: stats.correctivos },
                       { value: 'diagnostico', label: 'Diagnóstico', count: stats.diagnosticos }
                     ].map((option) => (
-                      <label 
-                        key={option.value} 
+                      <label
+                        key={option.value}
                         className="flex items-center justify-between cursor-pointer hover:bg-gray-700/50 p-2 rounded transition-colors group"
                       >
                         <div className="flex items-center space-x-2">
@@ -380,7 +417,7 @@ export default function OrdenesMantenimientoPage() {
               </div>
             </div>
           )}
-          
+
           {loading ? (
             <div className="p-6 sm:p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
@@ -390,13 +427,13 @@ export default function OrdenesMantenimientoPage() {
             <div className="p-6 sm:p-8 text-center">
               <Wrench className="w-10 h-10 sm:w-12 sm:h-12 text-gray-600 mx-auto mb-4" />
               <p className="text-gray-400 text-sm sm:text-base">
-                {busqueda || filtroTipo !== 'todos' 
-                  ? 'No se encontraron órdenes que coincidan con los criterios de búsqueda' 
+                {busqueda || filtroTipo !== 'todos'
+                  ? 'No se encontraron órdenes que coincidan con los criterios de búsqueda'
                   : 'No hay órdenes de mantenimiento'}
               </p>
               <p className="text-xs sm:text-sm text-gray-500 mt-2">
-                {busqueda || filtroTipo !== 'todos' 
-                  ? 'Intente con otros términos o elimine los filtros' 
+                {busqueda || filtroTipo !== 'todos'
+                  ? 'Intente con otros términos o elimine los filtros'
                   : 'Crea la primera orden haciendo clic en "Nueva Orden"'}
               </p>
             </div>
@@ -441,8 +478,8 @@ export default function OrdenesMantenimientoPage() {
                     </thead>
                     <tbody className="bg-gray-800/30 divide-y divide-gray-700/50">
                       {ordenesPaginadas.map((orden) => (
-                        <tr 
-                          key={orden.idPersonalizado} 
+                        <tr
+                          key={orden.idPersonalizado}
                           className="hover:bg-gray-700/50 cursor-pointer transition-colors group"
                           onClick={() => handleRowClick(orden)}
                         >
@@ -482,8 +519,8 @@ export default function OrdenesMantenimientoPage() {
                               >
                                 <Eye className="w-4 h-4" />
                               </button>
-                              <PrintButton 
-                                orden={orden} 
+                              <PrintButton
+                                orden={orden}
                                 onPrint={imprimirOrden}
                                 variant="table"
                               />
@@ -495,7 +532,7 @@ export default function OrdenesMantenimientoPage() {
                   </table>
                 </div>
               )}
-              
+
               {totalPaginas > 1 && (
                 <div className="px-3 sm:px-6 py-4 bg-gray-700/50 border-t border-gray-600 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
@@ -513,11 +550,11 @@ export default function OrdenesMantenimientoPage() {
                     >
                       Anterior
                     </button>
-                    
+
                     <div className="flex items-center px-3 py-2 text-xs sm:text-sm text-gray-300 sm:hidden">
                       {paginaActual} / {totalPaginas}
                     </div>
-                    
+
                     <button
                       onClick={() => cambiarPagina(paginaActual + 1)}
                       disabled={paginaActual === totalPaginas || aplicandoFiltro}
@@ -585,12 +622,12 @@ export default function OrdenesMantenimientoPage() {
             </div>
           </div>
         </div>
-        
+
         {/* Modal de Visualización de la orden */}
         {ordenSeleccionada && (
-          <ModalOrden 
-            orden={ordenSeleccionada} 
-            onClose={() => setOrdenSeleccionada(null)} 
+          <ModalOrden
+            orden={ordenSeleccionada}
+            onClose={() => setOrdenSeleccionada(null)}
             onPrint={imprimirOrden}
           />
         )}

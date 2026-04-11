@@ -11,7 +11,7 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
   // Función para formatear fechas
   const formatFecha = useCallback((fecha: any) => {
     if (!fecha) return 'Fecha no disponible';
-    
+
     try {
       if (fecha && typeof fecha === 'object' && 'seconds' in fecha && 'nanoseconds' in fecha) {
         return new Date(fecha.seconds * 1000 + fecha.nanoseconds / 1000000).toLocaleDateString();
@@ -33,7 +33,7 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
   // Función para formatear fechas de garantía
   const formatGarantiaFecha = useCallback((fecha: any) => {
     if (!fecha) return 'No especificada';
-    
+
     try {
       if (fecha && typeof fecha === 'object' && 'seconds' in fecha && 'nanoseconds' in fecha) {
         return new Date(fecha.seconds * 1000 + fecha.nanoseconds / 1000000).toLocaleDateString();
@@ -384,10 +384,10 @@ interface PrintButtonProps {
   variant?: 'table' | 'card'
 }
 
-export const PrintButton: React.FC<PrintButtonProps> = ({ 
-  orden, 
-  onPrint, 
-  variant = 'table' 
+export const PrintButton: React.FC<PrintButtonProps> = ({
+  orden,
+  onPrint,
+  variant = 'table'
 }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();

@@ -1,6 +1,6 @@
 // components/forms/GarantiaInput.tsx
 'use client'
-import { Calendar, Clock, Shield, AlertCircle, CheckCircle2, Info } from 'lucide-react'
+import { Calendar, Clock, Shield, ShieldOff, AlertCircle, CheckCircle2, Info } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 interface GarantiaInputProps {
@@ -24,10 +24,34 @@ export default function GarantiaInput({
 }: GarantiaInputProps) {
   const [errorFecha, setErrorFecha] = useState<string>('')
   const [mostrarInfo, setMostrarInfo] = useState(false)
+  
+  // Estado local para el toggle
+  const [aplicaGarantia, setAplicaGarantia] = useState<boolean>(mesesGarantia > 0)
+
+  // Sincronizar estado inicial por si cambia desde fuera
+  useEffect(() => {
+    setAplicaGarantia(mesesGarantia > 0 && garantiaDescripcion !== 'No aplica garantía')
+  }, [mesesGarantia, garantiaDescripcion])
+
+  // Handle del switch
+  const handleToggleGarantia = (checked: boolean) => {
+    if (!checked) {
+      // Caso off: apagamos y seteamos valores que indicarán que no hay garantía
+      onCambiarMeses(0)
+      onCambiarFechaDesde('')
+      onCambiarDescripcion('No aplica garantía')
+    } else {
+      // Caso on: restauramos valores default (p. ej: 3 meses, hoy)
+      onCambiarMeses(3)
+      onCambiarFechaDesde(new Date().toISOString().split('T')[0])
+      onCambiarDescripcion('')
+    }
+    setAplicaGarantia(checked)
+  }
 
   // Validar fecha
   useEffect(() => {
-    if (garantiaTiempoDesde) {
+    if (garantiaTiempoDesde && aplicaGarantia) {
       const fechaSeleccionada = new Date(garantiaTiempoDesde)
       const hoy = new Date()
       hoy.setHours(0, 0, 0, 0)
@@ -47,8 +71,10 @@ export default function GarantiaInput({
       } else {
         setErrorFecha('')
       }
+    } else {
+      setErrorFecha('')
     }
-  }, [garantiaTiempoDesde])
+  }, [garantiaTiempoDesde, aplicaGarantia])
 
   // Formatear fecha de vencimiento
   const formatearFechaVencimiento = () => {
@@ -77,40 +103,69 @@ export default function GarantiaInput({
 
   const diasRestantes = calcularDiasRestantes()
 
-  // Opciones de garantía predefinidas
+  // Opciones de garantía predefinidas (Mobile first => tarjetas más amigables)
   const opcionesGarantia = [
     { valor: 1, etiqueta: '1 mes', popular: false },
     { valor: 3, etiqueta: '3 meses', popular: true },
     { valor: 6, etiqueta: '6 meses', popular: true },
-    { valor: 12, etiqueta: '12 meses (1 año)', popular: false },
-    { valor: 24, etiqueta: '24 meses (2 años)', popular: false },
+    { valor: 12, etiqueta: '12 meses', popular: false },
+    { valor: 24, etiqueta: '24 meses', popular: false },
   ]
 
   return (
-    <div className="space-y-6">
-      {/* Header con icono */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center">
-            <Shield className="w-5 h-5 text-purple-400" />
+    <div className="space-y-6 w-full max-w-full">
+      {/* Banner Principal de Control - Toggle Switch */}
+      <div className="bg-gray-800/80 border border-gray-700/50 rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-lg hover:border-gray-600/50 transition-colors">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors duration-300 ${aplicaGarantia ? 'bg-blue-500/20 shadow-inner' : 'bg-gray-700/50 shadow-none'}`}>
+            {aplicaGarantia ? (
+              <Shield className="w-6 h-6 text-blue-400" />
+            ) : (
+              <ShieldOff className="w-6 h-6 text-gray-400" />
+            )}
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-200">Garantía del Servicio</h3>
-            <p className="text-xs text-gray-500">Define la cobertura y duración de la garantía</p>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-100 flex items-center gap-2">
+              Garantía
+              {aplicaGarantia && (
+                 <button type="button" onClick={() => setMostrarInfo(!mostrarInfo)} className="p-1 hover:bg-gray-700 rounded-full transition-colors">
+                   <Info className="w-4 h-4 text-gray-400" />
+                 </button>
+              )}
+            </h3>
+            <p className={`text-xs sm:text-sm transition-colors duration-300 ${aplicaGarantia ? 'text-blue-300/80' : 'text-gray-500'}`}>
+              {aplicaGarantia ? 'Incluida en el servicio' : 'No se aplicará garantía'}
+            </p>
           </div>
         </div>
         
+        {/* iOS-like Switch */}
         <button
           type="button"
-          onClick={() => setMostrarInfo(!mostrarInfo)}
-          className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+          role="switch"
+          aria-checked={aplicaGarantia}
+          onClick={() => handleToggleGarantia(!aplicaGarantia)}
+          className={`
+            relative inline-flex h-8 w-14 sm:h-9 sm:w-16 shrink-0 cursor-pointer rounded-full border-2 border-transparent 
+            transition-colors duration-300 ease-in-out focus:outline-none focus-visible:ring-2 
+            focus-visible:ring-blue-500 focus-visible:ring-opacity-75 shadow-inner
+            ${aplicaGarantia ? 'bg-blue-500' : 'bg-gray-600'}
+          `}
         >
-          <Info className="w-5 h-5 text-gray-400" />
+          <span className="sr-only">Activar garantía</span>
+          <span
+            aria-hidden="true"
+            className={`
+              pointer-events-none inline-block h-7 w-7 sm:h-8 sm:w-8 transform rounded-full bg-white shadow-md 
+              transition duration-300 ease-in-out
+              ${aplicaGarantia ? 'translate-x-6 sm:translate-x-7' : 'translate-x-0'}
+            `}
+          />
         </button>
       </div>
 
-      {/* Mensaje informativo */}
-      {mostrarInfo && (
+      {/* Info extra */}
+      {mostrarInfo && aplicaGarantia && (
         <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="flex gap-3">
             <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
@@ -125,195 +180,165 @@ export default function GarantiaInput({
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-6">
-        {/* Fecha de inicio */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-purple-400" />
-              Fecha de inicio
-              <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="date"
-              required
-              value={garantiaTiempoDesde}
-              onChange={(e) => onCambiarFechaDesde(e.target.value)}
-              max={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-              className="w-full px-3 py-2.5 bg-gray-800/60 border border-gray-700/50 rounded-xl text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-gray-800 transition-all duration-200"
-            />
-            {errorFecha && (
-              <div className="flex items-center gap-1.5 mt-2 text-xs text-yellow-400 animate-in fade-in slide-in-from-top-1 duration-200">
-                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>{errorFecha}</span>
-              </div>
-            )}
-            {garantiaTiempoDesde && !errorFecha && (
-              <div className="flex items-center gap-1.5 mt-2 text-xs text-green-400 animate-in fade-in slide-in-from-top-1 duration-200">
-                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>Fecha válida</span>
-              </div>
-            )}
-          </div>
-        
-          {/* Fecha de vencimiento */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-purple-400" />
-              Vencimiento
-            </label>
-            <div className="relative">
+      {/* Condicional: Formulario completo vs Banner de vacío */}
+      {aplicaGarantia ? (
+        <div className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+          
+          {/* Fila: Fecha de inicio y vencimiento */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-blue-400" />
+                Fecha de inicio
+                <span className="text-red-400">*</span>
+              </label>
               <input
-                type="text"
-                readOnly
-                value={formatearFechaVencimiento()}
-                className="w-full px-3 py-2.5 bg-gray-900/50 border border-gray-700/50 rounded-xl text-gray-400 cursor-not-allowed"
+                type="date"
+                required
+                value={garantiaTiempoDesde}
+                onChange={(e) => onCambiarFechaDesde(e.target.value)}
+                max={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
               />
-              {diasRestantes !== null && diasRestantes > 0 && (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <div className="px-2 py-1 bg-purple-500/20 rounded-full">
-                    <span className="text-xs text-purple-300 font-medium">
-                      {diasRestantes} días
-                    </span>
-                  </div>
+              {errorFecha && (
+                <div className="flex items-center gap-1.5 mt-2 text-xs text-yellow-400 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>{errorFecha}</span>
+                </div>
+              )}
+              {garantiaTiempoDesde && !errorFecha && (
+                <div className="flex items-center gap-1.5 mt-2 text-xs text-green-400 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>Fecha válida</span>
                 </div>
               )}
             </div>
-            {garantiaTiempoHasta && (
-              <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                <Info className="w-3 h-3" />
-                Calculado automáticamente
-              </p>
-            )}
-          </div>
-        </div>
-        
-        {/* Duración */}
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-purple-400" />
-            Duración de la garantía
-            <span className="text-red-400">*</span>
-          </label>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-            {opcionesGarantia.map((opcion) => (
-              <button
-                key={opcion.valor}
-                type="button"
-                onClick={() => onCambiarMeses(opcion.valor)}
-                className={`
-                  relative p-3 rounded-xl border-2 transition-all duration-200
-                  ${mesesGarantia === opcion.valor
-                    ? 'bg-purple-500/20 border-purple-500 shadow-lg shadow-purple-500/20'
-                    : 'bg-gray-800/40 border-gray-700/50 hover:bg-gray-700/50 hover:border-gray-600'
-                  }
-                  active:scale-95
-                `}
-              >
-                {opcion.popular && (
-                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center animate-pulse">
-                    <span className="text-xs">⭐</span>
+          
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-blue-400" />
+                Vencimiento
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  readOnly
+                  value={formatearFechaVencimiento()}
+                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-800 rounded-xl text-gray-400 cursor-not-allowed text-sm sm:text-base outline-none"
+                />
+                {diasRestantes !== null && diasRestantes > 0 && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 bg-blue-500/20 px-2.5 py-1 rounded-lg">
+                    <span className="text-xs text-blue-300 font-medium tracking-wide">
+                      {diasRestantes} DÍAS
+                    </span>
                   </div>
-                )}
-                <div className="text-center">
-                  <div className={`text-2xl font-bold mb-1 ${
-                    mesesGarantia === opcion.valor ? 'text-purple-300' : 'text-gray-300'
-                  }`}>
-                    {opcion.valor}
-                  </div>
-                  <div className={`text-xs ${
-                    mesesGarantia === opcion.valor ? 'text-purple-400' : 'text-gray-500'
-                  }`}>
-                    {opcion.valor === 1 ? 'mes' : 'meses'}
-                  </div>
-                </div>
-                {mesesGarantia === opcion.valor && (
-                  <div className="absolute inset-0 rounded-xl border-2 border-purple-400 animate-in fade-in zoom-in duration-200" />
-                )}
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-gray-500 mt-3 flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5" />
-            Garantía seleccionada: <span className="text-purple-400 font-medium">{mesesGarantia} {mesesGarantia === 1 ? 'mes' : 'meses'}</span>
-          </p>
-        </div>
-      </div>
-      
-      {/* Descripción de cobertura */}
-      <div className="relative">
-        <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-1.5">
-          <Shield className="w-4 h-4 text-purple-400" />
-          ¿Qué cubre la garantía?
-          <span className="text-xs text-gray-500 font-normal ml-1">(Opcional)</span>
-        </label>
-        <div className="relative">
-          <textarea
-            rows={4}
-            value={garantiaDescripcion}
-            onChange={(e) => onCambiarDescripcion(e.target.value)}
-            maxLength={500}
-            className="w-full px-3 py-2.5 bg-gray-800/60 border border-gray-700/50 rounded-xl text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-gray-800 transition-all duration-200 resize-none"
-            placeholder="Ej: Cubre defectos en las piezas reemplazadas y mano de obra. No cubre daños por caídas, líquidos o uso inadecuado..."
-          />
-          <div className="absolute bottom-3 right-3">
-            <span className="text-xs text-gray-500">
-              {garantiaDescripcion.length}/500
-            </span>
-          </div>
-        </div>
-        
-        {/* Sugerencias rápidas */}
-        {!garantiaDescripcion && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            <p className="text-xs text-gray-500 w-full mb-1">Sugerencias:</p>
-            {[
-              'Piezas reemplazadas y mano de obra',
-              'Fallas por defecto de fabricación',
-              'Problemas relacionados con la reparación'
-            ].map((sugerencia, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => {
-                  const textoActual = garantiaDescripcion
-                  const nuevoTexto = textoActual 
-                    ? `${textoActual}, ${sugerencia.toLowerCase()}`
-                    : `Cubre: ${sugerencia}`
-                  onCambiarDescripcion(nuevoTexto)
-                }}
-                className="px-3 py-1 bg-gray-700/50 hover:bg-gray-700 text-xs text-gray-300 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
-              >
-                + {sugerencia}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Resumen visual */}
-      {garantiaTiempoDesde && mesesGarantia && (
-        <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/30 rounded-xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Shield className="w-5 h-5 text-purple-400" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-purple-200 mb-1">Resumen de Garantía</p>
-              <div className="text-xs text-purple-300/80 space-y-1">
-                <p>• Inicia: {new Date(garantiaTiempoDesde).toLocaleDateString('es-ES', { dateStyle: 'long' })}</p>
-                <p>• Duración: {mesesGarantia} {mesesGarantia === 1 ? 'mes' : 'meses'}</p>
-                {garantiaTiempoHasta && (
-                  <p>• Vence: {new Date(garantiaTiempoHasta).toLocaleDateString('es-ES', { dateStyle: 'long' })}</p>
-                )}
-                {garantiaDescripcion && (
-                  <p className="mt-2 pt-2 border-t border-purple-500/20">
-                    • Cobertura: {garantiaDescripcion.substring(0, 100)}{garantiaDescripcion.length > 100 ? '...' : ''}
-                  </p>
                 )}
               </div>
             </div>
           </div>
+          
+          {/* Seccion: Duración (Botones Responsive) */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
+              <Clock className="w-4 h-4 text-blue-400" />
+              Duración de la garantía
+              <span className="text-red-400">*</span>
+            </label>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
+              {opcionesGarantia.map((opcion) => (
+                <button
+                  key={opcion.valor}
+                  type="button"
+                  onClick={() => onCambiarMeses(opcion.valor)}
+                  className={`
+                    relative p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 outline-none
+                    ${mesesGarantia === opcion.valor
+                      ? 'bg-blue-500/20 border-blue-500 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
+                      : 'bg-gray-800/40 border-gray-700/50 hover:bg-gray-700/50 hover:border-gray-600'
+                    }
+                    active:scale-95 touch-manipulation
+                  `}
+                >
+
+                  <div className="flex flex-col items-center justify-center">
+                    <span className={`text-xl sm:text-2xl font-bold mb-0.5 ${
+                      mesesGarantia === opcion.valor ? 'text-blue-300' : 'text-gray-300'
+                    }`}>
+                      {opcion.valor}
+                    </span>
+                    <span className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider ${
+                      mesesGarantia === opcion.valor ? 'text-blue-400' : 'text-gray-500'
+                    }`}>
+                      {opcion.etiqueta.replace(/[0-9]+ /g, '')} {/* Quita los números de la etiqueta */}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+            {/* Mensaje sutil debajo */}
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 ml-1">
+               <Shield className="w-3.5 h-3.5 text-gray-600" />
+               Garantía seleccionada: <span className="text-gray-300 font-medium">{mesesGarantia} {mesesGarantia === 1 ? 'mes' : 'meses'}</span>
+            </div>
+          </div>
+          
+          {/* Seccion: Descripción de cobertura */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
+              <Shield className="w-4 h-4 text-blue-400" />
+              ¿Qué cubre la garantía?
+              <span className="text-xs text-gray-500 font-normal ml-1 bg-gray-800 px-2 py-0.5 rounded-full">(Opcional)</span>
+            </label>
+            <div className="relative">
+              <textarea
+                rows={3}
+                value={garantiaDescripcion}
+                onChange={(e) => onCambiarDescripcion(e.target.value)}
+                maxLength={500}
+                className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 resize-none text-sm placeholder-gray-600 outline-none"
+                placeholder="Detalla qué incluye la cobertura..."
+              />
+              <div className="absolute bottom-3 right-3 bg-gray-900/80 px-2 py-0.5 rounded-md">
+                <span className="text-xs text-gray-500 font-mono">
+                  {garantiaDescripcion.length}/500
+                </span>
+              </div>
+            </div>
+            
+            {/* Sugerencias Rápidas - Optimizadas para touch */}
+            {!garantiaDescripcion && (
+              <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <span className="text-xs text-gray-500 ml-1 uppercase tracking-wider font-semibold">Sugerencias rápidas:</span>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    'Piezas reemplazadas y mano de obra',
+                    'Fallas por defecto de fábrica',
+                    'Solo mano de obra'
+                  ].map((sugerencia, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => onCambiarDescripcion(`Cubre: ${sugerencia}`)}
+                      className="px-3.5 py-1.5 bg-gray-800 border border-gray-700 hover:bg-gray-700 hover:border-gray-500 text-[13px] text-gray-300 rounded-full transition-all duration-200 active:scale-95 touch-manipulation"
+                    >
+                      + {sugerencia}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Estado OFF de Garantía */
+        <div className="bg-gray-800/30 border border-gray-700/30 rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-300">
+           <div className="w-16 h-16 rounded-full bg-gray-800/80 flex items-center justify-center mb-4 border border-gray-700/50">
+             <ShieldOff className="w-8 h-8 text-gray-500" />
+           </div>
+           <h4 className="text-lg font-medium text-gray-300 mb-1">Sin cobertura de garantía</h4>
+           <p className="text-sm text-gray-500 max-w-sm">
+             Esta orden de mantenimiento se registrará sin tiempos de vencimiento ni coberturas adicionales aplicables.
+           </p>
         </div>
       )}
     </div>

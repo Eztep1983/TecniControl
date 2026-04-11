@@ -343,26 +343,43 @@ const GarantiaInfo = ({
 
 const ModalFooter = ({ 
   onPrint, 
+  onDownload,
   onClose 
 }: { 
   onPrint: () => void; 
+  onDownload?: () => void;
   onClose: () => void;
 }) => (
   <footer className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-700 sticky bottom-0 bg-gray-800/98 -mx-4 sm:-mx-6 px-4 sm:px-6 pb-4 sm:pb-6 z-20">
-    <button
-      onClick={onPrint}
-      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-md hover:shadow-lg order-2 sm:order-1"
-      aria-label="Imprimir orden"
-    >
-      <Printer className="w-4 h-4" />
-      <span>Imprimir</span>
-    </button>
-    <button
-      onClick={onClose}
-      className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2.5 rounded-lg transition-colors shadow-md hover:shadow-lg order-1 sm:order-2"
-    >
-      Cerrar
-    </button>
+    <div className="flex flex-col sm:flex-row gap-2 order-2 sm:order-1 sm:mr-auto">
+      <button
+        onClick={onClose}
+        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2.5 rounded-lg transition-colors shadow-md hover:shadow-lg w-full sm:w-auto"
+      >
+        Cerrar
+      </button>
+    </div>
+    
+    <div className="flex flex-col sm:flex-row gap-2 order-1 sm:order-2">
+      {onDownload && (
+        <button
+          onClick={onDownload}
+          className="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-400 px-4 py-2.5 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-md hover:shadow-lg w-full sm:w-auto"
+          aria-label="Descargar orden en PDF"
+        >
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          <span className="font-medium">Descargar PDF</span>
+        </button>
+      )}
+      <button
+        onClick={onPrint}
+        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-md hover:shadow-lg w-full sm:w-auto font-medium"
+        aria-label="Imprimir orden"
+      >
+        <Printer className="w-4 h-4 flex-shrink-0" />
+        <span>Imprimir</span>
+      </button>
+    </div>
   </footer>
 );
 
@@ -453,11 +470,13 @@ const useAndroidBackButton = (onClose: () => void, isOpen: boolean) => {
 const ModalOrden = ({ 
   orden, 
   onClose, 
-  onPrint 
+  onPrint,
+  onDownload
 }: { 
   orden: OrdenMantenimiento; 
   onClose: () => void; 
   onPrint: (orden: OrdenMantenimiento) => void;
+  onDownload?: (orden: OrdenMantenimiento) => void;
 }) => {
   if (!orden) return null;
 
@@ -466,6 +485,10 @@ const ModalOrden = ({
   useAndroidBackButton(onClose, true);
 
   const handlePrint = useCallback(() => onPrint(orden), [onPrint, orden]);
+  const handleDownload = useCallback(() => {
+    if (onDownload) onDownload(orden);
+  }, [onDownload, orden]);
+  
   const handleBackdropClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
   }, [onClose]);
@@ -540,7 +563,7 @@ const ModalOrden = ({
           )}
         </main>
         
-        <ModalFooter onPrint={handlePrint} onClose={onClose} />
+        <ModalFooter onPrint={handlePrint} onDownload={handleDownload} onClose={onClose} />
       </div>
     </div>
   );
