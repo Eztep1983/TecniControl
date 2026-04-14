@@ -11,6 +11,8 @@ import {
   crearOrden,
 } from '@/lib/multiuser-helpers'
 import { obtenerProximoNumeroOrden, formatearIdOrden } from '@/lib/firebase-utils'
+import { useNegocio } from '@/hooks/useNegocio'
+import { usePrintService } from '@/components/mantenimiento/PrintService'
 
 // Componentes importados
 import ClienteSelector from '@/components/forms/ClienteSelector'
@@ -70,6 +72,9 @@ export interface FormState {
   // Contador
   contador: Contador | null
   mostrarContador: boolean
+  
+  // Éxito
+  ordenCreada?: OrdenMantenimiento
 }
 
 type FormAction =
@@ -97,6 +102,7 @@ type FormAction =
   | { type: 'SET_MESES_GARANTIA'; payload: number }
   | { type: 'SET_CONTADOR'; payload: Contador | null }
   | { type: 'TOGGLE_CONTADOR' }
+  | { type: 'SET_ORDEN_CREADA'; payload: OrdenMantenimiento }
   | { type: 'RESET_MANTENIMIENTO_DATA' }
 
 const initialState: FormState = {
@@ -243,6 +249,9 @@ function formReducer(state: FormState, action: FormAction): FormState {
           : nuevoMostrarContador ? state.contador : null
       }
     
+    case 'SET_ORDEN_CREADA':
+      return { ...state, ordenCreada: action.payload }
+    
     case 'RESET_MANTENIMIENTO_DATA':
       return {
         ...state,
@@ -302,6 +311,8 @@ const STEPS_CONFIG = [
 
 export default function FormularioMantenimiento({ onClose, onSuccess }: FormularioMantenimientoProps) {
   const { user } = useAuth()
+  const { negocio } = useNegocio()
+  const { imprimirOrden, compartirOrden } = usePrintService({ negocio })
   const [state, dispatch] = usePersistentReducer(
     'draft_mantenimiento',
     formReducer,
@@ -601,7 +612,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
 
       await crearOrden(nuevaOrden, user.uid)
       localStorage.removeItem('draft_mantenimiento')
-      onSuccess()
+      dispatch({ type: 'SET_ORDEN_CREADA', payload: nuevaOrden })
     } catch (error) {
       console.error('Error creando orden:', error)
       alert('Error al crear la orden: ' + (error instanceof Error ? error.message : 'Error desconocido'))
@@ -793,6 +804,44 @@ const mantenimientoInfoProps = useMemo(() => ({
   // ============================================================================
   // RENDER PRINCIPAL
   // ============================================================================
+  
+  if (state.ordenCreada) {
+    return (
+      <div className="fixed inset-0 bg-gray-900 border-b border-gray-800 z-50 flex items-center justify-center p-4">
+        <div className="bg-gray-800 border border-gray-700 p-8 rounded-2xl shadow-xl w-full max-w-lg text-center animate-in zoom-in-95 fade-in duration-300">
+          <div className="w-20 h-20 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">¡Orden Generada!</h2>
+          <p className="text-gray-400 mb-8">
+            La orden <span className="text-gray-200 font-semibold">#{state.ordenCreada.idPersonalizado}</span> ha sido guardada exitosamente.
+          </p>
+          
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => compartirOrden(state.ordenCreada!)}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all shadow-md shadow-blue-500/20"
+            >
+              Compartir Orden (PDF)
+            </button>
+            <button
+              onClick={() => imprimirOrden(state.ordenCreada!)}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 rounded-xl transition-all"
+            >
+              Imprimir
+            </button>
+            <button
+              onClick={() => onSuccess()}
+              className="w-full text-gray-400 hover:text-white font-medium py-3 rounded-xl transition-colors mt-2"
+            >
+              Volver a la lista
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pb-24 sm:pb-8">
       {/* Header */}

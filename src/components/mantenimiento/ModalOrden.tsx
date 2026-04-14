@@ -1,8 +1,8 @@
-// ModalOrden.tsx - Versión Fluida con Sticky
+// ModalOrden.tsx - Versión Fluida con Sticky + UX Mejorada
 
 import { OrdenMantenimiento } from "@/types/orden";
-import { X, Calendar, Clock, Printer, Wrench, AlertCircle } from "lucide-react";
-import { useCallback, useMemo, memo, useEffect, useRef } from "react";
+import { X, Calendar, Clock, Printer, Wrench, AlertCircle, Share2, Copy, Check } from "lucide-react";
+import { useCallback, useMemo, memo, useEffect, useRef, useState, useId } from "react";
 
 // ============================================================================
 // CONSTANTES Y TIPOS
@@ -67,17 +67,19 @@ const getUnidadLabel = (tipo: string, unidadPersonalizada?: string): string =>
     : UNIDAD_LABELS[tipo] || tipo;
 
 // ============================================================================
-// COMPONENTES BÁSICOS
+// COMPONENTES BÁSICOS MEMOIZADOS
 // ============================================================================
 
-const EmptyState = ({ message }: { message: string }) => (
-  <div className="flex items-center justify-center py-4 text-gray-500">
-    <AlertCircle className="w-4 h-4 mr-2" />
+const EmptyState = memo(({ message }: { message: string }) => (
+  <div className="flex items-center justify-center py-6 text-gray-400 bg-gray-800/30 rounded-lg border border-gray-700/50">
+    <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
     <p className="text-sm">{message}</p>
   </div>
-);
+));
 
-const InfoField = ({ 
+EmptyState.displayName = 'EmptyState';
+
+const InfoField = memo(({ 
   label, 
   value, 
   fallback = DEFAULT_TEXTS.notAvailable 
@@ -90,9 +92,11 @@ const InfoField = ({
     <span className="font-medium text-gray-200">{label}:</span>{' '}
     <span className="text-gray-300">{value || fallback}</span>
   </p>
-);
+));
 
-const InfoSection = ({ 
+InfoField.displayName = 'InfoField';
+
+const InfoSection = memo(({ 
   title, 
   icon: Icon, 
   children,
@@ -102,64 +106,96 @@ const InfoSection = ({
   icon?: React.ComponentType<{ className?: string }>;
   children: React.ReactNode;
   className?: string;
-}) => (
-  <section className={`bg-gray-700/30 p-4 rounded-xl border border-gray-600/50 ${className}`}>
-    <h4 className="font-semibold text-white border-b border-gray-600 pb-2 mb-3 flex items-center">
-      {Icon && <Icon className="w-4 h-4 mr-2" />}
-      {title}
-    </h4>
-    {children}
-  </section>
-);
+}) => {
+  const sectionId = useId();
+  return (
+    <section 
+      aria-labelledby={sectionId}
+      className={`bg-gray-700/30 p-4 rounded-xl border border-gray-600/50 ${className}`}
+    >
+      <h4 id={sectionId} className="font-semibold text-white border-b border-gray-600 pb-2 mb-3 flex items-center">
+        {Icon && <Icon className="w-4 h-4 mr-2" />}
+        {title}
+      </h4>
+      {children}
+    </section>
+  );
+});
+
+InfoSection.displayName = 'InfoSection';
 
 // ============================================================================
-// COMPONENTES COMPLEJOS
+// COMPONENTES COMPLEJOS MEMOIZADOS
 // ============================================================================
 
-const ModalHeader = ({ 
+const ModalHeader = memo(({ 
   idPersonalizado, 
   tipoMantenimiento,
+  onCopyId,
   onClose 
 }: { 
   idPersonalizado: string;
   tipoMantenimiento: string;
+  onCopyId: () => void;
   onClose: () => void;
-}) => (
-  <header className="flex justify-between items-start mb-4 sticky top-0 bg-gray-800/98 py-3 z-20 border-b border-gray-700/50 -mx-4 sm:-mx-6 px-4 sm:px-6">
-    <div className="flex-1 min-w-0">
-      <div className="flex items-center gap-3 mb-2">
-        <Wrench className="w-5 h-5 text-blue-400 flex-shrink-0" />
-        <h3 className="text-xl font-semibold text-white truncate">
-          Orden #{idPersonalizado}
-        </h3>
-      </div>
-      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border capitalize ${getTipoColor(tipoMantenimiento)}`}>
-        {tipoMantenimiento}
-      </span>
-    </div>
-    <button
-      onClick={onClose}
-      className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-700 transition-colors ml-2 flex-shrink-0"
-      aria-label="Cerrar modal"
-    >
-      <X className="w-6 h-6" />
-    </button>
-  </header>
-);
+}) => {
+  const [copied, setCopied] = useState(false);
 
-const TareasList = ({ tareasRealizadas }: { tareasRealizadas?: string[] }) => {
+  const handleCopy = useCallback(() => {
+    onCopyId();
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [onCopyId]);
+
+  return (
+    <header className="flex justify-between items-start mb-4 sticky top-0 bg-gray-800/95 backdrop-blur-sm py-3 z-20 border-b border-gray-700/50 -mx-4 sm:-mx-6 px-4 sm:px-6">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-3 mb-2 flex-wrap">
+          <Wrench className="w-5 h-5 text-blue-400 flex-shrink-0" />
+          <h3 className="text-xl font-semibold text-white truncate">
+            Orden #{idPersonalizado}
+          </h3>
+          <button
+            onClick={handleCopy}
+            className="text-gray-400 hover:text-white p-1 rounded-md hover:bg-gray-700 transition-colors"
+            aria-label="Copiar ID de la orden"
+            title="Copiar ID"
+          >
+            {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+          </button>
+        </div>
+        <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border capitalize ${getTipoColor(tipoMantenimiento)}`}>
+          {tipoMantenimiento}
+        </span>
+      </div>
+      <button
+        onClick={onClose}
+        className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-700 transition-colors ml-2 flex-shrink-0"
+        aria-label="Cerrar modal"
+      >
+        <X className="w-6 h-6" />
+      </button>
+    </header>
+  );
+});
+
+ModalHeader.displayName = 'ModalHeader';
+
+const TareasList = memo(({ tareasRealizadas }: { tareasRealizadas?: string[] }) => {
   if (!tareasRealizadas?.length) return <EmptyState message={DEFAULT_TEXTS.noTasks} />;
 
   return (
     <ol className="list-decimal list-inside space-y-2 text-sm text-gray-300">
       {tareasRealizadas.map((tarea, idx) => (
-        <li key={idx} className="pl-2 py-1">{tarea}</li>
+        <li key={idx} className="pl-2 py-1 leading-relaxed">{tarea}</li>
       ))}
     </ol>
   );
-};
+});
 
-const PiezasList = ({ piezasUsadas }: { 
+TareasList.displayName = 'TareasList';
+
+const PiezasList = memo(({ piezasUsadas }: { 
   piezasUsadas?: Array<{ cantidad: number; pieza: string }> 
 }) => {
   if (!piezasUsadas?.length) return <EmptyState message={DEFAULT_TEXTS.noParts} />;
@@ -169,17 +205,19 @@ const PiezasList = ({ piezasUsadas }: {
       {piezasUsadas.map((pieza, idx) => (
         <li 
           key={idx}
-          className="flex items-center justify-between bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-600/30"
+          className="flex items-center justify-between bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-600/30 hover:bg-gray-700/50 transition-colors"
         >
-          <span className="text-gray-300 flex-1">{pieza.pieza}</span>
-          <span className="font-medium text-blue-400 ml-3">x{pieza.cantidad}</span>
+          <span className="text-gray-300 flex-1 break-words mr-3">{pieza.pieza}</span>
+          <span className="font-medium text-blue-400 whitespace-nowrap">x{pieza.cantidad}</span>
         </li>
       ))}
     </ul>
   );
-};
+});
 
-const DiagnosticoInfo = ({ 
+PiezasList.displayName = 'PiezasList';
+
+const DiagnosticoInfo = memo(({ 
   observacionesIniciales,
   pruebasRealizadas,
   diagnosticoFinal,
@@ -190,13 +228,13 @@ const DiagnosticoInfo = ({
   diagnosticoFinal?: string;
   contadorMaquina?: number;
 }) => (
-  <div className="space-y-4">
+  <div className="space-y-5">
     {observacionesIniciales && (
       <div>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
           Observaciones Iniciales
         </p>
-        <p className="text-sm text-gray-300 bg-gray-800/50 p-3 rounded-lg border border-gray-600/30">
+        <p className="text-sm text-gray-300 bg-gray-800/50 p-3 rounded-lg border border-gray-600/30 leading-relaxed">
           {observacionesIniciales}
         </p>
       </div>
@@ -207,7 +245,7 @@ const DiagnosticoInfo = ({
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
           Pruebas Realizadas
         </p>
-        <p className="text-sm text-gray-300 bg-gray-800/50 p-3 rounded-lg border border-gray-600/30">
+        <p className="text-sm text-gray-300 bg-gray-800/50 p-3 rounded-lg border border-gray-600/30 leading-relaxed">
           {pruebasRealizadas}
         </p>
       </div>
@@ -218,7 +256,7 @@ const DiagnosticoInfo = ({
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
           Diagnóstico Final
         </p>
-        <p className="text-sm text-gray-300 bg-blue-500/10 p-3 rounded-lg border border-blue-500/30">
+        <p className="text-sm text-gray-300 bg-blue-500/10 p-3 rounded-lg border border-blue-500/30 leading-relaxed">
           {diagnosticoFinal}
         </p>
       </div>
@@ -230,19 +268,21 @@ const DiagnosticoInfo = ({
           Contador de Máquina
         </p>
         <p className="text-2xl font-bold text-purple-400">
-          {contadorMaquina.toLocaleString()} unidades
+          {contadorMaquina.toLocaleString()} <span className="text-sm font-normal text-gray-400">unidades</span>
         </p>
       </div>
     )}
   </div>
-);
+));
 
-const ContadorInfo = ({ contador }: { contador?: any }) => {
+DiagnosticoInfo.displayName = 'DiagnosticoInfo';
+
+const ContadorInfo = memo(({ contador }: { contador?: any }) => {
   if (!contador) return <EmptyState message={DEFAULT_TEXTS.noCounter} />;
 
   return (
     <div className="space-y-3">
-      <div className="flex items-baseline space-x-3">
+      <div className="flex items-baseline flex-wrap gap-2">
         <span className="text-4xl font-bold text-amber-400">
           {contador.valor?.toLocaleString() ?? '0'}
         </span>
@@ -262,14 +302,16 @@ const ContadorInfo = ({ contador }: { contador?: any }) => {
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
             Notas
           </p>
-          <p className="text-sm text-gray-300">{contador.notas}</p>
+          <p className="text-sm text-gray-300 leading-relaxed">{contador.notas}</p>
         </div>
       )}
     </div>
   );
-};
+});
 
-const ClienteInfo = ({ cliente }: { cliente?: any }) => (
+ContadorInfo.displayName = 'ContadorInfo';
+
+const ClienteInfo = memo(({ cliente }: { cliente?: any }) => (
   <InfoSection title="Información del Cliente">
     <div className="space-y-2">
       <InfoField label="Nombre" value={cliente?.name} />
@@ -279,9 +321,11 @@ const ClienteInfo = ({ cliente }: { cliente?: any }) => (
       <InfoField label="Dirección" value={cliente?.address} />
     </div>
   </InfoSection>
-);
+));
 
-const DispositivoInfo = ({ dispositivo }: { dispositivo?: any }) => {
+ClienteInfo.displayName = 'ClienteInfo';
+
+const DispositivoInfo = memo(({ dispositivo }: { dispositivo?: any }) => {
   const marcaModelo = `${dispositivo?.marca || ''} ${dispositivo?.modelo || ''}`.trim() || undefined;
 
   return (
@@ -293,9 +337,11 @@ const DispositivoInfo = ({ dispositivo }: { dispositivo?: any }) => {
       </div>
     </InfoSection>
   );
-};
+});
 
-const GarantiaInfo = ({ 
+DispositivoInfo.displayName = 'DispositivoInfo';
+
+const GarantiaInfo = memo(({ 
   garantiaDescripcion,
   garantiaDesde,
   garantiaHasta
@@ -311,14 +357,14 @@ const GarantiaInfo = ({
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
             Descripción
           </p>
-          <p className="text-sm text-gray-300 bg-gray-800/50 p-3 rounded-lg border border-gray-600/30">
+          <p className="text-sm text-gray-300 bg-gray-800/50 p-3 rounded-lg border border-gray-600/30 leading-relaxed">
             {garantiaDescripcion}
           </p>
         </div>
       )}
       
       {(garantiaDesde || garantiaHasta) && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {garantiaDesde && (
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
@@ -339,49 +385,54 @@ const GarantiaInfo = ({
       )}
     </div>
   </InfoSection>
-);
+));
 
-const ModalFooter = ({ 
+GarantiaInfo.displayName = 'GarantiaInfo';
+
+const ModalFooter = memo(({ 
   onPrint, 
   onDownload,
+  onShare,
   onClose 
 }: { 
   onPrint: () => void; 
   onDownload?: () => void;
+  onShare?: () => void;
   onClose: () => void;
 }) => (
-  <footer className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-700 sticky bottom-0 bg-gray-800/98 -mx-4 sm:-mx-6 px-4 sm:px-6 pb-4 sm:pb-6 z-20">
+  <footer className="flex flex-col sm:flex-row justify-end gap-3 pt-5 border-t border-gray-700 sticky bottom-0 bg-gray-800/95 backdrop-blur-sm -mx-4 sm:-mx-6 px-4 sm:px-6 pb-4 sm:pb-6 z-20">
     <div className="flex flex-col sm:flex-row gap-2 order-2 sm:order-1 sm:mr-auto">
-      <button
-        onClick={onClose}
-        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2.5 rounded-lg transition-colors shadow-md hover:shadow-lg w-full sm:w-auto"
-      >
-        Cerrar
-      </button>
     </div>
     
     <div className="flex flex-col sm:flex-row gap-2 order-1 sm:order-2">
       {onDownload && (
         <button
           onClick={onDownload}
-          className="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-400 px-4 py-2.5 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-md hover:shadow-lg w-full sm:w-auto"
+          className="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-400 px-4 py-2.5 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-md hover:shadow-lg w-full sm:w-auto font-medium"
           aria-label="Descargar orden en PDF"
+          title="Descargar PDF"
         >
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-          <span className="font-medium">Descargar PDF</span>
+          <span>Descargar PDF</span>
         </button>
       )}
-      <button
-        onClick={onPrint}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-md hover:shadow-lg w-full sm:w-auto font-medium"
-        aria-label="Imprimir orden"
-      >
-        <Printer className="w-4 h-4 flex-shrink-0" />
-        <span>Imprimir</span>
-      </button>
+      {onShare && (
+        <button
+          onClick={onShare}
+          className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 px-4 py-2.5 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-md hover:shadow-lg w-full sm:w-auto font-medium"
+          aria-label="Compartir orden"
+          title="Compartir"
+        >
+          <Share2 className="w-4 h-4 flex-shrink-0" />
+          <span>Compartir</span>
+        </button>
+      )}
+
     </div>
   </footer>
-);
+));
+
+ModalFooter.displayName = 'ModalFooter';
 
 // ============================================================================
 // HOOKS PERSONALIZADOS
@@ -463,6 +514,52 @@ const useAndroidBackButton = (onClose: () => void, isOpen: boolean) => {
   }, [onClose, isOpen]);
 };
 
+const useFocusTrap = (modalRef: React.RefObject<HTMLElement>, isOpen: boolean) => {
+  useEffect(() => {
+    if (!isOpen || !modalRef.current) return;
+
+    const focusableElements = modalRef.current.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0] as HTMLElement;
+    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement?.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement?.focus();
+        }
+      }
+    };
+
+    firstElement?.focus();
+    document.addEventListener('keydown', handleTabKey);
+    
+    return () => document.removeEventListener('keydown', handleTabKey);
+  }, [isOpen, modalRef]);
+};
+
+const useEscapeKey = (onClose: () => void, isOpen: boolean) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose, isOpen]);
+};
+
 // ============================================================================
 // COMPONENTE PRINCIPAL
 // ============================================================================
@@ -471,23 +568,30 @@ const ModalOrden = ({
   orden, 
   onClose, 
   onPrint,
-  onDownload
+  onDownload,
+  onShare
 }: { 
   orden: OrdenMantenimiento; 
   onClose: () => void; 
   onPrint: (orden: OrdenMantenimiento) => void;
   onDownload?: (orden: OrdenMantenimiento) => void;
+  onShare?: (orden: OrdenMantenimiento) => void;
 }) => {
   if (!orden) return null;
 
   const data = useModalData(orden);
+  const modalRef = useRef<HTMLDivElement>(null);
   
   useAndroidBackButton(onClose, true);
+  useEscapeKey(onClose, true);
+  useFocusTrap(modalRef, true);
 
   const handlePrint = useCallback(() => onPrint(orden), [onPrint, orden]);
-  const handleDownload = useCallback(() => {
-    if (onDownload) onDownload(orden);
-  }, [onDownload, orden]);
+  const handleDownload = useCallback(() => onDownload?.(orden), [onDownload, orden]);
+  const handleShare = useCallback(() => onShare?.(orden), [onShare, orden]);
+  const handleCopyId = useCallback(() => {
+    navigator.clipboard.writeText(data.idPersonalizado);
+  }, [data.idPersonalizado]);
   
   const handleBackdropClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
@@ -495,34 +599,54 @@ const ModalOrden = ({
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2 sm:p-4"
+      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2 sm:p-4 transition-all duration-200 will-change-transform"
       onClick={handleBackdropClick}
+      aria-hidden="true"
     >
       <div 
+        ref={modalRef}
         role="dialog"
         aria-modal="true"
-        className="bg-gray-800 border border-gray-700/50 rounded-xl p-4 sm:p-6 max-w-4xl w-full max-h-[95vh] overflow-y-auto will-change-scroll"
+        aria-label={`Detalles de la orden ${data.idPersonalizado}`}
+        className="bg-gray-800 border border-gray-700/50 rounded-xl p-4 sm:p-6 max-w-4xl w-full max-h-[95vh] overflow-y-auto will-change-scroll shadow-2xl transform transition-all duration-200 scale-100 opacity-100"
+        style={{
+          animation: 'modalFadeIn 0.2s ease-out'
+        }}
       >
+        <style>{`
+          @keyframes modalFadeIn {
+            from {
+              opacity: 0;
+              transform: scale(0.98);
+            }
+            to {
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+        `}</style>
+        
         <ModalHeader 
           idPersonalizado={data.idPersonalizado}
           tipoMantenimiento={data.tipoMantenimiento}
+          onCopyId={handleCopyId}
           onClose={onClose} 
         />
         
-        <main className="space-y-4">
+        <main className="space-y-5">
           <InfoSection title="Fecha de Orden" icon={Calendar}>
             <p className="text-sm text-gray-300">
               {data.fechaCreacion} {data.horaCreacion || ''}
             </p>
           </InfoSection>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="space-y-5">
               <ClienteInfo cliente={data.cliente} />
               <DispositivoInfo dispositivo={data.dispositivo} />
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-5">
               {data.esDiagnostico ? (
                 <InfoSection title="Diagnóstico Realizado">
                   <DiagnosticoInfo 
@@ -563,7 +687,12 @@ const ModalOrden = ({
           )}
         </main>
         
-        <ModalFooter onPrint={handlePrint} onDownload={handleDownload} onClose={onClose} />
+        <ModalFooter 
+          onPrint={handlePrint} 
+          onDownload={onDownload ? handleDownload : undefined} 
+          onShare={onShare ? handleShare : undefined} 
+          onClose={onClose} 
+        />
       </div>
     </div>
   );

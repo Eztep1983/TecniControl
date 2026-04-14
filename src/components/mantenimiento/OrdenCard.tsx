@@ -1,41 +1,39 @@
-import { memo, useCallback } from 'react'
+'use client'
+import React, { memo, useCallback } from 'react'
 import { OrdenMantenimiento } from '@/types/orden'
 import { Eye } from 'lucide-react'
-import { PrintButton } from './PrintService'
+import { PrintButton, ShareButton } from './PrintService'
 
 interface OrdenCardProps {
-  orden: OrdenMantenimiento;
-  onView: (orden: OrdenMantenimiento) => void;
-  onPrint: (orden: OrdenMantenimiento) => void;
-  getTipoColor: (tipo: string) => string;
-  formatFecha: (fecha: any) => string;
+  orden: OrdenMantenimiento
+  onView: (orden: OrdenMantenimiento) => void
+  onPrint: (orden: OrdenMantenimiento) => void
+  onShare: (orden: OrdenMantenimiento) => void
+  getTipoColor: (tipo: string) => string
+  formatFecha: (fecha: any) => string
 }
 
-const OrdenCard: React.FC<OrdenCardProps> = memo(({ 
-  orden, 
-  onView, 
-  onPrint, 
-  getTipoColor, 
-  formatFecha 
+// FIX: eliminado el memo() exterior duplicado — ya se aplica en la declaración
+const OrdenCard: React.FC<OrdenCardProps> = memo(({
+  orden,
+  onView,
+  onPrint,
+  onShare,
+  getTipoColor,
+  formatFecha
 }) => {
-  
   const handleCardClick = useCallback(() => {
-    onView(orden);
-  }, [onView, orden]);
+    onView(orden)
+  }, [onView, orden])
 
   const handleViewClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    onView(orden);
-  }, [onView, orden]);
-
-  const handlePrintClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    onPrint(orden);
-  }, [onPrint, orden]);
+    e.stopPropagation()
+    onView(orden)
+  }, [onView, orden])
 
   return (
-    <div 
-      className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 hover:bg-gray-700/50 transition-colors duration-150 cursor-pointer"
+    <div
+      className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 hover:bg-gray-700/50 transition-colors duration-150 cursor-pointer flex flex-col h-full"
       onClick={handleCardClick}
     >
       <div className="flex justify-between items-start mb-3">
@@ -51,8 +49,8 @@ const OrdenCard: React.FC<OrdenCardProps> = memo(({
           {orden.tipoMantenimiento}
         </span>
       </div>
-      
-      <div className="space-y-2 text-sm">
+
+      <div className="space-y-2 text-sm flex-1">
         <div className="flex justify-between">
           <span className="text-gray-400">Teléfono:</span>
           <span className="text-white truncate ml-2">{orden.cliente?.phone || 'N/A'}</span>
@@ -68,25 +66,30 @@ const OrdenCard: React.FC<OrdenCardProps> = memo(({
           <span className="text-white">{formatFecha(orden.fechaCreacion)}</span>
         </div>
       </div>
-      
+
       <div className="flex space-x-2 mt-4 pt-3 border-t border-gray-600/50">
         <button
           onClick={handleViewClick}
-          className="flex-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm"
+          className="flex-1 bg-gray-500/20 hover:bg-gray-500/30 text-gray-400 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm"
         >
           <Eye className="w-4 h-4" />
           <span>Ver</span>
         </button>
-        <PrintButton 
-          orden={orden} 
+        <PrintButton
+          orden={orden}
           onPrint={onPrint}
+          variant="card"
+        />
+        <ShareButton
+          orden={orden}
+          onShare={onShare}
           variant="card"
         />
       </div>
     </div>
-  );
-});
+  )
+})
 
-OrdenCard.displayName = 'OrdenCard';
+OrdenCard.displayName = 'OrdenCard'
 
-export default memo(OrdenCard);
+export default OrdenCard

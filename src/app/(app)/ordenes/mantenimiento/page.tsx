@@ -11,86 +11,10 @@ import { useOrdenesUsuario } from '@/hooks/useMultiUser'
 import { useNegocio } from '@/hooks/useNegocio'
 import { useDebounce } from 'use-debounce'
 import ModalOrden from '@/components/mantenimiento/ModalOrden'
-import { PrintButton, usePrintService } from '@/components/mantenimiento/PrintService'
+import OrdenCard from '@/components/mantenimiento/OrdenCard'
+import { PrintButton, ShareButton, usePrintService } from '@/components/mantenimiento/PrintService'
 
-// Componente de tarjeta para móviles
-const OrdenCard = ({ orden, onView, onPrint, getTipoColor, formatFecha }: {
-  orden: OrdenMantenimiento;
-  onView: (orden: OrdenMantenimiento) => void;
-  onPrint: (orden: OrdenMantenimiento) => void;
-  getTipoColor: (tipo: string) => string;
-  formatFecha: (fecha: any) => string;
-}) => {
-  const getTipoLabel = (tipo: string) => {
-    const labels: Record<string, string> = {
-      preventivo: 'Preventivo',
-      correctivo: 'Correctivo',
-      diagnostico: 'Diagnóstico'
-    }
-    return labels[tipo] || tipo
-  }
 
-  return (
-    <div
-      className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
-      onClick={() => onView(orden)}
-    >
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-white font-medium truncate">
-            {orden.cliente?.name || 'N/A'}
-          </h3>
-          <p className="text-sm text-gray-400">
-            ID: {orden.idPersonalizado}
-          </p>
-        </div>
-        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border whitespace-nowrap ml-2 ${getTipoColor(orden.tipoMantenimiento)}`}>
-          {getTipoLabel(orden.tipoMantenimiento)}
-        </span>
-      </div>
-
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-gray-400">Teléfono:</span>
-          <span className="text-white truncate ml-2">{orden.cliente?.phone || 'N/A'}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-400">Dispositivo:</span>
-          <span className="text-white truncate ml-2">
-            {orden.dispositivo?.marca || ''} {orden.dispositivo?.modelo || ''}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-400">Fecha:</span>
-          <span className="text-white">{formatFecha(orden.fechaCreacion)}</span>
-        </div>
-      </div>
-
-      <div className="flex space-x-2 mt-4 pt-3 border-t border-gray-600/50">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onView(orden);
-          }}
-          className="flex-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm"
-        >
-          <Eye className="w-4 h-4" />
-          <span>Ver</span>
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onPrint(orden);
-          }}
-          className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-400 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm"
-        >
-          <Printer className="w-4 h-4" />
-          <span>Imprimir</span>
-        </button>
-      </div>
-    </div>
-  );
-};
 
 // Componente de loading para filtros
 const FilterLoadingIndicator = () => (
@@ -108,7 +32,7 @@ export default function OrdenesMantenimientoPage() {
   const { ordenes: todasLasOrdenes, loading, error, refrescarOrdenes } = useOrdenesUsuario()
   const { negocio, loading: loadingNegocio } = useNegocio()
 
-  const { imprimirOrden, formatFecha } = usePrintService({ negocio })
+  const { imprimirOrden, compartirOrden, formatFecha } = usePrintService({ negocio })
   const [busqueda, setBusqueda] = useState('')
   const [debouncedBusqueda] = useDebounce(busqueda, 300);
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
@@ -448,6 +372,7 @@ export default function OrdenesMantenimientoPage() {
                         orden={orden}
                         onView={handleRowClick}
                         onPrint={imprimirOrden}
+                        onShare={compartirOrden}
                         getTipoColor={getTipoColor}
                         formatFecha={formatFecha}
                       />
@@ -522,6 +447,11 @@ export default function OrdenesMantenimientoPage() {
                               <PrintButton
                                 orden={orden}
                                 onPrint={imprimirOrden}
+                                variant="table"
+                              />
+                              <ShareButton
+                                orden={orden}
+                                onShare={compartirOrden}
                                 variant="table"
                               />
                             </div>
@@ -629,6 +559,7 @@ export default function OrdenesMantenimientoPage() {
             orden={ordenSeleccionada}
             onClose={() => setOrdenSeleccionada(null)}
             onPrint={imprimirOrden}
+            onShare={compartirOrden}
           />
         )}
       </div>
