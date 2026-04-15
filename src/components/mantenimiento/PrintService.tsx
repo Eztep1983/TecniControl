@@ -303,10 +303,11 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
 
         const base64Data = await blobToBase64(blob)
 
+        // Se usa Directory.Data para evitar problemas de permisos de almacenamiento en Android moderno.
         const result = await Filesystem.writeFile({
           path: filename,
           data: base64Data,
-          directory: Directory.Documents,
+          directory: Directory.Data,
           recursive: true
         })
 
@@ -371,25 +372,45 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
           dialogTitle: 'Compartir Orden'
         })
       } else {
-        // Web: Web Share API con File
+        // Web: Web Share API con File (frecuentemente falla en PC o por timeouts en Chrome)
         const file = new File([blob], filename, { type: 'application/pdf' })
+        const textoOrden = `Orden de mantenimiento #${orden.idPersonalizado} - ${orden.dispositivo?.marca || ''} ${orden.dispositivo?.modelo || ''}`
+
+        const fallbackWebCompartir = async () => {
+          // Si estamos en Web y falla el share nativo, descargamos el archivo y damos la opción de WhatsApp
+          await descargarPDF(orden)
+          
+          const telefono = orden.cliente?.phone ? orden.cliente.phone.replace(/\D/g, '') : ''
+          const mensaje = encodeURIComponent(`Hola ${orden.cliente?.name || ''}, te adjunto la orden de mantenimiento #${orden.idPersonalizado}.\n\n(Nota: Por favor adjunta el PDF que se acaba de descargar)`)
+          
+          const waUrl = telefono ? `https://wa.me/${telefono}?text=${mensaje}` : `https://api.whatsapp.com/send?text=${mensaje}`
+          
+          // Usamos confirmacion simple para que el usuario entienda qué pasó
+          if (window.confirm('El entorno web no permite compartir el archivo directamente. El PDF se descargará automáticamente.\n\n¿Deseas abrir WhatsApp ahora para enviarlo manualmente?')) {
+            window.open(waUrl, '_blank')
+          }
+        }
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: `Orden de Mantenimiento #${orden.idPersonalizado}`,
-            text: `Orden de mantenimiento #${orden.idPersonalizado}`
-          })
+          try {
+            await navigator.share({
+              files: [file],
+              title: `Orden de Mantenimiento #${orden.idPersonalizado}`,
+              text: textoOrden
+            })
+          } catch (shareErr) {
+            if (shareErr instanceof Error && shareErr.name === 'AbortError') return
+            console.warn('Web Share falló (ej. pérdida de activación segura), usando fallback de WhatsApp...', shareErr)
+            await fallbackWebCompartir()
+          }
         } else {
-          // Fallback: descargar
-          await descargarPDF(orden)
+          // Fallback: si el API no soporta compartir el archivo
+          await fallbackWebCompartir()
         }
       }
     } catch (error) {
-      // AbortError = usuario canceló el share — no es un error real
       if (error instanceof Error && error.name === 'AbortError') return
       console.error('Error al compartir orden:', error)
-      throw error
     }
   }, [generarPDFBlob, blobToBase64, descargarPDF])
 
@@ -454,7 +475,6 @@ export const PrintButton: React.FC<PrintButtonProps> = ({ orden, onPrint, varian
         aria-label="Imprimir orden"
       >
         <Printer className="w-4 h-4" />
-        <span>Imprimir</span>
       </button>
     )
   }
@@ -491,7 +511,6 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ orden, onShare, varian
         aria-label="Compartir orden"
       >
         <Share2 className="w-4 h-4" />
-        <span>Compartir</span>
       </button>
     )
   }
@@ -533,7 +552,6 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({ orden, onDownloa
         aria-label="Descargar PDF"
       >
         <Download className="w-4 h-4" />
-        <span>PDF</span>
       </button>
     )
   }

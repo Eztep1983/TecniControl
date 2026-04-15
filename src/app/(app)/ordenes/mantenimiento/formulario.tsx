@@ -396,6 +396,21 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   }, [state.currentStep, onClose])
 
   // ============================================================================
+  // PREVENCIÓN DE BUG DEL BORRADOR RETENIDO
+  // ============================================================================
+  // El usePersistentReducer sobrescribe el borrador con cada cambio de estado.
+  // Aquí aseguramos de borrarlo en loop para que no se quede pausada
+  // luego de haberse emitido si el componente vuelve a transicionar estados.
+  useEffect(() => {
+    if (state.ordenCreada) {
+      const timeoutId = setTimeout(() => {
+        localStorage.removeItem('draft_mantenimiento')
+      }, 150)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [state.ordenCreada, state.loading])
+
+  // ============================================================================
   // UTILIDADES MEMOIZADAS
   // ============================================================================
   
@@ -611,7 +626,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       })
 
       await crearOrden(nuevaOrden, user.uid)
-      localStorage.removeItem('draft_mantenimiento')
+      
       dispatch({ type: 'SET_ORDEN_CREADA', payload: nuevaOrden })
     } catch (error) {
       console.error('Error creando orden:', error)
@@ -831,7 +846,10 @@ const mantenimientoInfoProps = useMemo(() => ({
               Imprimir
             </button>
             <button
-              onClick={() => onSuccess()}
+              onClick={() => {
+                localStorage.removeItem('draft_mantenimiento')
+                onSuccess()
+              }}
               className="w-full text-gray-400 hover:text-white font-medium py-3 rounded-xl transition-colors mt-2"
             >
               Volver a la lista

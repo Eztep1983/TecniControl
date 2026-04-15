@@ -2,13 +2,14 @@
 import React, { memo, useCallback } from 'react'
 import { OrdenMantenimiento } from '@/types/orden'
 import { Eye } from 'lucide-react'
-import { PrintButton, ShareButton } from './PrintService'
+import { PrintButton, ShareButton, DownloadButton } from './PrintService'
 
 interface OrdenCardProps {
   orden: OrdenMantenimiento
   onView: (orden: OrdenMantenimiento) => void
   onPrint: (orden: OrdenMantenimiento) => void
   onShare: (orden: OrdenMantenimiento) => void
+  onDownload: (orden: OrdenMantenimiento) => void
   getTipoColor: (tipo: string) => string
   formatFecha: (fecha: any) => string
 }
@@ -19,6 +20,7 @@ const OrdenCard: React.FC<OrdenCardProps> = memo(({
   onView,
   onPrint,
   onShare,
+  onDownload,
   getTipoColor,
   formatFecha
 }) => {
@@ -78,6 +80,11 @@ const OrdenCard: React.FC<OrdenCardProps> = memo(({
         <PrintButton
           orden={orden}
           onPrint={onPrint}
+          variant="card"
+        />
+        <DownloadButton
+          orden={orden}
+          onDownload={onDownload}
           variant="card"
         />
         <ShareButton

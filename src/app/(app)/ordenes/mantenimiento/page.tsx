@@ -12,7 +12,7 @@ import { useNegocio } from '@/hooks/useNegocio'
 import { useDebounce } from 'use-debounce'
 import ModalOrden from '@/components/mantenimiento/ModalOrden'
 import OrdenCard from '@/components/mantenimiento/OrdenCard'
-import { PrintButton, ShareButton, usePrintService } from '@/components/mantenimiento/PrintService'
+import { PrintButton, ShareButton, DownloadButton, usePrintService } from '@/components/mantenimiento/PrintService'
 
 
 
@@ -32,7 +32,7 @@ export default function OrdenesMantenimientoPage() {
   const { ordenes: todasLasOrdenes, loading, error, refrescarOrdenes } = useOrdenesUsuario()
   const { negocio, loading: loadingNegocio } = useNegocio()
 
-  const { imprimirOrden, compartirOrden, formatFecha } = usePrintService({ negocio })
+  const { imprimirOrden, compartirOrden, descargarPDF, formatFecha } = usePrintService({ negocio })
   const [busqueda, setBusqueda] = useState('')
   const [debouncedBusqueda] = useDebounce(busqueda, 300);
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
@@ -373,6 +373,7 @@ export default function OrdenesMantenimientoPage() {
                         onView={handleRowClick}
                         onPrint={imprimirOrden}
                         onShare={compartirOrden}
+                        onDownload={descargarPDF}
                         getTipoColor={getTipoColor}
                         formatFecha={formatFecha}
                       />
@@ -447,6 +448,11 @@ export default function OrdenesMantenimientoPage() {
                               <PrintButton
                                 orden={orden}
                                 onPrint={imprimirOrden}
+                                variant="table"
+                              />
+                              <DownloadButton
+                                orden={orden}
+                                onDownload={descargarPDF}
                                 variant="table"
                               />
                               <ShareButton
@@ -560,6 +566,7 @@ export default function OrdenesMantenimientoPage() {
             onClose={() => setOrdenSeleccionada(null)}
             onPrint={imprimirOrden}
             onShare={compartirOrden}
+            onDownload={descargarPDF}
           />
         )}
       </div>

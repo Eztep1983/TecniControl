@@ -1,7 +1,7 @@
 // app/(app)/configuracion/tareas-repuestos/page.tsx
 'use client'
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, useTransition } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { 
   guardarTareasPredefinidas, 
@@ -9,8 +9,14 @@ import {
   obtenerTareasPredefinidas, 
   obtenerPiezasPredefinidas 
 } from '@/lib/configuracionTareasR-helpers'
-import { ArrowLeft, Settings, ListChecks, Package, Plus, Trash2, Edit3, Save, X, Check, Search } from 'lucide-react'
+import { ArrowLeft, ListChecks, Package, Plus, Trash2, Edit3, Save, X, Check, Search, MoreVertical, AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { SwipeableList, SwipeableListItem } from 'react-swipeable-list'
+import 'react-swipeable-list/dist/styles.css'
+
+// ============================================================================
+// TIPOS Y CONSTANTES
+// ============================================================================
 
 interface TareaPredefinida {
   id: string
@@ -25,134 +31,157 @@ interface PiezaPredefinida {
   categoria: string
 }
 
+// ============================================================================
+// COMPONENTES REUTILIZABLES OPTIMIZADOS PARA MÓVIL
+// ============================================================================
+
+const LoadingSkeleton = () => (
+  <div className="space-y-4 animate-pulse">
+    <div className="h-12 bg-gray-700/50 rounded-lg" />
+    <div className="h-32 bg-gray-700/50 rounded-lg" />
+    <div className="h-24 bg-gray-700/50 rounded-lg" />
+  </div>
+)
+
+const EmptyState = ({ icon: Icon, title, description }: { icon: any; title: string; description: string }) => (
+  <div className="flex flex-col items-center justify-center py-12 text-center">
+    <Icon className="w-16 h-16 text-gray-600 mb-4" />
+    <p className="text-gray-300 font-medium">{title}</p>
+    <p className="text-gray-500 text-sm mt-1">{description}</p>
+  </div>
+)
+
+const BottomSheetModal = ({ isOpen, onClose, title, children }: { isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [isOpen])
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
+      <div 
+        className="relative bg-gray-800 w-full max-w-lg rounded-t-2xl shadow-xl transform transition-all duration-300 animate-slide-up"
+        onClick={(e) => e.stopPropagation()}
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-gray-700">
+          <h3 className="text-lg font-semibold text-white">{title}</h3>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-white touch-manipulation">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-4 max-h-[70vh] overflow-y-auto">
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const StatCard = ({ label, value, color }: { label: string; value: number; color: string }) => (
+  <div className="flex-shrink-0 bg-gray-800/30 rounded-xl p-3 min-w-[80px] text-center border border-gray-700/30">
+    <div className={`text-2xl font-bold ${color}`}>{value}</div>
+    <div className="text-xs text-gray-400 mt-1">{label}</div>
+  </div>
+)
+
+// ============================================================================
+// COMPONENTE PRINCIPAL
+// ============================================================================
+
 export default function TareasRepuestosPage() {
   const { user } = useAuth()
   const router = useRouter()
+  
+  // Estados principales
   const [tareas, setTareas] = useState<TareaPredefinida[]>([])
   const [piezas, setPiezas] = useState<PiezaPredefinida[]>([])
   const [loading, setLoading] = useState(true)
-  const [editandoTarea, setEditandoTarea] = useState<string | null>(null)
-  const [editandoPieza, setEditandoPieza] = useState<string | null>(null)
-  const [nuevaTarea, setNuevaTarea] = useState<{ 
-    nombre: string; 
-    tipo: 'preventivo' | 'correctivo' | 'ambos'; 
-    categoria: string 
-  }>({ 
-    nombre: '', 
-    tipo: 'preventivo', 
-    categoria: 'General' 
-  })
-  const [nuevaPieza, setNuevaPieza] = useState({ 
-    nombre: '', 
-    categoria: 'Categoria Generica' 
-  })
-  const [tareaEditTemp, setTareaEditTemp] = useState<{ 
-    nombre: string; 
-    tipo: 'preventivo' | 'correctivo' | 'ambos'; 
-    categoria: string 
-  }>({ nombre: '', tipo: 'preventivo', categoria: 'General' })
-  const [piezaEditTemp, setPiezaEditTemp] = useState({ nombre: '', categoria: 'Categoria Generica' })
+  const [isPending, startTransition] = useTransition()
   
-  // Estados para búsqueda
+  // Estados de UI móvil
+  const [tabActiva, setTabActiva] = useState<'tareas' | 'piezas'>('tareas')
+  const [modalTareaOpen, setModalTareaOpen] = useState(false)
+  const [modalPiezaOpen, setModalPiezaOpen] = useState(false)
+  const [modoEdicion, setModoEdicion] = useState<{ tipo: 'tarea' | 'pieza'; id?: string } | null>(null)
+  
+  // Estados de formularios
+  const [nuevaTarea, setNuevaTarea] = useState({ nombre: '', tipo: 'preventivo' as const, categoria: 'General' })
+  const [nuevaPieza, setNuevaPieza] = useState({ nombre: '', categoria: 'Categoria Generica' })
+  const [editTarea, setEditTarea] = useState<TareaPredefinida | null>(null)
+  const [editPieza, setEditPieza] = useState<PiezaPredefinida | null>(null)
+  
+  // Búsqueda con debounce
   const [busquedaTareas, setBusquedaTareas] = useState('')
   const [busquedaPiezas, setBusquedaPiezas] = useState('')
+  const debouncedTareas = useDebounce(busquedaTareas, 300)
+  const debouncedPiezas = useDebounce(busquedaPiezas, 300)
   
-  // Estado para mostrar/ocultar formularios en móvil
-  const [mostrarFormTareas, setMostrarFormTareas] = useState(false)
-  const [mostrarFormPiezas, setMostrarFormPiezas] = useState(false)
-
-  // Estado de Tabs para Móvil
-  const [tabActiva, setTabActiva] = useState<'tareas' | 'piezas'>('tareas')
-
-  // Estados unificados para retroalimentación
+  // Estados de feedback
   const [guardando, setGuardando] = useState(false)
-  const [mensajeExito, setMensajeExito] = useState('')
-  const [mensajeError, setMensajeError] = useState('')
-
-  // Estado para detectar cambios y controlar el guardado automático
+  const [mensajeSnackbar, setMensajeSnackbar] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
   const [cambiosPendientes, setCambiosPendientes] = useState(false)
   const [ultimoGuardado, setUltimoGuardado] = useState<Date | null>(null)
   
-  // Refs para evitar guardado en la carga inicial
   const esCargaInicial = useRef(true)
   const timeoutGuardado = useRef<NodeJS.Timeout | null>(null)
+
+  // ==========================================================================
+  // EFECTOS Y CARGA INICIAL
+  // ==========================================================================
 
   useEffect(() => {
     cargarConfiguracion()
   }, [user?.uid])
 
-  // Detectar cambios y activar guardado automático
+  // Auto-guardado con debounce
   useEffect(() => {
     if (esCargaInicial.current) {
       esCargaInicial.current = false
       return
     }
-
     if (tareas.length > 0 || piezas.length > 0) {
       setCambiosPendientes(true)
-      
-      // Cancelar el timeout anterior si existe
-      if (timeoutGuardado.current) {
-        clearTimeout(timeoutGuardado.current)
-      }
-      
-      // Programar el guardado automático después de 1 segundo de inactividad
+      if (timeoutGuardado.current) clearTimeout(timeoutGuardado.current)
       timeoutGuardado.current = setTimeout(() => {
-        guardarTodosLosCambios()
-      }, 1000)
+        guardarTodosLosCambios(true) // auto-save silencioso
+      }, 1500)
     }
-    
-    return () => {
-      if (timeoutGuardado.current) {
-        clearTimeout(timeoutGuardado.current)
-      }
-    }
+    return () => { if (timeoutGuardado.current) clearTimeout(timeoutGuardado.current) }
   }, [tareas, piezas])
 
   const cargarConfiguracion = useCallback(async () => {
     if (!user?.uid) return
-    
     try {
       const [tareasData, piezasData] = await Promise.all([
         obtenerTareasPredefinidas(user.uid),
         obtenerPiezasPredefinidas(user.uid)
-      ]);
-      const tareasSanitizadas = (tareasData || []).filter(Boolean).map(t => ({
-        ...t,
-        nombre: t.nombre || '',
-        tipo: t.tipo || 'preventivo'
-      })) as TareaPredefinida[];
-      setTareas(tareasSanitizadas)
-      setPiezas((piezasData || []).filter(Boolean).map(p => ({
-        ...p,
-        nombre: p.nombre || ''
-      })) as PiezaPredefinida[])
+      ])
+      setTareas((tareasData || []).filter(Boolean) as TareaPredefinida[])
+      setPiezas((piezasData || []).filter(Boolean) as PiezaPredefinida[])
       setUltimoGuardado(new Date())
     } catch (error) {
-      console.error('Error cargando configuración:', error)
       mostrarMensaje('Error al cargar la configuración', 'error')
     } finally {
       setLoading(false)
     }
   }, [user?.uid])
 
-  const mostrarMensaje = useCallback((mensaje: string, tipo: 'success' | 'error') => {
-    if (tipo === 'success') {
-      setMensajeExito(mensaje)
-      setMensajeError('')
-      setTimeout(() => setMensajeExito(''), 3000)
-    } else {
-      setMensajeError(mensaje)
-      setMensajeExito('')
-      setTimeout(() => setMensajeError(''), 5000)
-    }
+  const mostrarMensaje = useCallback((text: string, type: 'success' | 'error') => {
+    setMensajeSnackbar({ text, type })
+    setTimeout(() => setMensajeSnackbar(null), 3000)
   }, [])
 
-  const guardarTodosLosCambios = useCallback(async () => {
-    if (!user?.uid || (!tareas.length && !piezas.length)) return
-    
-    setGuardando(true)
-    
+  const guardarTodosLosCambios = useCallback(async (silent = false) => {
+    if (!user?.uid) return
+    if (!silent) setGuardando(true)
     try {
       await Promise.all([
         guardarTareasPredefinidas(user.uid, tareas),
@@ -160,567 +189,491 @@ export default function TareasRepuestosPage() {
       ])
       setUltimoGuardado(new Date())
       setCambiosPendientes(false)
+      if (!silent) mostrarMensaje('Cambios guardados correctamente', 'success')
     } catch (error) {
-      console.error('Error guardando cambios:', error)
       mostrarMensaje('Error al guardar los cambios', 'error')
     } finally {
-      setGuardando(false)
+      if (!silent) setGuardando(false)
     }
-  }, [user?.uid, tareas, piezas, mostrarMensaje])
+  }, [user?.uid, tareas, piezas])
+
+  // ==========================================================================
+  // CRUD TAREAS
+  // ==========================================================================
 
   const agregarTarea = useCallback(() => {
     if (!nuevaTarea.nombre.trim()) {
       mostrarMensaje('El nombre de la tarea es requerido', 'error')
       return
     }
-    
     const tarea: TareaPredefinida = {
       id: Date.now().toString(),
       ...nuevaTarea
     }
-    
     setTareas(prev => [...prev, tarea])
     setNuevaTarea({ nombre: '', tipo: 'preventivo', categoria: 'General' })
-    setMostrarFormTareas(false)
-  }, [nuevaTarea, mostrarMensaje])
+    setModalTareaOpen(false)
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50)
+    mostrarMensaje('Tarea agregada', 'success')
+  }, [nuevaTarea])
+
+  const eliminarTarea = useCallback((id: string) => {
+    setTareas(prev => prev.filter(t => t.id !== id))
+    if (navigator.vibrate) navigator.vibrate(50)
+    mostrarMensaje('Tarea eliminada', 'success')
+  }, [])
+
+  const actualizarTarea = useCallback(() => {
+    if (!editTarea) return
+    if (!editTarea.nombre.trim()) {
+      mostrarMensaje('El nombre es requerido', 'error')
+      return
+    }
+    setTareas(prev => prev.map(t => t.id === editTarea.id ? editTarea : t))
+    setModoEdicion(null)
+    setEditTarea(null)
+    mostrarMensaje('Tarea actualizada', 'success')
+  }, [editTarea])
+
+  // ==========================================================================
+  // CRUD PIEZAS
+  // ==========================================================================
 
   const agregarPieza = useCallback(() => {
     if (!nuevaPieza.nombre.trim()) {
       mostrarMensaje('El nombre de la pieza es requerido', 'error')
       return
     }
-    
     const pieza: PiezaPredefinida = {
       id: Date.now().toString(),
       ...nuevaPieza
     }
-    
     setPiezas(prev => [...prev, pieza])
     setNuevaPieza({ nombre: '', categoria: 'Categoria Generica' })
-    setMostrarFormPiezas(false)
-  }, [nuevaPieza, mostrarMensaje])
-
-  const eliminarTarea = useCallback((id: string) => {
-    setTareas(prev => prev.filter(t => t.id !== id))
-  }, [])
+    setModalPiezaOpen(false)
+    if (navigator.vibrate) navigator.vibrate(50)
+    mostrarMensaje('Pieza agregada', 'success')
+  }, [nuevaPieza])
 
   const eliminarPieza = useCallback((id: string) => {
     setPiezas(prev => prev.filter(p => p.id !== id))
+    if (navigator.vibrate) navigator.vibrate(50)
+    mostrarMensaje('Pieza eliminada', 'success')
   }, [])
 
-  const iniciarEdicionTarea = useCallback((tarea: TareaPredefinida) => {
-    setEditandoTarea(tarea.id)
-    setTareaEditTemp({ nombre: tarea.nombre, tipo: tarea.tipo, categoria: tarea.categoria })
-  }, [])
-
-  const iniciarEdicionPieza = useCallback((pieza: PiezaPredefinida) => {
-    setEditandoPieza(pieza.id)
-    setPiezaEditTemp({ nombre: pieza.nombre, categoria: pieza.categoria })
-  }, [])
-
-  const guardarEdicionTarea = useCallback((id: string) => {
-    if (!tareaEditTemp.nombre.trim()) {
-      mostrarMensaje('El nombre de la tarea es requerido', 'error')
+  const actualizarPieza = useCallback(() => {
+    if (!editPieza) return
+    if (!editPieza.nombre.trim()) {
+      mostrarMensaje('El nombre es requerido', 'error')
       return
     }
-    
-    setTareas(prev => prev.map(t => 
-      t.id === id ? { ...t, ...tareaEditTemp } : t
-    ))
-    setEditandoTarea(null)
-  }, [tareaEditTemp, mostrarMensaje])
+    setPiezas(prev => prev.map(p => p.id === editPieza.id ? editPieza : p))
+    setModoEdicion(null)
+    setEditPieza(null)
+    mostrarMensaje('Pieza actualizada', 'success')
+  }, [editPieza])
 
-  const guardarEdicionPieza = useCallback((id: string) => {
-    if (!piezaEditTemp.nombre.trim()) {
-      mostrarMensaje('El nombre de la pieza es requerido', 'error')
-      return
-    }
-    
-    setPiezas(prev => prev.map(p => 
-      p.id === id ? { ...p, ...piezaEditTemp } : p
-    ))
-    setEditandoPieza(null)
-  }, [piezaEditTemp, mostrarMensaje])
+  // ==========================================================================
+  // FILTRADO CON DEBOUNCE
+  // ==========================================================================
 
-  const cancelarEdicion = useCallback(() => {
-    setEditandoTarea(null)
-    setEditandoPieza(null)
-  }, [])
-
-  // Filtros de búsqueda optimizados con useMemo
   const tareasFiltradas = useMemo(() => {
-    if (!busquedaTareas.trim()) return tareas
-    const termino = busquedaTareas.toLowerCase()
-    return tareas.filter(tarea => 
-      (tarea.nombre || '').toLowerCase().includes(termino) ||
-      (tarea.categoria || '').toLowerCase().includes(termino) ||
-      (tarea.tipo || '').toLowerCase().includes(termino)
+    if (!debouncedTareas) return tareas
+    const term = debouncedTareas.toLowerCase()
+    return tareas.filter(t => 
+      t.nombre.toLowerCase().includes(term) ||
+      t.categoria.toLowerCase().includes(term) ||
+      t.tipo.includes(term)
     )
-  }, [tareas, busquedaTareas])
+  }, [tareas, debouncedTareas])
 
   const piezasFiltradas = useMemo(() => {
-    if (!busquedaPiezas.trim()) return piezas
-    const termino = busquedaPiezas.toLowerCase()
-    return piezas.filter(pieza => 
-      (pieza.nombre || '').toLowerCase().includes(termino) ||
-      (pieza.categoria || '').toLowerCase().includes(termino)
+    if (!debouncedPiezas) return piezas
+    const term = debouncedPiezas.toLowerCase()
+    return piezas.filter(p => 
+      p.nombre.toLowerCase().includes(term) ||
+      p.categoria.toLowerCase().includes(term)
     )
-  }, [piezas, busquedaPiezas])
+  }, [piezas, debouncedPiezas])
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-gray-400">Debes iniciar sesión para acceder a esta página.</p>
-        </div>
-      </div>
-    )
-  }
+  // Estadísticas
+  const stats = useMemo(() => ({
+    totalTareas: tareas.length,
+    preventivas: tareas.filter(t => t.tipo === 'preventivo').length,
+    correctivas: tareas.filter(t => t.tipo === 'correctivo').length,
+    ambos: tareas.filter(t => t.tipo === 'ambos').length,
+    totalPiezas: piezas.length
+  }), [tareas, piezas])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-          <p className="text-gray-400">Cargando configuración...</p>
-        </div>
-      </div>
-    )
-  }
+  // ==========================================================================
+  // RENDER
+  // ==========================================================================
+
+  if (!user) return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="text-center text-gray-400">Debes iniciar sesión</div>
+    </div>
+  )
+
+  if (loading) return (
+    <div className="min-h-screen bg-gray-900 p-4">
+      <LoadingSkeleton />
+    </div>
+  )
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header optimizado */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex items-center space-x-3 sm:space-x-4">
-            <button 
-              onClick={() => router.back()} 
-              className="text-blue-400 hover:text-blue-300 p-2 rounded-full hover:bg-gray-800 transition-colors touch-manipulation"
-              aria-label="Volver"
-            >
-              <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white truncate">Tareas y Repuestos</h1>
-              <p className="text-gray-400 text-xs sm:text-sm mt-1 line-clamp-2">Gestiona tus tareas y piezas predefinidas para agilizar la creación de órdenes</p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 pb-20">
+      {/* Header sticky con safe area */}
+      <header className="sticky top-0 z-20 bg-gray-900/90 backdrop-blur-md border-b border-gray-800 px-4 py-3" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="flex items-center gap-3 max-w-6xl mx-auto">
+          <button onClick={() => router.back()} className="p-2 -ml-2 text-blue-400 active:bg-gray-800 rounded-full touch-manipulation">
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-white">Tareas y Repuestos</h1>
+            <p className="text-xs text-gray-400">Gestiona tu catálogo</p>
           </div>
         </div>
+      </header>
 
-        {/* Mensaje global de retroalimentación */}
-        {(mensajeExito || mensajeError) && (
-          <div className={`mb-6 p-4 rounded-lg text-sm font-medium ${
-            mensajeExito ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 
-            'bg-red-500/20 text-red-300 border border-red-500/30'
-          }`}>
-            {mensajeExito || mensajeError}
-          </div>
-        )}
+      {/* Snackbar flotante */}
+      {mensajeSnackbar && (
+        <div className={`fixed bottom-20 left-4 right-4 z-50 p-3 rounded-lg shadow-lg text-center text-sm font-medium transition-all animate-slide-up ${
+          mensajeSnackbar.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+        }`}>
+          {mensajeSnackbar.text}
+        </div>
+      )}
 
-        {/* Layout adaptativo con Tabs en Móvil */}
-        
-        <div className="lg:hidden flex p-1 bg-gray-800/60 rounded-xl mb-6 border border-gray-700/50">
-          <button 
+      <main className="max-w-6xl mx-auto px-4 py-4 space-y-6">
+        {/* Stats horizontales scrollable */}
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          <StatCard label="Total Tareas" value={stats.totalTareas} color="text-blue-400" />
+          <StatCard label="Preventivas" value={stats.preventivas} color="text-green-400" />
+          <StatCard label="Correctivas" value={stats.correctivas} color="text-orange-400" />
+          <StatCard label="Ambos" value={stats.ambos} color="text-purple-400" />
+          <StatCard label="Piezas" value={stats.totalPiezas} color="text-cyan-400" />
+        </div>
+
+        {/* Tabs móvil */}
+        <div className="flex bg-gray-800/60 rounded-xl p-1 border border-gray-700/50">
+          <button
             onClick={() => setTabActiva('tareas')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all touch-manipulation ${tabActiva === 'tareas' ? 'bg-blue-500/20 text-blue-300 shadow shadow-blue-500/10' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30'}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all touch-manipulation ${
+              tabActiva === 'tareas' ? 'bg-blue-500/20 text-blue-300 shadow-sm' : 'text-gray-400'
+            }`}
           >
             <ListChecks className="w-4 h-4" />
             Tareas
           </button>
-          <button 
+          <button
             onClick={() => setTabActiva('piezas')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all touch-manipulation ${tabActiva === 'piezas' ? 'bg-purple-500/20 text-purple-300 shadow shadow-purple-500/10' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30'}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all touch-manipulation ${
+              tabActiva === 'piezas' ? 'bg-purple-500/20 text-purple-300 shadow-sm' : 'text-gray-400'
+            }`}
           >
             <Package className="w-4 h-4" />
             Repuestos
           </button>
         </div>
 
-        <div className="lg:grid lg:grid-cols-2 lg:gap-8">
-          {/* Sección Tareas */}
-          <div className={`${tabActiva !== 'tareas' ? 'hidden' : 'block'} lg:block bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 sm:p-6`}>
-            <div className="flex items-center space-x-3 mb-4 sm:mb-6">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <ListChecks className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-lg sm:text-xl font-bold text-white">Tareas Predefinidas</h2>
-                <p className="text-gray-400 text-xs sm:text-sm hidden sm:block">Gestiona las tareas comunes de mantenimiento</p>
-              </div>
+        {/* Panel Tareas */}
+        {tabActiva === 'tareas' && (
+          <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 overflow-hidden">
+            <div className="p-4 border-b border-gray-700/50 flex items-center justify-between">
+              <h2 className="text-white font-semibold">Tareas predefinidas</h2>
+              <button
+                onClick={() => setModalTareaOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-300 rounded-xl active:scale-95 transition-all touch-manipulation"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Agregar</span>
+              </button>
             </div>
-
-            {/* Búsqueda de tareas */}
-            <div className="mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <div className="p-3">
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
-                  type="text"
+                  type="search"
                   value={busquedaTareas}
                   onChange={(e) => setBusquedaTareas(e.target.value)}
-                  placeholder="Buscar tareas..."
-                  className="w-full pl-10 pr-4 py-2 bg-gray-700/30 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  placeholder="Buscar tarea..."
+                  className="w-full pl-10 pr-4 py-3 bg-gray-700/30 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 text-sm"
                 />
               </div>
-            </div>
-
-            {/* Botón toggle para mostrar formulario en móvil */}
-            <div className="mb-4 sm:hidden">
-              <button
-                onClick={() => setMostrarFormTareas(!mostrarFormTareas)}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-lg border border-blue-500/30 transition-colors w-full justify-center touch-manipulation"
-              >
-                <Plus className="w-4 h-4" />
-                <span>{mostrarFormTareas ? 'Ocultar formulario' : 'Agregar nueva tarea'}</span>
-              </button>
-            </div>
-
-            {/* Formulario para nueva tarea */}
-            <div className={`mb-6 p-3 sm:p-4 bg-gray-700/30 rounded-lg border border-gray-600/50 transition-all duration-300 ${
-              mostrarFormTareas ? 'block' : 'hidden sm:block'
-            }`}>
-              <h3 className="text-sm font-medium text-gray-300 mb-3">Agregar Nueva Tarea</h3>
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  value={nuevaTarea.nombre}
-                  onChange={(e) => setNuevaTarea(prev => ({ ...prev, nombre: e.target.value }))}
-                  placeholder="Nombre de la tarea..."
-                  className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <select
-                    value={nuevaTarea.tipo}
-                    onChange={(e) => setNuevaTarea(prev => ({ ...prev, tipo: e.target.value as 'preventivo' | 'correctivo' | 'ambos' }))}
-                    className="px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  >
-                    <option value="preventivo">Preventivo</option>
-                    <option value="correctivo">Correctivo</option>
-                    <option value="ambos">Ambos</option>
-                  </select>
-                  <input
-                    type="text"
-                    value={nuevaTarea.categoria}
-                    onChange={(e) => setNuevaTarea(prev => ({ ...prev, categoria: e.target.value }))}
-                    placeholder="Categoría..."
-                    className="px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  />
-                </div>
-                <button
-                  onClick={agregarTarea}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-lg border border-blue-500/30 transition-colors w-full justify-center touch-manipulation"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Agregar Tarea</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Lista de tareas */}
-            <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-96 overflow-y-auto">
-              {tareasFiltradas.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">
-                  <ListChecks className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">
-                    {busquedaTareas ? 'No se encontraron tareas' : 'No hay tareas agregadas'}
-                  </p>
-                </div>
-              ) : (
-                tareasFiltradas.map((tarea) => (
-                  <div key={tarea.id} className="p-3 bg-gray-700/30 rounded-lg border border-gray-600/50 group">
-                    {editandoTarea === tarea.id ? (
-                      <div className="space-y-2">
-                        <input
-                          type="text"
-                          value={tareaEditTemp.nombre}
-                          onChange={(e) => setTareaEditTemp(prev => ({ ...prev, nombre: e.target.value }))}
-                          className="w-full px-2 py-1 bg-gray-600/50 border border-gray-500/50 rounded text-white text-sm"
-                          placeholder="Nombre de la tarea..."
-                        />
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          <select
-                            value={tareaEditTemp.tipo}
-                            onChange={(e) => setTareaEditTemp(prev => ({ ...prev, tipo: e.target.value as 'preventivo' | 'correctivo' | 'ambos' }))}
-                            className="px-2 py-1 bg-gray-600/50 border border-gray-500/50 rounded text-white text-sm"
-                          >
-                            <option value="preventivo">Preventivo</option>
-                            <option value="correctivo">Correctivo</option>
-                            <option value="ambos">Ambos</option>
-                          </select>
-                          <input
-                            type="text"
-                            value={tareaEditTemp.categoria}
-                            onChange={(e) => setTareaEditTemp(prev => ({ ...prev, categoria: e.target.value }))}
-                            className="px-2 py-1 bg-gray-600/50 border border-gray-500/50 rounded text-white text-sm"
-                            placeholder="Categoría..."
-                          />
-                        </div>
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => guardarEdicionTarea(tarea.id)}
-                            className="flex items-center space-x-1 px-3 py-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 rounded text-sm touch-manipulation"
-                          >
-                            <Check className="w-3 h-3" />
-                            <span>Guardar</span>
-                          </button>
-                          <button
-                            onClick={cancelarEdicion}
-                            className="flex items-center space-x-1 px-3 py-1 bg-gray-500/20 hover:bg-gray-500/30 text-gray-300 rounded text-sm touch-manipulation"
-                          >
-                            <X className="w-3 h-3" />
-                            <span>Cancelar</span>
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-white text-sm font-medium truncate">{tarea.nombre}</span>
-                            <span className={`px-2 py-1 rounded-full text-xs flex-shrink-0 ${
-                              tarea.tipo === 'preventivo' ? 'bg-green-500/20 text-green-300' :
-                              tarea.tipo === 'correctivo' ? 'bg-orange-500/20 text-orange-300' :
-                              'bg-purple-500/20 text-purple-300'
-                            }`}>
-                              {tarea.tipo}
-                            </span>
-                            {tarea.categoria && (
-                              <span className="px-2 py-1 bg-gray-600/50 text-gray-300 rounded-full text-xs flex-shrink-0">
-                                {tarea.categoria}
-                              </span>
-                            )}
+              <div className="space-y-2">
+                {tareasFiltradas.length === 0 ? (
+                  <EmptyState icon={ListChecks} title="Sin tareas" description={busquedaTareas ? "No hay coincidencias" : "Agrega tareas usando el botón +"} />
+                ) : (
+                  <SwipeableList>
+                    {tareasFiltradas.map(tarea => (
+                      <SwipeableListItem
+                        key={tarea.id}
+                        swipeLeft={{
+                          content: (
+                            <div className="flex h-full items-center gap-2 px-4 bg-red-600 text-white">
+                              <Trash2 className="w-5 h-5" />
+                            </div>
+                          ),
+                          action: () => eliminarTarea(tarea.id)
+                        }}
+                        swipeRight={{
+                          content: (
+                            <div className="flex h-full items-center gap-2 px-4 bg-blue-600 text-white">
+                              <Edit3 className="w-5 h-5" />
+                            </div>
+                          ),
+                          action: () => {
+                            setEditTarea(tarea)
+                            setModoEdicion({ tipo: 'tarea', id: tarea.id })
+                          }
+                        }}
+                      >
+                        <div className="bg-gray-700/30 rounded-xl p-3 mb-2 border border-gray-600/50">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <p className="text-white font-medium">{tarea.nombre}</p>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                  tarea.tipo === 'preventivo' ? 'bg-green-500/20 text-green-300' :
+                                  tarea.tipo === 'correctivo' ? 'bg-orange-500/20 text-orange-300' :
+                                  'bg-purple-500/20 text-purple-300'
+                                }`}>
+                                  {tarea.tipo}
+                                </span>
+                                <span className="text-xs px-2 py-0.5 bg-gray-600/50 text-gray-300 rounded-full">
+                                  {tarea.categoria}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex gap-1">
+                              <button onClick={() => { setEditTarea(tarea); setModoEdicion({ tipo: 'tarea', id: tarea.id }) }} className="p-2 text-blue-400 active:bg-gray-700 rounded-full">
+                                <Edit3 className="w-5 h-5" />
+                              </button>
+                              <button onClick={() => eliminarTarea(tarea.id)} className="p-2 text-red-400 active:bg-gray-700 rounded-full">
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex space-x-1 sm:space-x-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity ml-2">
-                          <button
-                            onClick={() => iniciarEdicionTarea(tarea)}
-                            className="text-blue-400 hover:text-blue-300 p-1 touch-manipulation"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => eliminarTarea(tarea.id)}
-                            className="text-red-400 hover:text-red-300 p-1 touch-manipulation"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
+                      </SwipeableListItem>
+                    ))}
+                  </SwipeableList>
+                )}
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Sección Piezas */}
-          <div className={`${tabActiva !== 'piezas' ? 'hidden' : 'block'} lg:block bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 sm:p-6 mt-6 lg:mt-0`}>
-            <div className="flex items-center space-x-3 mb-4 sm:mb-6">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Package className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-lg sm:text-xl font-bold text-white">Piezas Predefinidas</h2>
-                <p className="text-gray-400 text-xs sm:text-sm hidden sm:block">Gestiona las piezas y componentes comunes</p>
-              </div>
+        {/* Panel Piezas */}
+        {tabActiva === 'piezas' && (
+          <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 overflow-hidden">
+            <div className="p-4 border-b border-gray-700/50 flex items-center justify-between">
+              <h2 className="text-white font-semibold">Piezas predefinidas</h2>
+              <button
+                onClick={() => setModalPiezaOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-500/20 text-purple-300 rounded-xl active:scale-95 transition-all touch-manipulation"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Agregar</span>
+              </button>
             </div>
-
-            {/* Búsqueda de piezas */}
-            <div className="mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <div className="p-3">
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
-                  type="text"
+                  type="search"
                   value={busquedaPiezas}
                   onChange={(e) => setBusquedaPiezas(e.target.value)}
-                  placeholder="Buscar piezas..."
-                  className="w-full pl-10 pr-4 py-2 bg-gray-700/30 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                  placeholder="Buscar pieza..."
+                  className="w-full pl-10 pr-4 py-3 bg-gray-700/30 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 text-sm"
                 />
               </div>
-            </div>
-
-            {/* Lista de piezas */}
-            <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-96 overflow-y-auto">
-              {piezasFiltradas.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">
-                  <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">
-                    {busquedaPiezas ? 'No se encontraron piezas' : 'No hay piezas agregadas'}
-                  </p>
-                </div>
-              ) : (
-                piezasFiltradas.map((pieza) => (
-                  <div key={pieza.id} className="p-3 bg-gray-700/30 rounded-lg border border-gray-600/50 group">
-                    {editandoPieza === pieza.id ? (
-                      <div className="space-y-2">
-                        <input
-                          type="text"
-                          value={piezaEditTemp.nombre}
-                          onChange={(e) => setPiezaEditTemp(prev => ({ ...prev, nombre: e.target.value }))}
-                          className="w-full px-2 py-1 bg-gray-600/50 border border-gray-500/50 rounded text-white text-sm"
-                          placeholder="Nombre de la pieza..."
-                        />
-                        <input
-                          type="text"
-                          value={piezaEditTemp.categoria}
-                          onChange={(e) => setPiezaEditTemp(prev => ({ ...prev, categoria: e.target.value }))}
-                          className="w-full px-2 py-1 bg-gray-600/50 border border-gray-500/50 rounded text-white text-sm"
-                          placeholder="Categoría..."
-                        />
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => guardarEdicionPieza(pieza.id)}
-                            className="flex items-center space-x-1 px-3 py-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 rounded text-sm touch-manipulation"
-                          >
-                            <Check className="w-3 h-3" />
-                            <span>Guardar</span>
-                          </button>
-                          <button
-                            onClick={cancelarEdicion}
-                            className="flex items-center space-x-1 px-3 py-1 bg-gray-500/20 hover:bg-gray-500/30 text-gray-300 rounded text-sm touch-manipulation"
-                          >
-                            <X className="w-3 h-3" />
-                            <span>Cancelar</span>
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-white text-sm font-medium truncate">{pieza.nombre}</span>
-                            {pieza.categoria && (
-                              <span className="px-2 py-1 bg-gray-600/50 text-gray-300 rounded-full text-xs flex-shrink-0">
-                                {pieza.categoria}
-                              </span>
-                            )}
+              <div className="space-y-2">
+                {piezasFiltradas.length === 0 ? (
+                  <EmptyState icon={Package} title="Sin piezas" description={busquedaPiezas ? "No hay coincidencias" : "Agrega piezas usando el botón +"} />
+                ) : (
+                  <SwipeableList>
+                    {piezasFiltradas.map(pieza => (
+                      <SwipeableListItem
+                        key={pieza.id}
+                        swipeLeft={{
+                          content: <div className="flex h-full items-center px-4 bg-red-600"><Trash2 className="w-5 h-5 text-white" /></div>,
+                          action: () => eliminarPieza(pieza.id)
+                        }}
+                        swipeRight={{
+                          content: <div className="flex h-full items-center px-4 bg-blue-600"><Edit3 className="w-5 h-5 text-white" /></div>,
+                          action: () => { setEditPieza(pieza); setModoEdicion({ tipo: 'pieza', id: pieza.id }) }
+                        }}
+                      >
+                        <div className="bg-gray-700/30 rounded-xl p-3 mb-2 border border-gray-600/50">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-white font-medium">{pieza.nombre}</p>
+                              <p className="text-xs text-gray-400 mt-1">{pieza.categoria}</p>
+                            </div>
+                            <div className="flex gap-1">
+                              <button onClick={() => { setEditPieza(pieza); setModoEdicion({ tipo: 'pieza', id: pieza.id }) }} className="p-2 text-blue-400 active:bg-gray-700 rounded-full">
+                                <Edit3 className="w-5 h-5" />
+                              </button>
+                              <button onClick={() => eliminarPieza(pieza.id)} className="p-2 text-red-400 active:bg-gray-700 rounded-full">
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex space-x-1 sm:space-x-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity ml-2">
-                          <button
-                            onClick={() => iniciarEdicionPieza(pieza)}
-                            className="text-blue-400 hover:text-blue-300 p-1 touch-manipulation"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => eliminarPieza(pieza.id)}
-                            className="text-red-400 hover:text-red-300 p-1 touch-manipulation"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-            <br />
-
-            {/* Botón toggle para mostrar formulario en móvil */}
-            <div className="mb-4 sm:hidden">
-              <button
-                onClick={() => setMostrarFormPiezas(!mostrarFormPiezas)}
-                className="flex items-center space-x-2 px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg border border-purple-500/30 transition-colors w-full justify-center touch-manipulation"
-              >
-                <Plus className="w-4 h-4" />
-                <span>{mostrarFormPiezas ? 'Ocultar formulario' : 'Agregar nueva pieza'}</span>
-              </button>
-            </div>
-
-                        {/* Formulario para nueva pieza */}
-            <div className={`mb-6 p-3 sm:p-4 bg-gray-700/30 rounded-lg border border-gray-600/50 transition-all duration-300 ${
-              mostrarFormPiezas ? 'block' : 'hidden sm:block'
-            }`}>
-              <h3 className="text-sm font-medium text-gray-300 mb-3">Agregar Nueva Pieza</h3>
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  value={nuevaPieza.nombre}
-                  onChange={(e) => setNuevaPieza(prev => ({ ...prev, nombre: e.target.value }))}
-                  placeholder="Nombre de la pieza..."
-                  className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                />
-                <input
-                  type="text"
-                  value={nuevaPieza.categoria}
-                  onChange={(e) => setNuevaPieza(prev => ({ ...prev, categoria: e.target.value }))}
-                  placeholder="Categoría..."
-                  className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                />
-                <button
-                  onClick={agregarPieza}
-                  className="flex items-center space-x-2 px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg border border-purple-500/30 transition-colors w-full justify-center touch-manipulation"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Agregar Pieza</span>
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Botón único para guardar todos los cambios - Solo se muestra si hay cambios */}
-        {cambiosPendientes && (
-          <div className="mt-8 bg-gray-800/50 rounded-xl border border-gray-700/50 p-6">
-            <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg flex items-center justify-center">
-                  <Save className="w-5 h-5 text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Guardar Configuración</h3>
-                  <p className="text-gray-400 text-sm">Guarda todos los cambios realizados en tareas y piezas</p>
-                </div>
-              </div>
-              <button
-                onClick={guardarTodosLosCambios}
-                disabled={guardando}
-                className="flex items-center justify-center space-x-3 px-6 py-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-purple-500/30 text-white rounded-lg border border-blue-500/30 transition-all duration-200 transform hover:scale-105 touch-manipulation text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-w-[200px]"
-              >
-                {guardando ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
-                    <span>Guardando...</span>
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-5 h-5" />
-                    <span>Guardar Todos los Cambios</span>
-                  </>
+                      </SwipeableListItem>
+                    ))}
+                  </SwipeableList>
                 )}
-              </button>
+              </div>
             </div>
           </div>
         )}
-      </div>
-        <br />
-        {/* Estadísticas rápidas */}
-        {(tareas.length > 0 || piezas.length > 0) && (
-          <div className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-gray-800/30 rounded-lg p-4 text-center border border-gray-700/30">
-              <div className="text-2xl font-bold text-blue-400">{tareas.length}</div>
-              <div className="text-xs text-gray-400">Total Tareas</div>
-            </div>
-            <div className="bg-gray-800/30 rounded-lg p-4 text-center border border-gray-700/30">
-              <div className="text-2xl font-bold text-green-400">{tareas.filter(t => t.tipo === 'preventivo').length}</div>
-              <div className="text-xs text-gray-400">Preventivas</div>
-            </div>
-            <div className="bg-gray-800/30 rounded-lg p-4 text-center border border-gray-700/30">
-              <div className="text-2xl font-bold text-orange-400">{tareas.filter(t => t.tipo === 'correctivo').length}</div>
-              <div className="text-xs text-gray-400">Correctivas</div>
-            </div>
-            <div className="bg-gray-800/30 rounded-lg p-4 text-center border border-gray-700/30">
-              <div className="text-2xl font-bold text-purple-400">{tareas.filter(t => t.tipo === 'ambos').length}</div>
-              <div className="text-xs text-gray-400">Ambos</div>
-            </div>
-            <div className="bg-gray-800/30 rounded-lg p-4 text-center border border-gray-700/30">
-              <div className="text-2xl font-bold text-blue-400">{piezas.length}</div>
-              <div className="text-xs text-gray-400">Total Piezas</div>
-            </div>
+
+        {/* Botón de guardado manual sticky (solo si hay cambios pendientes) */}
+        {cambiosPendientes && (
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/95 backdrop-blur-lg border-t border-gray-700 z-30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
+            <button
+              onClick={() => guardarTodosLosCambios(false)}
+              disabled={guardando}
+              className="w-full flex items-center justify-center gap-3 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium shadow-lg active:scale-[0.98] transition-all touch-manipulation disabled:opacity-70"
+            >
+              {guardando ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Save className="w-5 h-5" />
+              )}
+              <span>{guardando ? 'Guardando...' : 'Guardar cambios pendientes'}</span>
+            </button>
           </div>
         )}
+      </main>
+
+      {/* Modales de agregar/editar */}
+      <BottomSheetModal isOpen={modalTareaOpen} onClose={() => setModalTareaOpen(false)} title="Nueva tarea">
+        <div className="space-y-4">
+          <input
+            type="text"
+            value={nuevaTarea.nombre}
+            onChange={(e) => setNuevaTarea(prev => ({ ...prev, nombre: e.target.value }))}
+            placeholder="Nombre de la tarea"
+            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white"
+            autoFocus
+          />
+          <select
+            value={nuevaTarea.tipo}
+            onChange={(e) => setNuevaTarea(prev => ({ ...prev, tipo: e.target.value as any }))}
+            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white"
+          >
+            <option value="preventivo">Preventivo</option>
+            <option value="correctivo">Correctivo</option>
+            <option value="ambos">Ambos</option>
+          </select>
+          <input
+            type="text"
+            value={nuevaTarea.categoria}
+            onChange={(e) => setNuevaTarea(prev => ({ ...prev, categoria: e.target.value }))}
+            placeholder="Categoría"
+            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white"
+          />
+          <button onClick={agregarTarea} className="w-full py-3 bg-blue-500/20 text-blue-300 rounded-xl font-medium active:scale-95 transition-all">
+            Agregar tarea
+          </button>
+        </div>
+      </BottomSheetModal>
+
+      <BottomSheetModal isOpen={modalPiezaOpen} onClose={() => setModalPiezaOpen(false)} title="Nueva pieza">
+        <div className="space-y-4">
+          <input
+            type="text"
+            value={nuevaPieza.nombre}
+            onChange={(e) => setNuevaPieza(prev => ({ ...prev, nombre: e.target.value }))}
+            placeholder="Nombre de la pieza"
+            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white"
+            autoFocus
+          />
+          <input
+            type="text"
+            value={nuevaPieza.categoria}
+            onChange={(e) => setNuevaPieza(prev => ({ ...prev, categoria: e.target.value }))}
+            placeholder="Categoría"
+            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white"
+          />
+          <button onClick={agregarPieza} className="w-full py-3 bg-purple-500/20 text-purple-300 rounded-xl font-medium active:scale-95 transition-all">
+            Agregar pieza
+          </button>
+        </div>
+      </BottomSheetModal>
+
+      {/* Modal de edición (reutiliza el mismo bottom sheet) */}
+      {modoEdicion?.tipo === 'tarea' && editTarea && (
+        <BottomSheetModal isOpen={true} onClose={() => { setModoEdicion(null); setEditTarea(null) }} title="Editar tarea">
+          <div className="space-y-4">
+            <input
+              type="text"
+              value={editTarea.nombre}
+              onChange={(e) => setEditTarea(prev => prev ? { ...prev, nombre: e.target.value } : null)}
+              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white"
+            />
+            <select
+              value={editTarea.tipo}
+              onChange={(e) => setEditTarea(prev => prev ? { ...prev, tipo: e.target.value as any } : null)}
+              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white"
+            >
+              <option value="preventivo">Preventivo</option>
+              <option value="correctivo">Correctivo</option>
+              <option value="ambos">Ambos</option>
+            </select>
+            <input
+              type="text"
+              value={editTarea.categoria}
+              onChange={(e) => setEditTarea(prev => prev ? { ...prev, categoria: e.target.value } : null)}
+              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white"
+            />
+            <div className="flex gap-3">
+              <button onClick={actualizarTarea} className="flex-1 py-3 bg-green-500/20 text-green-300 rounded-xl">Guardar</button>
+              <button onClick={() => { setModoEdicion(null); setEditTarea(null) }} className="flex-1 py-3 bg-gray-600 text-white rounded-xl">Cancelar</button>
+            </div>
+          </div>
+        </BottomSheetModal>
+      )}
+
+      {modoEdicion?.tipo === 'pieza' && editPieza && (
+        <BottomSheetModal isOpen={true} onClose={() => { setModoEdicion(null); setEditPieza(null) }} title="Editar pieza">
+          <div className="space-y-4">
+            <input
+              type="text"
+              value={editPieza.nombre}
+              onChange={(e) => setEditPieza(prev => prev ? { ...prev, nombre: e.target.value } : null)}
+              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white"
+            />
+            <input
+              type="text"
+              value={editPieza.categoria}
+              onChange={(e) => setEditPieza(prev => prev ? { ...prev, categoria: e.target.value } : null)}
+              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white"
+            />
+            <div className="flex gap-3">
+              <button onClick={actualizarPieza} className="flex-1 py-3 bg-green-500/20 text-green-300 rounded-xl">Guardar</button>
+              <button onClick={() => { setModoEdicion(null); setEditPieza(null) }} className="flex-1 py-3 bg-gray-600 text-white rounded-xl">Cancelar</button>
+            </div>
+          </div>
+        </BottomSheetModal>
+      )}
     </div>
   )
+}
+
+// ============================================================================
+// HOOK DE DEBOUNCE
+// ============================================================================
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay)
+    return () => clearTimeout(handler)
+  }, [value, delay])
+  return debouncedValue
 }
