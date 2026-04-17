@@ -105,21 +105,13 @@ export default function OrdenesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
+              <h1 className="text-2xl text-center sm:text-3xl font-bold text-white mb-1">
                 Órdenes de Servicio
               </h1>
-              <p className="text-sm sm:text-base text-gray-400">
+              <p className="text-sm text-center sm:text-base text-gray-400">
                 Selecciona el tipo de orden que deseas gestionar
               </p>
             </div>
-            
-            <Link 
-              href="/clientes/nuevo"
-              className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-medium py-2.5 px-4 sm:px-5 rounded-lg transition-all duration-200 w-full sm:w-auto shadow-lg shadow-blue-500/30 active:scale-95 touch-manipulation"
-            >
-              <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>Nuevo Cliente</span>
-            </Link>
           </div>
         </div>
       </div>

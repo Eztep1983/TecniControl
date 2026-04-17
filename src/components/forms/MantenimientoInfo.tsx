@@ -128,7 +128,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   ])
 
   return (
-    <div className="bg-gray-800/20 sm:bg-gray-800/40 rounded-xl sm:border border-gray-700/50 overflow-hidden w-full">
+    <div className="bg-gray-800/20 sm:bg-gray-800/40 rounded-xl sm:border border-gray-700/50 w-full">
       {/* Header Opcional en Desktop */}
       <div className="hidden sm:flex p-5 border-b border-gray-700/50 items-center gap-3">
         <div className="w-10 h-10 rounded-lg bg-gray-700/50 flex items-center justify-center flex-shrink-0">
@@ -186,7 +186,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
               
               {/* Sección Tareas */}
-              <section className="relative">
+              <section className="relative z-20">
                 <div className="flex items-center gap-2 mb-3 px-1">
                   <div className="w-1.5 h-5 bg-blue-500 rounded-full" />
                   <h3 className="text-gray-200 text-sm font-semibold uppercase tracking-wider">Actividades Realizadas</h3>
@@ -197,7 +197,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
               <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-700/50 to-transparent" />
 
               {/* Sección Repuestos */}
-              <section className="relative">
+              <section className="relative z-10">
                 <div className="flex items-center gap-2 mb-3 px-1">
                   <div className="w-1.5 h-5 bg-purple-500 rounded-full" />
                   <h3 className="text-gray-200 text-sm font-semibold uppercase tracking-wider">Repuestos Utilizados</h3>

@@ -3,7 +3,10 @@
 import { Cliente } from '@/types/orden'
 import { Search, UserPlus, X, MapPin, Phone, Mail, HardDrive, Clock, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ClienteViewModal } from '../clientes/ClienteViewModal'
+import { ClienteFormModal } from '../clientes/ClienteFormModal'
+import { useClienteModal } from '@/hooks/useClienteModal'
 
 interface ClienteSelectorProps {
   clientes: Cliente[]
@@ -28,6 +31,9 @@ export default function ClienteSelector({
   const inputRef = useRef<HTMLInputElement>(null)
   const [paginaActual, setPaginaActual] = useState(1)
   const [clienteAnimando, setClienteAnimando] = useState<string | null>(null)
+  const modal = useClienteModal();
+
+
 
   // Validación: asegurar que clientes es un array
   const clientesValidos = Array.isArray(clientes) ? clientes : []
@@ -90,11 +96,29 @@ export default function ClienteSelector({
       setPaginaActual(prev => prev - 1)
     }
   }
+  const handleSuccess = useCallback((cliente: Cliente) => {
+    onSeleccionarCliente(cliente);
+    // La lista de clientes se actualizará desde el componente padre
+  }, [onSeleccionarCliente]);
 
-  if (clienteSeleccionado) {
-    return (
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-500/15 to-blue-600/10 p-5 rounded-xl border border-blue-500/40 shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16" />
+  return (
+    <>
+      <ClienteViewModal
+        open={modal.isView}
+        cliente={modal.cliente}
+        onClose={modal.close}
+        onEdit={modal.switchToEdit}
+      />
+      <ClienteFormModal
+        open={modal.isCreate || modal.isEdit}
+        initialData={modal.isEdit ? modal.cliente : null}
+        onClose={modal.close}
+        onSuccess={handleSuccess}
+      />
+
+      {clienteSeleccionado ? (
+        <div className="relative overflow-hidden bg-gradient-to-br from-blue-500/15 to-blue-600/10 p-5 rounded-xl border border-blue-500/40 shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16" />
         
         <div className="relative flex justify-between items-start gap-4">
           <div className="flex-1 space-y-3">
@@ -151,11 +175,8 @@ export default function ClienteSelector({
           </button>
         </div>
       </div>
-    )
-  }
-
-  return (
-    <div className="space-y-4">
+      ) : (
+      <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <p className="text-xl text-gray-300 font-medium">Seleccionar Cliente</p>
@@ -350,12 +371,14 @@ export default function ClienteSelector({
       
       <button
         type="button"
-        onClick={() => router.push('/clientes/nuevo')}
+        onClick={modal.openCreate}
         className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 text-sm font-medium shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30 hover:-translate-y-0.5 active:scale-95"
       >
         <UserPlus className="w-4 h-4" />
         <span>Nuevo Cliente</span>
       </button>
     </div>
+    )}
+    </>
   )
 }

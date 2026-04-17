@@ -3,7 +3,7 @@ El Sistema de Control de Órdenes de Servicio Técnico es una aplicación web di
 
 La aplicación permite centralizar la información de clientes, dispositivos y servicios realizados, mejorando la organización, trazabilidad y profesionalismo del técnico frente a sus clientes.
 
-🎯 Público Objetivo
+ Público Objetivo
 
 Técnicos independientes de tecnología
 
@@ -11,12 +11,12 @@ Freelancers de soporte técnico
 
 Reparadores y mantenedores de dispositivos tecnológicos
 
-✨ Funcionalidades Principales
-📑 Gestión de Órdenes de Servicio
+ Funcionalidades Principales
+ Gestión de Órdenes de Servicio
 
 El sistema cuenta con tres tipos principales de órdenes:
 
-1️⃣ Orden de Garantía
+ Orden de Garantía
 
 Permite generar y administrar órdenes de garantía para dispositivos que cuentan con cobertura vigente.
 
@@ -30,17 +30,17 @@ Alertas de garantía próxima a vencer
 
 Asociación directa con el cliente y su dispositivo
 
-2️⃣ Orden de Mantenimiento
+ Orden de Mantenimiento
 
 Diseñada para documentar y controlar servicios técnicos realizados a dispositivos.
 
 Incluye tres subtipos de mantenimiento:
 
-🔧 Mantenimiento Preventivo
+ Mantenimiento Preventivo
 
-🛠️ Mantenimiento Correctivo
+ Mantenimiento Correctivo
 
-🔍 Diagnóstico
+ Diagnóstico
 
 Características:
 
@@ -58,7 +58,7 @@ Visualización detallada de cada orden
 
 Opción de impresión de órdenes emitidas
 
-3️⃣ Orden de Instalación
+ Orden de Instalación
 
 Este tipo de orden se utiliza cuando el técnico vende y entrega un dispositivo al cliente.
 
@@ -80,7 +80,7 @@ Del vendedor (técnico)
 
 Evidencia formal de entrega e instalación
 
-👥 Gestión de Clientes
+ Gestión de Clientes
 
 Creación y edición de clientes
 
@@ -88,7 +88,7 @@ Visualización del historial completo de órdenes por cliente
 
 Relación directa entre clientes, dispositivos y órdenes de servicio
 
-🔐 Sistema Multiusuario y Seguridad
+ Sistema Multiusuario y Seguridad
 
 Sistema multiusuario
 
@@ -96,7 +96,7 @@ Autenticación y control de acceso
 
 Seguridad multicapa para proteger la información de usuarios, clientes y órdenes
 
-🧱 Arquitectura y Tecnologías
+ Arquitectura y Tecnologías
 Frontend
 
 Next.js
@@ -117,7 +117,7 @@ Gestión de usuarios
 
 Seguridad y reglas de acceso
 
-🚀 Beneficios del Sistema
+ Beneficios del Sistema
 
 Organización profesional de órdenes de servicio
 
@@ -129,6 +129,6 @@ Mejora en la confianza y transparencia con los clientes
 
 Accesible desde cualquier lugar al ser una aplicación web
 
-📌 Estado del Proyecto
+ Estado del Proyecto
 
 En desarrollo / En producción (ajustar según corresponda)

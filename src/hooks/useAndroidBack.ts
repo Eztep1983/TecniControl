@@ -59,7 +59,13 @@ export function useAndroidBack(open: boolean, onClose: () => void, onEdit?: () =
       // y causando: "Expected static flag was missing".
       if (pushedRef.current) {
         pushedRef.current = false;
-        setTimeout(() => history.back(), 0);
+        (window as any).__ignoring_next_popstate__ = true;
+        setTimeout(() => {
+          history.back();
+          setTimeout(() => {
+            (window as any).__ignoring_next_popstate__ = false;
+          }, 50);
+        }, 0);
       }
     };
   }, [open]); // onClose excluido intencionalmente — se accede vía onCloseRef

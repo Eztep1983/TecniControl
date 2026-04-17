@@ -375,6 +375,12 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   // Manejar el botón back del navegador/Android
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
+      // Ignorar popstate si fue programático (ej. al cerrar un modal interno)
+      if ((window as any).__ignoring_next_popstate__) {
+        (window as any).__ignoring_next_popstate__ = false;
+        return;
+      }
+
       event.preventDefault()
       
       const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
@@ -861,7 +867,7 @@ const mantenimientoInfoProps = useMemo(() => ({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pb-24 sm:pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pb-48 sm:pb-8">
       {/* Header */}
       <div className="bg-gray-900/95 border-b border-gray-800 shadow-lg">
         <div className="max-w-4xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
