@@ -93,6 +93,7 @@ export interface OrdenMantenimiento {
 
 
 export interface OrdenEntrega extends OrdenBase {
+  idPersonalizado?: string;
   tipo: 'entrega';
   fechaEntrega: Date;
   observacionesFinales: string;
