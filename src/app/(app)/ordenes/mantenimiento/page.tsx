@@ -13,6 +13,7 @@ import { useDebounce } from 'use-debounce'
 import ModalOrden from '@/components/mantenimiento/ModalOrden'
 import OrdenCard from '@/components/mantenimiento/OrdenCard'
 import { PrintButton, ShareButton, DownloadButton, usePrintService } from '@/components/mantenimiento/PrintService'
+import { Skeleton } from '@/components/ui/basic/skeleton'
 
 
 
@@ -151,12 +152,20 @@ export default function OrdenesMantenimientoPage() {
     );
   }
 
-  if (authLoading || (loading && user?.uid)) {
+  if (authLoading || (loading && user?.uid && todasLasOrdenes.length === 0)) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-2 text-gray-400 text-sm sm:text-base">Cargando órdenes...</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col p-4 sm:p-8">
+        <div className="max-w-7xl mx-auto w-full space-y-6">
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-8 w-64 bg-gray-700/50" />
+            <Skeleton className="h-10 w-32 bg-gray-700/50" />
+          </div>
+          <Skeleton className="h-14 w-full bg-gray-700/50 rounded-xl" />
+          <div className="space-y-4">
+            <Skeleton className="h-20 w-full bg-gray-700/50 rounded-xl" />
+            <Skeleton className="h-20 w-full bg-gray-700/50 rounded-xl" />
+            <Skeleton className="h-20 w-full bg-gray-700/50 rounded-xl" />
+          </div>
         </div>
       </div>
     )
@@ -342,11 +351,71 @@ export default function OrdenesMantenimientoPage() {
             </div>
           )}
 
-          {loading ? (
-            <div className="p-6 sm:p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-              <p className="mt-2 text-gray-400 text-sm sm:text-base">Cargando órdenes...</p>
-            </div>
+          {loading && todasLasOrdenes.length === 0 ? (
+            esMobile ? (
+              <div className="p-3 sm:p-4 grid gap-3 sm:gap-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-gray-800/80 rounded-xl border border-gray-700/50 p-4 space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2 flex-1">
+                        <Skeleton className="h-5 w-2/3 bg-gray-700/50" />
+                        <Skeleton className="h-4 w-1/2 bg-gray-700/50" />
+                      </div>
+                      <Skeleton className="h-6 w-20 bg-gray-700/50 rounded-full" />
+                    </div>
+                    <Skeleton className="h-4 w-3/4 bg-gray-700/50" />
+                    <Skeleton className="h-4 w-1/3 bg-gray-700/50" />
+                    <div className="flex justify-end pt-2 gap-2">
+                       <Skeleton className="h-8 w-8 bg-gray-700/50 rounded-lg" />
+                       <Skeleton className="h-8 w-8 bg-gray-700/50 rounded-lg" />
+                       <Skeleton className="h-8 w-8 bg-gray-700/50 rounded-lg" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-700">
+                  <thead className="bg-gray-700/50">
+                    <tr>
+                      <th className="px-4 sm:px-6 py-3"><Skeleton className="h-4 w-16 bg-gray-600/50" /></th>
+                      <th className="px-4 sm:px-6 py-3"><Skeleton className="h-4 w-24 bg-gray-600/50" /></th>
+                      <th className="px-4 sm:px-6 py-3"><Skeleton className="h-4 w-16 bg-gray-600/50" /></th>
+                      <th className="px-4 sm:px-6 py-3"><Skeleton className="h-4 w-20 bg-gray-600/50" /></th>
+                      <th className="px-4 sm:px-6 py-3"><Skeleton className="h-4 w-24 bg-gray-600/50" /></th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-gray-800/30 divide-y divide-gray-700/50">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <tr key={i}>
+                        <td className="px-4 sm:px-6 py-4 space-y-2">
+                          <Skeleton className="h-4 w-32 bg-gray-700/50" />
+                          <Skeleton className="h-3 w-24 bg-gray-700/50" />
+                        </td>
+                        <td className="px-4 sm:px-6 py-4 space-y-2">
+                          <Skeleton className="h-4 w-28 bg-gray-700/50" />
+                          <Skeleton className="h-3 w-36 bg-gray-700/50" />
+                        </td>
+                        <td className="px-4 sm:px-6 py-4">
+                          <Skeleton className="h-6 w-20 rounded-full bg-gray-700/50" />
+                        </td>
+                        <td className="px-4 sm:px-6 py-4">
+                          <Skeleton className="h-4 w-24 bg-gray-700/50" />
+                        </td>
+                        <td className="px-4 sm:px-6 py-4">
+                          <div className="flex space-x-2">
+                            <Skeleton className="h-8 w-8 rounded bg-gray-700/50" />
+                            <Skeleton className="h-8 w-8 rounded bg-gray-700/50" />
+                            <Skeleton className="h-8 w-8 rounded bg-gray-700/50" />
+                            <Skeleton className="h-8 w-8 rounded bg-gray-700/50" />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
           ) : ordenesFiltradas.length === 0 ? (
             <div className="p-6 sm:p-8 text-center">
               <Wrench className="w-10 h-10 sm:w-12 sm:h-12 text-gray-600 mx-auto mb-4" />
