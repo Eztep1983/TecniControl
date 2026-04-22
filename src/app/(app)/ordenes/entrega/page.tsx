@@ -9,6 +9,7 @@ import { useOrdenesUsuario } from '@/hooks/useMultiUser'
 import { useDebounce } from 'use-debounce'
 import OrdenCard from '@/components/entrega/OrdenCard'
 import { Skeleton } from '@/components/ui/basic/skeleton'
+import { useAndroidBack } from '@/hooks/useAndroidBack'
 
 export default function OrdenesEntregaPage() {
   const { user, loading: authLoading } = useAuth()
@@ -18,6 +19,8 @@ export default function OrdenesEntregaPage() {
   const [debouncedBusqueda] = useDebounce(busqueda, 300)
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenEntrega | null>(null)
+  const closeOrdenModal = useCallback(() => setOrdenSeleccionada(null), [])
+  useAndroidBack(!!ordenSeleccionada, closeOrdenModal)
   
   const [paginaActual, setPaginaActual] = useState(1)
   const [esMobile, setEsMobile] = useState(false)
@@ -452,7 +455,7 @@ export default function OrdenesEntregaPage() {
               <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
                 <h3 className="text-xl font-bold text-white">Detalles de Entrega <span className="text-purple-400">#{ordenSeleccionada.id?.substring(0, 8)}</span></h3>
                 <button
-                  onClick={() => setOrdenSeleccionada(null)}
+                  onClick={closeOrdenModal}
                   className="text-gray-400 hover:text-white bg-gray-700/50 hover:bg-gray-700 p-2 rounded-lg transition-colors"
                 >
                   ✕

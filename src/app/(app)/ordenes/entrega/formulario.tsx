@@ -347,6 +347,7 @@ export default function FormularioEntrega({ onClose, onSuccess }: FormularioEntr
             dispositivoSeleccionado={state.dispositivoSeleccionado}
             onSeleccionarDispositivo={(d) => dispatch({ type: 'SET_DISPOSITIVO_SELECCIONADO', payload: d })}
             onDesseleccionarDispositivo={() => dispatch({ type: 'SET_DISPOSITIVO_SELECCIONADO', payload: null })}
+            onClienteActualizado={(c) => dispatch({ type: 'SET_CLIENTE_SELECCIONADO', payload: c })}
           />
         )
       case 'entrega':

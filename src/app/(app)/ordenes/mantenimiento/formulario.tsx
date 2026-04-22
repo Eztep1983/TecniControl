@@ -768,6 +768,7 @@ const mantenimientoInfoProps = useMemo(() => ({
             dispositivoSeleccionado={state.dispositivoSeleccionado}
             onSeleccionarDispositivo={handleSeleccionarDispositivo}
             onDesseleccionarDispositivo={handleDesseleccionarDispositivo}
+            onClienteActualizado={(c) => dispatch({ type: 'SET_CLIENTE_SELECCIONADO', payload: c })}
           />
         )
 

@@ -4,12 +4,14 @@ import { Cliente, Dispositivo } from '@/types/orden'
 import { Monitor, Laptop, Smartphone, Tablet, HardDrive, ChevronLeft, ChevronRight, Cpu, Package, AlertCircle, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { DispositivoFormModal } from '@/components/clientes/DispositivoFormModal'
 
 interface DispositivoSelectorProps {
   cliente: Cliente
   dispositivoSeleccionado: Dispositivo | null
   onSeleccionarDispositivo: (dispositivo: Dispositivo) => void
   onDesseleccionarDispositivo: () => void
+  onClienteActualizado?: (cliente: Cliente) => void
 }
 
 const ITEMS_PER_PAGE = 6
@@ -35,11 +37,13 @@ export default function DispositivoSelector({
   cliente,
   dispositivoSeleccionado,
   onSeleccionarDispositivo,
-  onDesseleccionarDispositivo
+  onDesseleccionarDispositivo,
+  onClienteActualizado
 }: DispositivoSelectorProps) {
   const router = useRouter()
   const [paginaActual, setPaginaActual] = useState(1)
   const [dispositivoAnimando, setDispositivoAnimando] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Validación: asegurar que dispositivos es un array
   const dispositivos = Array.isArray(cliente.dispositivos) ? cliente.dispositivos : []
@@ -125,21 +129,34 @@ export default function DispositivoSelector({
 
   if (dispositivos.length === 0) {
     return (
-      <div className="text-center py-12 border border-gray-700/50 rounded-xl bg-gray-800/50 animate-in fade-in slide-in-from-top-1 duration-300">
-        <div className="w-16 h-16 bg-gray-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
-          <AlertCircle className="w-8 h-8 text-gray-600" />
+      <>
+        <div className="text-center py-12 border border-gray-700/50 rounded-xl bg-gray-800/50 animate-in fade-in slide-in-from-top-1 duration-300">
+          <div className="w-16 h-16 bg-gray-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-gray-600" />
+          </div>
+          <p className="text-gray-400 font-medium mb-2">Este cliente no tiene dispositivos registrados</p>
+          <p className="text-sm text-gray-500 mb-4">Agrega dispositivos para poder crear órdenes de servicio</p>
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30 hover:-translate-y-0.5 active:scale-95"
+          >
+            <Plus className="w-4 h-4" />
+            Agregar dispositivos
+          </button>
         </div>
-        <p className="text-gray-400 font-medium mb-2">Este cliente no tiene dispositivos registrados</p>
-        <p className="text-sm text-gray-500 mb-4">Agrega dispositivos para poder crear órdenes de servicio</p>
-        <button
-          type="button"
-          onClick={() => router.push(`/clientes/${cliente.id}/editar`)}
-          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30 hover:-translate-y-0.5 active:scale-95"
-        >
-          <Plus className="w-4 h-4" />
-          Agregar dispositivos
-        </button>
-      </div>
+
+        <DispositivoFormModal
+          open={isModalOpen}
+          cliente={cliente}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={(c) => {
+            if (onClienteActualizado) {
+              onClienteActualizado(c);
+            }
+          }}
+        />
+      </>
     )
   }
 
@@ -150,13 +167,24 @@ export default function DispositivoSelector({
           <p className="text-xl text-gray-300 font-medium">Seleccionar Dispositivo</p>
           <p className="text-xs text-gray-500">Elige el dispositivo del cliente para esta orden</p>
         </div>
-        {dispositivos.length > 0 && (
-          <div className="px-3 py-1.5 bg-gray-700/50 rounded-full">
-            <span className="text-xs text-gray-400 font-medium">
-              {dispositivos.length} dispositivo{dispositivos.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {dispositivos.length > 0 && (
+            <div className="hidden sm:block px-3 py-1.5 bg-gray-700/50 rounded-full">
+              <span className="text-xs text-gray-400 font-medium">
+                {dispositivos.length} dispositivo{dispositivos.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/20 rounded-lg text-blue-400 text-xs font-medium transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Nuevo dispositivo</span>
+            <span className="sm:hidden">Nuevo</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -231,6 +259,17 @@ export default function DispositivoSelector({
           </button>
         </div>
       )}
+
+      <DispositivoFormModal
+        open={isModalOpen}
+        cliente={cliente}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={(c) => {
+          if (onClienteActualizado) {
+            onClienteActualizado(c);
+          }
+        }}
+      />
     </div>
   )
 }

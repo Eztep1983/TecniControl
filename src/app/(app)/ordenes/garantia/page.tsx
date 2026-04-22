@@ -8,6 +8,7 @@ import { useOrdenesUsuario } from '@/hooks/useMultiUser'
 import { useNegocio } from '@/hooks/useNegocio'
 import { NegocioHeader } from '@/components/business/headersNegocio'
 import FormularioGarantia from './formulario'
+import { useAndroidBack } from '@/hooks/useAndroidBack'
 
 // Componente para el modal de visualización
 const ModalOrden = ({ orden, onClose, onPrint }: { orden: OrdenGarantia, onClose: () => void, onPrint: (orden: OrdenGarantia) => void }) => {
@@ -222,6 +223,8 @@ export default function OrdenesGarantiaPage() {
   const [paginaActual, setPaginaActual] = useState(1)
   const elementosPorPagina = 10
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const closeOrdenModal = useCallback(() => setOrdenSeleccionada(null), []);
+  useAndroidBack(!!ordenSeleccionada, closeOrdenModal);
 
   const ordenes = useMemo(() => {
     return todasLasOrdenes.filter(orden => orden.tipo === 'garantia') as OrdenGarantia[]
@@ -829,7 +832,7 @@ export default function OrdenesGarantiaPage() {
         {ordenSeleccionada && (
           <ModalOrden 
             orden={ordenSeleccionada} 
-            onClose={() => setOrdenSeleccionada(null)} 
+            onClose={closeOrdenModal} 
             onPrint={imprimirOrden}
           />
         )}
