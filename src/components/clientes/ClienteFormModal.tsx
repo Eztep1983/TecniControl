@@ -214,8 +214,8 @@ const ErrorBanner = memo(function ErrorBanner({
   onDismiss: () => void;
 }) {
   return (
-    <div className="mx-5 mt-3 rounded-xl border border-red-500/25 bg-red-500/8 p-3 flex items-start gap-2.5 animate-in slide-in-from-top-1 duration-200">
-      <div className="flex-shrink-0 mt-0.5">
+    <div className="mx-4 mt-3 rounded-xl border border-red-500/20 bg-red-500/5 p-3 flex items-start gap-3 animate-in fade-in slide-in-from-top-1 duration-200">
+      <div className="flex-shrink-0">
         {error.kind === "network" ? (
           <WifiOff className="w-4 h-4 text-red-400" />
         ) : (
@@ -223,12 +223,12 @@ const ErrorBanner = memo(function ErrorBanner({
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-red-300 leading-relaxed">{error.message}</p>
+        <p className="text-xs text-red-300/90 leading-relaxed font-medium">{error.message}</p>
         {error.retryable && onRetry && (
           <button
             type="button"
             onClick={onRetry}
-            className="mt-1.5 text-[11px] font-medium text-red-400 hover:text-red-300 underline underline-offset-2 transition-colors"
+            className="mt-2 text-[11px] font-bold text-red-400 hover:text-red-300 uppercase tracking-wider transition-colors"
           >
             Reintentar
           </button>
@@ -237,11 +237,192 @@ const ErrorBanner = memo(function ErrorBanner({
       <button
         type="button"
         onClick={onDismiss}
-        className="flex-shrink-0 text-gray-600 hover:text-gray-400 transition-colors"
+        className="flex-shrink-0 w-8 h-8 -mt-1 -mr-1 flex items-center justify-center text-gray-500 hover:text-gray-300 transition-colors"
         aria-label="Cerrar error"
       >
-        <X className="w-3.5 h-3.5" />
+        <X className="w-4 h-4" />
       </button>
+    </div>
+  );
+});
+
+// ── Step 1 Component ────────────────────────────────────────────────────────
+const Step1Content = memo(function Step1Content({ 
+  control, 
+  isLoading 
+}: { 
+  control: any; 
+  isLoading: boolean 
+}) {
+  return (
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <FormField
+        control={control}
+        name="name"
+        render={({ field }) => (
+          <FormItem className="space-y-1.5">
+            <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Nombre completo *</FormLabel>
+            <FormControl>
+              <Input
+                placeholder="Ej: Juan Pérez"
+                {...field}
+                disabled={isLoading}
+                autoComplete="name"
+                className="bg-gray-800/40 border-gray-700/50 text-white placeholder:text-gray-600 h-11 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/10 transition-all text-base"
+              />
+            </FormControl>
+            <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="cedula"
+        render={({ field }) => (
+          <FormItem className="space-y-1.5">
+            <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Cédula o NIT *</FormLabel>
+            <FormControl>
+              <Input
+                placeholder="Ej: 1234567890"
+                {...field}
+                disabled={isLoading}
+                inputMode="numeric"
+                className="bg-gray-800/40 border-gray-700/50 text-white placeholder:text-gray-600 h-11 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/10 transition-all text-base"
+              />
+            </FormControl>
+            <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
+          </FormItem>
+        )}
+      />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <FormField
+          control={control}
+          name="email"
+          render={({ field }) => (
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Email *</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="correo@ejemplo.com"
+                  {...field}
+                  disabled={isLoading}
+                  autoComplete="email"
+                  inputMode="email"
+                  className="bg-gray-800/40 border-gray-700/50 text-white placeholder:text-gray-600 h-11 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/10 transition-all text-base"
+                />
+              </FormControl>
+              <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Teléfono *</FormLabel>
+              <FormControl>
+                <Input
+                  type="tel"
+                  placeholder="3001234567"
+                  {...field}
+                  disabled={isLoading}
+                  autoComplete="tel"
+                  inputMode="tel"
+                  className="bg-gray-800/40 border-gray-700/50 text-white placeholder:text-gray-600 h-11 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/10 transition-all text-base"
+                />
+              </FormControl>
+              <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      <FormField
+        control={control}
+        name="address"
+        render={({ field }) => (
+          <FormItem className="space-y-1.5">
+            <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">
+              Dirección <span className="text-gray-600 font-normal">(opcional)</span>
+            </FormLabel>
+            <FormControl>
+              <Input
+                placeholder="Calle 123 #45-67"
+                {...field}
+                disabled={isLoading}
+                autoComplete="street-address"
+                className="bg-gray-800/40 border-gray-700/50 text-white placeholder:text-gray-600 h-11 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/10 transition-all text-base"
+              />
+            </FormControl>
+            <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
+          </FormItem>
+        )}
+      />
+    </div>
+  );
+});
+
+// ── Step 2 Component ────────────────────────────────────────────────────────
+const Step2Content = memo(function Step2Content({
+  control,
+  isLoading,
+  fields,
+  addDispositivo,
+  removeDispositivo,
+  errors
+}: {
+  control: any;
+  isLoading: boolean;
+  fields: any[];
+  addDispositivo: () => void;
+  removeDispositivo: (idx: number) => void;
+  errors: any;
+}) {
+  return (
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="flex items-center justify-between px-1">
+        <div className="flex flex-col">
+          <h4 className="text-sm font-semibold text-white">Dispositivos vinculados</h4>
+          <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">
+            {fields.length} {fields.length === 1 ? "unidad" : "unidades"} registrada(s)
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={addDispositivo}
+          disabled={isLoading}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 active:scale-95 disabled:opacity-40 border border-blue-500/20 text-blue-400 text-xs font-bold transition-all shadow-sm shadow-blue-500/5"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          Añadir
+        </button>
+      </div>
+
+      {errors.dispositivos?.root && (
+        <div className="bg-red-500/10 border border-red-500/20 p-2.5 rounded-xl flex items-center gap-2 text-red-400 animate-in fade-in zoom-in-95 duration-200">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <p className="text-[11px] font-bold">{errors.dispositivos.root.message}</p>
+        </div>
+      )}
+
+      <div className="space-y-3 pb-2">
+        {fields.map((field, idx) => (
+          <DispositivoCard
+            key={field.id}
+            idx={idx}
+            fieldId={field.id}
+            control={control}
+            isLoading={isLoading}
+            canRemove={fields.length > 1}
+            onRemove={removeDispositivo}
+          />
+        ))}
+      </div>
     </div>
   );
 });
@@ -264,120 +445,125 @@ const DispositivoCard = memo(function DispositivoCard({
   onRemove: (idx: number) => void;
 }) {
   return (
-    <div className="bg-gray-800/50 rounded-xl border border-gray-700/40 p-3.5 space-y-3 transition-all duration-200">
+    <div className="bg-gray-800/40 rounded-2xl border border-gray-700/40 p-4 space-y-4 transition-all duration-200 group active:border-gray-600/60 shadow-sm">
       {/* Cabecera */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-blue-500/10 border border-blue-500/15 flex items-center justify-center">
-            <Monitor className="w-3.5 h-3.5 text-blue-400" />
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-400/5 border border-blue-500/20 flex items-center justify-center shadow-inner">
+            <Monitor className="w-4 h-4 text-blue-400" />
           </div>
-          <span className="text-xs font-medium text-gray-400">
-            Dispositivo {idx + 1}
-          </span>
+          <div>
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Registrado como</span>
+            <span className="text-xs font-bold text-white tracking-wide">
+              Dispositivo {idx + 1}
+            </span>
+          </div>
         </div>
         {canRemove && (
           <button
             type="button"
             onClick={() => onRemove(idx)}
-            className="w-6 h-6 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/15 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-xl bg-red-500/5 hover:bg-red-500/15 border border-red-500/10 flex items-center justify-center transition-all active:scale-90 group/btn"
             aria-label={`Eliminar dispositivo ${idx + 1}`}
           >
-            <X className="w-3 h-3 text-red-400" />
+            <X className="w-4 h-4 text-red-400 group-hover/btn:scale-110 transition-transform" />
           </button>
         )}
       </div>
 
-      {/* Tipo */}
-      <FormField
-        control={control}
-        name={`dispositivos.${idx}.tipo`}
-        render={({ field: f }) => (
-          <FormItem>
-            <FormLabel className="text-xs text-gray-400">Tipo *</FormLabel>
-            <Select value={f.value} onValueChange={f.onChange} disabled={isLoading}>
-              <FormControl>
-                <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white h-9 text-sm rounded-xl">
-                  <SelectValue placeholder="Seleccionar…" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent className="bg-gray-800 border-gray-700">
-                {TIPO_OPTIONS.map((t) => (
-                  <SelectItem key={t} value={t} className="capitalize">
-                    {t.charAt(0).toUpperCase() + t.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage className="text-xs" />
-          </FormItem>
-        )}
-      />
-
-      {/* Marca + Modelo */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="space-y-3.5 pt-1">
+        {/* Tipo */}
         <FormField
           control={control}
-          name={`dispositivos.${idx}.marca`}
+          name={`dispositivos.${idx}.tipo`}
           render={({ field: f }) => (
-            <FormItem>
-              <FormLabel className="text-xs text-gray-400">Marca *</FormLabel>
-              <FormControl>
-                <Input
-                  {...f}
-                  placeholder="HP, Canon…"
-                  disabled={isLoading}
-                  className="bg-gray-700/50 border-gray-600/50 text-white placeholder:text-gray-600 h-9 text-sm rounded-xl"
-                />
-              </FormControl>
-              <FormMessage className="text-xs" />
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">Tipo *</FormLabel>
+              <Select value={f.value} onValueChange={f.onChange} disabled={isLoading}>
+                <FormControl>
+                  <SelectTrigger className="bg-gray-900/40 border-gray-700/60 text-white h-11 text-base rounded-xl transition-all hover:border-gray-600/60 focus:ring-blue-500/10">
+                    <SelectValue placeholder="Seleccionar tipo de equipo…" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="bg-gray-800 text-white border-gray-700 rounded-xl overflow-hidden shadow-2xl">
+                  {TIPO_OPTIONS.map((t) => (
+                    <SelectItem key={t} value={t} className="capitalize py-3 text-sm focus:bg-blue-500/10 focus:text-blue-400">
+                      {t.charAt(0).toUpperCase() + t.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
             </FormItem>
           )}
         />
+
+        {/* Marca + Modelo */}
+        <div className="grid grid-cols-2 gap-3">
+          <FormField
+            control={control}
+            name={`dispositivos.${idx}.marca`}
+            render={({ field: f }) => (
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">Marca *</FormLabel>
+                <FormControl>
+                  <Input
+                    {...f}
+                    placeholder="HP, Canon…"
+                    disabled={isLoading}
+                    className="bg-gray-900/40 border-gray-700/60 text-white placeholder:text-gray-600 h-11 text-base rounded-xl transition-all focus:ring-blue-500/10"
+                  />
+                </FormControl>
+                <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name={`dispositivos.${idx}.modelo`}
+            render={({ field: f }) => (
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">Modelo *</FormLabel>
+                <FormControl>
+                  <Input
+                    {...f}
+                    placeholder="LX-3200…"
+                    disabled={isLoading}
+                    className="bg-gray-900/40 border-gray-700/60 text-white placeholder:text-gray-600 h-11 text-base rounded-xl transition-all focus:ring-blue-500/10"
+                  />
+                </FormControl>
+                <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Serie */}
         <FormField
           control={control}
-          name={`dispositivos.${idx}.modelo`}
+          name={`dispositivos.${idx}.numeroSerie`}
           render={({ field: f }) => (
-            <FormItem>
-              <FormLabel className="text-xs text-gray-400">Modelo *</FormLabel>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">Número de serie *</FormLabel>
               <FormControl>
                 <Input
                   {...f}
-                  placeholder="LX-3200…"
+                  placeholder="ABC123XYZ"
                   disabled={isLoading}
-                  className="bg-gray-700/50 border-gray-600/50 text-white placeholder:text-gray-600 h-9 text-sm rounded-xl"
+                  className="bg-gray-900/40 border-gray-700/60 text-white placeholder:text-gray-600 h-11 text-base rounded-xl font-mono tracking-wider transition-all focus:ring-blue-500/10 uppercase"
                 />
               </FormControl>
-              <FormMessage className="text-xs" />
+              <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
             </FormItem>
           )}
         />
       </div>
-
-      {/* Serie */}
-      <FormField
-        control={control}
-        name={`dispositivos.${idx}.numeroSerie`}
-        render={({ field: f }) => (
-          <FormItem>
-            <FormLabel className="text-xs text-gray-400">Número de serie *</FormLabel>
-            <FormControl>
-              <Input
-                {...f}
-                placeholder="ABC123XYZ"
-                disabled={isLoading}
-                className="bg-gray-700/50 border-gray-600/50 text-white placeholder:text-gray-600 h-9 text-sm rounded-xl font-mono"
-              />
-            </FormControl>
-            <FormMessage className="text-xs" />
-          </FormItem>
-        )}
-      />
     </div>
   );
 });
 
 // ── Componente principal ──────────────────────────────────────────────────────
-export function ClienteFormModal({
+export const ClienteFormModal = memo(function ClienteFormModal({
   open,
   initialData,
   onClose,
@@ -529,7 +715,7 @@ export function ClienteFormModal({
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="w-[calc(100%-1.5rem)] max-w-lg mx-auto rounded-2xl bg-gray-900 border border-gray-700/60 p-0 gap-0 overflow-hidden max-h-[92dvh] flex flex-col">
+      <DialogContent className="w-[calc(100%-1.5rem)] max-w-lg mx-auto rounded-2xl bg-gray-900 border border-gray-700/60 p-0 gap-0 overflow-hidden max-h-[92dvh] flex flex-col [&>button:last-child]:hidden">
 
         {/* ── Header ──────────────────────────────────────────────────── */}
         <DialogHeader className="px-5 pt-5 pb-4 border-b border-gray-700/50 flex-shrink-0">
@@ -566,161 +752,22 @@ export function ClienteFormModal({
             className="flex flex-col flex-1 overflow-hidden"
           >
             {/* Scroll area */}
-            <div className="overflow-y-auto flex-1 px-5 py-4">
-
-              {/* ── Paso 1: Información ──────────────────────────────── */}
-              {step === 1 && (
-                <div className="space-y-3 animate-in fade-in duration-200">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs text-gray-400">Nombre completo *</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Ej: Juan Pérez"
-                            {...field}
-                            disabled={isLoading}
-                            autoComplete="name"
-                            className="bg-gray-800/60 border-gray-700/50 text-white placeholder:text-gray-600 h-10 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/20"
-                          />
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="cedula"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs text-gray-400">Cédula o NIT *</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Ej: 1234567890"
-                            {...field}
-                            disabled={isLoading}
-                            inputMode="numeric"
-                            className="bg-gray-800/60 border-gray-700/50 text-white placeholder:text-gray-600 h-10 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/20"
-                          />
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs text-gray-400">Email *</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="correo@ejemplo.com"
-                              {...field}
-                              disabled={isLoading}
-                              autoComplete="email"
-                              inputMode="email"
-                              className="bg-gray-800/60 border-gray-700/50 text-white placeholder:text-gray-600 h-10 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/20"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-xs" />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs text-gray-400">Teléfono *</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="tel"
-                              placeholder="3001234567"
-                              {...field}
-                              disabled={isLoading}
-                              autoComplete="tel"
-                              inputMode="tel"
-                              className="bg-gray-800/60 border-gray-700/50 text-white placeholder:text-gray-600 h-10 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/20"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-xs" />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs text-gray-400">
-                          Dirección{" "}
-                          <span className="text-gray-600">(opcional)</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Calle 123 #45-67"
-                            {...field}
-                            disabled={isLoading}
-                            autoComplete="street-address"
-                            className="bg-gray-800/60 border-gray-700/50 text-white placeholder:text-gray-600 h-10 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/20"
-                          />
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
-
-              {/* ── Paso 2: Dispositivos ─────────────────────────────── */}
-              {step === 2 && (
-                <div className="space-y-3 animate-in fade-in duration-200">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-gray-400">
-                      <span className="font-medium text-gray-300">{fields.length}</span>{" "}
-                      {fields.length === 1 ? "dispositivo" : "dispositivos"}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={addDispositivo}
-                      disabled={isLoading}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 disabled:opacity-40 border border-blue-500/20 text-blue-400 text-xs font-medium transition-colors"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      Agregar
-                    </button>
-                  </div>
-
-                  {/* Error de validación de dispositivos (si el array tiene error global) */}
-                  {form.formState.errors.dispositivos?.root && (
-                    <p className="text-xs text-red-400 flex items-center gap-1.5">
-                      <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                      {form.formState.errors.dispositivos.root.message}
-                    </p>
-                  )}
-
-                  {fields.map((field, idx) => (
-                    <DispositivoCard
-                      key={field.id}
-                      idx={idx}
-                      fieldId={field.id}
-                      control={form.control}
-                      isLoading={isLoading}
-                      canRemove={fields.length > 1}
-                      onRemove={removeDispositivo}
-                    />
-                  ))}
-                </div>
+            <div className="overflow-y-auto flex-1 px-4 py-4 custom-scrollbar">
+              {/* Contenido dinámico según el paso */}
+              {step === 1 ? (
+                <Step1Content 
+                  control={form.control} 
+                  isLoading={isLoading} 
+                />
+              ) : (
+                <Step2Content 
+                  control={form.control}
+                  isLoading={isLoading}
+                  fields={fields}
+                  addDispositivo={addDispositivo}
+                  removeDispositivo={removeDispositivo}
+                  errors={form.formState.errors}
+                />
               )}
             </div>
 
@@ -782,5 +829,5 @@ export function ClienteFormModal({
         </Form>
       </DialogContent>
     </Dialog>
-  );
-}
+  )
+})

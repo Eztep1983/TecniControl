@@ -2,7 +2,7 @@
 // Hook central que coordina qué modal está abierto y sobre qué cliente.
 // Todos los modales de clientes se controlan desde aquí.
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { Cliente } from "@/types/orden";
 
 export type ModalMode = "view" | "create" | "edit" | null;
@@ -41,7 +41,7 @@ export function useClienteModal() {
     );
   }, []);
 
-  return {
+  const result = useMemo(() => ({
     mode: state.mode,
     cliente: state.cliente,
     isOpen: state.mode !== null,
@@ -53,5 +53,7 @@ export function useClienteModal() {
     openEdit,
     switchToEdit,
     close,
-  };
+  }), [state.mode, state.cliente, openView, openCreate, openEdit, switchToEdit, close]);
+
+  return result;
 }

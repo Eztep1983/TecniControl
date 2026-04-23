@@ -543,10 +543,14 @@ export default function OrdenesEntregaPage() {
                 {ordenSeleccionada.firmaCliente && (
                   <div className="mt-4">
                     <h4 className="font-medium text-gray-300 mb-2">Firma del Cliente</h4>
-                    <div className="bg-gray-900 border border-gray-700/50 p-4 rounded-lg text-center">
-                      <p className="text-sm font-mono text-gray-400 bg-gray-800 p-2 rounded max-h-32 overflow-hidden text-ellipsis shadow-inner">{ordenSeleccionada.firmaCliente}</p>
-                      <p className="text-xs text-gray-500 mt-2">Hash de validación digital proporcionado por el cliente</p>
+                    <div className="bg-white rounded-lg p-2 flex flex-col items-center justify-center">
+                      <img 
+                        src={ordenSeleccionada.firmaCliente} 
+                        alt="Firma del cliente" 
+                        className="max-h-40 object-contain"
+                      />
                     </div>
+                    <p className="text-xs text-gray-500 mt-2 text-center">Validación digital proporcionada por el cliente</p>
                   </div>
                 )}
               </div>

@@ -3,7 +3,7 @@
 import { Cliente } from '@/types/orden'
 import { Search, UserPlus, X, MapPin, Phone, Mail, HardDrive, Clock, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, memo } from 'react'
 import { ClienteViewModal } from '../clientes/ClienteViewModal'
 import { ClienteFormModal } from '../clientes/ClienteFormModal'
 import { useClienteModal } from '@/hooks/useClienteModal'
@@ -19,21 +19,18 @@ interface ClienteSelectorProps {
 
 const ITEMS_PER_PAGE = 10
 
-export default function ClienteSelector({
+const ClienteSelector = memo(function ClienteSelector({
   clientes,
   clienteSeleccionado,
-  busquedaCliente,
-  setBusquedaCliente,
   onSeleccionarCliente,
   onDesseleccionarCliente
-}: ClienteSelectorProps) {
+}: Omit<ClienteSelectorProps, 'busquedaCliente' | 'setBusquedaCliente'>) {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [paginaActual, setPaginaActual] = useState(1)
   const [clienteAnimando, setClienteAnimando] = useState<string | null>(null)
+  const [localBusqueda, setLocalBusqueda] = useState('')
   const modal = useClienteModal();
-
-
 
   // Validación: asegurar que clientes es un array
   const clientesValidos = Array.isArray(clientes) ? clientes : []
@@ -49,9 +46,9 @@ export default function ClienteSelector({
   const ultimosClientes = clientesOrdenados.slice(0, 5)
 
   const clientesFiltrados = clientesValidos.filter(cliente =>
-    cliente.name?.toLowerCase().includes(busquedaCliente.toLowerCase()) ||
-    cliente.email?.toLowerCase().includes(busquedaCliente.toLowerCase()) ||
-    cliente.phone?.includes(busquedaCliente)
+    cliente.name?.toLowerCase().includes(localBusqueda.toLowerCase()) ||
+    cliente.email?.toLowerCase().includes(localBusqueda.toLowerCase()) ||
+    cliente.phone?.includes(localBusqueda)
   )
 
   // Cálculos de paginación
@@ -69,10 +66,10 @@ export default function ClienteSelector({
   // Resetear paginación cuando cambia la búsqueda
   useEffect(() => {
     setPaginaActual(1)
-  }, [busquedaCliente])
+  }, [localBusqueda])
 
   const handleClearSearch = () => {
-    setBusquedaCliente('')
+    setLocalBusqueda('')
     setPaginaActual(1)
     inputRef.current?.blur()
   }
@@ -190,11 +187,11 @@ export default function ClienteSelector({
           ref={inputRef}
           type="text"
           placeholder="Buscar por nombre, email o teléfono..."
-          value={busquedaCliente}
-          onChange={(e) => setBusquedaCliente(e.target.value)}
+          value={localBusqueda}
+          onChange={(e) => setLocalBusqueda(e.target.value)}
           className="w-full pl-10 pr-10 py-3.5 bg-gray-800/60 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-gray-800 transition-all duration-200"
         />
-        {busquedaCliente && (
+        {localBusqueda && (
           <button
             type="button"
             onClick={handleClearSearch}
@@ -206,7 +203,7 @@ export default function ClienteSelector({
       </div>
 
       {/* Mostrar últimos clientes cuando no hay búsqueda */}
-      {!busquedaCliente && ultimosClientes.length > 0 && (
+      {!localBusqueda && ultimosClientes.length > 0 && (
         <div className="border border-gray-700/50 rounded-xl bg-gray-800/90 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-300">
           <div className="p-3 bg-gray-900/50 border-b border-gray-700/50">
             <div className="flex items-center gap-2">
@@ -265,7 +262,7 @@ export default function ClienteSelector({
       )}
 
       {/* Mostrar resultados de búsqueda */}
-      {busquedaCliente && (
+      {localBusqueda && (
         <div className="border border-gray-700/50 rounded-xl bg-gray-800/90 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
           {clientesFiltrados.length > 0 ? (
             <>
@@ -359,7 +356,7 @@ export default function ClienteSelector({
       )}
 
       {/* Mensaje cuando no hay clientes */}
-      {!busquedaCliente && clientesValidos.length === 0 && (
+      {!localBusqueda && clientesValidos.length === 0 && (
         <div className="text-center py-8 text-gray-500 border border-gray-700/50 rounded-xl bg-gray-800/50">
           <div className="w-16 h-16 bg-gray-700/30 rounded-full flex items-center justify-center mx-auto mb-3">
             <AlertCircle className="w-8 h-8 text-gray-600" />
@@ -381,4 +378,6 @@ export default function ClienteSelector({
     )}
     </>
   )
-}
+})
+
+export default ClienteSelector;

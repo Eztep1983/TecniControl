@@ -334,8 +334,6 @@ export default function FormularioEntrega({ onClose, onSuccess }: FormularioEntr
           <ClienteSelector
             clientes={state.clientes}
             clienteSeleccionado={state.clienteSeleccionado}
-            busquedaCliente={state.busquedaCliente}
-            setBusquedaCliente={(v) => dispatch({ type: 'SET_BUSQUEDA_CLIENTE', payload: v })}
             onSeleccionarCliente={(c) => dispatch({ type: 'SET_CLIENTE_SELECCIONADO', payload: c })}
             onDesseleccionarCliente={() => dispatch({ type: 'SET_CLIENTE_SELECCIONADO', payload: null })}
           />

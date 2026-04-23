@@ -48,7 +48,6 @@ export interface FormState {
   clientes: Cliente[]
   clienteSeleccionado: Cliente | null
   dispositivoSeleccionado: Dispositivo | null
-  busquedaCliente: string
   
   // Mantenimiento
   tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | ''
@@ -83,7 +82,6 @@ type FormAction =
   | { type: 'SET_CLIENTES'; payload: Cliente[] }
   | { type: 'SET_CLIENTE_SELECCIONADO'; payload: Cliente | null }
   | { type: 'SET_DISPOSITIVO_SELECCIONADO'; payload: Dispositivo | null }
-  | { type: 'SET_BUSQUEDA_CLIENTE'; payload: string }
   | { type: 'SET_TIPO_MANTENIMIENTO'; payload: FormState['tipoMantenimiento'] }
   | { type: 'TOGGLE_TAREA_PREDEFINIDA'; payload: string }
   | { type: 'SET_TAREAS_PERSONALIZADAS'; payload: string[] }
@@ -111,7 +109,6 @@ const initialState: FormState = {
   clientes: [],
   clienteSeleccionado: null,
   dispositivoSeleccionado: null,
-  busquedaCliente: '',
   tipoMantenimiento: '',
   tareasSeleccionadas: [],
   tareasPersonalizadas: [''],
@@ -144,15 +141,12 @@ function formReducer(state: FormState, action: FormAction): FormState {
       return { 
         ...state, 
         clienteSeleccionado: action.payload,
-        dispositivoSeleccionado: null,
-        busquedaCliente: ''
+        dispositivoSeleccionado: null
       }
     
     case 'SET_DISPOSITIVO_SELECCIONADO':
       return { ...state, dispositivoSeleccionado: action.payload }
     
-    case 'SET_BUSQUEDA_CLIENTE':
-      return { ...state, busquedaCliente: action.payload }
     
     case 'SET_TIPO_MANTENIMIENTO':
       if (state.tipoMantenimiento !== action.payload) {
@@ -460,10 +454,6 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     dispatch({ type: 'SET_CLIENTE_SELECCIONADO', payload: null })
   }, [])
 
-  const handleBusquedaCliente = useCallback((busqueda: string) => {
-    dispatch({ type: 'SET_BUSQUEDA_CLIENTE', payload: busqueda })
-  }, [])
-
   // Handlers de Dispositivo
   const handleSeleccionarDispositivo = useCallback((dispositivo: Dispositivo) => {
     dispatch({ type: 'SET_DISPOSITIVO_SELECCIONADO', payload: dispositivo })
@@ -754,8 +744,6 @@ const mantenimientoInfoProps = useMemo(() => ({
           <ClienteSelector
             clientes={state.clientes}
             clienteSeleccionado={state.clienteSeleccionado}
-            busquedaCliente={state.busquedaCliente}
-            setBusquedaCliente={handleBusquedaCliente}
             onSeleccionarCliente={handleSeleccionarCliente}
             onDesseleccionarCliente={handleDesseleccionarCliente}
           />
