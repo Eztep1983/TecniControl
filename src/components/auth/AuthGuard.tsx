@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { Loader2 } from 'lucide-react'
+import { useAppLifecycle } from '@/components/useAppLifecycle'
 
 interface AuthGuardProps {
   children: React.ReactNode
@@ -24,6 +25,9 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   const router = useRouter()
   const pathname = usePathname()
   const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname?.startsWith(route))
+
+  // Iniciar listener del ciclo de vida (refresca sesión/datos al volver)
+  useAppLifecycle()
 
   /**
    * hasCachedSession empieza en false (SSR-safe).

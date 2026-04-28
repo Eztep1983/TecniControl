@@ -126,9 +126,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [lastActivity, setLastActivity] = useState<number>(Date.now())
 
   useIsomorphicLayoutEffect(() => {
+    // Solo verificamos si hay sesión para propósitos de UI (spinner),
+    // pero NO resolvemos loading a false aquí.
+    // Dejar loading=true permite que AuthGuard espere a Firebase
+    // en lugar de redirigir inmediatamente a /login.
     if (getCachedUid() !== null) {
-      // Sesión cacheada: resolver loading ANTES del primer paint
-      setLoading(false)
+      logger.log('🔍 Sesión cacheada encontrada, esperando confirmación de Firebase...');
     }
   }, [])
 
@@ -210,7 +213,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         access_type: 'online',
       })
 
-      const result = await signInWithPopup(auth, provider)
+      const isNative = typeof window !== 'undefined' && !!(window as any).Capacitor?.isNative;
+
+      let result;
+      if (isNative) {
+        logger.log('📱 Capacitor native mode detected: using signInWithRedirect');
+        // Usamos importación dinámica para evitar problemas de SSR si fuera necesario
+        const { signInWithRedirect } = await import('firebase/auth');
+        await signInWithRedirect(auth, provider);
+        // Si usamos redirect, la promesa no devuelve resultado, el flujo se procesa 
+        // en el onAuthStateChanged al recargar la app. Retornamos aquí.
+        return;
+      } else {
+        result = await signInWithPopup(auth, provider)
+      }
 
       const validation = validateUser(result.user)
       if (!validation.valid) {
