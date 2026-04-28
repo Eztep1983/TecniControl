@@ -1,7 +1,18 @@
 // src/lib/firebase.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore, enableMultiTabIndexedDbPersistence } from "firebase/firestore";
+import {
+  initializeAuth,
+  browserLocalPersistence,
+  indexedDBLocalPersistence,
+  inMemoryPersistence,
+  getAuth,
+} from "firebase/auth";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  memoryLocalCache,
+} from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -13,15 +24,68 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// Inicializar app una sola vez (compatible con HMR de Next.js)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = getFirestore(app);
 
-if (typeof window !== "undefined") {
-  enableMultiTabIndexedDbPersistence(db).catch((err) => {
-    console.warn("Firebase Offline Persistence Error:", err);
-  });
-}
-export const storage = getStorage(app)
+/**
+ * Auth — inicialización universal:
+ *
+ * - Servidor (SSR/Node.js): inMemoryPersistence — IndexedDB no existe en Node.
+ * - Navegador / Capacitor WebView: IndexedDB → localStorage como fallback.
+ *   IndexedDB sobrevive a recargas del WebView y es el mecanismo correcto
+ *   tanto en Capacitor como en browsers de escritorio/móvil.
+ *
+ * Si la app ya fue inicializada (HMR en dev), getAuth() reutiliza la instancia.
+ */
+const auth = (() => {
+  if (typeof window === "undefined") {
+    // SSR: persistencia en memoria (seguro para Node.js)
+    try {
+      return initializeAuth(app, { persistence: inMemoryPersistence });
+    } catch {
+      return getAuth(app);
+    }
+  }
+  try {
+    // Browser / Capacitor: IndexedDB primero, localStorage como fallback
+    return initializeAuth(app, {
+      persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+    });
+  } catch {
+    // HMR: la instancia ya existe, reutilizarla
+    return getAuth(app);
+  }
+})();
 
+/**
+ * Firestore — caché persistente universal:
+ *
+ * - Servidor: memoryLocalCache (sin IndexedDB disponible).
+ * - Browser / Capacitor: persistentLocalCache con soporte multi-pestaña.
+ *   Reemplaza el deprecado enableMultiTabIndexedDbPersistence.
+ */
+const db = (() => {
+  if (typeof window === "undefined") {
+    try {
+      return initializeFirestore(app, { localCache: memoryLocalCache() });
+    } catch {
+      // Ya inicializado en SSR
+      const { getFirestore } = require("firebase/firestore");
+      return getFirestore(app);
+    }
+  }
+  try {
+    return initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
+  } catch {
+    // HMR: reutilizar instancia existente
+    const { getFirestore } = require("firebase/firestore");
+    return getFirestore(app);
+  }
+})();
+
+export const storage = getStorage(app);
 export { app, auth, db };

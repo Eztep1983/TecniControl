@@ -1,7 +1,7 @@
 // components/forms/DiagnosticoInfo.tsx
 'use client'
 import { Stethoscope, FileText, AlertCircle, Activity, Hash } from 'lucide-react'
-import { memo } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 
 interface DiagnosticoInfoProps {
   observacionesIniciales: string
@@ -24,20 +24,44 @@ const SectionHeader = memo(({
   description: string
   colorClass?: string
 }) => (
-  <div className="flex items-start gap-3 mb-4">
-    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
+  <div className="flex items-start gap-4 mb-5">
+    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${
       colorClass || 'bg-gray-700/50 text-gray-400'
     }`}>
-      <Icon className="w-5 h-5" />
+      <Icon className="w-6 h-6" />
     </div>
-    <div>
-      <h3 className="text-base font-semibold text-white">{title}</h3>
-      <p className="text-sm text-gray-400 mt-0.5">{description}</p>
+    <div className="min-w-0">
+      <h3 className="text-lg font-bold text-white tracking-tight leading-tight">{title}</h3>
+      <p className="text-sm text-gray-400 mt-1 line-clamp-1">{description}</p>
     </div>
   </div>
 ))
 
 SectionHeader.displayName = 'SectionHeader'
+
+// Sugerencias rápidas para ahorrar tiempo
+const QuickSuggestions = memo(({ 
+  suggestions, 
+  onSelect 
+}: { 
+  suggestions: string[], 
+  onSelect: (val: string) => void 
+}) => (
+  <div className="flex gap-2 overflow-x-auto pb-2 mt-3 no-scrollbar snap-x">
+    {suggestions.map((text, idx) => (
+      <button
+        key={idx}
+        type="button"
+        onClick={() => onSelect(text)}
+        className="snap-start shrink-0 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 rounded-full text-xs font-medium text-blue-300 transition-all active:scale-95 whitespace-nowrap"
+      >
+        + {text}
+      </button>
+    ))}
+  </div>
+))
+
+QuickSuggestions.displayName = 'QuickSuggestions'
 
 // Componente de textarea mejorado
 const TextAreaField = memo(({ 
@@ -47,7 +71,8 @@ const TextAreaField = memo(({
   onChange,
   rows = 4,
   required = false,
-  helpText
+  helpText,
+  suggestions = []
 }: {
   label: string
   placeholder: string
@@ -56,27 +81,76 @@ const TextAreaField = memo(({
   rows?: number
   required?: boolean
   helpText?: string
-}) => (
-  <div className="space-y-2">
-    <label className="block text-sm font-medium text-gray-300">
-      {label}
-      {required && <span className="text-red-400 ml-1">*</span>}
-    </label>
-    <textarea
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      rows={rows}
-      required={required}
-      className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-    />
-    {helpText && (
-      <p className="text-xs text-gray-500">{helpText}</p>
-    )}
-  </div>
-))
+  suggestions?: string[]
+}) => {
+  const handleAddSuggestion = useCallback((text: string) => {
+    const newValue = value.trim() 
+      ? value.endsWith('.') || value.endsWith(',') 
+        ? `${value} ${text.toLowerCase()}`
+        : `${value}, ${text.toLowerCase()}`
+      : text;
+    onChange(newValue);
+  }, [value, onChange]);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-between items-end px-1">
+        <label className="block text-sm font-bold text-gray-400 uppercase tracking-widest">
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+        {value && (
+          <button 
+            type="button" 
+            onClick={() => onChange('')}
+            className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors"
+          >
+            Limpiar
+          </button>
+        )}
+      </div>
+      
+      <div className="relative group">
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={rows}
+          required={required}
+          className="w-full px-4 py-4 bg-gray-900/40 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-none shadow-inner"
+        />
+        <div className="absolute top-4 right-4 text-gray-700 pointer-events-none group-focus-within:text-blue-500/30 transition-colors">
+          <FileText className="w-5 h-5" />
+        </div>
+      </div>
+
+      {suggestions.length > 0 && (
+        <QuickSuggestions suggestions={suggestions} onSelect={handleAddSuggestion} />
+      )}
+      
+      {helpText && (
+        <p className="text-[11px] text-gray-500 px-1 italic">{helpText}</p>
+      )}
+    </div>
+  )
+})
 
 TextAreaField.displayName = 'TextAreaField'
+
+const SUGGESTIONS = {
+  observaciones: [
+    "No enciende", "Pantalla rota", "Ruido excesivo", "Lento", "Sobrecalentamiento", 
+    "Virus/Malware", "Derrame de líquido", "Falla carga", "Sin señal wifi"
+  ],
+  pruebas: [
+    "Prueba de encendido", "Limpieza física", "Test de RAM", "Test de Disco", 
+    "Revisión voltajes", "Escaneo antivirus", "Prueba de carga", "Reinstalación OS"
+  ],
+  diagnostico: [
+    "Falla en fuente", "Disco dañado", "Cambio pasta térmica", "Requiere formateo", 
+    "Batería agotada", "Teclado defectuoso", "Corto en placa", "Sin fallas"
+  ]
+};
 
 // Componente principal
 const DiagnosticoInfo = memo(function DiagnosticoInfo({
@@ -88,101 +162,95 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
   onCambiarDiagnostico,
 }: DiagnosticoInfoProps) {
 
-  // Handlers memoizados
-
   return (
-    <div className="space-y-6">
-      {/* Encabezado Principal */}
-      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-            <Stethoscope className="w-5 h-5 text-blue-400" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-lg font-semibold text-white mb-1">Diagnóstico Técnico</h2>
-            <p className="text-sm text-gray-400">
-              Registra las observaciones, pruebas realizadas y conclusiones del diagnóstico del equipo
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-8 max-w-3xl mx-auto pb-10">
 
       {/* Observaciones Iniciales */}
-      <section className="bg-gray-800/40 rounded-lg p-5 border border-gray-700/50">
+      <section className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all hover:border-blue-500/30 group">
         <SectionHeader
           icon={FileText}
-          title="Observaciones Iniciales"
-          description="Estado del equipo al momento de la recepción"
-          colorClass="bg-blue-500/15 text-blue-400"
+          title="Estado Inicial"
+          description="Lo que se observa al recibir el equipo"
+          colorClass="bg-blue-500 text-white shadow-blue-500/20 group-hover:scale-110 transition-transform"
         />
         
         <TextAreaField
-          label="Descripción del estado inicial"
-          placeholder="Ejemplo: El equipo presenta problemas de arranque, pantalla sin imagen, ruidos anormales al encender..."
+          label="Observaciones de Entrada"
+          placeholder="Ejemplo: No enciende, pantalla parpadea..."
           value={observacionesIniciales}
           onChange={onCambiarObservaciones}
-          rows={4}
+          rows={3}
           required
-          helpText="Describe el estado y los problemas reportados por el cliente"
+          suggestions={SUGGESTIONS.observaciones}
+          helpText="Describe los síntomas y el estado físico actual"
         />
       </section>
 
       {/* Pruebas Realizadas */}
-      <section className="bg-gray-800/40 rounded-lg p-5 border border-gray-700/50">
+      <section className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all hover:border-purple-500/30 group">
         <SectionHeader
           icon={Activity}
-          title="Pruebas y Procedimientos"
-          description="Pruebas técnicas ejecutadas durante el diagnóstico"
-          colorClass="bg-purple-500/15 text-purple-400"
+          title="Procedimientos"
+          description="Acciones técnicas ejecutadas"
+          colorClass="bg-purple-500 text-white shadow-purple-500/20 group-hover:scale-110 transition-transform"
         />
         
         <TextAreaField
-          label="Pruebas realizadas"
-          placeholder="Ejemplo: Prueba de encendido, verificación de fuente de poder, test de memoria RAM, análisis de disco duro..."
+          label="Pruebas Realizadas"
+          placeholder="Ejemplo: Test de fuente de poder, revisión de voltajes..."
           value={pruebasRealizadas}
           onChange={onCambiarPruebas}
-          rows={5}
+          rows={3}
           required
-          helpText="Lista las pruebas y procedimientos técnicos realizados"
+          suggestions={SUGGESTIONS.pruebas}
+          helpText="Enumera las pruebas clave realizadas durante el análisis"
         />
       </section>
 
       {/* Diagnóstico Final */}
-      <section className="bg-gray-800/40 rounded-lg p-5 border border-gray-700/50">
+      <section className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all hover:border-green-500/30 group">
         <SectionHeader
-          icon={Stethoscope}
-          title="Diagnóstico Final"
-          description="Conclusión técnica del análisis realizado"
-          colorClass="bg-green-500/15 text-green-400"
+          icon={AlertCircle}
+          title="Conclusión"
+          description="Veredicto final del servicio técnico"
+          colorClass="bg-green-500 text-white shadow-green-500/20 group-hover:scale-110 transition-transform"
         />
         
         <TextAreaField
-          label="Conclusión del diagnóstico"
-          placeholder="Ejemplo: Se concluye que el equipo requiere reemplazo de fuente de poder (500W) y limpieza interna. El resto de componentes funcionan correctamente..."
+          label="Diagnóstico Final"
+          placeholder="Ejemplo: Requiere cambio de SSD y pasta térmica..."
           value={diagnosticoFinal}
           onChange={onCambiarDiagnostico}
-          rows={5}
+          rows={3}
           required
-          helpText="Proporciona una conclusión clara y técnica del diagnóstico"
+          suggestions={SUGGESTIONS.diagnostico}
+          helpText="Conclusión definitiva para informar al cliente"
         />
       </section>
 
       {/* Información de ayuda */}
-      <div className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-            <AlertCircle className="w-4 h-4 text-blue-400" />
-          </div>
-          <div className="flex-1 text-sm text-gray-300">
-            <p className="font-medium text-blue-300 mb-1">Nota importante</p>
-            <p>
-              El diagnóstico es una evaluación técnica que no incluye reparaciones. 
-              Documenta de forma detallada el estado del equipo para que el cliente 
-              pueda tomar decisiones informadas sobre las reparaciones necesarias.
-            </p>
-          </div>
+      <div className="bg-amber-500/5 border border-amber-500/20 rounded-3xl p-6 flex items-start gap-5">
+        <div className="w-12 h-12 rounded-2xl bg--500/10 flex items-center justify-center shrink-0">
+          <AlertCircle className="w-6 h-6 text-amber-500" />
+        </div>
+        <div className="space-y-1">
+          <h4 className="text-sm font-bold text-amber-500 uppercase tracking-widest">Nota Técnica</h4>
+          <p className="text-sm text-gray-400 leading-relaxed">
+            Un buen diagnóstico ahorra tiempo y evita malentendidos. 
+            Documenta de forma profesional para facilitar la aprobación del presupuesto por parte del cliente.
+          </p>
         </div>
       </div>
+      
+      <style jsx>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   )
 })

@@ -14,6 +14,7 @@ import ModalOrden from '@/components/mantenimiento/ModalOrden'
 import OrdenCard from '@/components/mantenimiento/OrdenCard'
 import { PrintButton, ShareButton, DownloadButton, usePrintService } from '@/components/mantenimiento/PrintService'
 import { Skeleton } from '@/components/ui/basic/skeleton'
+import AnimatedContent from '@/components/ui/AnimatedContent'
 
 
 
@@ -206,21 +207,35 @@ export default function OrdenesMantenimientoPage() {
                 </div>
                 <div className="min-w-0">
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
-                    Órdenes de Mantenimiento
+                    Ordenes de servicio emitidas
                   </h1>
                   <p className="text-gray-400 text-xs sm:text-sm lg:text-base mt-1">
-                    Gestión completa de mantenimiento y diagnóstico
+                    Gestión completa de ordenes de servicio emitidas
                   </p>
                 </div>
               </div>
-
+              {/* Botón de acción */}
+              {/* Este es el boton animado */}
+            <AnimatedContent
+              distance={190}
+              direction="horizontal"
+              reverse={false}
+              duration={0.4}
+              ease="power3.inOut"
+              initialOpacity={0}
+              animateOpacity
+              scale={1}
+              threshold={0.1}
+              delay={0.1}
+            >
               <button
                 onClick={() => setMostrarFormulario(true)}
                 className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-md hover:shadow-lg text-sm sm:text-base self-start sm:self-auto"
               >
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Nueva Orden</span>
+                <span>Emitir nueva orden</span>
               </button>
+            </AnimatedContent>
             </div>
           </div>
         </div>

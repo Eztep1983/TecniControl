@@ -1,6 +1,6 @@
 // components/auth/AuthGuard.tsx
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { Loader2 } from 'lucide-react'
@@ -10,65 +10,79 @@ interface AuthGuardProps {
 }
 
 const PUBLIC_ROUTES = ['/login']
+const SESSION_CACHE_KEY = 'tc_session_uid'
+
+/**
+ * useLayoutEffect corre en el cliente sincrónicamente ANTES del primer paint.
+ * En el servidor usamos useEffect como fallback (no tiene DOM).
+ */
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   const { user, loading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
-  const [isNavigating, setIsNavigating] = useState(false)
+  const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname?.startsWith(route))
 
-  const isPublicRoute = PUBLIC_ROUTES.some(route => pathname?.startsWith(route))
+  /**
+   * hasCachedSession empieza en false (SSR-safe).
+   * useIsomorphicLayoutEffect lo actualiza en el cliente ANTES del primer paint.
+   * Esto evita el spinner "Verificando sesión" en re-aperturas (web móvil + Capacitor).
+   */
+  const [hasCachedSession, setHasCachedSession] = useState(false)
 
-  // Destrabar el loader si se logró la navegación o la ruta coincide
+  useIsomorphicLayoutEffect(() => {
+    try {
+      const uid = localStorage.getItem(SESSION_CACHE_KEY)
+      setHasCachedSession(uid !== null)
+    } catch {
+      setHasCachedSession(false)
+    }
+  }, [])
+
+  // Redirección cuando Firebase confirma el estado final
   useEffect(() => {
-    setIsNavigating(false)
-  }, [pathname])
-
-  useEffect(() => {
-    // No hacer nada mientras está cargando
     if (loading) return
 
     const shouldRedirect = () => {
-      // Usuario no autenticado intentando acceder a ruta protegida
-      if (!user && !isPublicRoute) {
-        return '/login'
-      }
-      
-      // Usuario autenticado en página de login
-      if (user && pathname === '/login') {
-        return '/ordenes'
-      }
-      
+      if (!user && !isPublicRoute) return '/login'
+      if (user && pathname === '/login') return '/ordenes'
       return null
     }
 
     const redirectTo = shouldRedirect()
-    
     if (redirectTo) {
-      setIsNavigating(true)
       router.replace(redirectTo)
     }
   }, [user, loading, pathname, isPublicRoute, router])
 
-  // Mostrar loading durante verificación inicial o mientras navega
-  if (loading || isNavigating) {
+  /**
+   * Mostrar spinner SOLO cuando:
+   * - Firebase todavía está resolviendo (loading=true)
+   * - Y no hay sesión cacheada (primera apertura o después de logout)
+   *
+   * Si hay caché → los hijos se muestran INMEDIATAMENTE mientras Firebase confirma.
+   */
+  const showSpinner = loading && !hasCachedSession
+
+  if (showSpinner) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 p-4 transition-colors duration-300">
         <div className="text-center space-y-4">
           <Loader2 className="h-10 w-10 animate-spin text-blue-600 dark:text-blue-400 mx-auto" />
           <p className="text-slate-600 dark:text-gray-400 text-sm font-medium">
-            {isNavigating ? 'Redirigiendo...' : 'Verificando sesión...'}
+            Verificando sesión...
           </p>
         </div>
       </div>
     )
   }
 
-  // Renderizar contenido apropiado
-  if (isPublicRoute || user) {
+  if (isPublicRoute || user || hasCachedSession) {
     return <>{children}</>
   }
 
-  // Fallback si no hay estado claro (no debería verse)
+  // Sin sesión y sin caché: no renderizar nada (redirección en curso)
   return null
 }

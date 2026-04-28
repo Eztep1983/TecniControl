@@ -734,6 +734,14 @@ const mantenimientoInfoProps = useMemo(() => ({
   handleCambiarDiagnostico,
 ])
 
+// Memoizar props para ContadorInput
+const contadorInputProps = useMemo(() => ({
+  contador: state.contador,
+  mostrarContador: state.mostrarContador,
+  onToggleContador: handleToggleContador,
+  onChangeContador: handleCambiarContador,
+}), [state.contador, state.mostrarContador, handleToggleContador, handleCambiarContador])
+
   // ============================================================================
   // RENDER - Paso actual
   // ============================================================================
@@ -764,14 +772,7 @@ const mantenimientoInfoProps = useMemo(() => ({
         return <MantenimientoInfo {...mantenimientoInfoProps} />
 
       case 'contador':
-        return (
-          <ContadorInput
-            contador={state.contador}
-            mostrarContador={state.mostrarContador}
-            onToggleContador={handleToggleContador}
-            onChangeContador={handleCambiarContador}
-          />
-        )
+        return <ContadorInput {...contadorInputProps} />
 
       case 'garantia':
         return (
@@ -860,6 +861,7 @@ const mantenimientoInfoProps = useMemo(() => ({
       {/* Header */}
       <div className="bg-gray-900/95 border-b border-gray-800 shadow-lg">
         <div className="max-w-4xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
+          
           <div className="flex items-center space-x-2 sm:space-x-4">
             <button 
               onClick={onClose} 
@@ -981,7 +983,7 @@ const mantenimientoInfoProps = useMemo(() => ({
                         : 'bg-gray-700 text-gray-500'
                     }`}
                   >
-                    {isCompleted ? <Check/> : index + 1}
+                    {isCompleted ? <CheckCircle/> : index + 1}
                   </div>
                 )
               })}

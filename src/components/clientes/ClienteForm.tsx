@@ -16,7 +16,6 @@ import {
   FormMessage,
 } from "@/components/ui/basic/form";
 import { Input } from "@/components/ui/basic/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/basic/card";
 import { useToast } from "@/hooks/use-toast";
 import type { Cliente, Dispositivo } from "@/types/orden";
 import { useEffect, useState } from "react";
@@ -142,7 +141,7 @@ export function ClienteForm({ initialData }: ClienteFormProps) {
   const onSubmit = async (data: ClienteFormValues) => {
     if (!user?.uid) {
       toast({
-        title: "❌ Error",
+        title: "Error",
         description: "Debe estar autenticado",
         variant: "destructive",
       });
@@ -177,13 +176,13 @@ export function ClienteForm({ initialData }: ClienteFormProps) {
       if (initialData?.id) {
         await actualizarCliente(initialData.id, clienteData, user.uid);
         toast({
-          title: "✅ Cliente actualizado",
+          title: " Cliente actualizado",
           description: `${data.name} actualizado correctamente`,
         });
       } else {
         await crearCliente(clienteData, user.uid);
         toast({
-          title: "✅ Cliente creado",
+          title: " Cliente creado",
           description: `${data.name} creado correctamente`,
         });
       }
@@ -196,7 +195,7 @@ export function ClienteForm({ initialData }: ClienteFormProps) {
     } catch (error) {
       console.error("Error:", error);
       toast({
-        title: "❌ Error",
+        title: " Error",
         description: "No se pudo guardar el cliente",
         variant: "destructive",
       });

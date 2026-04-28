@@ -1,7 +1,7 @@
 // components/forms/ContadorInput.tsx
 'use client'
 
-import { Calendar, Hash, Clock, Printer, Copy, ScanLine, Timer, Package, Sparkles, Target, Edit3, MessageSquare, Minus, Plus, CheckCircle, Info } from 'lucide-react'
+import { Calendar, Hash, Clock, Printer, Copy, ScanLine, Timer, Package, Sparkles, Target, Edit3, MessageSquare, Minus, Plus, Info } from 'lucide-react'
 import React from 'react'
 
 export interface Contador {
@@ -77,408 +77,293 @@ const TIPOS_CONTADOR = [
   },
 ]
 
-export default function ContadorInput({
+const ContadorInput = React.memo(function ContadorInput({
   contador,
   mostrarContador,
   onToggleContador,
   onChangeContador
 }: ContadorInputProps) {
 
-  const handleChange = (campo: keyof Contador, valor: any) => {
-    const contadorActual = contador || {
+  // Memoizar el contador actual para evitar cálculos redundantes
+  const contadorActual = React.useMemo(() => {
+    if (!mostrarContador) return null;
+    return contador || {
       tipo: 'unidades' as const,
       valor: 0,
       fechaRegistro: new Date().toISOString().split('T')[0]
-    }
-    
-    let valorLimpio = valor
-    if (valorLimpio === undefined || valorLimpio === null) {
-      if (campo === 'valor') valorLimpio = 0
-      else if (campo === 'fechaRegistro') valorLimpio = new Date().toISOString().split('T')[0]
-      else if (campo === 'tipo') valorLimpio = 'unidades'
-      else valorLimpio = ''
-    }
+    };
+  }, [contador, mostrarContador]);
+
+  // Manejador genérico optimizado
+  const handleChange = React.useCallback((campo: keyof Contador, valor: any) => {
+    const base = contadorActual || {
+      tipo: 'unidades' as const,
+      valor: 0,
+      fechaRegistro: new Date().toISOString().split('T')[0]
+    };
     
     const nuevoContador: Contador = {
-      ...contadorActual,
-      [campo]: valorLimpio
-    }
+      ...base,
+      [campo]: valor ?? (campo === 'valor' ? 0 : campo === 'fechaRegistro' ? new Date().toISOString().split('T')[0] : '')
+    };
 
-    if (!nuevoContador.notas || nuevoContador.notas.trim() === '') {
-      delete nuevoContador.notas
-    }
-    
-    if (nuevoContador.tipo !== 'personalizado') {
-      delete nuevoContador.unidadPersonalizada
-    } else if (!nuevoContador.unidadPersonalizada || nuevoContador.unidadPersonalizada.trim() === '') {
-      delete nuevoContador.unidadPersonalizada
-    }
+    // Limpieza de campos opcionales
+    if (!nuevoContador.notas?.trim()) delete nuevoContador.notas;
+    if (nuevoContador.tipo !== 'personalizado') delete nuevoContador.unidadPersonalizada;
+    else if (!nuevoContador.unidadPersonalizada?.trim()) delete nuevoContador.unidadPersonalizada;
 
-    onChangeContador(nuevoContador)
-  }
+    onChangeContador(nuevoContador);
+  }, [contadorActual, onChangeContador]);
 
-  const handleToggle = () => {
-    onToggleContador()
-    
-    if (!mostrarContador) {
-      const hoy = new Date()
-      const contadorInicial: Contador = {
-        tipo: 'unidades',
-        valor: 0,
-        fechaRegistro: hoy.toISOString().split('T')[0]
-      }
-      onChangeContador(contadorInicial)
-    } else {
-      onChangeContador(null)
-    }
-  }
+  const handleToggle = React.useCallback(() => {
+    onToggleContador();
+  }, [onToggleContador]);
 
-  // Formatear número con separadores de miles
-  const formatearNumero = (num: number): string => {
-    return num.toLocaleString('es-CO')
-  }
+  // Formatear número para visualización
+  const valorFormateado = React.useMemo(() => {
+    return (contadorActual?.valor || 0).toLocaleString('es-CO');
+  }, [contadorActual?.valor]);
 
-  // Manejar input del valor con formato
-  const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const valorSinFormato = e.target.value.replace(/\D/g, '')
-    const valorNumerico = valorSinFormato === '' ? 0 : parseInt(valorSinFormato)
-    handleChange('valor', Math.max(0, valorNumerico))
-  }
+  const handleValorChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const valorSinFormato = e.target.value.replace(/\D/g, '');
+    const valorNumerico = valorSinFormato === '' ? 0 : parseInt(valorSinFormato);
+    handleChange('valor', Math.max(0, valorNumerico));
+  }, [handleChange]);
 
-  // Incrementar/decrementar valor
-  const ajustarValor = (delta: number) => {
-    const valorActual = contadorParaMostrar?.valor || 0
-    const nuevoValor = Math.max(0, valorActual + delta)
-    handleChange('valor', nuevoValor)
-  }
+  const ajustarValor = React.useCallback((delta: number) => {
+    const nuevoValor = Math.max(0, (contadorActual?.valor || 0) + delta);
+    handleChange('valor', nuevoValor);
+  }, [contadorActual?.valor, handleChange]);
 
-  const contadorParaMostrar = mostrarContador 
-    ? contador || {
-        tipo: 'unidades' as const,
-        valor: 0,
-        fechaRegistro: new Date().toISOString().split('T')[0]
-      }
-    : null
-
-  // Obtener configuración del tipo actual
-  const tipoConfig = TIPOS_CONTADOR.find(t => t.valor === contadorParaMostrar?.tipo) || TIPOS_CONTADOR[0]
+  const tipoConfig = React.useMemo(() => 
+    TIPOS_CONTADOR.find(t => t.valor === contadorActual?.tipo) || TIPOS_CONTADOR[0]
+  , [contadorActual?.tipo]);
 
   return (
-    <div className="space-y-4">
-      {/* Toggle para mostrar/ocultar contador */}
-      <div className="flex items-center justify-between p-4 bg-gray-800/30 rounded-xl border border-gray-700 hover:border-amber-500/50 transition-all">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-            <Hash className="w-5 h-5 text-amber-400" />
+    <div className="space-y-6 max-w-2xl mx-auto">
+      {/* Selector Principal - Estilo Premium */}
+      <div 
+        onClick={handleToggle}
+        className={`
+          group relative overflow-hidden cursor-pointer
+          p-5 rounded-2xl border-2 transition-all duration-300
+          ${mostrarContador 
+            ? 'bg-amber-500/10 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.15)]' 
+            : 'bg-gray-800/40 border-gray-700 hover:border-gray-500'
+          }
+        `}
+      >
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-4">
+            <div className={`
+              w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500
+              ${mostrarContador ? 'bg-amber-500 text-white rotate-[360deg]' : 'bg-gray-700 text-gray-400'}
+            `}>
+              <Hash className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className={`font-bold text-lg transition-colors ${mostrarContador ? 'text-amber-400' : 'text-gray-200'}`}>
+                Registro de Contador
+              </h3>
+              <p className="text-sm text-gray-500">
+                {mostrarContador ? 'Configurando detalles del uso' : 'Opcional: Controlar uso del equipo'}
+              </p>
+            </div>
           </div>
-          <div>
-            <label className="text-xl text-gray-300 font-medium">
-              ¿Registrar contador del dispositivo?
-            </label>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Llevar control de uso del equipo
-            </p>
+          
+          <div className={`
+            w-14 h-8 rounded-full p-1 transition-colors duration-300 flex items-center
+            ${mostrarContador ? 'bg-amber-500' : 'bg-gray-600'}
+          `}>
+            <div className={`
+              w-6 h-6 bg-white rounded-full shadow-lg transition-transform duration-300 transform
+              ${mostrarContador ? 'translate-x-6' : 'translate-x-0'}
+            `} />
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleToggle}
-          className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 ${
-            mostrarContador ? 'bg-amber-500 shadow-lg shadow-amber-500/30' : 'bg-gray-600'
-          }`}
-          aria-label={mostrarContador ? "Desactivar contador" : "Activar contador"}
-        >
-          <span
-            className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 shadow-lg ${
-              mostrarContador ? 'translate-x-8' : 'translate-x-1'
-            }`}
-          />
-        </button>
+        
+        {/* Decoración de fondo */}
+        {mostrarContador && (
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl" />
+        )}
       </div>
 
-      {/* Formulario de contador */}
-      {mostrarContador && contadorParaMostrar && (
-        <div className="bg-gradient-to-br from-gray-800/80 to-gray-800/50 rounded-2xl p-6 space-y-6 border border-amber-500/20 shadow-xl animate-fadeIn">
-          {/* Tipo de contador - Cards seleccionables */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-200 mb-4 flex items-center gap-2">
-              <Target className="w-4 h-4 text-amber-400" />
-              Tipo de contador
-            </label>
+      {mostrarContador && contadorActual && (
+        <div className="space-y-6 animate-in slide-in-from-top-4 duration-500">
+          
+          {/* Tipos de Contador - Grid Optimizado para Pulgares */}
+          <section className="space-y-3">
+            <div className="flex items-center gap-2 px-1">
+              <Target className="w-4 h-4 text-amber-500" />
+              <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">Tipo de Medición</span>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {TIPOS_CONTADOR.map((tipo) => {
-                const isSelected = contadorParaMostrar.tipo === tipo.valor
-                const IconComponent = tipo.Icon
+                const isSelected = contadorActual.tipo === tipo.valor;
+                const IconComponent = tipo.Icon;
                 return (
                   <button
                     key={tipo.valor}
                     type="button"
                     onClick={() => handleChange('tipo', tipo.valor)}
                     className={`
-                      relative p-4 rounded-xl border-2 transition-all duration-300 
+                      relative p-4 rounded-2xl border-2 flex flex-col items-center gap-3 transition-all active:scale-95
                       ${isSelected 
-                        ? `${tipo.bgColor} ${tipo.borderColor} shadow-lg scale-105` 
-                        : 'bg-gray-700/30 border-gray-600 hover:border-gray-500 hover:bg-gray-700/50'
+                        ? `${tipo.bgColor} ${tipo.borderColor} ring-4 ring-white/5` 
+                        : 'bg-gray-800/30 border-gray-700/50 text-gray-500 hover:border-gray-600'
                       }
                     `}
                   >
-                    <div className="flex flex-col items-center gap-2">
-                      <IconComponent className={`w-8 h-8 ${isSelected ? tipo.textColor : 'text-gray-400'}`} />
-                      <span className={`text-sm font-medium ${isSelected ? tipo.textColor : 'text-gray-400'}`}>
-                        {tipo.label}
-                      </span>
-                    </div>
+                    <IconComponent className={`w-8 h-8 ${isSelected ? tipo.textColor : ''}`} />
+                    <span className={`text-xs font-bold uppercase tracking-tight ${isSelected ? 'text-white' : ''}`}>
+                      {tipo.label}
+                    </span>
                     {isSelected && (
-                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center shadow-lg">
-                        <CheckCircle className="w-3.5 h-3.5 text-white" />
+                      <div className="absolute top-2 right-2">
+                        <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
                       </div>
                     )}
                   </button>
-                )
+                );
               })}
             </div>
-          </div>
+          </section>
 
-          {/* Unidad personalizada */}
-          {contadorParaMostrar.tipo === 'personalizado' && (
-            <div className="animate-fadeIn">
-              <label className="block text-sm font-semibold text-gray-200 mb-3 flex items-center gap-2">
-                <Edit3 className="w-4 h-4 text-pink-400" />
-                Unidad personalizada <span className="text-pink-400">*</span>
-              </label>
+          {/* Valor del Contador - Foco Central */}
+          <section className="bg-gray-800/30 rounded-3xl p-6 border border-gray-700/50 space-y-6">
+            <div className="text-center space-y-1">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em]">Valor Actual</span>
+              <div className="flex items-center justify-center gap-6">
+                <button
+                  type="button"
+                  onClick={() => ajustarValor(-1)}
+                  disabled={contadorActual.valor <= 0}
+                  className="w-14 h-14 rounded-2xl bg-gray-700 flex items-center justify-center text-white active:scale-90 disabled:opacity-30 transition-all"
+                >
+                  <Minus className="w-6 h-6" />
+                </button>
+                
+                <div className="relative group min-w-[180px]">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={valorFormateado}
+                    onChange={handleValorChange}
+                    className={`
+                      w-full bg-transparent text-5xl font-black text-center focus:outline-none transition-colors
+                      ${tipoConfig.textColor}
+                    `}
+                  />
+                  <div className={`h-1 w-full mt-2 rounded-full transition-all duration-500 ${tipoConfig.bgColor}`} />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => ajustarValor(1)}
+                  className={`
+                    w-14 h-14 rounded-2xl flex items-center justify-center text-white active:scale-90 transition-all shadow-lg
+                    ${tipoConfig.color.includes('amber') ? 'bg-amber-500 shadow-amber-500/20' : 'bg-amber-500 shadow-amber-500/20'}
+                  `}
+                  style={{ background: `linear-gradient(to bottom right, ${tipoConfig.color.split(' ')[0].replace('from-', '')}, ${tipoConfig.color.split(' ')[1].replace('to-', '')})` }}
+                >
+                  <Plus className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Accesos rápidos */}
+            <div className="flex justify-center gap-2">
+              {[10, 100, 1000].map(val => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => handleChange('valor', contadorActual.valor + val)}
+                  className="px-4 py-2 rounded-xl bg-gray-700/50 text-gray-300 text-sm font-bold hover:bg-gray-700 active:scale-95 transition-all"
+                >
+                  +{val}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Fecha */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-500 uppercase px-1">Fecha Registro</label>
               <div className="relative">
+                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-500" />
+                <input
+                  type="date"
+                  value={contadorActual.fechaRegistro}
+                  onChange={(e) => handleChange('fechaRegistro', e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  className="w-full bg-gray-800/50 border-2 border-gray-700 rounded-2xl pl-12 pr-4 py-4 text-white focus:border-amber-500 focus:outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Unidad (Si es personalizado) */}
+            {contadorActual.tipo === 'personalizado' && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-left-2">
+                <label className="text-xs font-bold text-pink-500 uppercase px-1">Unidad de Medida</label>
                 <input
                   type="text"
-                  value={contadorParaMostrar.unidadPersonalizada || ''}
+                  placeholder="Ej: Metros, Galones..."
+                  value={contadorActual.unidadPersonalizada || ''}
                   onChange={(e) => handleChange('unidadPersonalizada', e.target.value)}
-                  placeholder="Ej: metros, ciclos, litros..."
-                  className="w-full bg-gray-700/50 border-2 border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all"
-                  required
                   maxLength={50}
+                  className="w-full bg-pink-500/5 border-2 border-pink-500/30 rounded-2xl px-4 py-4 text-white placeholder-pink-500/40 focus:border-pink-500 focus:outline-none transition-all"
                 />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">
-                  {(contadorParaMostrar.unidadPersonalizada || '').length}/50
-                </div>
-              </div>
-              {contadorParaMostrar.tipo === 'personalizado' && !contadorParaMostrar.unidadPersonalizada && (
-                <p className="text-xs text-pink-400 mt-2 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" /> Debe especificar la unidad personalizada
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Valor del contador - Estilizado con botones */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-200 mb-3 flex items-center gap-2">
-              <Hash className="w-4 h-4 text-amber-400" />
-              Valor del contador <span className="text-red-400">*</span>
-            </label>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => ajustarValor(-1)}
-                className="w-12 h-12 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center"
-                disabled={contadorParaMostrar.valor <= 0}
-              >
-                <Minus className="w-5 h-5" />
-              </button>
-              
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  value={formatearNumero(contadorParaMostrar.valor)}
-                  onChange={handleValorChange}
-                  className={`w-full ${tipoConfig.bgColor} border-2 ${tipoConfig.borderColor} rounded-xl px-6 py-3 ${tipoConfig.textColor} text-center font-bold text-2xl focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all`}
-                  placeholder="0"
-                />
-                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                  <div className={`absolute inset-0 ${tipoConfig.bgColor} rounded-xl opacity-0 hover:opacity-100 transition-opacity`} />
-                </div>
-              </div>
-              
-              <button
-                type="button"
-                onClick={() => ajustarValor(1)}
-                className="w-12 h-12 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold transition-all active:scale-95 shadow-lg shadow-amber-500/30 flex items-center justify-center"
-              >
-                <Plus className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex justify-between items-center mt-3">
-              <p className="text-xs text-gray-400 flex items-center gap-1">
-                <Hash className="w-3 h-3" />
-                Solo números positivos
-              </p>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleChange('valor', contadorParaMostrar.valor + 10)}
-                  className="text-xs px-3 py-1 bg-gray-700/50 hover:bg-gray-700 rounded-lg text-gray-300 transition-all"
-                >
-                  +10
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleChange('valor', contadorParaMostrar.valor + 100)}
-                  className="text-xs px-3 py-1 bg-gray-700/50 hover:bg-gray-700 rounded-lg text-gray-300 transition-all"
-                >
-                  +100
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleChange('valor', contadorParaMostrar.valor + 1000)}
-                  className="text-xs px-3 py-1 bg-gray-700/50 hover:bg-gray-700 rounded-lg text-gray-300 transition-all"
-                >
-                  +1000
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Fecha de registro - Mejorada */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-200 mb-3 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-blue-400" />
-              Fecha de registro <span className="text-red-400">*</span>
-            </label>
-            <div className="relative">
-              <input
-                type="date"
-                value={contadorParaMostrar.fechaRegistro}
-                onChange={(e) => handleChange('fechaRegistro', e.target.value)}
-                max={new Date().toISOString().split('T')[0]}
-                className="w-full bg-gray-700/50 border-2 border-gray-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                required
-              />
-              <Clock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" />
-            </div>
-            <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
-              Fecha actual: {new Date().toLocaleDateString('es-CO', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
-            </p>
-          </div>
-
-          {/* Notas adicionales - Mejoradas */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-200 mb-3 flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-blue-400" />
-              Notas adicionales
-            </label>
-            <div className="relative">
-              <textarea
-                value={contadorParaMostrar.notas || ''}
-                onChange={(e) => handleChange('notas', e.target.value)}
-                placeholder="Observaciones sobre el contador, condiciones especiales..."
-                rows={3}
-                maxLength={500}
-                className="w-full bg-gray-700/50 border-2 border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none transition-all"
-              />
-              <div className="absolute bottom-3 right-3 text-xs text-gray-500 bg-gray-800/80 px-2 py-1 rounded">
-                {(contadorParaMostrar.notas || '').length}/500
-              </div>
-            </div>
-          </div>
-
-          {/* Resumen del contador - Card destacada */}
-          <div className={`${tipoConfig.bgColor} border-2 ${tipoConfig.borderColor} rounded-xl p-5 space-y-3 shadow-lg`}>
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-bold text-gray-200 flex items-center gap-2">
-                {React.createElement(tipoConfig.Icon, { className: "w-5 h-5" })}
-                Contador Registrado
-              </h4>
-              <span className={`px-3 py-1 ${tipoConfig.bgColor} ${tipoConfig.textColor} rounded-full text-xs font-semibold border ${tipoConfig.borderColor}`}>
-                {tipoConfig.label}
-              </span>
-            </div>
-            
-            <div className="flex items-baseline gap-3">
-              <span className={`text-4xl font-bold ${tipoConfig.textColor}`}>
-                {formatearNumero(contadorParaMostrar.valor)}
-              </span>
-              <span className="text-lg text-gray-400 capitalize">
-                {contadorParaMostrar.tipo === 'personalizado' 
-                  ? (contadorParaMostrar.unidadPersonalizada || 'unidades') 
-                  : contadorParaMostrar.tipo}
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-2 pt-2 border-t border-gray-700">
-              <Calendar className="w-4 h-4 text-blue-400" />
-              <p className="text-sm text-gray-300">
-                {new Date(contadorParaMostrar.fechaRegistro).toLocaleDateString('es-CO', {
-                  weekday: 'short',
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric'
-                })}
-              </p>
-            </div>
-            
-            {contadorParaMostrar.notas && (
-              <div className="pt-2 border-t border-gray-700">
-                <p className="text-xs text-gray-400 leading-relaxed flex items-start gap-2">
-                  <MessageSquare className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                  <span>{contadorParaMostrar.notas}</span>
-                </p>
               </div>
             )}
+          </div>
+
+          {/* Notas */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-500 uppercase px-1">Observaciones</label>
+            <div className="relative">
+              <MessageSquare className="absolute left-4 top-4 w-5 h-5 text-gray-500" />
+              <textarea
+                value={contadorActual.notas || ''}
+                onChange={(e) => handleChange('notas', e.target.value)}
+                placeholder="Anotaciones adicionales sobre el estado del contador..."
+                rows={3}
+                maxLength={500}
+                className="w-full bg-gray-800/50 border-2 border-gray-700 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:border-amber-500 focus:outline-none resize-none transition-all"
+              />
+            </div>
           </div>
         </div>
       )}
 
-      {/* Mensaje informativo cuando está desactivado */}
+      {/* Info Card - Solo cuando no hay contador */}
       {!mostrarContador && (
-        <div className="bg-gray-800/20 rounded-xl p-5 border-2 border-dashed border-gray-700 hover:border-amber-500/30 transition-all group">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-              <Info className="w-6 h-6 text-blue-400" />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-sm font-semibold text-gray-300 mb-1">
-                Contador de dispositivo (Opcional)
-              </h4>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                Active esta opción para registrar el contador actual del dispositivo. 
-                Esto le permitirá llevar un historial detallado del uso del equipo a lo largo del tiempo.
-              </p>
-            </div>
+        <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-3xl flex gap-4 items-start">
+          <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+            <Info className="w-5 h-5 text-blue-400" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-sm font-bold text-blue-400">¿Por qué registrar el contador?</h4>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Permite predecir fallas, programar mantenimientos preventivos y llevar un historial exacto del ciclo de vida de los componentes del equipo.
+            </p>
           </div>
         </div>
       )}
 
       <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-
         input[type="date"]::-webkit-calendar-picker-indicator {
-          filter: invert(1);
+          opacity: 0;
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
           cursor: pointer;
-        }
-
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-          -webkit-appearance: none;
-          margin: 0;
         }
       `}</style>
     </div>
-  )
-}
+  );
+});
+
+export default ContadorInput;
