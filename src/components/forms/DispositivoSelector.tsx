@@ -165,7 +165,7 @@ export default function DispositivoSelector({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xl text-gray-300 font-medium">Seleccionar Dispositivo</p>
-          <p className="text-xs text-gray-500">Elige el dispositivo del cliente para esta orden</p>
+          <p className="text-xs text-gray-500">Elige o crea un dispositivo para esta orden</p>
         </div>
         <div className="flex items-center gap-3">
           {dispositivos.length > 0 && (
@@ -178,7 +178,7 @@ export default function DispositivoSelector({
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/20 rounded-lg text-blue-400 text-xs font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/20 rounded-lg text-blue-400 text-base font-medium transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Nuevo dispositivo</span>

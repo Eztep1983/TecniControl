@@ -228,6 +228,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // en el onAuthStateChanged al recargar la app. Retornamos aquí.
         return;
       } else {
+        console.log("Checking auth object:", auth);
+        console.log("Checking provider object:", provider);
         result = await signInWithPopup(auth, provider)
       }
 
@@ -257,6 +259,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       logger.log('Auth state changed:', firebaseUser ? `User: ${firebaseUser.uid}` : 'No user')
+
+      // Verificar resultado de redirección (necesario para ver errores en Capacitor/móvil)
+      try {
+        const { getRedirectResult } = await import('firebase/auth')
+        const redirectResult = await getRedirectResult(auth)
+        if (redirectResult) {
+          logger.log('Resultado de redirección capturado:', redirectResult.user.uid)
+        }
+      } catch (redirectError) {
+        logger.error('Error de redirección detectado:', redirectError)
+        // Opcional: mostrar un toast o alerta al usuario si falló el redirect
+      }
 
       if (firebaseUser) {
         const validation = validateUser(firebaseUser)

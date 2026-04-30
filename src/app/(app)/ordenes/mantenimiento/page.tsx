@@ -15,6 +15,7 @@ import OrdenCard from '@/components/mantenimiento/OrdenCard'
 import { PrintButton, ShareButton, DownloadButton, usePrintService } from '@/components/mantenimiento/PrintService'
 import { Skeleton } from '@/components/ui/basic/skeleton'
 import AnimatedContent from '@/components/ui/AnimatedContent'
+import AnimatedList from '@/components/ui/AnimatedList'
 
 
 
@@ -355,7 +356,7 @@ export default function OrdenesMantenimientoPage() {
           </div>
         </div>
 
-        {/* Lista de Órdenes */}
+        {/* Lista de Ordenes */}
         <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 overflow-hidden relative">
           {aplicandoFiltro && (
             <div className="absolute inset-0 bg-gray-800/80 flex items-center justify-center z-10 backdrop-blur-sm rounded-xl">
@@ -449,10 +450,14 @@ export default function OrdenesMantenimientoPage() {
             <>
               {esMobile ? (
                 <div className="p-3 sm:p-4">
-                  <div className="grid gap-3 sm:gap-4">
-                    {ordenesPaginadas.map((orden) => (
+                  <AnimatedList
+                    items={ordenesPaginadas}
+                    onItemSelect={(orden) => handleRowClick(orden)}
+                    showGradients
+                    enableArrowNavigation
+                    displayScrollbar
+                    renderItem={(orden) => (
                       <OrdenCard
-                        key={orden.idPersonalizado}
                         orden={orden}
                         onView={handleRowClick}
                         onPrint={imprimirOrden}
@@ -461,11 +466,11 @@ export default function OrdenesMantenimientoPage() {
                         getTipoColor={getTipoColor}
                         formatFecha={formatFecha}
                       />
-                    ))}
-                  </div>
+                    )}
+                  />
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-hidden">
                   <table className="min-w-full divide-y divide-gray-700">
                     <thead className="bg-gray-700/50">
                       <tr>

@@ -6,6 +6,7 @@ import {
   indexedDBLocalPersistence,
   inMemoryPersistence,
   getAuth,
+  browserPopupRedirectResolver,
 } from "firebase/auth";
 import {
   initializeFirestore,
@@ -50,6 +51,7 @@ const auth = (() => {
     // Browser / Capacitor: IndexedDB primero, localStorage como fallback
     return initializeAuth(app, {
       persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+      popupRedirectResolver: browserPopupRedirectResolver,
     });
   } catch {
     // HMR: la instancia ya existe, reutilizarla

@@ -30,6 +30,7 @@ import type { Cliente } from "@/types/orden";
 import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import CountUp from "../ui/CountUp";
 
 // ── CSS animaciones (inyectado una sola vez) ───────────────────────────────────
 const CARD_ANIM_ID = "clientes-card-anim";
@@ -385,7 +386,14 @@ export function ClientesDataTable({
           <p className="text-[10px] text-gray-500 font-medium uppercase tracking-widest leading-tight">
             Total de Clientes
           </p>
-          <p className="text-2xl font-bold text-white leading-tight">{data.length}</p>
+          <CountUp
+            from={0}
+            to={data.length}
+            direction="up"
+            duration={1}
+            className="text-2xl font-bold text-white leading-tight"
+            delay={0}
+          />
         </div>
       </div>
 
