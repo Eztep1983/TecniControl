@@ -1,3 +1,7 @@
+//Este hook escucha los eventos de la aplicacion y recarga la sesion
+//Esto se hace para que la sesion no expire mientras la aplicacion esta abierta
+//O cuando la aplicacion ha estado en segundo plano por mas de 1 hora minutos
+//La estoy usando en el AuthGuard
 'use client';
 import { useEffect, useState } from 'react';
 import { App } from '@capacitor/app';
@@ -5,7 +9,7 @@ import { Capacitor } from '@capacitor/core';
 import { useAuth } from './auth/AuthProvider';
 
 // Reload threshold (e.g. 5 minutes in background)
-const RELOAD_THRESHOLD_MS = 10 * 60 * 1000; 
+const RELOAD_THRESHOLD_MS = 60 * 60 * 1000; //1 hora
 
 export const useAppLifecycle = () => {
   const { refreshSession } = useAuth();

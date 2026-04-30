@@ -6,11 +6,18 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { Loader2 } from 'lucide-react'
 import { useAppLifecycle } from '@/components/useAppLifecycle'
 
+// Este guard protege las rutas privadas y muestra un spinner mientras se resuelve la sesión.
+// Si no hay sesión y no hay ruta pública, redirige a /login.
+// Si hay sesión, deja pasar. Si no hay sesión y es ruta pública, deja pasar.
+
 interface AuthGuardProps {
   children: React.ReactNode
 }
 
+// Rutas que no requieren autenticación
 const PUBLIC_ROUTES = ['/login']
+
+// Clave para caché de sesión en localStorage
 const SESSION_CACHE_KEY = 'tc_session_uid'
 
 /**

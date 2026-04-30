@@ -1,4 +1,7 @@
 // components/auth/AuthProvider.tsx
+// Este componente maneja el estado de autenticación del usuario
+// y provee métodos para iniciar sesión, cerrar sesión y refrescar la sesión.
+
 'use client'
 import React, { createContext, useContext, useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react'
 import {
@@ -141,7 +144,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!email || !SECURITY_CONFIG.allowedDomains) return true
     const domain = email.split('@')[1]
     const isAllowed = SECURITY_CONFIG.allowedDomains.includes(domain)
-    if (!isAllowed) logger.warn('🚫 Email domain not allowed:', domain)
+    if (!isAllowed) logger.warn('Email domain not allowed:', domain)
     return isAllowed
   }
 
@@ -187,10 +190,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             loginAttempts: 0,
           }
           await setDoc(userRef, newUserData)
-          logger.log('👤 New user document created')
+          logger.log('New user document created')
         } else {
           await setDoc(userRef, baseData, { merge: true })
-          logger.log('🔄 User document updated on new login')
+          logger.log('User document updated on new login')
         }
       } else {
         // Re-apertura: solo actualizar lastActivity sin leer el doc
@@ -198,7 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       // Errores de Firestore no deben interrumpir el flujo de auth
-      logger.error('❌ Error syncing user document (non-fatal):', error)
+      logger.error(' Error syncing user document (non-fatal):', error)
     }
   }, [])
 
@@ -206,7 +209,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async (): Promise<void> => {
     try {
-      logger.log('🔐 Starting Google sign in (Popup)...')
+      logger.log(' Starting Google sign in (Popup)...')
       const provider = new GoogleAuthProvider()
       provider.setCustomParameters({
         prompt: 'select_account',
@@ -234,7 +237,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(validation.reason)
       }
 
-      logger.log('✅ Google sign in successful:', result.user.uid)
+      logger.log('Google sign in successful:', result.user.uid)
       // Cachear sesión inmediatamente
       setCachedUid(result.user.uid)
       // Sincronizar documento en background (nuevo login)
@@ -242,7 +245,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLastActivity(Date.now())
       setLoading(false)
     } catch (error: any) {
-      logger.error('❌ Error initializing sign in:', error)
+      logger.error('Error initializing sign in:', error)
       throw error
     }
   }
@@ -250,15 +253,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // ==================== MONITOREO DEL ESTADO ====================
 
   useEffect(() => {
-    logger.log('🔄 Setting up auth state listener')
+    logger.log('Setting up auth state listener')
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      logger.log('🔥 Auth state changed:', firebaseUser ? `User: ${firebaseUser.uid}` : 'No user')
+      logger.log('Auth state changed:', firebaseUser ? `User: ${firebaseUser.uid}` : 'No user')
 
       if (firebaseUser) {
         const validation = validateUser(firebaseUser)
         if (!validation.valid) {
-          logger.warn('🚫 User validation failed:', validation.reason)
+          logger.warn('User validation failed:', validation.reason)
           setCachedUid(null)
           await signOut(auth)
           setUser(null)
@@ -293,13 +296,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async (): Promise<void> => {
     try {
-      logger.log('🚪 Logging out...')
+      logger.log('Logging out...')
       // Limpiar caché antes de cerrar sesión
       setCachedUid(null)
       await signOut(auth)
-      logger.log('✅ Logout successful')
+      logger.log('Logout successful')
     } catch (error) {
-      logger.error('❌ Error signing out:', error)
+      logger.error('Error signing out:', error)
       throw new Error('Error al cerrar sesión')
     }
   }
@@ -309,7 +312,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshSession = useCallback(async (): Promise<void> => {
     if (!user) return
     try {
-      logger.log('🔃 Refreshing session...')
+      logger.log('Refreshing session...')
       await user.reload()
       setLastActivity(Date.now())
       // Actualizar en background
@@ -318,7 +321,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         (e) => logger.error('Error updating lastActivity:', e)
       )
     } catch (error) {
-      logger.error('❌ Error refreshing session:', error)
+      logger.error('Error refreshing session:', error)
     }
   }, [user])
 
@@ -347,7 +350,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return
     const checkInactivity = setInterval(() => {
       if (Date.now() - lastActivity >= SECURITY_CONFIG.sessionTimeout) {
-        logger.warn('⏰ Session timeout due to inactivity')
+        logger.warn(' Session timeout due to inactivity')
         logout()
       }
     }, 60000)
@@ -357,18 +360,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // ==================== RENOVACIÓN DE TOKEN ====================
 
   useEffect(() => {
-    logger.log('🔄 Setting up token refresh listener')
+    logger.log('Setting up token refresh listener')
     const unsubscribe = onIdTokenChanged(auth, async (tokenUser) => {
       if (tokenUser) {
         try {
           const tokenResult = await tokenUser.getIdTokenResult()
           const timeUntilExpiry = new Date(tokenResult.expirationTime).getTime() - Date.now()
           if (timeUntilExpiry < 5 * 60 * 1000) {
-            logger.log('🔑 Token about to expire, refreshing...')
+            logger.log(' Token about to expire, refreshing...')
             await tokenUser.getIdToken(true)
           }
         } catch (error) {
-          logger.error('❌ Error checking token:', error)
+          logger.error('Error checking token:', error)
         }
       }
     })
