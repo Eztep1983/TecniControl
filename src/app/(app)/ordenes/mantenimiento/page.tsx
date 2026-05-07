@@ -129,7 +129,6 @@ export default function OrdenesMantenimientoPage() {
       correctivo: 'Correctivo',
       diagnostico: 'Diagnóstico',
       instalacion: 'Instalación',
-      garantia: 'Garantía'
     }
     return labels[tipo] || tipo
   }, []);

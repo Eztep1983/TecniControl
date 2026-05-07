@@ -15,7 +15,7 @@ interface Pieza {
 }
 
 interface MantenimientoInfoProps {
-  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia' | '' 
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | '' 
   tareasSeleccionadas: string[]
   tareasPersonalizadas: string[]
   piezasUsadas: Pieza[]
@@ -25,7 +25,7 @@ interface MantenimientoInfoProps {
   pruebasRealizadas?: string
   diagnosticoFinal?: string
   
-  onCambiarTipoMantenimiento: (tipo: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia' | '') => void
+  onCambiarTipoMantenimiento: (tipo: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | '') => void
   onToggleTareaPredefinida: (tarea: string) => void
   onSetMostrarTareasPredefinidas: (mostrar: boolean) => void
   onActualizarTareaPersonalizada: (index: number, valor: string) => void
@@ -79,14 +79,6 @@ const TIPO_CONFIG = {
     colorBg: 'bg-purple-500/10',
     colorIcon: 'bg-purple-500/20 text-purple-400',
     colorText: 'text-purple-300',
-  },
-  garantia: {
-    icono: ShieldCheck,
-    nombre: 'Garantía',
-    colorBorder: 'border-amber-500/40',
-    colorBg: 'bg-amber-500/10',
-    colorIcon: 'bg-amber-500/20 text-amber-400',
-    colorText: 'text-amber-300',
   },
 } as const
 
@@ -198,52 +190,75 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
       </div>
 
       <div className="p-4 sm:p-5 flex flex-col gap-6">
-        {/* Selección de Tipos Vertical (Refactorizado) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {(['preventivo', 'correctivo', 'diagnostico', 'instalacion', 'garantia'] as const).map(tipo => {
-            const config = TIPO_CONFIG[tipo]
-            const active = tipoMantenimiento === tipo
-            return (
-              <button
-                key={tipo}
-                type="button"
-                onClick={() => onCambiarTipoMantenimiento(tipo)}
-                className={`
-                  relative flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-300 touch-manipulation group
-                  ${active 
-                    ? `${config.colorBorder} ${config.colorBg} shadow-xl shadow-${tipo === 'preventivo' ? 'green' : tipo === 'correctivo' ? 'orange' : tipo === 'instalacion' ? 'purple' : tipo === 'garantia' ? 'amber' : 'blue'}-500/10 scale-[1.02] z-10` 
-                    : `border-gray-700/50 bg-gray-900/40 hover:bg-gray-800/80 hover:border-gray-600`
-                  }
-                `}
-              >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                  active ? config.colorIcon : 'bg-gray-800 text-gray-500 group-hover:bg-gray-700'
-                }`}>
-                  <config.icono className={`w-6 h-6 ${active ? 'animate-pulse' : ''}`} />
+        {/* Selección de Tipos */}
+        {!tipoMantenimiento ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-in fade-in zoom-in-95 duration-300">
+            {(['preventivo', 'correctivo', 'diagnostico', 'instalacion'] as const).map(tipo => {
+              const config = TIPO_CONFIG[tipo]
+              return (
+                <button
+                  key={tipo}
+                  type="button"
+                  onClick={() => onCambiarTipoMantenimiento(tipo)}
+                  className="relative flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-700/50 bg-gray-900/40 hover:bg-gray-800/80 hover:border-gray-600 transition-all duration-300 touch-manipulation group active:scale-[0.98]"
+                >
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-gray-800 text-gray-500 group-hover:bg-gray-700 transition-all duration-300">
+                    <config.icono className="w-6 h-6" />
+                  </div>
+                  
+                  <div className="flex-1 text-left">
+                    <span className="block text-sm font-bold uppercase tracking-wider text-gray-400 group-hover:text-gray-200">
+                      {config.nombre}
+                    </span>
+                    <p className="text-[11px] mt-0.5 text-gray-600 group-hover:text-gray-500">
+                      {tipo === 'preventivo' && 'Mantenimiento de rutina'}
+                      {tipo === 'correctivo' && 'Reparación de fallas'}
+                      {tipo === 'diagnostico' && 'Evaluación técnica'}
+                      {tipo === 'instalacion' && 'Puesta en marcha'}
+                    </p>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className={`
+              relative flex items-center justify-between p-4 rounded-2xl border-2 transition-all shadow-lg
+              ${TIPO_CONFIG[tipoMantenimiento].colorBorder} ${TIPO_CONFIG[tipoMantenimiento].colorBg}
+            `}>
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-inner ${TIPO_CONFIG[tipoMantenimiento].colorIcon}`}>
+                  {(() => {
+                    const Icono = TIPO_CONFIG[tipoMantenimiento].icono;
+                    return <Icono className="w-6 h-6 animate-pulse" />
+                  })()}
                 </div>
                 
                 <div className="flex-1 text-left">
-                  <span className={`block text-sm font-bold uppercase tracking-wider transition-colors ${active ? config.colorText : 'text-gray-400'}`}>
-                    {config.nombre}
-                  </span>
-                  <p className={`text-[11px] mt-0.5 transition-colors ${active ? 'text-white/60' : 'text-gray-600'}`}>
-                    {tipo === 'preventivo' && 'Mantenimiento de rutina'}
-                    {tipo === 'correctivo' && 'Reparación de fallas'}
-                    {tipo === 'diagnostico' && 'Evaluación técnica'}
-                    {tipo === 'instalacion' && 'Puesta en marcha'}
-                    {tipo === 'garantia' && 'Servicio post-venta'}
+                  <div className="flex items-center gap-2">
+                    <span className={`block text-sm font-bold uppercase tracking-wider ${TIPO_CONFIG[tipoMantenimiento].colorText}`}>
+                      {TIPO_CONFIG[tipoMantenimiento].nombre}
+                    </span>
+                    <CheckCircle2 className={`w-4 h-4 ${TIPO_CONFIG[tipoMantenimiento].colorText.split(' ')[0]}`} />
+                  </div>
+                  <p className="text-[11px] mt-0.5 text-white/60">
+                    Trabajando en {TIPO_CONFIG[tipoMantenimiento].nombre.toLowerCase()}
                   </p>
                 </div>
+              </div>
 
-                {active && (
-                  <div className="absolute top-3 right-3">
-                    <CheckCircle2 className={`w-5 h-5 ${config.colorText.split(' ')[0]}`} />
-                  </div>
-                )}
+              <button
+                type="button"
+                onClick={() => onCambiarTipoMantenimiento('')}
+                className="flex items-center gap-2 px-4 py-2.5 bg-gray-900/60 hover:bg-gray-800 text-gray-300 hover:text-white text-xs font-bold rounded-xl border border-gray-700/50 transition-all active:scale-95 touch-manipulation shadow-sm"
+              >
+                <Wrench className="w-3.5 h-3.5" />
+                <span>CAMBIAR</span>
               </button>
-            )
-          })}
-        </div>
+            </div>
+          </div>
+        )}
 
         {/* Flujo Vertical del Mantenimiento */}
         <div className="transition-all duration-300">
@@ -261,7 +276,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
              <InstalacionInfo {...instalacionProps} />
           )}
 
-          {(tipoMantenimiento === 'preventivo' || tipoMantenimiento === 'correctivo' || tipoMantenimiento === 'garantia') && (
+          {(tipoMantenimiento === 'preventivo' || tipoMantenimiento === 'correctivo') && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
               
               {/* Sección Tareas */}
@@ -273,16 +288,20 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                 <TareasInput {...tareasInputProps} />
               </section>
 
-              <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-700/50 to-transparent" />
+              {tipoMantenimiento !== 'preventivo' && (
+                <>
+                  <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-700/50 to-transparent" />
 
-              {/* Sección Repuestos */}
-              <section className="relative z-10">
-                <div className="flex items-center gap-2 mb-3 px-1">
-                  <div className="w-1.5 h-5 bg-purple-500 rounded-full" />
-                  <h3 className="text-gray-200 text-sm font-semibold uppercase tracking-wider">Repuestos Utilizados</h3>
-                </div>
-                <PiezasInput {...piezasInputProps} />
-              </section>
+                  {/* Sección Repuestos */}
+                  <section className="relative z-10">
+                    <div className="flex items-center gap-2 mb-3 px-1">
+                      <div className="w-1.5 h-5 bg-purple-500 rounded-full" />
+                      <h3 className="text-gray-200 text-sm font-semibold uppercase tracking-wider">Repuestos Utilizados</h3>
+                    </div>
+                    <PiezasInput {...piezasInputProps} />
+                  </section>
+                </>
+              )}
 
             </div>
           )}

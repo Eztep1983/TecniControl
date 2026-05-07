@@ -6,7 +6,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { obtenerTareasPredefinidas, guardarTareasPredefinidas, TareaPredefinida } from '@/lib/configuracionTareasR-helpers'
 
 interface TareasInputProps {
-  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'garantia' | 'instalacion' | ''
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | ''
   tareasSeleccionadas: string[]
   tareasPersonalizadas: string[]
   onToggleTareaPredefinida: (tarea: string) => void
@@ -132,7 +132,7 @@ export default function TareasInput({
     onToggleTareaPredefinida(nombre)
     setQuery('')
     setIsOpen(false)
-    inputRef.current?.focus()
+    inputRef.current?.blur()
   }, [onToggleTareaPredefinida])
 
   const handleEliminarChip = useCallback((chip: typeof chips[0]) => {
@@ -158,8 +158,8 @@ export default function TareasInput({
     <div className="space-y-4">
       {/* Search Input (Omnibox) */}
       <div className="relative" ref={dropdownRef}>
-        <div className="relative flex items-center">
-          <Search className="absolute left-3 w-5 h-5 text-gray-400 pointer-events-none" />
+        <div className="relative flex items-center group">
+          <Search className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:text-blue-400 transition-colors pointer-events-none" />
           <input
             ref={inputRef}
             type="text"
@@ -171,35 +171,36 @@ export default function TareasInput({
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder={cargando ? "Cargando tareas..." : "Busca o añade una tarea..."}
-            className="w-full pl-10 pr-10 py-3.5 bg-gray-800/80 border-2 border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50 focus:bg-gray-800 transition-all text-base touch-manipulation"
+            className="w-full pl-12 pr-12 py-4 bg-gray-800/80 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:bg-gray-800 transition-all text-base touch-manipulation shadow-inner"
             disabled={cargando}
           />
           {query && (
              <button
                type="button"
                onClick={() => { setQuery(''); setIsOpen(false) }}
-               className="absolute right-3 p-1.5 text-gray-400 hover:text-white rounded-md touch-manipulation"
+               className="absolute right-3 w-10 h-10 flex items-center justify-center text-gray-500 hover:text-white rounded-xl hover:bg-gray-700/50 transition-colors touch-manipulation"
+               aria-label="Limpiar búsqueda"
              >
-               <X className="w-4 h-4" />
+               <X className="w-5 h-5" />
              </button>
           )}
         </div>
 
         {/* Dropdown Lista */}
         {isOpen && (!cargando) && (opcionesDisponibles.length > 0 || mostrarOpcionAgregar) && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800 border-2 border-gray-700/80 rounded-xl shadow-xl shadow-black/50 overflow-hidden z-[60] max-h-60 overflow-y-auto overscroll-contain">
+          <div className="absolute top-full left-0 right-0 mt-3 bg-gray-800 border-2 border-gray-700/80 rounded-2xl shadow-2xl shadow-black/80 overflow-hidden z-[100] max-h-72 overflow-y-auto overscroll-contain animate-in fade-in slide-in-from-top-2 duration-200">
             {mostrarOpcionAgregar && (
               <button
                 type="button"
                 onClick={() => handleAgregarPersonalizada(query.trim())}
-                className="w-full text-left px-4 py-3 border-b border-gray-700/50 hover:bg-gray-700/50 text-blue-300 active:bg-gray-700 transition-colors flex items-center gap-3"
+                className="w-full text-left px-5 py-4 border-b border-gray-700/50 hover:bg-blue-500/10 text-blue-300 active:bg-blue-500/20 transition-all flex items-center gap-4 group"
               >
-                <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex-shrink-0 flex items-center justify-center">
-                  <Plus className="w-4 h-4 text-blue-400" />
+                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Plus className="w-5 h-5 text-blue-400" />
                 </div>
-                <div>
-                  <span className="block font-medium">Añadir "{query.trim()}"</span>
-                  <span className="text-xs text-blue-400/70">Como tarea nueva</span>
+                <div className="flex-1">
+                  <span className="block font-bold text-sm uppercase tracking-wide">Añadir "{query.trim()}"</span>
+                  <span className="text-[11px] text-blue-400/60 font-medium">Nueva tarea personalizada</span>
                 </div>
               </button>
             )}
@@ -209,12 +210,15 @@ export default function TareasInput({
                 key={tarea.id}
                 type="button"
                 onClick={() => handleSeleccionarPredefinida(tarea.nombre)}
-                className="w-full text-left px-4 py-3 hover:bg-gray-700/30 active:bg-gray-700/50 text-gray-200 transition-colors border-b border-gray-700/30 last:border-0 flex items-center gap-3"
+                className="w-full text-left px-5 py-4 hover:bg-gray-700/40 active:bg-gray-700/60 text-gray-200 transition-all border-b border-gray-700/30 last:border-0 flex items-center gap-4 group"
               >
-                <div className="w-8 h-8 rounded-lg bg-gray-700 flex-shrink-0 flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-gray-400" />
+                <div className="w-10 h-10 rounded-xl bg-gray-700 flex-shrink-0 flex items-center justify-center group-hover:bg-gray-600 transition-colors">
+                  <Zap className="w-5 h-5 text-gray-400 group-hover:text-yellow-400 transition-colors" />
                 </div>
-                <span className="break-words">{tarea.nombre}</span>
+                <div className="flex-1">
+                  <span className="block font-medium text-sm sm:text-base leading-tight">{tarea.nombre}</span>
+                  {tarea.categoria && <span className="text-[10px] text-gray-500 uppercase tracking-tighter">{tarea.categoria}</span>}
+                </div>
               </button>
             ))}
           </div>
@@ -223,48 +227,56 @@ export default function TareasInput({
 
       {/* Alertas Error */}
       {error && (
-        <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          <p>{error}</p>
+        <div className="flex items-center gap-3 text-red-400 text-sm bg-red-500/10 p-4 rounded-xl border border-red-500/20 animate-in shake duration-500">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <p className="font-medium">{error}</p>
         </div>
       )}
 
       {/* Chips (Seleccionadas) */}
       {chips.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2">
-          {chips.map(chip => (
-            <div 
-              key={chip.id}
-              className={`
-                group inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors
-                ${chip.esPredefinida 
-                  ? 'bg-blue-500/10 text-blue-300 border-blue-500/30' 
-                  : 'bg-purple-500/10 text-purple-300 border-purple-500/30'
-                }
-              `}
-            >
-              <span>{chip.nombre}</span>
-              <button
-                type="button"
-                onClick={() => handleEliminarChip(chip)}
+        <div className="flex flex-col gap-2.5 mt-2">
+          <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Items seleccionados</h4>
+          <div className="flex flex-wrap gap-2.5">
+            {chips.map(chip => (
+              <div 
+                key={chip.id}
                 className={`
-                  p-0.5 rounded-full hover:bg-black/20 focus:outline-none transition-colors 
-                  ${chip.esPredefinida ? 'text-blue-400 hover:text-blue-200' : 'text-purple-400 hover:text-purple-200'}
+                  group inline-flex items-center gap-2.5 pl-4 pr-2 py-2 rounded-2xl text-sm font-semibold border transition-all animate-in zoom-in-90 duration-200
+                  ${chip.esPredefinida 
+                    ? 'bg-blue-500/10 text-blue-300 border-blue-500/30 shadow-blue-500/5' 
+                    : 'bg-purple-500/10 text-purple-300 border-purple-500/30 shadow-purple-500/5'
+                  }
                 `}
-                aria-label="Eliminar tarea"
               >
-                <X className="w-3.5 h-3.5" strokeWidth={2.5} />
-              </button>
-            </div>
-          ))}
+                <span className="max-w-[200px] truncate">{chip.nombre}</span>
+                <button
+                  type="button"
+                  onClick={() => handleEliminarChip(chip)}
+                  className={`
+                    w-8 h-8 flex items-center justify-center rounded-xl hover:bg-black/20 focus:outline-none transition-colors touch-manipulation
+                    ${chip.esPredefinida ? 'text-blue-400 hover:text-blue-200' : 'text-purple-400 hover:text-purple-200'}
+                  `}
+                  aria-label="Eliminar tarea"
+                >
+                  <X className="w-4 h-4" strokeWidth={3} />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
       {chips.length === 0 && !cargando && (
-        <div className="text-center py-4 text-gray-500 text-sm border-2 border-dashed border-gray-700/30 rounded-xl">
-          No hay actividades registradas aún
+        <div className="flex flex-col items-center justify-center py-10 px-4 text-center border-2 border-dashed border-gray-700/30 rounded-2xl bg-gray-800/10">
+          <div className="w-12 h-12 rounded-full bg-gray-800/50 flex items-center justify-center mb-3">
+             <Plus className="w-6 h-6 text-gray-600" />
+          </div>
+          <p className="text-gray-500 text-sm font-medium">No hay actividades registradas aún</p>
+          <p className="text-gray-600 text-xs mt-1">Usa el buscador para añadir tareas realizadas</p>
         </div>
       )}
     </div>
   )
+  
 }

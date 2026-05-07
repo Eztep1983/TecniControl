@@ -191,7 +191,7 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
     <div className="space-y-8 max-w-3xl mx-auto pb-10 touch-pan-y">
       
       {/* Observaciones Iniciales */}
-      <section className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all active:border-blue-500/30">
+      <section className="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all active:border-blue-500/30">
         <SectionHeader
           icon={FileText}
           title="Estado Inicial"
@@ -212,7 +212,7 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
       </section>
 
       {/* Pruebas Realizadas */}
-      <section className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all active:border-purple-500/30">
+      <section className="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all active:border-purple-500/30">
         <SectionHeader
           icon={Activity}
           title="Procedimientos"
@@ -233,7 +233,7 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
       </section>
 
       {/* Diagnóstico Final */}
-      <section className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all active:border-green-500/30">
+      <section className="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all active:border-green-500/30">
         <SectionHeader
           icon={AlertCircle}
           title="Conclusión"

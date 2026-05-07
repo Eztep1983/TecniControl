@@ -181,6 +181,15 @@ const ClienteSelector = memo(function ClienteSelector({
         </div>
       </div>
       
+        <button
+          type="button"
+          onClick={modal.openCreate}
+          className="w-full sm:w-auto text-xl bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 text-sm font-medium shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30 hover:-translate-y-0.5 active:scale-95"
+        >
+        <UserPlus className="w-4 h-4" />
+        <span>Nuevo Cliente</span>
+      </button>
+      
       <div className="relative">
         <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
         <input
@@ -208,7 +217,7 @@ const ClienteSelector = memo(function ClienteSelector({
           <div className="p-3 bg-gray-900/50 border-b border-gray-700/50">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-blue-400" />
-              <p className="text-sm text-gray-300 font-medium">Clientes Recientes</p>
+              <p className="text-lg text-gray-300 font-medium">Clientes Recientes</p>
               <span className="text-xs text-gray-500 bg-gray-700/50 px-2 py-1 rounded-full">
                 {ultimosClientes.length} de {clientesValidos.length}
               </span>
@@ -366,14 +375,6 @@ const ClienteSelector = memo(function ClienteSelector({
         </div>
       )}
       
-      <button
-        type="button"
-        onClick={modal.openCreate}
-        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 text-sm font-medium shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30 hover:-translate-y-0.5 active:scale-95"
-      >
-        <UserPlus className="w-4 h-4" />
-        <span>Nuevo Cliente</span>
-      </button>
     </div>
     )}
     </>

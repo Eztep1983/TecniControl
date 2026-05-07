@@ -27,14 +27,14 @@ const SelectorCantidad = memo(({
   onCambiar: (c: number) => void, 
   onEliminar: () => void 
 }) => (
-  <div className="flex items-center gap-1.5 bg-gray-900/50 p-1 rounded-lg border border-gray-700/50">
+  <div className="flex items-center gap-1 bg-gray-900/80 p-1 rounded-xl border border-gray-700/50 shadow-inner">
     <button
       type="button"
       onClick={() => cantidad > 1 ? onCambiar(cantidad - 1) : onEliminar()}
-      className="w-8 h-8 flex items-center justify-center bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-md transition-colors"
+      className="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg transition-all text-gray-400 hover:text-white"
       aria-label="Disminuir cantidad"
     >
-      <span className="text-lg font-medium select-none">-</span>
+      <span className="text-xl font-bold select-none">-</span>
     </button>
     
     <input
@@ -45,17 +45,17 @@ const SelectorCantidad = memo(({
         if (val > 0 && val <= 999) onCambiar(val);
       }}
       min="1" max="999"
-      className="w-10 text-center bg-transparent border-none text-white text-sm focus:ring-0 p-0 select-none appearance-none"
+      className="w-12 text-center bg-transparent border-none text-white text-sm font-bold focus:ring-0 p-0 select-none appearance-none"
     />
     
     <button
       type="button"
       onClick={() => cantidad < 999 ? onCambiar(cantidad + 1) : null}
-      className="w-8 h-8 flex items-center justify-center bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-md transition-colors disabled:opacity-50"
+      className="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg transition-all text-gray-400 hover:text-white disabled:opacity-30"
       disabled={cantidad >= 999}
       aria-label="Aumentar cantidad"
     >
-      <span className="text-lg font-medium select-none">+</span>
+      <span className="text-xl font-bold select-none">+</span>
     </button>
   </div>
 ))
@@ -144,11 +144,10 @@ export default memo(function PiezasInput({
     setPiezasUsadas(prev => [...prev, {
       pieza: pieza.nombre, cantidad: 1, tipo: 'predefinida', idPredefinida: pieza.id
     }])
-    setQuery(''); setIsOpen(false); inputRef.current?.focus()
+    setQuery(''); setIsOpen(false); inputRef.current?.blur()
   }, [setPiezasUsadas])
 
   const handleAgregarPersonalizada = useCallback((nombre: string) => {
-    // Auto-guardado en background como predefinida
     if (user?.uid) {
       const nuevaPiezaPredefinida: PiezaPredefinida = {
         id: Date.now().toString(),
@@ -196,8 +195,8 @@ export default memo(function PiezasInput({
     <div className="space-y-4">
       {/* Search Input (Omnibox) */}
       <div className="relative" ref={dropdownRef}>
-        <div className="relative flex items-center">
-          <Search className="absolute left-3 w-5 h-5 text-gray-400 pointer-events-none" />
+        <div className="relative flex items-center group">
+          <Search className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:text-purple-400 transition-colors pointer-events-none" />
           <input
             ref={inputRef}
             type="text"
@@ -209,35 +208,36 @@ export default memo(function PiezasInput({
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder={loading ? "Cargando repuestos..." : "Busca o añade un repuesto..."}
-            className="w-full pl-10 pr-10 py-3.5 bg-gray-800/80 border-2 border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-purple-500/50 focus:bg-gray-800 transition-all text-base touch-manipulation"
+            className="w-full pl-12 pr-12 py-4 bg-gray-800/80 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-gray-800 transition-all text-base touch-manipulation shadow-inner"
             disabled={loading}
           />
           {query && (
              <button
                type="button"
                onClick={() => { setQuery(''); setIsOpen(false) }}
-               className="absolute right-3 p-1.5 text-gray-400 hover:text-white rounded-md touch-manipulation"
+               className="absolute right-3 w-10 h-10 flex items-center justify-center text-gray-500 hover:text-white rounded-xl hover:bg-gray-700/50 transition-colors touch-manipulation"
+               aria-label="Limpiar búsqueda"
              >
-               <X className="w-4 h-4" />
+               <X className="w-5 h-5" />
              </button>
           )}
         </div>
 
         {/* Dropdown Lista */}
         {isOpen && (!loading) && (opcionesDisponibles.length > 0 || mostrarAgregar) && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800 border-2 border-gray-700/80 rounded-xl shadow-xl shadow-black/50 overflow-hidden z-[60] max-h-60 overflow-y-auto overscroll-contain">
+          <div className="absolute top-full left-0 right-0 mt-3 bg-gray-800 border-2 border-gray-700/80 rounded-2xl shadow-2xl shadow-black/80 overflow-hidden z-[100] max-h-72 overflow-y-auto overscroll-contain animate-in fade-in slide-in-from-top-2 duration-200">
             {mostrarAgregar && (
               <button
                 type="button"
                 onClick={() => handleAgregarPersonalizada(queryLimpio)}
-                className="w-full text-left px-4 py-3 border-b border-gray-700/50 hover:bg-gray-700/50 text-purple-300 active:bg-gray-700 transition-colors flex items-center gap-3"
+                className="w-full text-left px-5 py-4 border-b border-gray-700/50 hover:bg-purple-500/10 text-purple-300 active:bg-purple-500/20 transition-all flex items-center gap-4 group"
               >
-                <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex-shrink-0 flex items-center justify-center">
-                  <Plus className="w-4 h-4 text-purple-400" />
+                <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Plus className="w-5 h-5 text-purple-400" />
                 </div>
-                <div>
-                  <span className="block font-medium">Añadir "{queryLimpio}"</span>
-                  <span className="text-xs text-purple-400/70">Como pieza manual</span>
+                <div className="flex-1">
+                  <span className="block font-bold text-sm uppercase tracking-wide">Añadir "{queryLimpio}"</span>
+                  <span className="text-[11px] text-purple-400/60 font-medium">Repuesto manual</span>
                 </div>
               </button>
             )}
@@ -247,16 +247,14 @@ export default memo(function PiezasInput({
                 key={pieza.id}
                 type="button"
                 onClick={() => handleAgregarPredefinida(pieza)}
-                className="w-full text-left px-4 py-3 hover:bg-gray-700/30 active:bg-gray-700/50 text-gray-200 transition-colors border-b border-gray-700/30 last:border-0 flex items-center justify-between gap-3"
+                className="w-full text-left px-5 py-4 hover:bg-gray-700/40 active:bg-gray-700/60 text-gray-200 transition-all border-b border-gray-700/30 last:border-0 flex items-center gap-4 group"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gray-700 flex-shrink-0 flex items-center justify-center">
-                    <Package className="w-4 h-4 text-gray-400" />
-                  </div>
-                  <div>
-                    <span className="block">{pieza.nombre}</span>
-                    {pieza.categoria && <span className="text-xs text-gray-500">{pieza.categoria}</span>}
-                  </div>
+                <div className="w-10 h-10 rounded-xl bg-gray-700 flex-shrink-0 flex items-center justify-center group-hover:bg-gray-600 transition-colors">
+                  <Package className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
+                </div>
+                <div className="flex-1">
+                  <span className="block font-medium text-sm sm:text-base leading-tight">{pieza.nombre}</span>
+                  {pieza.categoria && <span className="text-[10px] text-gray-500 uppercase tracking-tighter">{pieza.categoria}</span>}
                 </div>
               </button>
             ))}
@@ -266,30 +264,31 @@ export default memo(function PiezasInput({
 
       {/* Alertas */}
       {errorMostrar && (
-        <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          <p>{errorMostrar}</p>
+        <div className="flex items-center gap-3 text-red-400 text-sm bg-red-500/10 p-4 rounded-xl border border-red-500/20 animate-in shake duration-500">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <p className="font-medium">{errorMostrar}</p>
         </div>
       )}
 
-      {/* Lista de Repuestos Seleccionados (Compacta Vertical) */}
+      {/* Lista de Repuestos Seleccionados */}
       {piezasUsadas.length > 0 && (
-        <div className="flex flex-col gap-2 mt-2">
+        <div className="flex flex-col gap-3 mt-2">
+          <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Repuestos agregados</h4>
           {piezasUsadas.map((pieza, index) => (
             <div 
               key={`${pieza.tipo}-${pieza.idPredefinida || index}`} 
-              className="flex items-center justify-between p-3 bg-gray-800/40 rounded-xl border border-gray-700/50 border-l-4 border-l-purple-500/50"
+              className="group flex items-center justify-between p-4 bg-gray-800/40 rounded-2xl border border-gray-700/50 border-l-4 border-l-purple-500/50 shadow-sm animate-in slide-in-from-left-2 duration-300"
             >
-              <div className="min-w-0 flex-1 pr-3">
-                <span className="block font-medium text-white truncate max-w-full">
+              <div className="min-w-0 flex-1 pr-4">
+                <span className="block font-bold text-white text-sm sm:text-base truncate">
                   {pieza.pieza}
                 </span>
-                <span className="text-xs text-gray-500">
-                  {pieza.tipo === 'personalizada' ? 'Personalizada' : 'De inventario'}
+                <span className="text-[10px] uppercase font-bold tracking-tighter text-gray-500">
+                  {pieza.tipo === 'personalizada' ? 'Personalizado' : 'Inventario'}
                 </span>
               </div>
               
-              <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+              <div className="flex items-center gap-3 flex-shrink-0">
                 <SelectorCantidad 
                   cantidad={pieza.cantidad}
                   onCambiar={(c) => handleCambiarCantidad(index, c)}
@@ -299,10 +298,10 @@ export default memo(function PiezasInput({
                 <button
                   type="button"
                   onClick={() => handleEliminar(index)}
-                  className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-500/10 active:bg-red-500/20 rounded-lg transition-colors touch-manipulation flex-shrink-0"
+                  className="w-11 h-11 flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-500/10 active:bg-red-500/20 rounded-xl transition-all touch-manipulation shadow-sm"
                   aria-label="Eliminar repuesto"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -311,8 +310,12 @@ export default memo(function PiezasInput({
       )}
 
       {piezasUsadas.length === 0 && !loading && (
-        <div className="text-center py-4 text-gray-500 text-sm border-2 border-dashed border-gray-700/30 rounded-xl">
-          No hay piezas registradas aún
+        <div className="flex flex-col items-center justify-center py-10 px-4 text-center border-2 border-dashed border-gray-700/30 rounded-2xl bg-gray-800/10">
+          <div className="w-12 h-12 rounded-full bg-gray-800/50 flex items-center justify-center mb-3">
+             <Package className="w-6 h-6 text-gray-600" />
+          </div>
+          <p className="text-gray-500 text-sm font-medium">No hay repuestos registrados aún</p>
+          <p className="text-gray-600 text-xs mt-1">Busca piezas en el inventario o añádelas manualmente</p>
         </div>
       )}
     </div>

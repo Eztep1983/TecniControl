@@ -1,209 +1,119 @@
-# refactor.md
+Contexto:
+Aplicación móvil híbrida desarrollada con Capacitor (Android/iOS). Se requiere refactorizar componentes críticos relacionados con la selección de tipos de trabajo (preventivo/correctivo), gestión de tareas y repuestos, y la visualización de actividades realizadas. El objetivo es corregir problemas de usabilidad, estilos, jerarquía visual y accesibilidad con teclado (especialmente en dispositivos táctiles).
 
-## Objetivo
+1. Comportamiento de selección de tipo de trabajo (cierre tras selección)
+Problema actual:
+Al seleccionar un tipo de trabajo (preventivo o correctivo), los demás tipos aún permanecen visibles, lo que genera confusión.
 
-Documentar el proceso de refactorización relacionado con la creación del nuevo componente de tipo **“Instalación”** y la mejora de la interfaz de selección de tipos de mantenimiento dentro de la aplicación de gestión de órdenes de servicio técnico.
+Requisitos de refactorización:
 
-La refactorización tiene como objetivos principales:
+Al hacer clic/toque en un tipo de trabajo (ej. “Preventivo”), se debe ocultar completamente la vista de los otros tipos, mostrando únicamente:
 
-- Agregar un nuevo tipo de orden llamado **Instalación**.
-- Mantener coherencia visual y estructural con los componentes existentes:
-  - Preventivo
-  - Correctivo
-  - Diagnóstico
-- Mejorar la experiencia de usuario cambiando la selección de tipos:
-  - De disposición horizontal
-  - A disposición vertical
-- Mantener un enfoque **mobile-first**.
-- Hacer el flujo más escalable para futuros tipos de servicio.
-- Reducir tiempo de llenado mediante opciones predefinidas y formularios dinámicos.
+El tipo seleccionado (como cabecera o indicador activo).
 
----
+El contenido asociado a ese tipo (lista de tareas, repuestos, etc.).
 
-# Proceso
+Debe existir una opción clara (botón, enlace o elemento UI) para cambiar de tipo o volver a la selección inicial. Al activarla, se deben mostrar nuevamente todos los tipos disponibles, permitiendo elegir otro.
 
-## 1. Refactorización de la selección de tipos
+El cambio de tipo no debe perder datos ya ingresados en el tipo anterior (a menos que sea explícitamente necesario, pero se recomienda mantenerlos en un estado local o no destructivo).
 
-Anteriormente la selección de tipos de mantenimiento se mostraba de manera horizontal, lo cual generaba varios problemas:
+Criterios de aceptación:
 
-- Poco espacio en dispositivos móviles.
-- Escalabilidad limitada al agregar nuevos tipos.
-- Diseño comprimido en pantallas pequeñas.
-- Mala experiencia visual al aumentar la cantidad de opciones.
+Solo un tipo visible a la vez tras la selección.
 
-### Cambio realizado
+Opción visible y funcional para volver a la pantalla de selección de tipos.
 
-La selección de tipos fue modificada para utilizar una estructura vertical.
+Transiciones suaves (sin parpadeos ni saltos de layout).
 
-### Nuevo comportamiento
+2. Corrección de estilos y problemas al agregar tareas o repuestos (predefinidos o personalizados)
+Problemas observados:
 
-Ahora los tipos se muestran como una lista vertical de componentes seleccionables:
+Los estilos se rompen al alternar entre tareas/repuestos predefinidos vs personalizados.
 
-- Preventivo
-- Correctivo
-- Diagnóstico
-- Instalación
+Posibles errores de estado (no se agrega correctamente, se duplica, o no se valida).
 
-### Beneficios
+Mala experiencia al escribir en campos personalizados (teclado móvil cubre input, foco perdido, etc.).
 
-- Mejor lectura en dispositivos móviles.
-- Mayor espacio para descripciones o estados.
-- Escalabilidad para nuevos módulos.
-- Mejor separación visual entre opciones.
-- Interacción táctil más cómoda.
+Requisitos de refactorización:
 
----
+Revisar y unificar los estilos para ambos modos (predefinido y personalizado) tanto en preventivo como correctivo. Asegurar:
 
-## 2. Creación del componente “Instalación”
+Consistencia de tamaños, colores, espaciados y tipografía.
 
-Se creó un nuevo componente de selección llamado **Instalación**, el cual funciona bajo la misma lógica de selección de los otros tipos de mantenimiento.
+Estados hover/focus/active adecuados para pantallas táctiles (área de toque mínima 44x44px).
 
-Este componente puede ser seleccionado como tipo principal de la orden de servicio.
+Corregir la lógica de agregado:
 
----
+Validar que no se agreguen tareas o repuestos vacíos.
 
-# Implementación y pruebas
+Mostrar feedback visual (ej. toast o mensaje temporal) al agregar correctamente.
 
-## Estructura del componente “Instalación”
+Resolver problemas de teclado en Capacitor:
 
-El componente contiene validaciones dinámicas mediante checks seleccionables.
+Ajustar el scroll automático para que el campo activo no quede oculto tras el teclado virtual.
 
-### Funcionalidades implementadas
+Asegurar que el botón “Agregar” o “Confirmar” sea accesible sin necesidad de cerrar el teclado manualmente.
 
----
+Manejar correctamente el evento keyboardDidShow / keyboardDidHide (si es necesario).
 
-## A. Checking de recomendaciones
+Criterios de aceptación:
 
-### Comportamiento
+La interfaz no se distorsiona al cambiar entre modos predefinido/personalizado.
 
-Cuando el usuario selecciona el check de:
+Se puede agregar elementos sin errores de duplicación o pérdida de datos.
 
-- Recomendaciones
+El teclado móvil no interfiere con la visibilidad ni la acción de agregar.
 
-Se debe desplegar automáticamente:
+3. Refactorización de “Actividades Realizadas” y “Repuestos Utilizados” (vista de preventivo/correctivo)
+Problemas actuales:
 
-- Un input opcional para escribir detalles.
-- Opciones de recomendaciones predefinidas.
+Selección de tarea o repuesto poco intuitiva (especialmente con teclado).
 
-### Objetivo
+Problemas de jerarquía visual (no se diferencia claramente entre cabeceras, elementos agregados, botones de acción).
 
-Reducir tiempo de escritura y estandarizar recomendaciones frecuentes.
+Dificultades de navegación por teclado (tabulación, focus, selección con enter/espacio) en una Capacitor App.
 
-### Ejemplos de recomendaciones predefinidas
+Posibles conflictos de estado al alternar entre preventivo y correctivo dentro de esta misma vista.
 
-- Realizar mantenimiento preventivo cada 6 meses.
-- No desconectar el dispositivo incorrectamente.
-- Utilizar regulador de voltaje.
-- Mantener el equipo en ambiente limpio.
-- Verificar conexión de red periódicamente.
+Requisitos de refactorización:
 
-### Validaciones
+Selección de tarea/repuesto:
 
-- El input solo debe mostrarse si el check está activo.
-- El campo es opcional.
-- Debe permitir texto manual adicional.
-- Debe permitir seleccionar recomendaciones rápidas.
+Mejorar el componente de selección (puede ser un modal, un select nativo o lista desplegable) para que funcione bien táctilmente y con teclado externo (si aplica).
 
----
+Asegurar que se pueda seleccionar usando solo el teclado (foco, flechas, intro).
 
-## B. Checking de configuración
+Jerarquía y estilos:
 
-### Comportamiento
+Usar encabezados claros (por ejemplo, <h3>) para separar secciones.
 
-Cuando el usuario selecciona el check de:
+Cada ítem agregado debe tener un diseño consistente (fondo, borde, botón de eliminar).
 
-- Configuración
+Los botones de acción (“Agregar tarea”, “Agregar repuesto”) deben estar bien diferenciados y accesibles.
 
-Se debe mostrar una sección para indicar qué configuración fue realizada.
+Problemas de teclado específicos en Capacitor:
 
-### Ejemplos
+Implementar ion-input o elementos nativos con soporte para enter como confirmación de selección.
 
-- Instalación de impresora.
-- Configuración de escáner.
-- Configuración de red.
-- Configuración WiFi.
-- Configuración de drivers.
-- Configuración de impresión compartida.
+Manejar el foco automático al abrir un modal de selección, y devolver el foco al elemento anterior al cerrar.
 
-### Objetivo
+Evitar que la página haga scroll involuntario al usar teclado.
 
-Permitir documentar claramente las configuraciones realizadas durante la instalación.
+Sincronización entre preventivo y correctivo:
 
-### Validaciones
+Asegurar que al cambiar entre tipos, los datos de “Actividades Realizadas” y “Repuestos Usados” se mantengan según el tipo correspondiente (no se mezclen).
 
-- El bloque solo aparece si el check está activo.
-- Debe permitir múltiples tipos de configuración.
-- Debe adaptarse según el tipo de dispositivo.
-- Debe permitir agregar configuraciones personalizadas.
+Si se usa un solo estado, refactorizar para tener dos colecciones independientes.
 
----
+Criterios de aceptación:
 
-## Refactorización visual
+La selección de tareas/repuestos es fluida con toque y con teclado.
 
-### Antes
+La jerarquía visual es clara (secciones diferenciadas).
 
-- Selección horizontal.
-- Componentes comprimidos.
-- Difícil navegación en móvil.
+Navegación por teclado completa y sin atascos.
 
-### Después
+Los datos de preventivo y correctivo no se sobrescriben ni confunden.
 
-- Selección vertical.
-- Componentes con mejor separación.
-- Mejor legibilidad.
-- Mejor experiencia táctil.
-- Diseño escalable.
-
----
-
-## Consideraciones mobile-first
-
-Durante la implementación se priorizó:
-
-- Compatibilidad móvil.
-- Espaciado táctil adecuado.
-- Componentes responsivos.
-- Inputs de fácil interacción.
-- Scroll vertical natural.
-
----
-
-## Pruebas realizadas
-
-### Selección de tipo
-
-- Selección correcta del componente Instalación.
-- Cambio correcto entre tipos.
-- Persistencia de estado.
-
-### Recomendaciones
-
-- Aparición dinámica del input.
-- Funcionamiento correcto de checks.
-- Inserción de recomendaciones predefinidas.
-- Escritura manual validada.
-
-### Configuración
-
-- Renderizado dinámico del bloque.
-- Visualización correcta en móvil.
-- Manejo de múltiples configuraciones.
-
-### Responsive
-
-- Validación en pantallas móviles.
-- Validación en tablet.
-- Correcto comportamiento del layout vertical.
-
----
-
-## Resultado esperado
-
-La nueva implementación permite:
-
-- Mejor experiencia de usuario.
-- Mayor escalabilidad.
-- Formularios más dinámicos.
-- Menor fricción en el llenado.
-- Mejor adaptación a dispositivos móviles.
-- Base más limpia para futuros tipos de órdenes de servicio.
+Formato de la respuesta esperada
+Por favor, entrega el código refactorizado (o los fragmentos más relevantes) junto con una explicación concisa de los cambios realizados en cada punto. Si la refactorización implica cambios en la arquitectura (estado global, hooks, etc.), menciónalo. Además, incluye notas sobre cómo probar las correcciones en un dispositivo real o emulador con Capacitor.

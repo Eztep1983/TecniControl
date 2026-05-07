@@ -4,7 +4,7 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo, useReducer } from 'react'
 import { OrdenMantenimiento, Cliente, Dispositivo } from '@/types/orden'
-import { ArrowLeft, Monitor, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench, ClipboardCheck, GaugeCircle, Laptop, ShieldCheck, Check } from 'lucide-react'
+import { ArrowLeft, Monitor, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench, ClipboardCheck, GaugeCircle, Laptop, ShieldCheck, PenLine, Check } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { 
   getClientesPorUsuario, 
@@ -20,6 +20,7 @@ import DispositivoSelector from '@/components/forms/DispositivoSelector'
 import MantenimientoInfo from '@/components/forms/MantenimientoInfo'
 import GarantiaInput from '@/components/forms/GarantiaInput'
 import ContadorInput, { Contador } from '@/components/forms/ContadorInput'
+import FirmaInput from '@/components/forms/FirmaInput'
 import ResumenMantenimiento from '@/components/forms/ResumenMantenimiento'
 import { usePersistentReducer } from '@/hooks/usePersistentReducer'
 
@@ -35,7 +36,7 @@ export interface Pieza {
   idPredefinida?: string
 }
 
-export type FormStep = 'cliente' | 'dispositivo' | 'mantenimiento' | 'contador' | 'garantia' | 'resumen'
+export type FormStep = 'cliente' | 'dispositivo' | 'mantenimiento' | 'contador' | 'garantia' | 'firma' | 'resumen'
 
 // ============================================================================
 // STATE MANAGEMENT CON USEREDUCER
@@ -50,7 +51,7 @@ export interface FormState {
   dispositivoSeleccionado: Dispositivo | null
   
   // Mantenimiento
-  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia' | ''
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | ''
   tareasSeleccionadas: string[]
   tareasPersonalizadas: string[]
   mostrarTareasPredefinidas: boolean
@@ -78,6 +79,14 @@ export interface FormState {
   // Contador
   contador: Contador | null
   mostrarContador: boolean
+  
+  // Persistencia por tipo
+  mantenimientoColecciones: Record<string, any>
+  
+  // Firma
+  firmaCliente: string
+  validacionCliente: boolean
+  nombreFirmante: string
   
   // Éxito
   ordenCreada?: OrdenMantenimiento
@@ -114,6 +123,9 @@ type FormAction =
   | { type: 'SET_INSTALACION_CONFIGURACION'; payload: boolean }
   | { type: 'TOGGLE_INSTALACION_CONFIGURACION_TIPO'; payload: string }
   | { type: 'ADD_INSTALACION_CONFIGURACION_PERSONALIZADA'; payload: string }
+  | { type: 'SET_FIRMA_CLIENTE'; payload: string }
+  | { type: 'SET_VALIDACION_CLIENTE'; payload: boolean }
+  | { type: 'SET_NOMBRE_FIRMANTE'; payload: string }
 
 const initialState: FormState = {
   currentStep: 'cliente',
@@ -141,6 +153,10 @@ const initialState: FormState = {
   instalacionConfiguracion: false,
   instalacionConfiguracionTipos: [],
   instalacionConfiguracionPersonalizada: '',
+  mantenimientoColecciones: {},
+  firmaCliente: '',
+  validacionCliente: false,
+  nombreFirmante: '',
 }
 
 function formReducer(state: FormState, action: FormAction): FormState {
@@ -166,25 +182,50 @@ function formReducer(state: FormState, action: FormAction): FormState {
     
     
     case 'SET_TIPO_MANTENIMIENTO':
-      if (state.tipoMantenimiento !== action.payload) {
-        return { 
-          ...state, 
-          tipoMantenimiento: action.payload,
-          tareasSeleccionadas: [],
-          tareasPersonalizadas: [''],
-          piezasUsadas: [],
-          observacionesIniciales: '',
-          pruebasRealizadas: '',
-          diagnosticoFinal: '',
-          contadorMaquina: undefined,
-          instalacionRecomendaciones: false,
-          instalacionRecomendacionesDetalle: '',
-          instalacionConfiguracion: false,
-          instalacionConfiguracionTipos: [],
-          instalacionConfiguracionPersonalizada: ''
-        }
+      if (state.tipoMantenimiento === action.payload) return state;
+
+      const currentTipo = state.tipoMantenimiento;
+      const nextTipo = action.payload;
+
+      // 1. Guardar el estado actual en la colección correspondiente (si hay un tipo seleccionado)
+      const dataToSave = {
+        tareasSeleccionadas: state.tareasSeleccionadas,
+        tareasPersonalizadas: state.tareasPersonalizadas,
+        piezasUsadas: state.piezasUsadas,
+        observacionesIniciales: state.observacionesIniciales,
+        pruebasRealizadas: state.pruebasRealizadas,
+        diagnosticoFinal: state.diagnosticoFinal,
+        instalacionRecomendaciones: state.instalacionRecomendaciones,
+        instalacionRecomendacionesDetalle: state.instalacionRecomendacionesDetalle,
+        instalacionConfiguracion: state.instalacionConfiguracion,
+        instalacionConfiguracionTipos: state.instalacionConfiguracionTipos,
+      };
+
+      const updatedColecciones = {
+        ...state.mantenimientoColecciones,
+        ...(currentTipo ? { [currentTipo]: dataToSave } : {})
+      };
+
+      // 2. Recuperar datos del nuevo tipo o usar valores por defecto
+      const savedData = updatedColecciones[nextTipo as string] || {
+        tareasSeleccionadas: [],
+        tareasPersonalizadas: [''],
+        piezasUsadas: [],
+        observacionesIniciales: '',
+        pruebasRealizadas: '',
+        diagnosticoFinal: '',
+        instalacionRecomendaciones: false,
+        instalacionRecomendacionesDetalle: '',
+        instalacionConfiguracion: false,
+        instalacionConfiguracionTipos: [],
+      };
+
+      return { 
+        ...state, 
+        tipoMantenimiento: action.payload,
+        mantenimientoColecciones: updatedColecciones,
+        ...savedData
       }
-      return state
     
     case 'TOGGLE_TAREA_PREDEFINIDA':
       return {
@@ -308,6 +349,15 @@ function formReducer(state: FormState, action: FormAction): FormState {
         instalacionConfiguracionTipos: [...state.instalacionConfiguracionTipos, action.payload]
       }
     
+    case 'SET_FIRMA_CLIENTE':
+      return { ...state, firmaCliente: action.payload }
+      
+    case 'SET_VALIDACION_CLIENTE':
+      return { ...state, validacionCliente: action.payload }
+      
+    case 'SET_NOMBRE_FIRMANTE':
+      return { ...state, nombreFirmante: action.payload }
+    
     default:
       return state
   }
@@ -344,6 +394,12 @@ const STEPS_CONFIG = [
     title: 'Garantía',
     description: 'Configura garantía',
     icon: <ShieldCheck className="w-5 h-5" />
+  },
+  {
+    key: 'firma' as FormStep,
+    title: 'Firma',
+    description: 'Firma del cliente',
+    icon: <PenLine className="w-5 h-5" />
   },
   {
     key: 'resumen' as FormStep,
@@ -565,6 +621,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     },
     contador: () => true,
     garantia: () => true,
+    firma: () => (state.nombreFirmante || '').trim() !== '' && state.validacionCliente && !!state.firmaCliente,
     resumen: () => true,
   }), [
     state.clienteSeleccionado,
@@ -676,6 +733,16 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       if (state.garantiaDescripcion && state.garantiaDescripcion.trim()) {
         nuevaOrden.garantiaDescripcion = state.garantiaDescripcion.trim()
       }
+      
+      if (state.firmaCliente) {
+        nuevaOrden.firmaCliente = state.firmaCliente
+      }
+      if (state.nombreFirmante) {
+        nuevaOrden.nombreFirmante = state.nombreFirmante.trim()
+      }
+      if (state.validacionCliente) {
+        nuevaOrden.validacionCliente = state.validacionCliente
+      }
 
       Object.keys(nuevaOrden).forEach(key => {
         if (nuevaOrden[key] === undefined) {
@@ -704,7 +771,6 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       correctivo: 'Correctivo',
       diagnostico: 'Diagnóstico',
       instalacion: 'Instalación',
-      garantia: 'Garantía',
       '': 'Sin especificar'
     } as const
     
@@ -717,7 +783,6 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       correctivo: 'bg-orange-600/20 text-orange-400 border-orange-500/30',
       diagnostico: 'bg-blue-600/20 text-blue-400 border-blue-500/30',
       instalacion: 'bg-purple-600/20 text-purple-400 border-purple-500/30',
-      garantia: 'bg-amber-600/20 text-amber-400 border-amber-500/30',
       '': 'bg-gray-600/20 text-gray-400 border-gray-500/30'
     } as const
     
@@ -891,6 +956,18 @@ const contadorInputProps = useMemo(() => ({
               dispatch({ type: 'SET_MESES_GARANTIA', payload: meses })}
             onCambiarDescripcion={(desc: string) => 
               dispatch({ type: 'SET_GARANTIA_DESCRIPCION', payload: desc })}
+          />
+        )
+
+      case 'firma':
+        return (
+          <FirmaInput
+            firmaCliente={state.firmaCliente}
+            setFirmaCliente={(firma) => dispatch({ type: 'SET_FIRMA_CLIENTE', payload: firma })}
+            validacionCliente={state.validacionCliente}
+            setValidacionCliente={(valida) => dispatch({ type: 'SET_VALIDACION_CLIENTE', payload: valida })}
+            nombreFirmante={state.nombreFirmante}
+            setNombreFirmante={(nombre) => dispatch({ type: 'SET_NOMBRE_FIRMANTE', payload: nombre })}
           />
         )
 
@@ -1170,6 +1247,7 @@ const contadorInputProps = useMemo(() => ({
                     {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'diagnostico' && 'Completa todos los campos del diagnóstico'}
                     {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'instalacion' && 'Configura o agrega recomendaciones para continuar'}
                     {state.currentStep === 'mantenimiento' && state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && 'Agrega al menos una tarea para continuar'}
+                    {state.currentStep === 'firma' && 'Proporciona nombre, firma y confirmación para continuar'}
                   </p>
                 </div>
               )}
