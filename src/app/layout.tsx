@@ -10,6 +10,9 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   title: "TecniControl - Gestión de Servicios",
   description: "Gestiona tus órdenes de servicio con facilidad.",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 // app/layout.tsx

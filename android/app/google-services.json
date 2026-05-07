@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "617743990629",
+    "project_id": "tecnicontrol-ae018",
+    "storage_bucket": "tecnicontrol-ae018.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:617743990629:android:ad04e0517c4fe2c763eb8c",
+        "android_client_info": {
+          "package_name": "com.tecnicontrol.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "617743990629-e56ld2n6ru8m0oldkgapenqao7do6d7k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tecnicontrol.app",
+            "certificate_hash": "c75a43481ef3eef8d31ab2176cc0533c8aad2d33"
+          }
+        },
+        {
+          "client_id": "617743990629-pof354ofe6nsfscpk068k93v4bti21e8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPzboLK3xPxd0PMjuLBT-WSjOZlogN2jQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "617743990629-pof354ofe6nsfscpk068k93v4bti21e8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

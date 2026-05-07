@@ -27,6 +27,8 @@ const TIPO_COLORS = {
   preventivo: 'bg-green-500/20 text-green-400 border-green-500/30',
   correctivo: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
   diagnostico: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  instalacion: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  garantia: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
   default: 'bg-gray-500/20 text-gray-400 border-gray-500/30'
 } as const;
 
@@ -277,6 +279,53 @@ const DiagnosticoInfo = memo(({
 
 DiagnosticoInfo.displayName = 'DiagnosticoInfo';
 
+const InstalacionInfoView = memo(({ 
+  recomendaciones,
+  recomendacionesDetalle,
+  configuracion,
+  configuracionTipos
+}: {
+  recomendaciones?: boolean;
+  recomendacionesDetalle?: string;
+  configuracion?: boolean;
+  configuracionTipos?: string[];
+}) => (
+  <div className="space-y-5">
+    {configuracion && (
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+          Configuraciones Realizadas
+        </p>
+        <div className="flex flex-wrap gap-2 mb-2">
+          {configuracionTipos?.map((tipo, idx) => (
+            <span key={idx} className="px-3 py-1 bg-blue-500/10 border border-blue-500/30 rounded-full text-xs font-medium text-blue-300">
+              {tipo}
+            </span>
+          ))}
+          {!configuracionTipos?.length && <p className="text-sm text-gray-500 italic">No se especificaron configuraciones</p>}
+        </div>
+      </div>
+    )}
+    
+    {recomendaciones && (
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+          Recomendaciones
+        </p>
+        <p className="text-sm text-gray-300 bg-green-500/10 p-3 rounded-lg border border-green-500/30 leading-relaxed">
+          {recomendacionesDetalle || 'Sin recomendaciones adicionales'}
+        </p>
+      </div>
+    )}
+
+    {!configuracion && !recomendaciones && (
+      <EmptyState message="No se registró información detallada de la instalación" />
+    )}
+  </div>
+));
+
+InstalacionInfoView.displayName = 'InstalacionInfoView';
+
 const ContadorInfo = memo(({ contador }: { contador?: any }) => {
   if (!contador) return <EmptyState message={DEFAULT_TEXTS.noCounter} />;
 
@@ -456,7 +505,11 @@ const useModalData = (orden: OrdenMantenimiento) => {
       pruebasRealizadas,
       diagnosticoFinal,
       contadorMaquina,
-      contador
+      contador,
+      instalacionRecomendaciones,
+      instalacionRecomendacionesDetalle,
+      instalacionConfiguracion,
+      instalacionConfiguracionTipos
     } = orden;
 
     return {
@@ -479,7 +532,12 @@ const useModalData = (orden: OrdenMantenimiento) => {
       hasPiezas: piezasUsadas.length > 0,
       hasGarantia: !!(garantiaDescripcion || garantiaTiempoDesde || garantiaTiempoHasta),
       hasContador: !!contador,
-      esDiagnostico: tipoMantenimiento === 'diagnostico'
+      esDiagnostico: tipoMantenimiento === 'diagnostico',
+      esInstalacion: tipoMantenimiento === 'instalacion',
+      instalacionRecomendaciones,
+      instalacionRecomendacionesDetalle,
+      instalacionConfiguracion,
+      instalacionConfiguracionTipos,
     };
   }, [orden]);
 };
@@ -608,23 +666,8 @@ const ModalOrden = ({
         role="dialog"
         aria-modal="true"
         aria-label={`Detalles de la orden ${data.idPersonalizado}`}
-        className="bg-gray-800 border border-gray-700/50 rounded-xl p-4 sm:p-6 max-w-4xl w-full max-h-[95vh] overflow-y-auto will-change-scroll shadow-2xl transform transition-all duration-200 scale-100 opacity-100"
-        style={{
-          animation: 'modalFadeIn 0.2s ease-out'
-        }}
+        className="bg-gray-800 border border-gray-700/50 rounded-xl p-4 sm:p-6 max-w-4xl w-full max-h-[95vh] overflow-y-auto will-change-scroll shadow-2xl transform transition-all duration-200 scale-100 opacity-100 animate-modalFadeIn"
       >
-        <style>{`
-          @keyframes modalFadeIn {
-            from {
-              opacity: 0;
-              transform: scale(0.98);
-            }
-            to {
-              opacity: 1;
-              transform: scale(1);
-            }
-          }
-        `}</style>
         
         <ModalHeader 
           idPersonalizado={data.idPersonalizado}
@@ -654,6 +697,15 @@ const ModalOrden = ({
                     pruebasRealizadas={data.pruebasRealizadas}
                     diagnosticoFinal={data.diagnosticoFinal}
                     contadorMaquina={data.contadorMaquina}
+                  />
+                </InfoSection>
+              ) : data.esInstalacion ? (
+                <InfoSection title="Detalles de Instalación">
+                  <InstalacionInfoView 
+                    recomendaciones={data.instalacionRecomendaciones}
+                    recomendacionesDetalle={data.instalacionRecomendacionesDetalle}
+                    configuracion={data.instalacionConfiguracion}
+                    configuracionTipos={data.instalacionConfiguracionTipos}
                   />
                 </InfoSection>
               ) : (

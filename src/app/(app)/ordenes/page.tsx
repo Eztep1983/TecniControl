@@ -5,10 +5,8 @@ import {
   Shield, 
   Wrench, 
   Truck,
-  UserPlus,
   ArrowRight,
   FileCheck,
-  TrendingUp,
   Clock,
   Loader2
 } from 'lucide-react'
@@ -23,30 +21,20 @@ export default function OrdenesPage() {
   // Memoizar conteo de órdenes para evitar recálculos innecesarios
   const ordenesCount = useMemo(() => {
     if (ordenes.length === 0) {
-      return { garantia: 0, mantenimiento: 0, entrega: 0 }
+      return { mantenimiento: 0, entrega: 0 }
     }
 
     return ordenes.reduce((acc, orden) => {
-      const tipo = orden.tipo as 'garantia' | 'mantenimiento' | 'entrega'
+      const tipo = orden.tipo as 'mantenimiento' | 'entrega'
       if (acc.hasOwnProperty(tipo)) {
         acc[tipo]++
       }
       return acc
-    }, { garantia: 0, mantenimiento: 0, entrega: 0 })
+    }, { mantenimiento: 0, entrega: 0 })
   }, [ordenes])
 
   // Configuración de tipos de orden (constante, no cambia)
   const tiposOrden = useMemo(() => [
-    {
-      tipo: 'garantia',
-      titulo: 'Garantía',
-      descripcion: 'Reclamos y servicios bajo garantía',
-      icono: Shield,
-      color: 'bg-blue-600/20 hover:bg-blue-600/30 border-blue-500/30',
-      colorIcon: 'text-blue-400',
-      colorBadge: 'bg-blue-500/20 text-blue-300',
-      ruta: '/ordenes/garantia'
-    },
     {
       tipo: 'mantenimiento',
       titulo: 'Mantenimiento',
@@ -205,22 +193,6 @@ export default function OrdenesPage() {
         )}
       </div>
 
-      {/* Estilos optimizados */}
-      <style jsx global>{`
-        .touch-manipulation {
-          touch-action: manipulation;
-        }
-
-        @media (max-width: 640px) {
-          input, textarea, select {
-            font-size: 16px !important;
-          }
-        }
-
-        button, a, [role="button"] {
-          -webkit-tap-highlight-color: transparent;
-        }
-      `}</style>
     </div>
   )
 }

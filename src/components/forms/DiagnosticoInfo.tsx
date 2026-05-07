@@ -25,7 +25,8 @@ const SectionHeader = memo(({
   colorClass?: string
 }) => (
   <div className="flex items-start gap-4 mb-5">
-    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${
+    {/* Touch target ampliado y activo para feedback táctil */}
+    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg touch-manipulation active:scale-95 transition-transform ${
       colorClass || 'bg-gray-700/50 text-gray-400'
     }`}>
       <Icon className="w-6 h-6" />
@@ -39,31 +40,38 @@ const SectionHeader = memo(({
 
 SectionHeader.displayName = 'SectionHeader'
 
-// Sugerencias rápidas para ahorrar tiempo
+// Sugerencias rápidas optimizadas para entrada táctil
 const QuickSuggestions = memo(({ 
   suggestions, 
   onSelect 
 }: { 
   suggestions: string[], 
   onSelect: (val: string) => void 
-}) => (
-  <div className="flex gap-2 overflow-x-auto pb-2 mt-3 no-scrollbar snap-x">
-    {suggestions.map((text, idx) => (
-      <button
-        key={idx}
-        type="button"
-        onClick={() => onSelect(text)}
-        className="snap-start shrink-0 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 rounded-full text-xs font-medium text-blue-300 transition-all active:scale-95 whitespace-nowrap"
-      >
-        + {text}
-      </button>
-    ))}
-  </div>
-))
+}) => {
+  const handleSelect = useCallback((text: string) => {
+    onSelect(text)
+  }, [onSelect])
+
+  return (
+    <div className="flex gap-2 overflow-x-auto pb-2 mt-3 no-scrollbar snap-x [-webkit-overflow-scrolling:touch]">
+      {suggestions.map((text, idx) => (
+        <button
+          key={idx}
+          type="button"
+          onClick={() => handleSelect(text)}
+          // Touch target mínimo 44x44 (padding vertical + horizontal)
+          className="snap-start shrink-0 px-4 py-2 min-h-[44px] bg-blue-500/10 active:bg-blue-500/20 border border-blue-500/30 rounded-full text-xs font-medium text-blue-300 transition-all active:scale-95 whitespace-nowrap touch-manipulation"
+        >
+          + {text}
+        </button>
+      ))}
+    </div>
+  )
+})
 
 QuickSuggestions.displayName = 'QuickSuggestions'
 
-// Componente de textarea mejorado
+// Componente de textarea optimizado para Android (evita lag al escribir)
 const TextAreaField = memo(({ 
   label,
   placeholder,
@@ -83,6 +91,15 @@ const TextAreaField = memo(({
   helpText?: string
   suggestions?: string[]
 }) => {
+  // Uso de useCallback estable para evitar recrear función en cada render
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(e.target.value)
+  }, [onChange])
+
+  const handleClear = useCallback(() => {
+    onChange('')
+  }, [onChange])
+
   const handleAddSuggestion = useCallback((text: string) => {
     const newValue = value.trim() 
       ? value.endsWith('.') || value.endsWith(',') 
@@ -102,8 +119,8 @@ const TextAreaField = memo(({
         {value && (
           <button 
             type="button" 
-            onClick={() => onChange('')}
-            className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors"
+            onClick={handleClear}
+            className="text-xs text-red-400 active:text-red-300 font-medium transition-colors touch-manipulation min-h-[44px] px-2"
           >
             Limpiar
           </button>
@@ -113,10 +130,16 @@ const TextAreaField = memo(({
       <div className="relative group">
         <textarea
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleChange}
           placeholder={placeholder}
           rows={rows}
           required={required}
+          // Desactivamos autocorrección y corrector ortográfico para evitar sobrecarga en Android
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck="false"
+          // Aseguramos tamaño de fuente mínimo para evitar zoom automático en Android (>=16px)
+          style={{ fontSize: '16px' }}
           className="w-full px-4 py-4 bg-gray-900/40 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-none shadow-inner"
         />
         <div className="absolute top-4 right-4 text-gray-700 pointer-events-none group-focus-within:text-blue-500/30 transition-colors">
@@ -137,6 +160,7 @@ const TextAreaField = memo(({
 
 TextAreaField.displayName = 'TextAreaField'
 
+// Sugerencias predefinidas (constante fuera del componente)
 const SUGGESTIONS = {
   observaciones: [
     "No enciende", "Pantalla rota", "Ruido excesivo", "Lento", "Sobrecalentamiento", 
@@ -163,15 +187,16 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
 }: DiagnosticoInfoProps) {
 
   return (
-    <div className="space-y-8 max-w-3xl mx-auto pb-10">
-
+    // Contenedor principal con scroll suave y desactivación de gestos no deseados
+    <div className="space-y-8 max-w-3xl mx-auto pb-10 touch-pan-y">
+      
       {/* Observaciones Iniciales */}
-      <section className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all hover:border-blue-500/30 group">
+      <section className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all active:border-blue-500/30">
         <SectionHeader
           icon={FileText}
           title="Estado Inicial"
           description="Lo que se observa al recibir el equipo"
-          colorClass="bg-blue-500 text-white shadow-blue-500/20 group-hover:scale-110 transition-transform"
+          colorClass="bg-blue-500 text-white shadow-blue-500/20"
         />
         
         <TextAreaField
@@ -187,12 +212,12 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
       </section>
 
       {/* Pruebas Realizadas */}
-      <section className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all hover:border-purple-500/30 group">
+      <section className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all active:border-purple-500/30">
         <SectionHeader
           icon={Activity}
           title="Procedimientos"
           description="Acciones técnicas ejecutadas"
-          colorClass="bg-purple-500 text-white shadow-purple-500/20 group-hover:scale-110 transition-transform"
+          colorClass="bg-purple-500 text-white shadow-purple-500/20"
         />
         
         <TextAreaField
@@ -208,12 +233,12 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
       </section>
 
       {/* Diagnóstico Final */}
-      <section className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all hover:border-green-500/30 group">
+      <section className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all active:border-green-500/30">
         <SectionHeader
           icon={AlertCircle}
           title="Conclusión"
           description="Veredicto final del servicio técnico"
-          colorClass="bg-green-500 text-white shadow-green-500/20 group-hover:scale-110 transition-transform"
+          colorClass="bg-green-500 text-white shadow-green-500/20"
         />
         
         <TextAreaField
@@ -229,8 +254,8 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
       </section>
 
       {/* Información de ayuda */}
-      <div className="bg-amber-500/5 border border-amber-500/20 rounded-3xl p-6 flex items-start gap-5">
-        <div className="w-12 h-12 rounded-2xl bg--500/10 flex items-center justify-center shrink-0">
+      <div className="bg-amber-500/5 border border-amber-500/20 rounded-3xl p-6 flex items-start gap-5 touch-manipulation">
+        <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center shrink-0">
           <AlertCircle className="w-6 h-6 text-amber-500" />
         </div>
         <div className="space-y-1">
@@ -242,13 +267,28 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
         </div>
       </div>
       
-      <style jsx>{`
+      {/* Estilos específicos para android: scroll táctil suave y eliminación de highlight táctil */}
+      <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;
         }
         .no-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
+        }
+        /* Elimina el resaltado gris al tocar elementos en Android */
+        * {
+          -webkit-tap-highlight-color: transparent;
+        }
+        /* Mejora el rendimiento del scroll en contenedores */
+        .overflow-x-auto {
+          -webkit-overflow-scrolling: touch;
+          scroll-behavior: smooth;
+        }
+        /* Asegura que los inputs no hagan zoom en Android (font-size >= 16px) */
+        input, textarea {
+          font-size: 16px;
         }
       `}</style>
     </div>

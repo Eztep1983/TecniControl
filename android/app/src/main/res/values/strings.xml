@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TecniControl</string>
+    <string name="title_activity_main">TecniControl</string>
+    <string name="package_name">com.tecnicontrol.app</string>
+    <string name="custom_url_scheme">com.tecnicontrol.app</string>
+</resources>

@@ -116,7 +116,9 @@ export default function OrdenesMantenimientoPage() {
     const colors: Record<string, string> = {
       preventivo: 'bg-green-500/20 text-green-400 border-green-500/30',
       correctivo: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-      diagnostico: 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+      diagnostico: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+      instalacion: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+      garantia: 'bg-amber-500/20 text-amber-400 border-amber-500/30'
     }
     return colors[tipo] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
   }, []);
@@ -125,16 +127,20 @@ export default function OrdenesMantenimientoPage() {
     const labels: Record<string, string> = {
       preventivo: 'Preventivo',
       correctivo: 'Correctivo',
-      diagnostico: 'Diagnóstico'
+      diagnostico: 'Diagnóstico',
+      instalacion: 'Instalación',
+      garantia: 'Garantía'
     }
     return labels[tipo] || tipo
   }, []);
 
   // Estadísticas
-  const stats = useMemo(() => ({
+   const stats = useMemo(() => ({
     preventivos: ordenes.filter(o => o.tipoMantenimiento === 'preventivo').length,
     correctivos: ordenes.filter(o => o.tipoMantenimiento === 'correctivo').length,
     diagnosticos: ordenes.filter(o => o.tipoMantenimiento === 'diagnostico').length,
+    instalaciones: ordenes.filter(o => o.tipoMantenimiento === 'instalacion').length,
+    garantias: ordenes.filter(o => o.tipoMantenimiento === 'garantia').length,
     total: ordenes.length
   }), [ordenes]);
 
@@ -321,10 +327,12 @@ export default function OrdenesMantenimientoPage() {
                   <p className="text-sm font-medium text-gray-300 mb-3">Tipo de mantenimiento</p>
                   <div className="space-y-2">
                     {[
-                      { value: 'todos', label: 'Todos', count: stats.total },
+                       { value: 'todos', label: 'Todos', count: stats.total },
                       { value: 'preventivo', label: 'Preventivo', count: stats.preventivos },
                       { value: 'correctivo', label: 'Correctivo', count: stats.correctivos },
-                      { value: 'diagnostico', label: 'Diagnóstico', count: stats.diagnosticos }
+                      { value: 'diagnostico', label: 'Diagnóstico', count: stats.diagnosticos },
+                      { value: 'instalacion', label: 'Instalación', count: stats.instalaciones },
+                      { value: 'garantia', label: 'Garantía', count: stats.garantias }
                     ].map((option) => (
                       <label
                         key={option.value}
@@ -595,7 +603,7 @@ export default function OrdenesMantenimientoPage() {
         </div>
 
         {/* Estadísticas optimizadas */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-4 sm:mt-6">
+         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mt-4 sm:mt-6">
           <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 hover:shadow-lg transition-shadow">
             <div className="flex items-center">
               <div className="bg-green-500/20 p-2 sm:p-3 rounded-lg flex-shrink-0">
@@ -641,8 +649,34 @@ export default function OrdenesMantenimientoPage() {
                 <Wrench className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
               </div>
               <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-400 truncate">Instalaciones</p>
+                <p className="text-xl sm:text-2xl font-bold text-purple-400">
+                  {stats.instalaciones}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 hover:shadow-lg transition-shadow">
+            <div className="flex items-center">
+              <div className="bg-amber-500/20 p-2 sm:p-3 rounded-lg flex-shrink-0">
+                <Wrench className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-400 truncate">Garantías</p>
+                <p className="text-xl sm:text-2xl font-bold text-amber-400">
+                  {stats.garantias}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 hover:shadow-lg transition-shadow">
+            <div className="flex items-center">
+              <div className="bg-gray-500/20 p-2 sm:p-3 rounded-lg flex-shrink-0">
+                <Wrench className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
                 <p className="text-xs sm:text-sm text-gray-400 truncate">Total</p>
-                <p className="text-xl sm:text-2xl font-bold text-purple-400">{stats.total}</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-400">{stats.total}</p>
               </div>
             </div>
           </div>

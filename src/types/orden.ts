@@ -81,12 +81,19 @@ export interface OrdenMantenimiento {
   diagnosticoFinal?: string
   contadorMaquina?: number
   contador?: Contador;
-  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico';
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia';
   tareasRealizadas: string[];
   piezasUsadas: Array<{pieza: string, cantidad: number}>;
   garantiaTiempoDesde: Date | any;
   garantiaTiempoHasta: Date | any;
   garantiaDescripcion: string;
+  
+  // Campos de Instalación
+  instalacionRecomendaciones?: boolean;
+  instalacionRecomendacionesDetalle?: string;
+  instalacionConfiguracion?: boolean;
+  instalacionConfiguracionTipos?: string[];
+  
   createdAt?: Date;
   updatedAt?: Date;
 }

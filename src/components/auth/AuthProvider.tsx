@@ -3,15 +3,18 @@
 // y provee métodos para iniciar sesión, cerrar sesión y refrescar la sesión.
 
 'use client'
-import React, { createContext, useContext, useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react'
+import React, { createContext, useContext, useEffect, useLayoutEffect, useState, useCallback, useRef, useMemo } from 'react'
 import {
   User,
   onAuthStateChanged,
   signInWithPopup,
+  signInWithCredential,
   signOut,
   GoogleAuthProvider,
   onIdTokenChanged,
+  browserPopupRedirectResolver,
 } from 'firebase/auth'
+import { Capacitor } from '@capacitor/core'
 import { auth, db } from '@/lib/firebase'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 
@@ -126,7 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * 3. Cliente sin sesión: loading permanece true hasta que Firebase resuelve.
    */
   const [loading, setLoading] = useState(true)
-  const [lastActivity, setLastActivity] = useState<number>(Date.now())
+  const lastActivityRef = useRef<number>(Date.now())
 
   useIsomorphicLayoutEffect(() => {
     // Solo verificamos si hay sesión para propósitos de UI (spinner),
@@ -209,29 +212,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async (): Promise<void> => {
     try {
-      logger.log(' Starting Google sign in (Popup)...')
-      const provider = new GoogleAuthProvider()
-      provider.setCustomParameters({
-        prompt: 'select_account',
-        access_type: 'online',
-      })
+      const isNative = Capacitor.isNativePlatform();
 
-      const isNative = typeof window !== 'undefined' && !!(window as any).Capacitor?.isNative;
-
-      let result;
       if (isNative) {
-        logger.log('📱 Capacitor native mode detected: using signInWithRedirect');
-        // Usamos importación dinámica para evitar problemas de SSR si fuera necesario
-        const { signInWithRedirect } = await import('firebase/auth');
-        await signInWithRedirect(auth, provider);
-        // Si usamos redirect, la promesa no devuelve resultado, el flujo se procesa 
-        // en el onAuthStateChanged al recargar la app. Retornamos aquí.
-        return;
-      } else {
-        console.log("Checking auth object:", auth);
-        console.log("Checking provider object:", provider);
-        result = await signInWithPopup(auth, provider)
+        logger.log('📱 Capacitor native: usando plugin nativo de Google Sign-In...')
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication')
+
+        // Intentar obtener el Web Client ID de las variables de entorno
+        // Es CRUCIAL para que funcione en Android y devuelva un idToken
+        const webClientId = process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+
+        const nativeResult = await FirebaseAuthentication.signInWithGoogle({
+          skipNativeAuth: false,
+        })
+
+        if (!nativeResult.credential?.idToken) {
+          throw new Error('No se obtuvo token de Google. Verifica la configuración de SHA-1 en Firebase.')
+        }
+
+        const credential = GoogleAuthProvider.credential(
+          nativeResult.credential.idToken,
+          nativeResult.credential.accessToken ?? undefined
+        )
+        const result = await signInWithCredential(auth, credential)
+
+        const validation = validateUser(result.user)
+        if (!validation.valid) {
+          await signOut(auth)
+          throw new Error(validation.reason)
+        }
+
+        logger.log('✅ Google sign in nativo exitoso:', result.user.uid)
+        setCachedUid(result.user.uid)
+        syncUserDocument(result.user, true)
+        lastActivityRef.current = Date.now()
+        setLoading(false)
+        return
       }
+
+      // ====== MODO BROWSER (web) ======
+      logger.log('🌐 Browser mode: usando signInWithPopup...')
+      const provider = new GoogleAuthProvider()
+      provider.setCustomParameters({ prompt: 'select_account' })
+      const result = await signInWithPopup(auth, provider, browserPopupRedirectResolver)
 
       const validation = validateUser(result.user)
       if (!validation.valid) {
@@ -239,38 +262,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(validation.reason)
       }
 
-      logger.log('Google sign in successful:', result.user.uid)
-      // Cachear sesión inmediatamente
+      logger.log('✅ Google sign in exitoso (popup):', result.user.uid)
       setCachedUid(result.user.uid)
-      // Sincronizar documento en background (nuevo login)
       syncUserDocument(result.user, true)
-      setLastActivity(Date.now())
+      lastActivityRef.current = Date.now()
       setLoading(false)
     } catch (error: any) {
-      logger.error('Error initializing sign in:', error)
+      logger.error('❌ Error en sign in:', error)
       throw error
     }
   }
 
   // ==================== MONITOREO DEL ESTADO ====================
 
+  // NOTA: Con el plugin nativo @capacitor-firebase/authentication NO necesitamos
+  // getRedirectResult ni un useEffect especial de redirect, porque el plugin
+  // devuelve el token directamente desde la API nativa de Android/iOS.
+  // onAuthStateChanged detecta al usuario inmediatamente tras signInWithCredential.
+
   useEffect(() => {
     logger.log('Setting up auth state listener')
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       logger.log('Auth state changed:', firebaseUser ? `User: ${firebaseUser.uid}` : 'No user')
-
-      // Verificar resultado de redirección (necesario para ver errores en Capacitor/móvil)
-      try {
-        const { getRedirectResult } = await import('firebase/auth')
-        const redirectResult = await getRedirectResult(auth)
-        if (redirectResult) {
-          logger.log('Resultado de redirección capturado:', redirectResult.user.uid)
-        }
-      } catch (redirectError) {
-        logger.error('Error de redirección detectado:', redirectError)
-        // Opcional: mostrar un toast o alerta al usuario si falló el redirect
-      }
 
       if (firebaseUser) {
         const validation = validateUser(firebaseUser)
@@ -287,7 +301,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const isReopen = getCachedUid() === firebaseUser.uid
         setCachedUid(firebaseUser.uid)
         setUser(firebaseUser)
-        setLastActivity(Date.now())
+        lastActivityRef.current = Date.now()
         setLoading(false)
 
         // Sincronizar Firestore en background sin bloquear la UI
@@ -328,7 +342,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       logger.log('Refreshing session...')
       await user.reload()
-      setLastActivity(Date.now())
+      lastActivityRef.current = Date.now()
       // Actualizar en background
       const userRef = doc(db, 'users', user.uid)
       setDoc(userRef, { lastActivity: serverTimestamp() }, { merge: true }).catch(
@@ -347,7 +361,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const now = Date.now()
     if (now - lastActivityUpdateRef.current > 1000) {
       lastActivityUpdateRef.current = now
-      setLastActivity(now)
+      lastActivityRef.current = now
     }
   }, [])
 
@@ -363,13 +377,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!user) return
     const checkInactivity = setInterval(() => {
-      if (Date.now() - lastActivity >= SECURITY_CONFIG.sessionTimeout) {
+      if (Date.now() - lastActivityRef.current >= SECURITY_CONFIG.sessionTimeout) {
         logger.warn(' Session timeout due to inactivity')
         logout()
       }
     }, 60000)
     return () => clearInterval(checkInactivity)
-  }, [user, lastActivity])
+  }, [user])
 
   // ==================== RENOVACIÓN DE TOKEN ====================
 
@@ -394,13 +408,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // ==================== VALOR DEL CONTEXTO ====================
 
-  const value: AuthContextType = {
+  const value: AuthContextType = useMemo(() => ({
     user,
     loading,
     signInWithGoogle,
     logout,
     refreshSession,
-  }
+  }), [user, loading, signInWithGoogle, refreshSession]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

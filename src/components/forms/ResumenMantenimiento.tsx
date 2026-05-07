@@ -66,6 +66,35 @@ export default function ResumenMantenimiento({
               </div>
             )}
           </div>
+        ) : state.tipoMantenimiento === 'instalacion' ? (
+          <div className="pt-2 border-t border-gray-700 space-y-4">
+             {state.instalacionConfiguracion && (
+               <div>
+                 <p className="text-xs text-gray-500 mb-2 font-bold uppercase tracking-widest">Configuraciones:</p>
+                 <div className="flex flex-wrap gap-2">
+                   {state.instalacionConfiguracionTipos.map((tipo, idx) => (
+                     <span key={idx} className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs border border-blue-500/30">
+                       {tipo}
+                     </span>
+                   ))}
+                   {state.instalacionConfiguracionTipos.length === 0 && (
+                     <p className="text-sm text-gray-500 italic">No se especificaron configuraciones</p>
+                   )}
+                 </div>
+               </div>
+             )}
+             {state.instalacionRecomendaciones && (
+               <div>
+                 <p className="text-xs text-gray-500 mb-1 font-bold uppercase tracking-widest">Recomendaciones:</p>
+                 <p className="text-sm text-gray-300 leading-relaxed bg-gray-900/30 p-3 rounded-xl border border-gray-700/30">
+                   {state.instalacionRecomendacionesDetalle || 'Sin recomendaciones adicionales'}
+                 </p>
+               </div>
+             )}
+             {!state.instalacionConfiguracion && !state.instalacionRecomendaciones && (
+               <p className="text-sm text-gray-500 italic text-center py-4">No se registró información de instalación</p>
+             )}
+          </div>
         ) : (
           <>
             <div className="pt-2 border-t border-gray-700">

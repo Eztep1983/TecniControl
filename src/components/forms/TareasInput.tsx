@@ -6,7 +6,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { obtenerTareasPredefinidas, guardarTareasPredefinidas, TareaPredefinida } from '@/lib/configuracionTareasR-helpers'
 
 interface TareasInputProps {
-  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico'
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'garantia' | 'instalacion' | ''
   tareasSeleccionadas: string[]
   tareasPersonalizadas: string[]
   onToggleTareaPredefinida: (tarea: string) => void

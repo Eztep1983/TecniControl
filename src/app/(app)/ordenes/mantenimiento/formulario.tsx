@@ -50,11 +50,18 @@ export interface FormState {
   dispositivoSeleccionado: Dispositivo | null
   
   // Mantenimiento
-  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | ''
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia' | ''
   tareasSeleccionadas: string[]
   tareasPersonalizadas: string[]
   mostrarTareasPredefinidas: boolean
   piezasUsadas: Pieza[]
+  
+  // Instalación
+  instalacionRecomendaciones: boolean
+  instalacionRecomendacionesDetalle: string
+  instalacionConfiguracion: boolean
+  instalacionConfiguracionTipos: string[]
+  instalacionConfiguracionPersonalizada: string
   
   // Diagnóstico
   observacionesIniciales: string
@@ -102,6 +109,11 @@ type FormAction =
   | { type: 'TOGGLE_CONTADOR' }
   | { type: 'SET_ORDEN_CREADA'; payload: OrdenMantenimiento }
   | { type: 'RESET_MANTENIMIENTO_DATA' }
+  | { type: 'SET_INSTALACION_RECOMENDACIONES'; payload: boolean }
+  | { type: 'SET_INSTALACION_RECOMENDACIONES_DETALLE'; payload: string }
+  | { type: 'SET_INSTALACION_CONFIGURACION'; payload: boolean }
+  | { type: 'TOGGLE_INSTALACION_CONFIGURACION_TIPO'; payload: string }
+  | { type: 'ADD_INSTALACION_CONFIGURACION_PERSONALIZADA'; payload: string }
 
 const initialState: FormState = {
   currentStep: 'cliente',
@@ -124,6 +136,11 @@ const initialState: FormState = {
   mesesGarantia: 3,
   contador: null,
   mostrarContador: false,
+  instalacionRecomendaciones: false,
+  instalacionRecomendacionesDetalle: '',
+  instalacionConfiguracion: false,
+  instalacionConfiguracionTipos: [],
+  instalacionConfiguracionPersonalizada: '',
 }
 
 function formReducer(state: FormState, action: FormAction): FormState {
@@ -159,7 +176,12 @@ function formReducer(state: FormState, action: FormAction): FormState {
           observacionesIniciales: '',
           pruebasRealizadas: '',
           diagnosticoFinal: '',
-          contadorMaquina: undefined
+          contadorMaquina: undefined,
+          instalacionRecomendaciones: false,
+          instalacionRecomendacionesDetalle: '',
+          instalacionConfiguracion: false,
+          instalacionConfiguracionTipos: [],
+          instalacionConfiguracionPersonalizada: ''
         }
       }
       return state
@@ -255,7 +277,35 @@ function formReducer(state: FormState, action: FormAction): FormState {
         observacionesIniciales: '',
         pruebasRealizadas: '',
         diagnosticoFinal: '',
-        contadorMaquina: undefined
+        contadorMaquina: undefined,
+        instalacionRecomendaciones: false,
+        instalacionRecomendacionesDetalle: '',
+        instalacionConfiguracion: false,
+        instalacionConfiguracionTipos: [],
+        instalacionConfiguracionPersonalizada: ''
+      }
+    
+    case 'SET_INSTALACION_RECOMENDACIONES':
+      return { ...state, instalacionRecomendaciones: action.payload }
+    
+    case 'SET_INSTALACION_RECOMENDACIONES_DETALLE':
+      return { ...state, instalacionRecomendacionesDetalle: action.payload }
+    
+    case 'SET_INSTALACION_CONFIGURACION':
+      return { ...state, instalacionConfiguracion: action.payload }
+    
+    case 'TOGGLE_INSTALACION_CONFIGURACION_TIPO':
+      return {
+        ...state,
+        instalacionConfiguracionTipos: state.instalacionConfiguracionTipos.includes(action.payload)
+          ? state.instalacionConfiguracionTipos.filter(t => t !== action.payload)
+          : [...state.instalacionConfiguracionTipos, action.payload]
+      }
+    
+    case 'ADD_INSTALACION_CONFIGURACION_PERSONALIZADA':
+      return {
+        ...state,
+        instalacionConfiguracionTipos: [...state.instalacionConfiguracionTipos, action.payload]
       }
     
     default:
@@ -504,6 +554,9 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
           state.diagnosticoFinal.trim()
         )
       }
+      if (state.tipoMantenimiento === 'instalacion') {
+        return state.instalacionConfiguracion || state.instalacionRecomendaciones
+      }
       const todasLasTareas = [
         ...state.tareasSeleccionadas,
         ...state.tareasPersonalizadas.filter(t => t.trim())
@@ -521,7 +574,9 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     state.pruebasRealizadas,
     state.diagnosticoFinal,
     state.tareasSeleccionadas,
-    state.tareasPersonalizadas
+    state.tareasPersonalizadas,
+    state.instalacionConfiguracion,
+    state.instalacionRecomendaciones
   ])
 
   const canProceedToNextStep = useCallback((): boolean => {
@@ -603,6 +658,13 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
         }
       }
       
+      if (state.tipoMantenimiento === 'instalacion') {
+        nuevaOrden.instalacionRecomendaciones = state.instalacionRecomendaciones
+        nuevaOrden.instalacionRecomendacionesDetalle = state.instalacionRecomendacionesDetalle
+        nuevaOrden.instalacionConfiguracion = state.instalacionConfiguracion
+        nuevaOrden.instalacionConfiguracionTipos = state.instalacionConfiguracionTipos
+      }
+      
       if (state.garantiaTiempoDesde) {
         nuevaOrden.garantiaTiempoDesde = new Date(state.garantiaTiempoDesde)
       }
@@ -641,6 +703,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       preventivo: 'Preventivo',
       correctivo: 'Correctivo',
       diagnostico: 'Diagnóstico',
+      instalacion: 'Instalación',
+      garantia: 'Garantía',
       '': 'Sin especificar'
     } as const
     
@@ -652,6 +716,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       preventivo: 'bg-green-600/20 text-green-400 border-green-500/30',
       correctivo: 'bg-orange-600/20 text-orange-400 border-orange-500/30',
       diagnostico: 'bg-blue-600/20 text-blue-400 border-blue-500/30',
+      instalacion: 'bg-purple-600/20 text-purple-400 border-purple-500/30',
+      garantia: 'bg-amber-600/20 text-amber-400 border-amber-500/30',
       '': 'bg-gray-600/20 text-gray-400 border-gray-500/30'
     } as const
     
@@ -689,6 +755,26 @@ const handleCambiarDiagnostico = useCallback((valor: string) => {
   dispatch({ type: 'SET_DIAGNOSTICO_FINAL', payload: valor })
 }, [])
 
+const handleToggleInstalacionRecomendaciones = useCallback((valor: boolean) => {
+  dispatch({ type: 'SET_INSTALACION_RECOMENDACIONES', payload: valor })
+}, [])
+
+const handleCambiarInstalacionRecomendacionesDetalle = useCallback((valor: string) => {
+  dispatch({ type: 'SET_INSTALACION_RECOMENDACIONES_DETALLE', payload: valor })
+}, [])
+
+const handleToggleInstalacionConfiguracion = useCallback((valor: boolean) => {
+  dispatch({ type: 'SET_INSTALACION_CONFIGURACION', payload: valor })
+}, [])
+
+const handleToggleInstalacionConfiguracionTipo = useCallback((tipo: string) => {
+  dispatch({ type: 'TOGGLE_INSTALACION_CONFIGURACION_TIPO', payload: tipo })
+}, [])
+
+const handleAgregarInstalacionConfiguracionPersonalizada = useCallback((tipo: string) => {
+  dispatch({ type: 'ADD_INSTALACION_CONFIGURACION_PERSONALIZADA', payload: tipo })
+}, [])
+
 // ============================================================================
 // PROPS MEMOIZADAS
 // ============================================================================
@@ -713,6 +799,15 @@ const mantenimientoInfoProps = useMemo(() => ({
   onCambiarObservaciones: handleCambiarObservaciones,
   onCambiarPruebas: handleCambiarPruebas,
   onCambiarDiagnostico: handleCambiarDiagnostico,
+  instalacionRecomendaciones: state.instalacionRecomendaciones,
+  instalacionRecomendacionesDetalle: state.instalacionRecomendacionesDetalle,
+  instalacionConfiguracion: state.instalacionConfiguracion,
+  instalacionConfiguracionTipos: state.instalacionConfiguracionTipos,
+  onToggleInstalacionRecomendaciones: handleToggleInstalacionRecomendaciones,
+  onCambiarInstalacionRecomendacionesDetalle: handleCambiarInstalacionRecomendacionesDetalle,
+  onToggleInstalacionConfiguracion: handleToggleInstalacionConfiguracion,
+  onToggleInstalacionConfiguracionTipo: handleToggleInstalacionConfiguracionTipo,
+  onAgregarInstalacionConfiguracionPersonalizada: handleAgregarInstalacionConfiguracionPersonalizada,
 }), [
   state.tipoMantenimiento,
   state.tareasSeleccionadas,
@@ -722,6 +817,10 @@ const mantenimientoInfoProps = useMemo(() => ({
   state.observacionesIniciales,
   state.pruebasRealizadas,
   state.diagnosticoFinal,
+  state.instalacionRecomendaciones,
+  state.instalacionRecomendacionesDetalle,
+  state.instalacionConfiguracion,
+  state.instalacionConfiguracionTipos,
   handleSetPiezasUsadas,
   handleCambiarTipoMantenimiento,
   handleToggleTareaPredefinida,
@@ -732,6 +831,11 @@ const mantenimientoInfoProps = useMemo(() => ({
   handleCambiarObservaciones,
   handleCambiarPruebas,
   handleCambiarDiagnostico,
+  handleToggleInstalacionRecomendaciones,
+  handleCambiarInstalacionRecomendacionesDetalle,
+  handleToggleInstalacionConfiguracion,
+  handleToggleInstalacionConfiguracionTipo,
+  handleAgregarInstalacionConfiguracionPersonalizada,
 ])
 
 // Memoizar props para ContadorInput
@@ -1064,7 +1168,8 @@ const contadorInputProps = useMemo(() => ({
                     {state.currentStep === 'cliente' && 'Selecciona un cliente para continuar'}
                     {state.currentStep === 'dispositivo' && 'Selecciona un dispositivo para continuar'}
                     {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'diagnostico' && 'Completa todos los campos del diagnóstico'}
-                    {state.currentStep === 'mantenimiento' && state.tipoMantenimiento !== 'diagnostico' && 'Agrega al menos una tarea para continuar'}
+                    {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'instalacion' && 'Configura o agrega recomendaciones para continuar'}
+                    {state.currentStep === 'mantenimiento' && state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && 'Agrega al menos una tarea para continuar'}
                   </p>
                 </div>
               )}
@@ -1073,47 +1178,6 @@ const contadorInputProps = useMemo(() => ({
         </form>
       </div>
 
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-
-        .line-clamp-3 {
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        @media (max-width: 640px) {
-          body {
-            overflow-x: hidden;
-          }
-        }
-
-        input, textarea, select {
-          font-size: 16px !important;
-        }
-
-        button, a, [role="button"] {
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .touch-manipulation {
-          touch-action: manipulation;
-        }
-      `}</style>
     </div>
   )
 }

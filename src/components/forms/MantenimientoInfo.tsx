@@ -1,9 +1,10 @@
 // components/forms/MantenimientoInfo.tsx
 'use client'
-import { Settings, Shield, Wrench, Stethoscope } from 'lucide-react'
+import { Settings, Shield, Wrench, Stethoscope, Monitor, ShieldCheck, CheckCircle2 } from 'lucide-react'
 import TareasInput from './TareasInput'
 import PiezasInput from './PiezasInput'
 import DiagnosticoInfo from './DiagnosticoInfo'
+import InstalacionInfo from './InstalacionInfo'
 import { useMemo, memo, Dispatch, SetStateAction } from 'react'
 
 interface Pieza {
@@ -14,7 +15,7 @@ interface Pieza {
 }
 
 interface MantenimientoInfoProps {
-  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | ''
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia' | '' 
   tareasSeleccionadas: string[]
   tareasPersonalizadas: string[]
   piezasUsadas: Pieza[]
@@ -24,7 +25,7 @@ interface MantenimientoInfoProps {
   pruebasRealizadas?: string
   diagnosticoFinal?: string
   
-  onCambiarTipoMantenimiento: (tipo: 'preventivo' | 'correctivo' | 'diagnostico' | '') => void
+  onCambiarTipoMantenimiento: (tipo: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia' | '') => void
   onToggleTareaPredefinida: (tarea: string) => void
   onSetMostrarTareasPredefinidas: (mostrar: boolean) => void
   onActualizarTareaPersonalizada: (index: number, valor: string) => void
@@ -33,6 +34,17 @@ interface MantenimientoInfoProps {
   onCambiarObservaciones?: (valor: string) => void
   onCambiarPruebas?: (valor: string) => void
   onCambiarDiagnostico?: (valor: string) => void
+
+  // Props de Instalación
+  instalacionRecomendaciones?: boolean
+  instalacionRecomendacionesDetalle?: string
+  instalacionConfiguracion?: boolean
+  instalacionConfiguracionTipos?: string[]
+  onToggleInstalacionRecomendaciones?: (valor: boolean) => void
+  onCambiarInstalacionRecomendacionesDetalle?: (valor: string) => void
+  onToggleInstalacionConfiguracion?: (valor: boolean) => void
+  onToggleInstalacionConfiguracionTipo?: (tipo: string) => void
+  onAgregarInstalacionConfiguracionPersonalizada?: (tipo: string) => void
 }
 
 const TIPO_CONFIG = {
@@ -59,7 +71,23 @@ const TIPO_CONFIG = {
     colorBg: 'bg-blue-500/10',
     colorIcon: 'bg-blue-500/20 text-blue-400',
     colorText: 'text-blue-300',
-  }
+  },
+  instalacion: {
+    icono: Monitor,
+    nombre: 'Instalación',
+    colorBorder: 'border-purple-500/40',
+    colorBg: 'bg-purple-500/10',
+    colorIcon: 'bg-purple-500/20 text-purple-400',
+    colorText: 'text-purple-300',
+  },
+  garantia: {
+    icono: ShieldCheck,
+    nombre: 'Garantía',
+    colorBorder: 'border-amber-500/40',
+    colorBg: 'bg-amber-500/10',
+    colorIcon: 'bg-amber-500/20 text-amber-400',
+    colorText: 'text-amber-300',
+  },
 } as const
 
 const MantenimientoInfo = memo(function MantenimientoInfo({
@@ -81,14 +109,23 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   onCambiarObservaciones = () => {},
   onCambiarPruebas = () => {},
   onCambiarDiagnostico = () => {},
+
+  // Props de Instalación
+  instalacionRecomendaciones = false,
+  instalacionRecomendacionesDetalle = '',
+  instalacionConfiguracion = false,
+  instalacionConfiguracionTipos = [],
+  onToggleInstalacionRecomendaciones = () => {},
+  onCambiarInstalacionRecomendacionesDetalle = () => {},
+  onToggleInstalacionConfiguracion = () => {},
+  onToggleInstalacionConfiguracionTipo = () => {},
+  onAgregarInstalacionConfiguracionPersonalizada = () => {},
 }: MantenimientoInfoProps) {
   
   const tareasInputProps = useMemo(() => ({
-    tipoMantenimiento: tipoMantenimiento as 'preventivo' | 'correctivo' | 'diagnostico',
+    tipoMantenimiento,
     tareasSeleccionadas,
     tareasPersonalizadas,
-    mostrarTareasPredefinidas,
-    setMostrarTareasPredefinidas: onSetMostrarTareasPredefinidas,
     onToggleTareaPredefinida,
     onActualizarTareaPersonalizada,
     onAgregarTareaPersonalizada,
@@ -97,8 +134,6 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
     tipoMantenimiento,
     tareasSeleccionadas,
     tareasPersonalizadas,
-    mostrarTareasPredefinidas,
-    onSetMostrarTareasPredefinidas,
     onToggleTareaPredefinida,
     onActualizarTareaPersonalizada,
     onAgregarTareaPersonalizada,
@@ -127,6 +162,28 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
     onCambiarDiagnostico,
   ])
 
+  const instalacionProps = useMemo(() => ({
+    recomendaciones: instalacionRecomendaciones,
+    recomendacionesDetalle: instalacionRecomendacionesDetalle,
+    configuracion: instalacionConfiguracion,
+    configuracionTipos: instalacionConfiguracionTipos,
+    onToggleRecomendaciones: onToggleInstalacionRecomendaciones,
+    onCambiarRecomendacionesDetalle: onCambiarInstalacionRecomendacionesDetalle,
+    onToggleConfiguracion: onToggleInstalacionConfiguracion,
+    onToggleConfiguracionTipo: onToggleInstalacionConfiguracionTipo,
+    onAgregarConfiguracionPersonalizada: onAgregarInstalacionConfiguracionPersonalizada
+  }), [
+    instalacionRecomendaciones,
+    instalacionRecomendacionesDetalle,
+    instalacionConfiguracion,
+    instalacionConfiguracionTipos,
+    onToggleInstalacionRecomendaciones,
+    onCambiarInstalacionRecomendacionesDetalle,
+    onToggleInstalacionConfiguracion,
+    onToggleInstalacionConfiguracionTipo,
+    onAgregarInstalacionConfiguracionPersonalizada
+  ])
+
   return (
     <div className="bg-gray-800/20 sm:bg-gray-800/40 rounded-xl sm:border border-gray-700/50 w-full">
       {/* Header Opcional en Desktop */}
@@ -141,9 +198,9 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
       </div>
 
       <div className="p-4 sm:p-5 flex flex-col gap-6">
-        {/* Segmented Control de Tipos (Mobile First) */}
-        <div className="flex gap-2 p-1.5 bg-gray-900/50 rounded-xl overflow-x-auto snap-x custom-scrollbar">
-          {(['preventivo', 'correctivo', 'diagnostico'] as const).map(tipo => {
+        {/* Selección de Tipos Vertical (Refactorizado) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {(['preventivo', 'correctivo', 'diagnostico', 'instalacion', 'garantia'] as const).map(tipo => {
             const config = TIPO_CONFIG[tipo]
             const active = tipoMantenimiento === tipo
             return (
@@ -152,19 +209,37 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                 type="button"
                 onClick={() => onCambiarTipoMantenimiento(tipo)}
                 className={`
-                  snap-start flex-1 min-w-[110px] sm:min-w-0 flex flex-col sm:flex-row items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all duration-300 touch-manipulation
+                  relative flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-300 touch-manipulation group
                   ${active 
-                    ? `${config.colorBorder} ${config.colorBg} shadow-lg shadow-${tipo === 'preventivo' ? 'green' : tipo === 'correctivo' ? 'orange' : 'blue'}-500/10 scale-[1.02]` 
-                    : `border-transparent bg-gray-800/50 hover:bg-gray-700/80 hover:border-gray-700`
+                    ? `${config.colorBorder} ${config.colorBg} shadow-xl shadow-${tipo === 'preventivo' ? 'green' : tipo === 'correctivo' ? 'orange' : tipo === 'instalacion' ? 'purple' : tipo === 'garantia' ? 'amber' : 'blue'}-500/10 scale-[1.02] z-10` 
+                    : `border-gray-700/50 bg-gray-900/40 hover:bg-gray-800/80 hover:border-gray-600`
                   }
                 `}
               >
-                <div className={`p-2 rounded-md transition-colors ${active ? config.colorIcon : 'bg-gray-700 text-gray-400'}`}>
-                  <config.icono className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                  active ? config.colorIcon : 'bg-gray-800 text-gray-500 group-hover:bg-gray-700'
+                }`}>
+                  <config.icono className={`w-6 h-6 ${active ? 'animate-pulse' : ''}`} />
                 </div>
-                <span className={`text-xs sm:text-sm font-semibold transition-colors ${active ? config.colorText : 'text-gray-400'}`}>
-                  {config.nombre}
-                </span>
+                
+                <div className="flex-1 text-left">
+                  <span className={`block text-sm font-bold uppercase tracking-wider transition-colors ${active ? config.colorText : 'text-gray-400'}`}>
+                    {config.nombre}
+                  </span>
+                  <p className={`text-[11px] mt-0.5 transition-colors ${active ? 'text-white/60' : 'text-gray-600'}`}>
+                    {tipo === 'preventivo' && 'Mantenimiento de rutina'}
+                    {tipo === 'correctivo' && 'Reparación de fallas'}
+                    {tipo === 'diagnostico' && 'Evaluación técnica'}
+                    {tipo === 'instalacion' && 'Puesta en marcha'}
+                    {tipo === 'garantia' && 'Servicio post-venta'}
+                  </p>
+                </div>
+
+                {active && (
+                  <div className="absolute top-3 right-3">
+                    <CheckCircle2 className={`w-5 h-5 ${config.colorText.split(' ')[0]}`} />
+                  </div>
+                )}
               </button>
             )
           })}
@@ -182,7 +257,11 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
              <DiagnosticoInfo {...diagnosticoProps} />
           )}
 
-          {(tipoMantenimiento === 'preventivo' || tipoMantenimiento === 'correctivo') && (
+          {tipoMantenimiento === 'instalacion' && (
+             <InstalacionInfo {...instalacionProps} />
+          )}
+
+          {(tipoMantenimiento === 'preventivo' || tipoMantenimiento === 'correctivo' || tipoMantenimiento === 'garantia') && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
               
               {/* Sección Tareas */}
@@ -210,19 +289,6 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
         </div>
       </div>
       
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          height: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(31, 41, 55, 0.5);
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(75, 85, 99, 0.8);
-          border-radius: 4px;
-        }
-      `}</style>
     </div>
   )
 })
