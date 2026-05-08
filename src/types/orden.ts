@@ -81,7 +81,7 @@ export interface OrdenMantenimiento {
   diagnosticoFinal?: string
   contadorMaquina?: number
   contador?: Contador;
-  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia';
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion';
   tareasRealizadas: string[];
   piezasUsadas: Array<{pieza: string, cantidad: number}>;
   garantiaTiempoDesde: Date | any;
@@ -104,20 +104,6 @@ export interface OrdenMantenimiento {
 }
 
 
-export interface OrdenEntrega extends OrdenBase {
-  idPersonalizado?: string;
-  tipo: 'entrega';
-  fechaEntrega: Date;
-  observacionesFinales: string;
-  firmaCliente: string;
-  validacionCliente: boolean;
-  reparacionesRealizadas?: string;
-  repuestosUtilizados?: string;
-  documentosEntregados?: string;
-  contadorFinal?: number;
-  garantiaReparacion?: number;
-}
-
 export interface Negocio {
   id: string;
   userId: string; 
@@ -131,4 +117,4 @@ export interface Negocio {
   updatedAt?: Date;
 }
 
-export type Orden = OrdenGarantia | OrdenMantenimiento | OrdenEntrega;
+export type Orden = OrdenGarantia | OrdenMantenimiento;

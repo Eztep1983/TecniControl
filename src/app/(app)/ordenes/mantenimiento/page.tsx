@@ -7,7 +7,7 @@ import { Plus, Search, Eye, Printer, ArrowLeft, Wrench, Filter, ChevronDown, Che
 import Link from 'next/link'
 import FormularioMantenimiento from '@/app/(app)/ordenes/mantenimiento/formulario'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { useOrdenesUsuario } from '@/hooks/useMultiUser'
+import { useOrdenesInfinitas } from '@/hooks/useMultiUser'
 import { useNegocio } from '@/hooks/useNegocio'
 import { useDebounce } from 'use-debounce'
 import ModalOrden from '@/components/mantenimiento/ModalOrden'
@@ -16,8 +16,6 @@ import { PrintButton, ShareButton, DownloadButton, usePrintService } from '@/com
 import { Skeleton } from '@/components/ui/basic/skeleton'
 import AnimatedContent from '@/components/ui/AnimatedContent'
 import AnimatedList from '@/components/ui/AnimatedList'
-
-
 
 // Componente de loading para filtros
 const FilterLoadingIndicator = () => (
@@ -32,8 +30,16 @@ const FilterLoadingIndicator = () => (
 // Componente principal
 export default function OrdenesMantenimientoPage() {
   const { user, loading: authLoading } = useAuth()
-  const { ordenes: todasLasOrdenes, loading, error, refrescarOrdenes } = useOrdenesUsuario()
-  const { negocio, loading: loadingNegocio } = useNegocio()
+  const { 
+    data, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage, 
+    isLoading: loading, 
+    error,
+    refrescarOrdenes
+  } = useOrdenesInfinitas(10)
+  const { negocio } = useNegocio()
 
   const { imprimirOrden, compartirOrden, descargarPDF, formatFecha } = usePrintService({ negocio })
   const [busqueda, setBusqueda] = useState('')
@@ -43,11 +49,13 @@ export default function OrdenesMantenimientoPage() {
   const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenMantenimiento | null>(null)
   const [filtroTipo, setFiltroTipo] = useState<string>('todos')
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
-  const [paginaActual, setPaginaActual] = useState(1)
   const [esMobile, setEsMobile] = useState(false)
   const [aplicandoFiltro, setAplicandoFiltro] = useState(false)
 
-  const elementosPorPagina = 10
+  // Aplanar las páginas de órdenes
+  const todasLasOrdenes = useMemo(() => {
+    return data?.pages.flatMap(page => page.ordenes) || []
+  }, [data])
 
   // Detectar tamaño de pantalla y confirmar si hay borrador
   useEffect(() => {
@@ -78,7 +86,6 @@ export default function OrdenesMantenimientoPage() {
     setAplicandoFiltro(true)
     setFiltroTipo(nuevoFiltro)
     setMostrarFiltros(false)
-    setPaginaActual(1)
 
     setTimeout(() => {
       setAplicandoFiltro(false)
@@ -100,17 +107,6 @@ export default function OrdenesMantenimientoPage() {
       return coincideBusqueda && coincideTipo;
     });
   }, [ordenes, debouncedBusqueda, filtroTipo]);
-
-  const totalPaginas = Math.ceil(ordenesFiltradas.length / elementosPorPagina);
-  const indiceInicio = (paginaActual - 1) * elementosPorPagina;
-  const ordenesPaginadas = ordenesFiltradas.slice(indiceInicio, indiceInicio + elementosPorPagina);
-
-  const cambiarPagina = (nuevaPagina: number) => {
-    if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
-      setPaginaActual(nuevaPagina);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
 
   const getTipoColor = useCallback((tipo: string) => {
     const colors: Record<string, string> = {
@@ -139,7 +135,6 @@ export default function OrdenesMantenimientoPage() {
     correctivos: ordenes.filter(o => o.tipoMantenimiento === 'correctivo').length,
     diagnosticos: ordenes.filter(o => o.tipoMantenimiento === 'diagnostico').length,
     instalaciones: ordenes.filter(o => o.tipoMantenimiento === 'instalacion').length,
-    garantias: ordenes.filter(o => o.tipoMantenimiento === 'garantia').length,
     total: ordenes.length
   }), [ordenes]);
 
@@ -275,7 +270,7 @@ export default function OrdenesMantenimientoPage() {
 
         {error && (
           <div className="bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-4 sm:mb-6">
-            <p className="text-sm sm:text-base">{error}</p>
+            <p className="text-sm sm:text-base"> Error al cargar las ordenes</p>
             <button
               onClick={refrescarOrdenes}
               className="mt-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
@@ -331,7 +326,6 @@ export default function OrdenesMantenimientoPage() {
                       { value: 'correctivo', label: 'Correctivo', count: stats.correctivos },
                       { value: 'diagnostico', label: 'Diagnóstico', count: stats.diagnosticos },
                       { value: 'instalacion', label: 'Instalación', count: stats.instalaciones },
-                      { value: 'garantia', label: 'Garantía', count: stats.garantias }
                     ].map((option) => (
                       <label
                         key={option.value}
@@ -458,14 +452,14 @@ export default function OrdenesMantenimientoPage() {
               {esMobile ? (
                 <div className="p-3 sm:p-4">
                   <AnimatedList
-                    items={ordenesPaginadas}
-                    onItemSelect={(orden) => handleRowClick(orden)}
+                    items={ordenesFiltradas}
+                    onItemSelect={(orden) => handleRowClick(orden as OrdenMantenimiento)}
                     showGradients
                     enableArrowNavigation
                     displayScrollbar
                     renderItem={(orden) => (
                       <OrdenCard
-                        orden={orden}
+                        orden={orden as OrdenMantenimiento}
                         onView={handleRowClick}
                         onPrint={imprimirOrden}
                         onShare={compartirOrden}
@@ -499,11 +493,11 @@ export default function OrdenesMantenimientoPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-gray-800/30 divide-y divide-gray-700/50">
-                      {ordenesPaginadas.map((orden) => (
+                      {ordenesFiltradas.map((orden) => (
                         <tr
                           key={orden.idPersonalizado}
                           className="hover:bg-gray-700/50 cursor-pointer transition-colors group"
-                          onClick={() => handleRowClick(orden)}
+                          onClick={() => handleRowClick(orden as OrdenMantenimiento)}
                         >
                           <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-white group-hover:text-blue-300 transition-colors">
@@ -534,7 +528,7 @@ export default function OrdenesMantenimientoPage() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleRowClick(orden);
+                                  handleRowClick(orden as OrdenMantenimiento);
                                 }}
                                 className="text-blue-400 hover:text-blue-300 p-1 rounded hover:bg-blue-500/20 transition-colors"
                                 aria-label="Ver detalles"
@@ -542,17 +536,17 @@ export default function OrdenesMantenimientoPage() {
                                 <Eye className="w-4 h-4" />
                               </button>
                               <PrintButton
-                                orden={orden}
+                                orden={orden as OrdenMantenimiento}
                                 onPrint={imprimirOrden}
                                 variant="table"
                               />
                               <DownloadButton
-                                orden={orden}
+                                orden={orden as OrdenMantenimiento}
                                 onDownload={descargarPDF}
                                 variant="table"
                               />
                               <ShareButton
-                                orden={orden}
+                                orden={orden as OrdenMantenimiento}
                                 onShare={compartirOrden}
                                 variant="table"
                               />
@@ -565,36 +559,25 @@ export default function OrdenesMantenimientoPage() {
                 </div>
               )}
 
-              {totalPaginas > 1 && (
-                <div className="px-3 sm:px-6 py-4 bg-gray-700/50 border-t border-gray-600 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div className="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
-                    Mostrando <span className="font-medium text-white">{indiceInicio + 1}</span> a{' '}
-                    <span className="font-medium text-white">
-                      {Math.min(indiceInicio + elementosPorPagina, ordenesFiltradas.length)}
-                    </span> de{' '}
-                    <span className="font-medium text-white">{ordenesFiltradas.length}</span> resultados
-                  </div>
-                  <div className="flex justify-center space-x-2">
-                    <button
-                      onClick={() => cambiarPagina(paginaActual - 1)}
-                      disabled={paginaActual === 1 || aplicandoFiltro}
-                      className="px-3 py-2 rounded-md border border-gray-600 text-xs sm:text-sm font-medium text-gray-300 bg-gray-700/50 hover:bg-gray-600/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      Anterior
-                    </button>
-
-                    <div className="flex items-center px-3 py-2 text-xs sm:text-sm text-gray-300 sm:hidden">
-                      {paginaActual} / {totalPaginas}
-                    </div>
-
-                    <button
-                      onClick={() => cambiarPagina(paginaActual + 1)}
-                      disabled={paginaActual === totalPaginas || aplicandoFiltro}
-                      className="px-3 py-2 rounded-md border border-gray-600 text-xs sm:text-sm font-medium text-gray-300 bg-gray-700/50 hover:bg-gray-600/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      Siguiente
-                    </button>
-                  </div>
+              {hasNextPage && (
+                <div className="px-3 sm:px-6 py-6 bg-gray-800/50 border-t border-gray-700/50 flex justify-center">
+                  <button
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 text-sm font-bold transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-blue-500/5"
+                  >
+                    {isFetchingNextPage ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                        <span>Cargando más...</span>
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-4 h-4" />
+                        <span>Cargar más órdenes</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               )}
             </>
@@ -659,12 +642,6 @@ export default function OrdenesMantenimientoPage() {
             <div className="flex items-center">
               <div className="bg-amber-500/20 p-2 sm:p-3 rounded-lg flex-shrink-0">
                 <Wrench className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
-              </div>
-              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-gray-400 truncate">Garantías</p>
-                <p className="text-xl sm:text-2xl font-bold text-amber-400">
-                  {stats.garantias}
-                </p>
               </div>
             </div>
           </div>

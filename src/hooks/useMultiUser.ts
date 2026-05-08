@@ -1,9 +1,10 @@
 // hooks/useMultiUser.ts
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { 
   getClientesPorUsuario, 
   getOrdenesPorUsuario, 
+  getOrdenesPaginadas,
   getNegocioPorUsuario,
   crearNegocio 
 } from '@/lib/multiuser-helpers';
@@ -19,90 +20,36 @@ import { addDoc, collection } from 'firebase/firestore';
 
 export const useClientesUsuario = () => {
   const { user } = useAuth();
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const cargarClientes = async () => {
-      if (!user?.uid) {
-        setLoading(false);
-        return;
-      }
+  const { data: clientes = [], isLoading: loading, error } = useQuery({
+    queryKey: ['clientes', user?.uid],
+    queryFn: () => getClientesPorUsuario(user!.uid),
+    enabled: !!user?.uid,
+  });
 
-      try {
-        setLoading(true);
-        const clientesData = await getClientesPorUsuario(user.uid);
-        setClientes(clientesData);
-        setError(null);
-      } catch (err) {
-        console.error('Error cargando clientes:', err);
-        setError('Error al cargar los clientes');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    cargarClientes();
-  }, [user?.uid]);
-
-  const refrescarClientes = async () => {
-    if (!user?.uid) return;
-    
-    try {
-      const clientesData = await getClientesPorUsuario(user.uid);
-      setClientes(clientesData);
-    } catch (err) {
-      console.error('Error refrescando clientes:', err);
-      setError('Error al actualizar los clientes');
-    }
+  const refrescarClientes = () => {
+    queryClient.invalidateQueries({ queryKey: ['clientes', user?.uid] });
   };
 
-  return { clientes, loading, error, refrescarClientes };
+  return { clientes, loading, error: error ? 'Error al cargar los clientes' : null, refrescarClientes };
 };
 
 export const useOrdenesUsuario = () => {
   const { user } = useAuth();
-  const [ordenes, setOrdenes] = useState<Orden[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const cargarOrdenes = async () => {
-      if (!user?.uid) {
-        setLoading(false);
-        return;
-      }
+  const { data: ordenes = [], isLoading: loading, error } = useQuery({
+    queryKey: ['ordenes', user?.uid],
+    queryFn: () => getOrdenesPorUsuario(user!.uid),
+    enabled: !!user?.uid,
+  });
 
-      try {
-        setLoading(true);
-        const ordenesData = await getOrdenesPorUsuario(user.uid);
-        setOrdenes(ordenesData);
-        setError(null);
-      } catch (err) {
-        console.error('Error cargando órdenes:', err);
-        setError('Error al cargar las órdenes');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    cargarOrdenes();
-  }, [user?.uid]);
-
-  const refrescarOrdenes = async () => {
-    if (!user?.uid) return;
-    
-    try {
-      const ordenesData = await getOrdenesPorUsuario(user.uid);
-      setOrdenes(ordenesData);
-    } catch (err) {
-      console.error('Error refrescando órdenes:', err);
-      setError('Error al actualizar las órdenes');
-    }
+  const refrescarOrdenes = () => {
+    queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid] });
   };
 
-    const crearOrdenConsecutiva = async (ordenData: any, userId: string) => {
+  const crearOrdenConsecutiva = async (ordenData: any, userId: string) => {
     try {
       // Obtener el próximo número consecutivo
       const proximoNumero = await obtenerProximoNumeroOrden(ordenData.tipo || 'mantenimiento');
@@ -128,6 +75,10 @@ export const useOrdenesUsuario = () => {
       // Guardar en Firestore
       const docRef = await addDoc(collection(db, 'ordenes'), ordenCompleta);
       
+      // Invalidar TODAS las queries que empiecen con ['ordenes', userId]
+      // Esto incluye: lista completa, recientes e infinitas.
+      queryClient.invalidateQueries({ queryKey: ['ordenes', userId] });
+      
       return { id: docRef.id, idPersonalizado };
     } catch (error) {
       console.error('Error creando orden:', error);
@@ -136,124 +87,114 @@ export const useOrdenesUsuario = () => {
   };
 
   return {
-     ordenes, loading, error, refrescarOrdenes, crearOrdenConsecutiva
+     ordenes, loading, error: error ? 'Error al cargar las órdenes' : null, refrescarOrdenes, crearOrdenConsecutiva
   };
-  
 };
-
-
-
 
 export const useNegocioUsuario = () => {
   const { user } = useAuth();
-  const [negocio, setNegocio] = useState<Negocio | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const cargarNegocio = async () => {
-      if (!user?.uid) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        let negocioData = await getNegocioPorUsuario(user.uid);
+  const { data: negocio = null, isLoading: loading, error } = useQuery({
+    queryKey: ['negocio', user?.uid],
+    queryFn: async () => {
+      if (!user?.uid) return null;
+      let negocioData = await getNegocioPorUsuario(user.uid);
+      
+      // Si no existe el negocio, crear uno por defecto
+      if (!negocioData) {
+        const negocioDefault = {
+          userId: user.uid,
+          nombre: user.displayName || 'Mi Negocio',
+          direccion: '',
+          telefono: '',
+          email: user.email || '',
+          nit: '',
+          logoUrl: ''
+        };
         
-        // Si no existe el negocio, crear uno por defecto
-        if (!negocioData) {
-          const negocioDefault = {
-            userId: user.uid,
-            nombre: user.displayName || 'Mi Negocio',
-            direccion: '',
-            telefono: '',
-            email: user.email || '',
-            nit: '',
-            logoUrl: ''
-          };
-          
-          await crearNegocio(negocioDefault, user.uid);
-          negocioData = await getNegocioPorUsuario(user.uid);
-        }
-        
-        setNegocio(negocioData);
-        setError(null);
-      } catch (err) {
-        console.error('Error cargando negocio:', err);
-        setError('Error al cargar los datos del negocio');
-      } finally {
-        setLoading(false);
+        await crearNegocio(negocioDefault, user.uid);
+        negocioData = await getNegocioPorUsuario(user.uid);
       }
-    };
+      return negocioData;
+    },
+    enabled: !!user?.uid,
+  });
 
-    cargarNegocio();
-  }, [user?.uid, user?.displayName, user?.email]);
-
-  const refrescarNegocio = async () => {
-    if (!user?.uid) return;
-    
-    try {
-      const negocioData = await getNegocioPorUsuario(user.uid);
-      setNegocio(negocioData);
-    } catch (err) {
-      console.error('Error refrescando negocio:', err);
-      setError('Error al actualizar los datos del negocio');
-    }
+  const refrescarNegocio = () => {
+    queryClient.invalidateQueries({ queryKey: ['negocio', user?.uid] });
   };
 
-  return { negocio, loading, error, refrescarNegocio };
+  return { negocio, loading, error: error ? 'Error al cargar los datos del negocio' : null, refrescarNegocio };
 };
 
 // Hook combinado para obtener estadísticas del usuario
 export const useEstadisticasUsuario = () => {
   const { user } = useAuth();
-  const [estadisticas, setEstadisticas] = useState({
-    totalClientes: 0,
-    totalOrdenes: 0,
-    ordenesPendientes: 0,
-    ordenesCompletadas: 0
+
+  // Reutilizamos las queries existentes (TanStack Query las deduplicará)
+  const { data: clientes = [] } = useQuery({
+    queryKey: ['clientes', user?.uid],
+    queryFn: () => getClientesPorUsuario(user!.uid),
+    enabled: !!user?.uid,
   });
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const cargarEstadisticas = async () => {
-      if (!user?.uid) {
-        setLoading(false);
-        return;
-      }
+  const { data: ordenes = [], isLoading: loading } = useQuery({
+    queryKey: ['ordenes', user?.uid],
+    queryFn: () => getOrdenesPorUsuario(user!.uid),
+    enabled: !!user?.uid,
+  });
 
-      try {
-        setLoading(true);
-        const [clientes, ordenes] = await Promise.all([
-          getClientesPorUsuario(user.uid),
-          getOrdenesPorUsuario(user.uid)
-        ]);
-
-        // Calcular estadísticas
-        const ordenesPendientes = ordenes.filter(orden => 
-          orden.tipo !== 'entrega' || !orden.validacionCliente
-        ).length;
-        
-        const ordenesCompletadas = ordenes.filter(orden => 
-          orden.tipo === 'entrega' && orden.validacionCliente
-        ).length;
-
-        setEstadisticas({
-          totalClientes: clientes.length,
-          totalOrdenes: ordenes.length,
-          ordenesPendientes,
-          ordenesCompletadas
-        });
-      } catch (err) {
-        console.error('Error cargando estadísticas:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    cargarEstadisticas();
-  }, [user?.uid]);
+  // Calcular estadísticas de forma reactiva
+  const estadisticas = {
+    totalClientes: clientes.length,
+    totalOrdenes: ordenes.length,
+    preventivos: ordenes.filter(o => (o as any).tipoMantenimiento === 'preventivo').length,
+    correctivos: ordenes.filter(o => (o as any).tipoMantenimiento === 'correctivo').length,
+    diagnosticos: ordenes.filter(o => (o as any).tipoMantenimiento === 'diagnostico').length,
+    instalaciones: ordenes.filter(o => (o as any).tipoMantenimiento === 'instalacion').length,
+  };
 
   return { estadisticas, loading };
+};
+
+/**
+ * Hook para obtener solo las órdenes más recientes (optimización para dashboard)
+ */
+export const useOrdenesRecientes = (limitCount: number = 5) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['ordenes', user?.uid, 'recientes', limitCount],
+    queryFn: async () => {
+      const { ordenes } = await getOrdenesPaginadas(user!.uid, limitCount);
+      return ordenes;
+    },
+    enabled: !!user?.uid,
+  });
+};
+
+/**
+ * Hook para obtener órdenes con paginación infinita
+ */
+export const useOrdenesInfinitas = (pageSize: number = 10) => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  const query = useInfiniteQuery({
+    queryKey: ['ordenes', user?.uid, 'infinito'],
+    queryFn: ({ pageParam }) => getOrdenesPaginadas(user!.uid, pageSize, pageParam as any),
+    initialPageParam: null as any,
+    getNextPageParam: (lastPage) => lastPage.lastDoc || undefined,
+    enabled: !!user?.uid,
+  });
+
+  const refrescarOrdenes = () => {
+    // Invalidando la llave raíz ['ordenes', user?.uid], 
+    // TanStack Query refresca automáticamente todas las sub-queries 
+    // (recientes, infinito, stats).
+    queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid] });
+  };
+
+  return { ...query, refrescarOrdenes };
 };

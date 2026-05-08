@@ -11,6 +11,8 @@ import {
   updateDoc, 
   addDoc,
   orderBy,
+  limit,
+  startAfter,
 } from 'firebase/firestore';
 import { Cliente, Orden, Negocio, ContadorU } from '@/types/orden';
 
@@ -77,6 +79,60 @@ export const getOrdenesPorUsuario = async (userId: string): Promise<Orden[]> => 
     console.error('Error obteniendo órdenes:', error);
     return [];
   }
+};
+
+/**
+ * Obtiene órdenes paginadas para uso con useInfiniteQuery
+ */
+export const getOrdenesPaginadas = async (userId: string, pageSize: number = 10, lastDoc: any = null) => {
+  try {
+    const ordenesRef = collection(db, 'ordenes');
+    let q;
+    
+    if (lastDoc) {
+      q = query(
+        ordenesRef, 
+        where('userId', '==', userId), 
+        orderBy('fechaCreacion', 'desc'), 
+        startAfter(lastDoc),
+        limit(pageSize)
+      );
+    } else {
+      q = query(
+        ordenesRef, 
+        where('userId', '==', userId), 
+        orderBy('fechaCreacion', 'desc'), 
+        limit(pageSize)
+      );
+    }
+    
+    const querySnapshot = await getDocs(q);
+    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+    
+    const ordenes = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Orden[];
+    
+    return { ordenes, lastDoc: lastVisible };
+  } catch (error) {
+    console.error('Error obteniendo órdenes paginadas:', error);
+    return { ordenes: [], lastDoc: null };
+  }
+};
+
+/**
+ * Retorna un resumen de la orden omitiendo campos pesados (DTO pattern)
+ */
+export const mapToOrdenResumen = (orden: any): Partial<Orden> => {
+  const { 
+    actividades, 
+    repuestos, 
+    firmaCliente, 
+    firmaTecnico, 
+    ...resumen 
+  } = orden;
+  return resumen;
 };
 
 export const crearOrden = async (orden: Omit<Orden, 'id'>, userId: string): Promise<string> => {

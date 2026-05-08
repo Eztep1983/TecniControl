@@ -11,9 +11,10 @@ import {
   ClipboardList
 } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { useOrdenesUsuario, useEstadisticasUsuario } from '@/hooks/useMultiUser'
+import { useOrdenesRecientes, useEstadisticasUsuario } from '@/hooks/useMultiUser'
 import { useNegocio } from '@/hooks/useNegocio'
 import { OrdenMantenimiento } from '@/types/orden'
+import { useQueryClient } from '@tanstack/react-query'
 
 import FormularioMantenimiento from '@/app/(app)/ordenes/mantenimiento/formulario'
 import ModalOrden from '@/components/mantenimiento/ModalOrden'
@@ -23,7 +24,8 @@ import AnimatedContent from '@/components/ui/AnimatedContent'
 
 export default function OrdenesDashboardPage() {
   const { user, loading: authLoading } = useAuth()
-  const { ordenes: todasLasOrdenes, loading: ordenesLoading, refrescarOrdenes } = useOrdenesUsuario()
+  const queryClient = useQueryClient()
+  const { data: ordenesRecientesRaw = [], isLoading: ordenesLoading } = useOrdenesRecientes(3)
   const { estadisticas, loading: statsLoading } = useEstadisticasUsuario()
   const { negocio } = useNegocio()
   const { imprimirOrden, compartirOrden, descargarPDF, formatFecha } = usePrintService({ negocio })
@@ -32,33 +34,32 @@ export default function OrdenesDashboardPage() {
   const [hayBorrador, setHayBorrador] = useState(false)
   const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenMantenimiento | null>(null)
 
+  const refrescarDatos = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid] })
+  }, [queryClient, user?.uid])
+
   useEffect(() => {
     if (localStorage.getItem('draft_mantenimiento')) {
       setHayBorrador(true)
     }
   }, [])
 
-  // Filtrar solo mantenimiento
+  // Filtrar solo mantenimiento (aunque ya vienen limitadas, aseguramos tipo)
   const ordenesMantenimiento = useMemo(() => {
-    return todasLasOrdenes.filter(orden => orden.tipo === 'mantenimiento') as OrdenMantenimiento[]
-  }, [todasLasOrdenes])
+    return ordenesRecientesRaw.filter(orden => orden.tipo === 'mantenimiento') as OrdenMantenimiento[]
+  }, [ordenesRecientesRaw])
 
-  // Órdenes recientes (últimas 3)
-  const ordenesRecientes = useMemo(() => {
-    return [...ordenesMantenimiento]
-      .sort((a, b) => new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime())
-      .slice(0, 3)
-  }, [ordenesMantenimiento])
+  // Órdenes recientes (ya vienen limitadas por el hook)
+  const ordenesRecientes = ordenesMantenimiento;
 
-  // Estadísticas
+  // Estadísticas (usamos las del hook dedicado que es más eficiente ahora)
   const stats = useMemo(() => ({
-    preventivos: ordenesMantenimiento.filter(o => o.tipoMantenimiento === 'preventivo').length,
-    correctivos: ordenesMantenimiento.filter(o => o.tipoMantenimiento === 'correctivo').length,
-    diagnosticos: ordenesMantenimiento.filter(o => o.tipoMantenimiento === 'diagnostico').length,
-    instalaciones: ordenesMantenimiento.filter(o => o.tipoMantenimiento === 'instalacion').length,
-    garantias: ordenesMantenimiento.filter(o => o.tipoMantenimiento === 'garantia').length,
-    total: ordenesMantenimiento.length
-  }), [ordenesMantenimiento])
+    preventivos: estadisticas.preventivos,
+    correctivos: estadisticas.correctivos,
+    diagnosticos: estadisticas.diagnosticos,
+    instalaciones: estadisticas.instalaciones,
+    total: estadisticas.totalOrdenes
+  }), [estadisticas])
 
   const getTipoColor = useCallback((tipo: string) => {
     const colors: Record<string, string> = {
@@ -66,13 +67,12 @@ export default function OrdenesDashboardPage() {
       correctivo: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
       diagnostico: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
       instalacion: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-      garantia: 'bg-amber-500/20 text-amber-400 border-amber-500/30'
     }
     return colors[tipo] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
   }, [])
 
   // Loading state
-  if (authLoading || (ordenesLoading && user?.uid && todasLasOrdenes.length === 0)) {
+  if (authLoading || (ordenesLoading && user?.uid && ordenesRecientesRaw.length === 0)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
         <div className="text-center">
@@ -110,7 +110,7 @@ export default function OrdenesDashboardPage() {
         onSuccess={() => {
           setMostrarFormulario(false);
           setHayBorrador(false);
-          refrescarOrdenes();
+          refrescarDatos();
         }}
       />
     );

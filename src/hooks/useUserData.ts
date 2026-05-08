@@ -1,5 +1,4 @@
-// hooks/useUserData.ts
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -15,38 +14,26 @@ export interface UserData {
   businessId: string
 }
 
-
 export const useUserData = () => {
   const { user } = useAuth()
-  const [userData, setUserData] = useState<UserData | null>(null)
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (!user) {
-        setUserData(null)
-        setLoading(false)
-        return
+  const { data: userData, isLoading: loading, error } = useQuery({
+    queryKey: ['userData', user?.uid],
+    queryFn: async () => {
+      if (!user?.uid) return null
+      
+      const userRef = doc(db, 'users', user.uid)
+      const userDoc = await getDoc(userRef)
+      
+      if (userDoc.exists()) {
+        return userDoc.data() as UserData
       }
+      return null
+    },
+    enabled: !!user?.uid,
+  })
 
-      try {
-        const userRef = doc(db, 'users', user.uid)
-        const userDoc = await getDoc(userRef)
-        
-        if (userDoc.exists()) {
-          setUserData(userDoc.data() as UserData)
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchUserData()
-  }, [user])
-
-  return { userData, loading }
+  return { userData, loading, error }
 }
 
 

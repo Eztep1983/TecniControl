@@ -1,7 +1,7 @@
 // components/clientes/ClientesList.tsx
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, memo } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import { ClientesDataTable } from "./ClientesDataTable";
 import { ClienteViewModal } from "@/components/clientes/ClienteViewModal";
 import { ClienteFormModal } from "@/components/clientes/ClienteFormModal";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/basic/input";
 import { PlusCircle, User, Search, Users, Filter, RefreshCw, X } from "lucide-react";
 import type { Cliente } from "@/types/orden";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { getClientesPorUsuario } from "@/lib/multiuser-helpers";
+import { useClientesUsuario } from "@/hooks/useMultiUser";
 import { useClienteModal } from "@/hooks/useClienteModal";
 
 // ── Skeleton — defined OUTSIDE with memo to keep static flags stable ──────────
@@ -53,41 +53,10 @@ const ClientesSkeleton = memo(function ClientesSkeleton() {
 
 // ── Componente principal ──────────────────────────────────────────────────────
 export function ClientesList() {
-  // ── ALL hooks must be called unconditionally, in the same order, every render ─
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // These hooks are always called — never inside conditions or after early returns
   const { user } = useAuth();
+  const { clientes, loading, error, refrescarClientes } = useClientesUsuario();
+  const [searchTerm, setSearchTerm] = useState("");
   const modal = useClienteModal();
-
-  // ── Fetch ───────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    // Guard inside the effect body, NOT by skipping the hook call
-    if (!user?.uid) {
-      setLoading(false);
-      return;
-    }
-    let cancelled = false;
-    const fetchClientes = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getClientesPorUsuario(user.uid);
-        if (!cancelled) setClientes(data);
-      } catch {
-        if (!cancelled) setError("No se pudieron cargar los clientes. Intente nuevamente.");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    fetchClientes();
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.uid]);
 
   // ── Filtrado reactivo (memoizado) ───────────────────────────────────────────
   const filteredClientes = useMemo(() => {
@@ -101,24 +70,16 @@ export function ClientesList() {
     );
   }, [clientes, searchTerm]);
 
-  // ── Callbacks CRUD — stable references, no dependency on modal object ───────
-  // Depending on the whole `modal` object is risky if useClienteModal returns
-  // a new object reference every render. Extract only the primitives needed.
+  // ── Callbacks CRUD ──────────────────────────────────────────────────────────
   const handleDelete = useCallback((id: string) => {
-    setClientes((prev) => prev.filter((c) => c.id !== id));
-  }, []);
+    // Aquí podrías llamar a una mutación para eliminar
+    // Por ahora refrescamos para simplificar
+    refrescarClientes();
+  }, [refrescarClientes]);
 
   const handleSuccess = useCallback((cliente: Cliente) => {
-    setClientes((prev) => {
-      const idx = prev.findIndex((c) => c.id === cliente.id);
-      if (idx !== -1) {
-        const next = [...prev];
-        next[idx] = cliente;
-        return next;
-      }
-      return [cliente, ...prev];
-    });
-  }, []);
+    refrescarClientes();
+  }, [refrescarClientes]);
 
   const clearSearch = useCallback(() => setSearchTerm(""), []);
 
