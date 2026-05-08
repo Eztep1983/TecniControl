@@ -633,7 +633,10 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     state.tareasSeleccionadas,
     state.tareasPersonalizadas,
     state.instalacionConfiguracion,
-    state.instalacionRecomendaciones
+    state.instalacionRecomendaciones,
+    state.nombreFirmante,
+    state.validacionCliente,
+    state.firmaCliente
   ])
 
   const canProceedToNextStep = useCallback((): boolean => {

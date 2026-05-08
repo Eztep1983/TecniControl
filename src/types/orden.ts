@@ -94,6 +94,11 @@ export interface OrdenMantenimiento {
   instalacionConfiguracion?: boolean;
   instalacionConfiguracionTipos?: string[];
   
+  // Firma y Validación
+  firmaCliente?: string;
+  nombreFirmante?: string;
+  validacionCliente?: boolean;
+
   createdAt?: Date;
   updatedAt?: Date;
 }

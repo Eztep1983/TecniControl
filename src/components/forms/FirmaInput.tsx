@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react'
+import React, { useRef, useCallback, useEffect } from 'react'
 import SignatureCanvas from 'react-signature-canvas'
 import { Eraser } from 'lucide-react'
 
@@ -21,6 +21,40 @@ export default function FirmaInput({
 }: FirmaInputProps) {
   const sigCanvas = useRef<SignatureCanvas>(null)
 
+  // Restaurar firma al montar o cuando cambie firmaCliente (si el canvas está vacío)
+  useEffect(() => {
+    const restoreSignature = () => {
+      if (firmaCliente && sigCanvas.current && sigCanvas.current.isEmpty()) {
+        sigCanvas.current.fromDataURL(firmaCliente)
+      }
+    }
+
+    // Intentar restaurar inmediatamente
+    restoreSignature()
+    
+    // Y un pequeño delay por si el canvas está terminando de inicializarse
+    const timer = setTimeout(restoreSignature, 100)
+    return () => clearTimeout(timer)
+  }, [firmaCliente])
+
+  // Manejar el redimensionamiento del canvas (común cuando se abre el teclado en móvil)
+  useEffect(() => {
+    const handleResize = () => {
+      if (sigCanvas.current && firmaCliente) {
+        // Al redimensionar, el canvas se limpia solo. 
+        // Esperamos un momento a que el navegador termine el layout del teclado
+        setTimeout(() => {
+          if (sigCanvas.current && sigCanvas.current.isEmpty()) {
+            sigCanvas.current.fromDataURL(firmaCliente)
+          }
+        }, 150)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [firmaCliente])
+
   const limpiarFirma = useCallback(() => {
     sigCanvas.current?.clear()
     setFirmaCliente('')
@@ -30,7 +64,11 @@ export default function FirmaInput({
     if (sigCanvas.current?.isEmpty()) {
       setFirmaCliente('')
     } else {
-      setFirmaCliente(sigCanvas.current?.getTrimmedCanvas().toDataURL('image/png') || '')
+      // Guardamos la firma como data URL
+      const dataUrl = sigCanvas.current?.getTrimmedCanvas().toDataURL('image/png')
+      if (dataUrl) {
+        setFirmaCliente(dataUrl)
+      }
     }
   }, [setFirmaCliente])
 
@@ -75,7 +113,11 @@ export default function FirmaInput({
               <SignatureCanvas
                 ref={sigCanvas}
                 penColor="black"
-                canvasProps={{ className: 'w-full h-full cursor-crosshair' }}
+                canvasProps={{ 
+                  className: 'w-full h-full cursor-crosshair',
+                  // Esto ayuda a que el canvas mantenga una resolución decente
+                  style: { display: 'block' }
+                }}
                 onEnd={guardarFirma}
               />
               {!firmaCliente && (

@@ -124,7 +124,8 @@ export default function OrdenesDashboardPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
-                Panel de Órdenes
+                Bienvenido,<br/>
+                {user.displayName} 
               </h1>
               <p className="text-sm sm:text-base text-gray-400">
                 Resumen de servicios técnicos
@@ -211,11 +212,6 @@ export default function OrdenesDashboardPage() {
                <Wrench className="w-6 h-6 text-purple-400 mb-2" />
                <span className="text-2xl font-bold text-white">{stats.instalaciones}</span>
                <span className="text-xs text-gray-400 mt-1">Instalaciones</span>
-            </div>
-            <div className="snap-start shrink-0 w-32 bg-gray-800/80 border border-amber-500/20 rounded-2xl p-4 flex flex-col items-center justify-center">
-               <Shield className="w-6 h-6 text-amber-400 mb-2" />
-               <span className="text-2xl font-bold text-white">{stats.garantias}</span>
-               <span className="text-xs text-gray-400 mt-1">Garantías</span>
             </div>
           </div>
         </div>

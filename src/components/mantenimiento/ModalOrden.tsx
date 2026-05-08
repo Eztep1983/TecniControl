@@ -1,7 +1,7 @@
 // ModalOrden.tsx - Versión Fluida con Sticky + UX Mejorada
 
 import { OrdenMantenimiento } from "@/types/orden";
-import { X, Calendar, Clock, Printer, Wrench, AlertCircle, Share2, Copy, Check } from "lucide-react";
+import { X, Calendar, Clock, Printer, Wrench, AlertCircle, Share2, Copy, Check, CheckCircle } from "lucide-react";
 import { useCallback, useMemo, memo, useEffect, useRef, useState, useId } from "react";
 
 // ============================================================================
@@ -509,7 +509,10 @@ const useModalData = (orden: OrdenMantenimiento) => {
       instalacionRecomendaciones,
       instalacionRecomendacionesDetalle,
       instalacionConfiguracion,
-      instalacionConfiguracionTipos
+      instalacionConfiguracionTipos,
+      firmaCliente,
+      nombreFirmante,
+      validacionCliente
     } = orden;
 
     return {
@@ -538,6 +541,10 @@ const useModalData = (orden: OrdenMantenimiento) => {
       instalacionRecomendacionesDetalle,
       instalacionConfiguracion,
       instalacionConfiguracionTipos,
+      firmaCliente,
+      nombreFirmante,
+      validacionCliente,
+      hasFirma: !!firmaCliente
     };
   }, [orden]);
 };
@@ -736,6 +743,29 @@ const ModalOrden = ({
               garantiaDesde={data.garantiaDesde}
               garantiaHasta={data.garantiaHasta}
             />
+          )}
+
+          {data.hasFirma && (
+            <InfoSection title="Firma de Conformidad" icon={CheckCircle}>
+              <div className="flex flex-col items-center justify-center py-4 space-y-4">
+                <div className="bg-white rounded-xl p-3 w-full max-w-md shadow-inner">
+                  <img 
+                    src={data.firmaCliente} 
+                    alt="Firma del cliente" 
+                    className="w-full h-auto max-h-48 object-contain mx-auto"
+                    style={{ filter: 'contrast(1.1) brightness(1.05)' }}
+                  />
+                </div>
+                <div className="text-center space-y-1">
+                  <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Recibido por</p>
+                  <p className="text-xl font-bold text-white tracking-tight">{data.nombreFirmante || data.cliente?.name}</p>
+                  <div className="flex items-center justify-center gap-2 text-green-400 text-sm font-medium pt-1">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <span>Validado Digitalmente</span>
+                  </div>
+                </div>
+              </div>
+            </InfoSection>
           )}
         </main>
         

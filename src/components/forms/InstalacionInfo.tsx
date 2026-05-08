@@ -103,7 +103,7 @@ const InstalacionInfo = memo(function InstalacionInfo({
                 : 'bg-gray-700/50 text-gray-400 border border-gray-600/50'
             }`}
           >
-            {configuracion ? 'Desactivar' : 'Activar'}
+            {configuracion ? 'X' : 'Activar'}
           </button>
         </div>
 
@@ -181,7 +181,7 @@ const InstalacionInfo = memo(function InstalacionInfo({
           <SectionHeader
             icon={FileText}
             title="Recomendaciones"
-            description="Consejos para el cuidado del equipo"
+            description="Opcional: Consejos para el cuidado del equipo"
             colorClass={recomendaciones ? "bg-green-500 text-white shadow-green-500/20" : "bg-gray-700 text-gray-400"}
           />
           <button
@@ -193,7 +193,7 @@ const InstalacionInfo = memo(function InstalacionInfo({
                 : 'bg-gray-700/50 text-gray-400 border border-gray-600/50'
             }`}
           >
-            {recomendaciones ? 'Desactivar' : 'Activar'}
+            {recomendaciones ? 'X' : 'Activar'}
           </button>
         </div>
 

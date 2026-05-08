@@ -1,4 +1,5 @@
 import { FormState } from '@/app/(app)/ordenes/mantenimiento/formulario'
+import { CheckCircle } from 'lucide-react'
 
 interface ResumenMantenimientoProps {
   state: FormState
@@ -177,6 +178,33 @@ export default function ResumenMantenimiento({
               <span className="text-gray-500">({state.mesesGarantia} meses)</span>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Firma */}
+      {state.firmaCliente && (
+        <div className="bg-gray-800/50 rounded-xl p-4 sm:p-6 space-y-3">
+          <h3 className="text-xs sm:text-sm font-semibold text-blue-300 uppercase tracking-wide">Firma del Cliente</h3>
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <div className="bg-white rounded-lg p-2 w-full max-w-sm">
+              <img 
+                src={state.firmaCliente} 
+                alt="Firma del cliente" 
+                className="w-full h-auto max-h-40 object-contain mx-auto"
+                style={{ filter: 'contrast(1.2)' }}
+              />
+            </div>
+            {state.nombreFirmante && (
+              <div className="text-center">
+                <p className="text-sm text-gray-400">Firmado por:</p>
+                <p className="text-lg font-medium text-white">{state.nombreFirmante}</p>
+              </div>
+            )}
+            <div className="flex items-center gap-2 text-green-400 text-sm bg-green-400/10 px-3 py-1.5 rounded-full">
+              <CheckCircle className="w-4 h-4" />
+              <span>Validado por el cliente</span>
+            </div>
+          </div>
         </div>
       )}
     </div>
