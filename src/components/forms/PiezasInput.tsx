@@ -3,7 +3,8 @@
 import { Plus, Trash2, Package, Search, X, AlertCircle } from 'lucide-react'
 import { useCallback, memo, useState, useEffect, useMemo, useRef, Dispatch, SetStateAction } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { obtenerPiezasPredefinidas, guardarPiezasPredefinidas, PiezaPredefinida } from '@/lib/configuracionTareasR-helpers'
+import {  obtenerPiezasPredefinidas, PiezaPredefinida } from '@/lib/configuracionTareasR-helpers'
+import { crearPieza } from '@/lib/configuracion-helpers'
 
 interface Pieza {
   pieza: string
@@ -157,7 +158,7 @@ export default memo(function PiezasInput({
       obtenerPiezasPredefinidas(user.uid).then(todas => {
         const todasSanitizadas = (todas || []).filter(Boolean);
         const piezasActualizadas = [...todasSanitizadas, nuevaPiezaPredefinida];
-        guardarPiezasPredefinidas(user.uid, piezasActualizadas).catch(err => {
+        crearPieza(user.uid, nuevaPiezaPredefinida).catch(err => {
           console.error("Error guardando nueva pieza predefinida", err);
         });
       });

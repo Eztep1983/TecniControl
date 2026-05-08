@@ -7,7 +7,7 @@ import { Plus, Search, Eye, Printer, ArrowLeft, Wrench, Filter, ChevronDown, Che
 import Link from 'next/link'
 import FormularioMantenimiento from '@/app/(app)/ordenes/mantenimiento/formulario'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { useOrdenesInfinitas } from '@/hooks/useMultiUser'
+import { useOrdenesInfinitas, usePrefetchData } from '@/hooks/useMultiUser'
 import { useNegocio } from '@/hooks/useNegocio'
 import { useDebounce } from 'use-debounce'
 import ModalOrden from '@/components/mantenimiento/ModalOrden'
@@ -30,6 +30,7 @@ const FilterLoadingIndicator = () => (
 // Componente principal
 export default function OrdenesMantenimientoPage() {
   const { user, loading: authLoading } = useAuth()
+  const { prefetchClientes } = usePrefetchData()
   const { 
     data, 
     fetchNextPage, 
@@ -231,6 +232,7 @@ export default function OrdenesMantenimientoPage() {
             >
               <button
                 onClick={() => setMostrarFormulario(true)}
+                onMouseEnter={() => prefetchClientes()}
                 className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-md hover:shadow-lg text-sm sm:text-base self-start sm:self-auto"
               >
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5" />

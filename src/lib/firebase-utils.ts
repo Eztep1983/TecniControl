@@ -4,15 +4,21 @@ import { db } from '@/lib/firebase';
 
 // Función para obtener el próximo número consecutivo
 export const obtenerProximoNumeroOrden = async (tipoOrden: 'mantenimiento' | 'diagnostico' | 'garantia' | 'entrega' = 'mantenimiento'): Promise<number> => {
+  // Verificación rápida de conexión (si estamos en web)
+  if (typeof window !== 'undefined' && !window.navigator.onLine) {
+    console.warn('Modo offline detectado: Generando ID temporal');
+    return Date.now(); // Retornamos timestamp como ID temporal único
+  }
+
   try {
     const contadorId = `ordenes${tipoOrden.charAt(0).toUpperCase() + tipoOrden.slice(1)}`;
     const contadorRef = doc(db, 'contadores', contadorId);
     
+    // Intentar transacción (requiere online)
     return await runTransaction(db, async (transaction) => {
       const contadorDoc = await transaction.get(contadorRef);
       
       if (!contadorDoc.exists()) {
-        // Si no existe el contador, lo creamos con valor inicial 1
         transaction.set(contadorRef, { ultimoNumero: 1 });
         return 1;
       }
@@ -20,10 +26,13 @@ export const obtenerProximoNumeroOrden = async (tipoOrden: 'mantenimiento' | 'di
       const nuevoNumero = contadorDoc.data().ultimoNumero + 1;
       transaction.update(contadorRef, { ultimoNumero: nuevoNumero });
       return nuevoNumero;
-    });
+    }); // Se eliminó el objeto de opciones con 'timeout'
+// Timeout corto para no bloquear al usuario
   } catch (error) {
-    console.error('Error obteniendo número de orden:', error);
-    throw new Error('No se pudo generar el número de orden');
+    console.error('Error obteniendo número de orden (posible offline):', error);
+    // Fallback: Si la transacción falla (probablemente por red), no bloqueamos al usuario
+    // Usamos el tiempo actual para asegurar un ID único aunque sea temporal
+    return Date.now();
   }
 };
 

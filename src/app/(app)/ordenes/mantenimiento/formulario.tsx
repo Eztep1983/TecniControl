@@ -8,8 +8,8 @@ import { ArrowLeft, Monitor, ChevronRight, ChevronLeft, CheckCircle, Users, Wren
 import { useAuth } from '@/components/auth/AuthProvider'
 import { 
   getClientesPorUsuario, 
-  crearOrden,
 } from '@/lib/multiuser-helpers'
+import { useCrearOrden } from '@/hooks/useMultiUser'
 import { obtenerProximoNumeroOrden, formatearIdOrden } from '@/lib/firebase-utils'
 import { useNegocio } from '@/hooks/useNegocio'
 import { usePrintService } from '@/components/mantenimiento/PrintService'
@@ -413,6 +413,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   const { user } = useAuth()
   const { negocio } = useNegocio()
   const { imprimirOrden, compartirOrden } = usePrintService({ negocio })
+  const { mutateAsync: crearOrdenMutate } = useCrearOrden()
   const [state, dispatch] = usePersistentReducer(
     'draft_mantenimiento',
     formReducer,
@@ -753,16 +754,16 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
         }
       })
 
-      await crearOrden(nuevaOrden, user.uid)
+      const resultado = await crearOrdenMutate(nuevaOrden)
       
-      dispatch({ type: 'SET_ORDEN_CREADA', payload: nuevaOrden })
+      dispatch({ type: 'SET_ORDEN_CREADA', payload: resultado })
     } catch (error) {
       console.error('Error creando orden:', error)
       alert('Error al crear la orden: ' + (error instanceof Error ? error.message : 'Error desconocido'))
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false })
     }
-  }, [user?.uid, state, onSuccess])
+  }, [user?.uid, state, onSuccess, crearOrdenMutate])
 
   // ============================================================================
   // UTILIDADES MEMOIZADAS

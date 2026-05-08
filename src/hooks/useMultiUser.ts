@@ -91,6 +91,67 @@ export const useOrdenesUsuario = () => {
   };
 };
 
+/**
+ * Hook para crear órdenes con actualizaciones optimistas (Fase 4)
+ */
+export const useCrearOrden = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ordenData: any) => {
+      const proximoNumero = await obtenerProximoNumeroOrden(ordenData.tipo || 'mantenimiento');
+      const idPersonalizado = formatearIdOrden(proximoNumero, ordenData.tipo || 'mantenimiento');
+      
+      const ordenCompleta = {
+        ...ordenData,
+        idPersonalizado,
+        userId: user!.uid,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const docRef = await addDoc(collection(db, 'ordenes'), ordenCompleta);
+      return { id: docRef.id, ...ordenCompleta };
+    },
+    onMutate: async (nuevaOrden) => {
+      // Cancelar refetches salientes
+      await queryClient.cancelQueries({ queryKey: ['ordenes', user?.uid] });
+
+      // Snapshot del valor previo
+      const previousRecent = queryClient.getQueryData(['ordenes', user?.uid, 'recientes', 3]);
+      
+      // Actualización optimista del Dashboard
+      if (previousRecent) {
+        queryClient.setQueryData(['ordenes', user?.uid, 'recientes', 3], (old: any) => {
+          const tempOrden = { 
+            ...nuevaOrden, 
+            id: 'temp-' + Date.now(), 
+            idPersonalizado: '...', 
+            fechaCreacion: new Date() 
+          };
+          return [tempOrden, ...(old || [])].slice(0, 3);
+        });
+      }
+
+      return { previousRecent };
+    },
+    onError: (err, nuevaOrden, context) => {
+      // Revertir si hay error
+      if (context?.previousRecent) {
+        queryClient.setQueryData(['ordenes', user?.uid, 'recientes', 3], context.previousRecent);
+      }
+    },
+    onSettled: () => {
+      // Invalidar para sincronizar con el servidor
+      queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid] });
+    },
+  });
+};
+
+/**
+ * Hook para obtener datos del negocio del usuario
+ */
 export const useNegocioUsuario = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -156,6 +217,35 @@ export const useEstadisticasUsuario = () => {
   };
 
   return { estadisticas, loading };
+};
+
+/**
+ * Hook para pre-cargar datos (Prefetching - Fase 4)
+ */
+export const usePrefetchData = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  const prefetchOrdenes = async () => {
+    if (!user?.uid) return;
+    await queryClient.prefetchQuery({
+      queryKey: ['ordenes', user.uid, 'recientes', 3],
+      queryFn: async () => {
+        const { ordenes } = await getOrdenesPaginadas(user.uid, 3);
+        return ordenes;
+      },
+    });
+  };
+
+  const prefetchClientes = async () => {
+    if (!user?.uid) return;
+    await queryClient.prefetchQuery({
+      queryKey: ['clientes', user.uid],
+      queryFn: () => getClientesPorUsuario(user.uid),
+    });
+  };
+
+  return { prefetchOrdenes, prefetchClientes };
 };
 
 /**

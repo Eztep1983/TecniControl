@@ -151,6 +151,7 @@ export default function DispositivoSelector({
           cliente={cliente}
           onClose={() => setIsModalOpen(false)}
           onSuccess={(c) => {
+            setIsModalOpen(false);
             if (onClienteActualizado) {
               onClienteActualizado(c);
             }
@@ -265,6 +266,7 @@ export default function DispositivoSelector({
         cliente={cliente}
         onClose={() => setIsModalOpen(false)}
         onSuccess={(c) => {
+          setIsModalOpen(false);
           if (onClienteActualizado) {
             onClienteActualizado(c);
           }

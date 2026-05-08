@@ -12,6 +12,8 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { Separator } from "@/components/ui/separator"
 import Link from 'next/link'
 
+import { NetworkStatusBanner } from '@/components/ui/NetworkStatusBanner'
+
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const { setOpenMobile } = useSidebar()
@@ -23,6 +25,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <NetworkStatusBanner />
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-gray-800 px-4">
         <SidebarTrigger className="-ml-1 text-gray-300 hover:text-white hover:bg-gray-700" />
         <Separator orientation="vertical" className="mr-2 h-4 bg-gray-700" />

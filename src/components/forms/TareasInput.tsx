@@ -3,7 +3,7 @@
 import { Check, AlertCircle, X, Search, Zap, Plus } from 'lucide-react'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { obtenerTareasPredefinidas, guardarTareasPredefinidas, TareaPredefinida } from '@/lib/configuracionTareasR-helpers'
+import { crearTarea, obtenerTareasPredefinidas, TareaPredefinida } from '@/lib/configuracionTareasR-helpers'
 
 interface TareasInputProps {
   tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | ''
@@ -115,7 +115,7 @@ export default function TareasInput({
       obtenerTareasPredefinidas(user.uid).then(todas => {
         const todasSanitizadas = (todas || []).filter(Boolean);
         const tareasActualizadas = [...todasSanitizadas, nuevaTareaPredefinida];
-        guardarTareasPredefinidas(user.uid, tareasActualizadas).catch(err => {
+        crearTarea(user.uid, nuevaTareaPredefinida).catch(err => {
           console.error("Error guardando nueva tarea predefinida", err);
         });
       });

@@ -11,7 +11,7 @@ import {
   ClipboardList
 } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { useOrdenesRecientes, useEstadisticasUsuario } from '@/hooks/useMultiUser'
+import { useOrdenesRecientes, useEstadisticasUsuario, usePrefetchData } from '@/hooks/useMultiUser'
 import { useNegocio } from '@/hooks/useNegocio'
 import { OrdenMantenimiento } from '@/types/orden'
 import { useQueryClient } from '@tanstack/react-query'
@@ -25,6 +25,7 @@ import AnimatedContent from '@/components/ui/AnimatedContent'
 export default function OrdenesDashboardPage() {
   const { user, loading: authLoading } = useAuth()
   const queryClient = useQueryClient()
+  const { prefetchClientes } = usePrefetchData()
   const { data: ordenesRecientesRaw = [], isLoading: ordenesLoading } = useOrdenesRecientes(3)
   const { estadisticas, loading: statsLoading } = useEstadisticasUsuario()
   const { negocio } = useNegocio()
@@ -146,6 +147,7 @@ export default function OrdenesDashboardPage() {
         >
           <button
             onClick={() => setMostrarFormulario(true)}
+            onMouseEnter={() => prefetchClientes()}
             className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 active:scale-[0.98] text-white p-4 rounded-2xl flex items-center justify-center space-x-3 transition-all shadow-lg shadow-blue-500/25 group touch-manipulation"
           >
             <div className="bg-white/20 p-2 rounded-full">

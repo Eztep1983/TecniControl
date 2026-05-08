@@ -1,161 +1,230 @@
-// app/(app)/configuracion/tareas-repuestos/page.tsx
 'use client'
 
-import { useState, useEffect, useCallback, useMemo, useRef, useTransition } from 'react'
-import { useAuth } from '@/components/auth/AuthProvider'
-import { 
-  guardarTareasPredefinidas, 
-  guardarPiezasPredefinidas, 
-  obtenerTareasPredefinidas, 
-  obtenerPiezasPredefinidas 
-} from '@/lib/configuracionTareasR-helpers'
-import { 
-  ArrowLeft, 
-  ListChecks, 
-  Package, 
-  Plus, 
-  Trash2, 
-  Edit3, 
-  Save, 
-  X, 
-  Search, 
-  MoreVertical, 
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  Wrench,
-  RotateCw,
-  ChevronRight
-} from 'lucide-react'
+/**
+ * MEJORAS UI/UX APLICADAS (conservadas):
+ *
+ * Android:
+ *  - Touch targets mínimos de 48dp (min-h-[48px]) en todos los elementos interactivos
+ *  - Ripple effect con active:bg-* para feedback táctil visual
+ *  - overscroll-behavior: contain para evitar pull-to-refresh accidental del sistema
+ *  - Elevación con sombras consistentes con Material Design 3
+ *
+ * iOS:
+ *  - safe-area-inset-* en header, bottom sheet y FAB
+ *  - -webkit-overflow-scrolling: touch (momentum scroll en listas)
+ *  - Keyboard avoidance con visualViewport API en bottom sheets
+ *  - touch-manipulation en todos los botones para eliminar el delay de 300ms de iOS
+ *  - Evitar selección de texto accidental en elementos táctiles (select-none)
+ *
+ * Ambos:
+ *  - @capacitor/haptics con fallback a navigator.vibrate
+ *  - Indicador de red en header (online/offline)
+ *  - Badge con operaciones pendientes de sincronizar
+ *  - Optimistic updates: sin spinners de carga, cambios instantáneos
+ *
+ * REFACTOR VISUAL:
+ *  - Lista con tarjetas en lugar de swipeable.
+ *  - Botones inline de editar/eliminar (sin menú contextual).
+ *  - Paginación “Cargar más” (10 elementos por página).
+ */
+
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { SwipeableList, SwipeableListItem } from 'react-swipeable-list'
-import 'react-swipeable-list/dist/styles.css'
+import { useTareasYPiezas } from '@/hooks/useTareasYPiezas'
+import type { TareaPredefinida, PiezaPredefinida } from '@/lib/configuracion-helpers'
+import { useAuth } from '@/components/auth/AuthProvider'
+import {
+  ArrowLeft, ListChecks, Package, Plus, Trash2, Edit3,
+  X, Search, MoreVertical, AlertCircle, CheckCircle,
+  Wrench, RotateCw, WifiOff, Loader2, CloudOff,
+  RefreshCw
+} from 'lucide-react'
 
-// ============================================================================
-// TIPOS Y CONSTANTES
-// ============================================================================
+// ─── Haptics (conservado) ────────────────────────────────────────────────────
 
-interface TareaPredefinida {
-  id: string
-  nombre: string
-  tipo: 'preventivo' | 'correctivo' | 'ambos'
-  categoria: string
-}
-
-interface PiezaPredefinida {
-  id: string
-  nombre: string
-  categoria: string
-}
-
-const COLORS = {
-  primary: '#3b82f6',   // blue-500
-  secondary: '#8b5cf6', // purple-500
-  success: '#10b981',   // emerald-500
-  danger: '#ef4444',    // red-500
-  warning: '#f59e0b',   // amber-500
-  dark: {
-    900: '#0f172a',
-    800: '#1e293b',
-    700: '#334155',
-    600: '#475569',
-    500: '#64748b',
-    400: '#94a3b8',
-    300: '#cbd5e1'
+const haptic = async (style: 'light' | 'medium' | 'heavy' = 'light') => {
+  try {
+    const { Haptics, ImpactStyle } = await import('@capacitor/haptics')
+    const map = { light: ImpactStyle.Light, medium: ImpactStyle.Medium, heavy: ImpactStyle.Heavy }
+    await Haptics.impact({ style: map[style] })
+  } catch {
+    const durations = { light: 30, medium: 50, heavy: 80 }
+    navigator.vibrate?.(durations[style])
   }
 }
 
-// ============================================================================
-// COMPONENTES REUTILIZABLES OPTIMIZADOS PARA MÓVIL
-// ============================================================================
+const notificationHaptic = async (type: 'success' | 'warning' | 'error') => {
+  try {
+    const { Haptics, NotificationType } = await import('@capacitor/haptics')
+    const map = {
+      success: NotificationType.Success,
+      warning: NotificationType.Warning,
+      error:   NotificationType.Error,
+    }
+    await Haptics.notification({ type: map[type] })
+  } catch {
+    navigator.vibrate?.(type === 'error' ? [50, 30, 50] : 40)
+  }
+}
 
-const LoadingSkeleton = () => (
-  <div className="space-y-4 animate-pulse px-4 py-6">
-    <div className="flex gap-3 overflow-x-auto pb-2">
-      {[1,2,3,4,5].map(i => (
-        <div key={i} className="h-16 w-20 bg-slate-800/50 rounded-xl flex-shrink-0" />
-      ))}
-    </div>
-    <div className="h-12 bg-slate-800/50 rounded-xl" />
-    <div className="space-y-3">
-      {[1,2,3].map(i => (
-        <div key={i} className="h-24 bg-slate-800/50 rounded-xl" />
-      ))}
-    </div>
-  </div>
-)
+// ─── Hook de debounce (conservado) ─────────────────────────────────────────
 
-const EmptyState = ({ icon: Icon, title, description }: { icon: any; title: string; description: string }) => (
-  <div className="flex flex-col items-center justify-center py-16 text-center">
-    <div className="bg-slate-800/40 p-4 rounded-full mb-4">
-      <Icon className="w-10 h-10 text-slate-500" />
-    </div>
-    <p className="text-slate-300 font-medium text-lg">{title}</p>
-    <p className="text-slate-500 text-sm mt-1 max-w-[200px]">{description}</p>
-  </div>
-)
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(t)
+  }, [value, delay])
+  return debounced
+}
 
-interface BottomSheetModalProps {
+// ─── Hook de keyboard avoidance para iOS (conservado) ─────────────────────
+
+function useKeyboardOffset() {
+  const [offset, setOffset] = useState(0)
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const update = () => {
+      const diff = window.innerHeight - vv.height - vv.offsetTop
+      setOffset(Math.max(0, diff))
+    }
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+    }
+  }, [])
+  return offset
+}
+
+// ─── Tipos de formulario ──────────────────────────────────────────────────
+
+type FormTarea = { nombre: string; tipo: TareaPredefinida['tipo']; categoria: string }
+type FormPieza = { nombre: string; categoria: string }
+
+const FORM_TAREA_VACIO: FormTarea = { nombre: '', tipo: 'preventivo', categoria: 'General' }
+const FORM_PIEZA_VACIO: FormPieza = { nombre: '', categoria: 'Categoría Genérica' }
+
+// ─── Componente: Toast (conservado) ────────────────────────────────────────
+
+interface ToastData { text: string; type: 'success' | 'error' | 'info' }
+
+const Toast = ({ toast, onClose }: { toast: ToastData; onClose: () => void }) => {
+  useEffect(() => {
+    const t = setTimeout(onClose, 3500)
+    return () => clearTimeout(t)
+  }, [onClose])
+
+  const styles = {
+    success: 'bg-emerald-600/95 border-emerald-500/50',
+    error:   'bg-red-600/95 border-red-500/50',
+    info:    'bg-blue-600/95 border-blue-500/50',
+  }
+  const Icon = toast.type === 'success' ? CheckCircle : toast.type === 'error' ? AlertCircle : RefreshCw
+
+  return (
+    <div
+      className={`
+        fixed bottom-[calc(env(safe-area-inset-bottom)+80px)] left-4 right-4 z-[60]
+        flex items-center gap-3 p-4 rounded-2xl border shadow-2xl backdrop-blur-md
+        animate-in slide-in-from-bottom-4 duration-300
+        ${styles[toast.type]}
+      `}
+    >
+      <Icon className="w-5 h-5 text-white shrink-0" />
+      <span className="text-sm font-medium text-white flex-1">{toast.text}</span>
+      <button
+        onClick={onClose}
+        className="p-1.5 rounded-full hover:bg-white/20 active:bg-white/30 touch-manipulation"
+        aria-label="Cerrar"
+      >
+        <X className="w-4 h-4 text-white" />
+      </button>
+    </div>
+  )
+}
+
+// ─── Componente: Bottom Sheet (conservado) ─────────────────────────────────
+
+interface BottomSheetProps {
   isOpen: boolean
   onClose: () => void
   title: string
   children: React.ReactNode
 }
 
-const BottomSheetModal = ({ isOpen, onClose, title, children }: BottomSheetModalProps) => {
-  const [touchStart, setTouchStart] = useState<number | null>(null)
+const BottomSheet = ({ isOpen, onClose, title, children }: BottomSheetProps) => {
+  const keyboardOffset = useKeyboardOffset()
+  const startY = useRef<number | null>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
+    document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.touches[0].clientY)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!touchStart) return
-    const currentY = e.touches[0].clientY
-    if (currentY - touchStart > 50) {
-      onClose()
-      setTouchStart(null)
-    }
-  }
 
   if (!isOpen) return null
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-end justify-center"
-      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div 
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Sheet */}
+      <div
         ref={sheetRef}
-        className="relative bg-slate-900 w-full max-w-lg rounded-t-3xl shadow-2xl transform transition-all duration-300 animate-slide-up"
-        onClick={(e) => e.stopPropagation()}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        style={{ paddingBottom: `calc(env(safe-area-inset-bottom) + ${keyboardOffset}px)` }}
+        className="
+          relative bg-slate-900 w-full max-w-lg rounded-t-3xl shadow-2xl
+          border-t border-slate-700/60
+          animate-in slide-in-from-bottom duration-300
+        "
+        onTouchStart={e => { startY.current = e.touches[0].clientY }}
+        onTouchMove={e => {
+          if (!startY.current) return
+          if (e.touches[0].clientY - startY.current > 60) {
+            onClose()
+            startY.current = null
+          }
+        }}
+        onClick={e => e.stopPropagation()}
       >
-        <div className="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mt-3 mb-2" />
-        <div className="flex items-center justify-between px-5 py-2 border-b border-slate-800">
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1.5 bg-slate-700 rounded-full" />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800">
           <h3 className="text-lg font-semibold text-white">{title}</h3>
-          <button 
-            onClick={onClose} 
-            className="p-2 -mr-2 text-slate-400 hover:text-white active:bg-slate-800 rounded-full touch-manipulation"
+          <button
+            onClick={onClose}
+            className="
+              w-8 h-8 flex items-center justify-center rounded-full
+              text-slate-400 hover:text-white
+              active:bg-slate-800 touch-manipulation
+            "
             aria-label="Cerrar"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-5 max-h-[70vh] overflow-y-auto">
+
+        {/* Contenido */}
+        <div
+          className="p-5 overflow-y-auto overscroll-contain"
+          style={{ maxHeight: `calc(70vh - ${keyboardOffset}px)`, WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+        >
           {children}
         </div>
       </div>
@@ -163,21 +232,40 @@ const BottomSheetModal = ({ isOpen, onClose, title, children }: BottomSheetModal
   )
 }
 
-const SearchBar = ({ value, onChange, placeholder }: { value: string; onChange: (val: string) => void; placeholder: string }) => (
+// ─── Componente: Campo de búsqueda (conservado) ────────────────────────────
+
+const SearchInput = ({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+}) => (
   <div className="relative">
-    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
     <input
       type="search"
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full pl-10 pr-8 py-3 bg-slate-800/70 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+      className="
+        w-full min-h-[48px] pl-10 pr-9 py-3
+        bg-slate-800/70 border border-slate-700/60 rounded-xl
+        text-white placeholder-slate-500 text-sm
+        focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-transparent
+        transition-all
+      "
+      autoComplete="off"
+      autoCorrect="off"
+      spellCheck={false}
     />
     {value && (
       <button
         onClick={() => onChange('')}
-        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white"
-        aria-label="Limpiar búsqueda"
+        className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-white active:text-white touch-manipulation"
+        aria-label="Limpiar"
       >
         <X className="w-4 h-4" />
       </button>
@@ -185,743 +273,859 @@ const SearchBar = ({ value, onChange, placeholder }: { value: string; onChange: 
   </div>
 )
 
-const SegmentedControl = ({ active, onChange }: { active: 'tareas' | 'piezas'; onChange: (tab: 'tareas' | 'piezas') => void }) => (
-  <div className="flex bg-slate-800/60 rounded-xl p-1 border border-slate-700/50">
-    <button
-      onClick={() => onChange('tareas')}
-      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all touch-manipulation ${
-        active === 'tareas' 
-          ? 'bg-blue-500/20 text-blue-300 shadow-sm' 
-          : 'text-slate-400 hover:text-slate-300'
-      }`}
-      aria-pressed={active === 'tareas'}
-    >
-      <ListChecks className="w-4 h-4" />
-      Tareas
-    </button>
-    <button
-      onClick={() => onChange('piezas')}
-      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all touch-manipulation ${
-        active === 'piezas' 
-          ? 'bg-purple-500/20 text-purple-300 shadow-sm' 
-          : 'text-slate-400 hover:text-slate-300'
-      }`}
-      aria-pressed={active === 'piezas'}
-    >
-      <Package className="w-4 h-4" />
-      Repuestos
-    </button>
-  </div>
-)
+// ─── Componente: Estadística (conservado) ──────────────────────────────────
 
-const StatCard = ({ label, value, color, icon: Icon }: { label: string; value: number; color: string; icon: any }) => (
-  <div className="flex-shrink-0 bg-slate-800/40 rounded-xl p-3 min-w-[90px] border border-slate-700/30">
-    <div className="flex items-center gap-2 mb-1">
-      <Icon className={`w-4 h-4 ${color}`} />
-      <span className={`text-xl font-bold ${color}`}>{value}</span>
+const StatChip = ({
+  label,
+  value,
+  colorClass,
+  Icon,
+}: {
+  label: string
+  value: number
+  colorClass: string
+  Icon: React.ComponentType<{ className?: string }>
+}) => (
+  <div className="shrink-0 bg-slate-800/50 border border-slate-700/40 rounded-2xl p-3 min-w-[90px]">
+    <div className="flex items-center gap-1.5 mb-0.5">
+      <Icon className={`w-3.5 h-3.5 ${colorClass}`} />
+      <span className={`text-xl font-bold leading-none ${colorClass}`}>{value}</span>
     </div>
-    <div className="text-xs text-slate-400">{label}</div>
+    <span className="text-[11px] text-slate-400 leading-tight">{label}</span>
   </div>
 )
 
-const Toast = ({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) => {
-  useEffect(() => {
-    const timer = setTimeout(onClose, 3000)
-    return () => clearTimeout(timer)
-  }, [onClose])
+// ─── Componente: Chip de tipo (conservado) ─────────────────────────────────
+
+const TipoChip = ({ tipo }: { tipo: TareaPredefinida['tipo'] }) => {
+  const styles = {
+    preventivo: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+    correctivo: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+    ambos:      'bg-purple-500/15 text-purple-300 border-purple-500/30',
+  }
+  const labels = { preventivo: 'Preventivo', correctivo: 'Correctivo', ambos: 'Ambos' }
 
   return (
-    <div className={`fixed bottom-24 left-4 right-4 z-50 p-4 rounded-xl shadow-lg flex items-center gap-3 animate-slide-up ${
-      type === 'success' ? 'bg-emerald-600/95' : 'bg-red-600/95'
-    } text-white backdrop-blur-sm`}>
-      {type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
-      <span className="text-sm font-medium">{message}</span>
-      <button onClick={onClose} className="ml-auto p-1">
-        <X className="w-4 h-4" />
-      </button>
-    </div>
+    <span className={`text-xs px-2 py-0.5 rounded-full border ${styles[tipo]}`}>
+      {labels[tipo]}
+    </span>
   )
 }
 
-const ContextMenu = ({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) => {
-  const [open, setOpen] = useState(false)
+// ─── Componente: Estado vacío (conservado) ─────────────────────────────────
 
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="p-2 text-slate-400 active:bg-slate-700 rounded-full touch-manipulation"
-        aria-label="Más opciones"
+const EmptyState = ({
+  Icon,
+  title,
+  description,
+}: {
+  Icon: React.ComponentType<{ className?: string }>
+  title: string
+  description: string
+}) => (
+  <div className="flex flex-col items-center justify-center py-14 text-center">
+    <div className="bg-slate-800/50 p-5 rounded-full mb-4">
+      <Icon className="w-9 h-9 text-slate-500" />
+    </div>
+    <p className="text-slate-300 font-medium">{title}</p>
+    <p className="text-slate-500 text-sm mt-1 max-w-[200px] leading-relaxed">{description}</p>
+  </div>
+)
+
+// ─── Componente: Skeleton (conservado) ─────────────────────────────────────
+
+const Skeleton = () => (
+  <div className="animate-pulse space-y-4 p-4">
+    <div className="flex gap-3 overflow-hidden pb-1">
+      {[1, 2, 3, 4, 5].map(i => (
+        <div key={i} className="h-16 w-24 bg-slate-800/60 rounded-2xl shrink-0" />
+      ))}
+    </div>
+    <div className="h-12 bg-slate-800/60 rounded-xl" />
+    <div className="h-12 bg-slate-800/60 rounded-xl" />
+    {[1, 2, 3].map(i => (
+      <div key={i} className="h-20 bg-slate-800/60 rounded-xl" />
+    ))}
+  </div>
+)
+
+// ─── Componente: Indicador de red (conservado) ─────────────────────────────
+
+const NetworkIndicator = ({
+  isOnline,
+  pendingCount,
+  isFlushing,
+}: {
+  isOnline: boolean
+  pendingCount: number
+  isFlushing: boolean
+}) => {
+  if (isOnline && pendingCount === 0) return null
+
+  if (isFlushing) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-blue-400">
+        <Loader2 className="w-3 h-3 animate-spin" />
+        <span>Sincronizando…</span>
+      </div>
+    )
+  }
+
+  if (!isOnline) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-amber-400">
+        <WifiOff className="w-3 h-3" />
+        <span>Sin conexión{pendingCount > 0 ? ` · ${pendingCount} pendiente${pendingCount > 1 ? 's' : ''}` : ''}</span>
+      </div>
+    )
+  }
+
+  if (pendingCount > 0) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-amber-400">
+        <CloudOff className="w-3 h-3" />
+        <span>{pendingCount} pendiente${pendingCount > 1 ? 's' : ''}</span>
+      </div>
+    )
+  }
+
+  return null
+}
+
+// ─── Formulario de Tarea (conservado) ──────────────────────────────────────
+
+const FormularioTarea = ({
+  form,
+  onChange,
+  onSubmit,
+  onCancel,
+  submitLabel,
+  accentClass,
+}: {
+  form: FormTarea
+  onChange: (f: FormTarea) => void
+  onSubmit: () => void
+  onCancel?: () => void
+  submitLabel: string
+  accentClass: string
+}) => (
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-slate-300 mb-1.5">Nombre *</label>
+      <input
+        type="text"
+        value={form.nombre}
+        onChange={e => onChange({ ...form, nombre: e.target.value })}
+        placeholder="Ej: Cambio de aceite"
+        autoFocus
+        className="
+          w-full min-h-[48px] px-4 py-3
+          bg-slate-800 border border-slate-700 rounded-xl
+          text-white placeholder-slate-500 text-sm
+          focus:outline-none focus:ring-2 focus:ring-blue-500/40
+          transition-all
+        "
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-slate-300 mb-1.5">Tipo</label>
+      <select
+        value={form.tipo}
+        onChange={e => onChange({ ...form, tipo: e.target.value as TareaPredefinida['tipo'] })}
+        className="
+          w-full min-h-[48px] px-4 py-3
+          bg-slate-800 border border-slate-700 rounded-xl
+          text-white text-sm
+          focus:outline-none focus:ring-2 focus:ring-blue-500/40
+          transition-all appearance-none
+        "
       >
-        <MoreVertical className="w-5 h-5" />
-      </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-10 z-50 bg-slate-800 rounded-xl shadow-xl border border-slate-700 py-1 min-w-[140px]">
-            <button
-              onClick={() => { onEdit(); setOpen(false); }}
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-200 hover:bg-slate-700 active:bg-slate-600"
-            >
-              <Edit3 className="w-4 h-4 text-blue-400" />
-              Editar
-            </button>
-            <button
-              onClick={() => { onDelete(); setOpen(false); }}
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-slate-700 active:bg-slate-600"
-            >
-              <Trash2 className="w-4 h-4" />
-              Eliminar
-            </button>
-          </div>
-        </>
-      )}
+        <option value="preventivo">Preventivo</option>
+        <option value="correctivo">Correctivo</option>
+        <option value="ambos">Ambos</option>
+      </select>
     </div>
-  )
-}
+    <div>
+      <label className="block text-sm font-medium text-slate-300 mb-1.5">Categoría</label>
+      <input
+        type="text"
+        value={form.categoria}
+        onChange={e => onChange({ ...form, categoria: e.target.value })}
+        placeholder="Ej: Motor, Software, Hardware…"
+        className="
+          w-full min-h-[48px] px-4 py-3
+          bg-slate-800 border border-slate-700 rounded-xl
+          text-white placeholder-slate-500 text-sm
+          focus:outline-none focus:ring-2 focus:ring-blue-500/40
+          transition-all
+        "
+      />
+    </div>
+    <div className="flex gap-3 pt-1">
+      {onCancel && (
+        <button
+          onClick={onCancel}
+          className="
+            flex-1 min-h-[48px] py-3 rounded-xl font-medium text-sm
+            bg-slate-700/80 text-slate-300
+            active:bg-slate-700 touch-manipulation transition-all
+          "
+        >
+          Cancelar
+        </button>
+      )}
+      <button
+        onClick={onSubmit}
+        className={`flex-1 min-h-[48px] py-3 rounded-xl font-medium text-sm active:scale-[0.98] touch-manipulation transition-all ${accentClass}`}
+      >
+        {submitLabel}
+      </button>
+    </div>
+  </div>
+)
 
-// ============================================================================
-// COMPONENTE PRINCIPAL
-// ============================================================================
+// ─── Formulario de Pieza (conservado) ──────────────────────────────────────
+
+const FormularioPieza = ({
+  form,
+  onChange,
+  onSubmit,
+  onCancel,
+  submitLabel,
+  accentClass,
+}: {
+  form: FormPieza
+  onChange: (f: FormPieza) => void
+  onSubmit: () => void
+  onCancel?: () => void
+  submitLabel: string
+  accentClass: string
+}) => (
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-slate-300 mb-1.5">Nombre *</label>
+      <input
+        type="text"
+        value={form.nombre}
+        onChange={e => onChange({ ...form, nombre: e.target.value })}
+        placeholder="Ej: Filtro de aceite"
+        autoFocus
+        className="
+          w-full min-h-[48px] px-4 py-3
+          bg-slate-800 border border-slate-700 rounded-xl
+          text-white placeholder-slate-500 text-sm
+          focus:outline-none focus:ring-2 focus:ring-purple-500/40
+          transition-all
+        "
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-slate-300 mb-1.5">Categoría</label>
+      <input
+        type="text"
+        value={form.categoria}
+        onChange={e => onChange({ ...form, categoria: e.target.value })}
+        placeholder="Ej: Filtros, Eléctrico…"
+        className="
+          w-full min-h-[48px] px-4 py-3
+          bg-slate-800 border border-slate-700 rounded-xl
+          text-white placeholder-slate-500 text-sm
+          focus:outline-none focus:ring-2 focus:ring-purple-500/40
+          transition-all
+        "
+      />
+    </div>
+    <div className="flex gap-3 pt-1">
+      {onCancel && (
+        <button
+          onClick={onCancel}
+          className="
+            flex-1 min-h-[48px] py-3 rounded-xl font-medium text-sm
+            bg-slate-700/80 text-slate-300
+            active:bg-slate-700 touch-manipulation transition-all
+          "
+        >
+          Cancelar
+        </button>
+      )}
+      <button
+        onClick={onSubmit}
+        className={`flex-1 min-h-[48px] py-3 rounded-xl font-medium text-sm active:scale-[0.98] touch-manipulation transition-all ${accentClass}`}
+      >
+        {submitLabel}
+      </button>
+    </div>
+  </div>
+)
+
+// ─── PÁGINA PRINCIPAL (REFACTORIZADA VISUALMENTE) ─────────────────────────
+
+const PAGE_SIZE = 5
 
 export default function TareasRepuestosPage() {
   const { user } = useAuth()
   const router = useRouter()
-  
-  // Estados principales
-  const [tareas, setTareas] = useState<TareaPredefinida[]>([])
-  const [piezas, setPiezas] = useState<PiezaPredefinida[]>([])
-  const [loading, setLoading] = useState(true)
-  const [isPending, startTransition] = useTransition()
-  
-  // Estados de UI móvil
-  const [tabActiva, setTabActiva] = useState<'tareas' | 'piezas'>('tareas')
-  const [modalTareaOpen, setModalTareaOpen] = useState(false)
-  const [modalPiezaOpen, setModalPiezaOpen] = useState(false)
-  const [modoEdicion, setModoEdicion] = useState<{ tipo: 'tarea' | 'pieza'; id?: string } | null>(null)
-  
-  // Estados de formularios
-  const [nuevaTarea, setNuevaTarea] = useState({ nombre: '', tipo: 'preventivo' as const, categoria: 'General' })
-  const [nuevaPieza, setNuevaPieza] = useState({ nombre: '', categoria: 'Categoria Generica' })
-  const [editTarea, setEditTarea] = useState<TareaPredefinida | null>(null)
-  const [editPieza, setEditPieza] = useState<PiezaPredefinida | null>(null)
-  
-  // Búsqueda con debounce
-  const [busquedaTareas, setBusquedaTareas] = useState('')
-  const [busquedaPiezas, setBusquedaPiezas] = useState('')
-  const debouncedTareas = useDebounce(busquedaTareas, 300)
-  const debouncedPiezas = useDebounce(busquedaPiezas, 300)
-  
-  // Estados de feedback
-  const [guardando, setGuardando] = useState(false)
-  const [toast, setToast] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
-  const [cambiosPendientes, setCambiosPendientes] = useState(false)
-  const [ultimoGuardado, setUltimoGuardado] = useState<Date | null>(null)
-  
-  const esCargaInicial = useRef(true)
-  const timeoutGuardado = useRef<NodeJS.Timeout | null>(null)
 
-  // ==========================================================================
-  // EFECTOS Y CARGA INICIAL
-  // ==========================================================================
+  const {
+    tareas, piezas, isLoading, isMutating,
+    isOnline, pendingCount, isFlushing,
+    crearTarea, actualizarTarea, eliminarTarea,
+    crearPieza, actualizarPieza, eliminarPieza,
+  } = useTareasYPiezas()
 
-  useEffect(() => {
-    cargarConfiguracion()
-  }, [user?.uid])
+  // ── UI State ──────────────────────────────────────────────────────────────
 
-  // Auto-guardado con debounce
-  useEffect(() => {
-    if (esCargaInicial.current) {
-      esCargaInicial.current = false
-      return
-    }
-    if (tareas.length > 0 || piezas.length > 0) {
-      setCambiosPendientes(true)
-      if (timeoutGuardado.current) clearTimeout(timeoutGuardado.current)
-      timeoutGuardado.current = setTimeout(() => {
-        guardarTodosLosCambios(true) // auto-save silencioso
-      }, 1500)
-    }
-    return () => { if (timeoutGuardado.current) clearTimeout(timeoutGuardado.current) }
-  }, [tareas, piezas])
+  const [tab, setTab]               = useState<'tareas' | 'piezas'>('tareas')
+  const [toast, setToast]           = useState<ToastData | null>(null)
 
-  const cargarConfiguracion = useCallback(async () => {
-    if (!user?.uid) return
-    try {
-      const [tareasData, piezasData] = await Promise.all([
-        obtenerTareasPredefinidas(user.uid),
-        obtenerPiezasPredefinidas(user.uid)
-      ])
-      setTareas((tareasData || []).filter(Boolean) as TareaPredefinida[])
-      setPiezas((piezasData || []).filter(Boolean) as PiezaPredefinida[])
-      setUltimoGuardado(new Date())
-    } catch (error) {
-      setToast({ text: 'Error al cargar la configuración', type: 'error' })
-    } finally {
-      setLoading(false)
-    }
-  }, [user?.uid])
+  // Formularios de creación
+  const [modalTarea, setModalTarea] = useState(false)
+  const [formTarea, setFormTarea]   = useState<FormTarea>(FORM_TAREA_VACIO)
+  const [modalPieza, setModalPieza] = useState(false)
+  const [formPieza, setFormPieza]   = useState<FormPieza>(FORM_PIEZA_VACIO)
 
-  const guardarTodosLosCambios = useCallback(async (silent = false) => {
-    if (!user?.uid) return
-    if (!silent) setGuardando(true)
-    try {
-      await Promise.all([
-        guardarTareasPredefinidas(user.uid, tareas),
-        guardarPiezasPredefinidas(user.uid, piezas)
-      ])
-      setUltimoGuardado(new Date())
-      setCambiosPendientes(false)
-      if (!silent) setToast({ text: 'Cambios guardados correctamente', type: 'success' })
-    } catch (error) {
-      setToast({ text: 'Error al guardar los cambios', type: 'error' })
-    } finally {
-      if (!silent) setGuardando(false)
-    }
-  }, [user?.uid, tareas, piezas])
+  // Formularios de edición
+  const [editTarea, setEditTarea]   = useState<TareaPredefinida | null>(null)
+  const [editPieza, setEditPieza]   = useState<PiezaPredefinida | null>(null)
 
-  // ==========================================================================
-  // CRUD TAREAS
-  // ==========================================================================
+  // Búsqueda
+  const [searchTareas, setSearchTareas] = useState('')
+  const [searchPiezas, setSearchPiezas] = useState('')
+  const debouncedSearchTareas = useDebounce(searchTareas, 250)
+  const debouncedSearchPiezas = useDebounce(searchPiezas, 250)
 
-  const agregarTarea = useCallback(() => {
-    if (!nuevaTarea.nombre.trim()) {
-      setToast({ text: 'El nombre de la tarea es requerido', type: 'error' })
-      return
-    }
-    const tarea: TareaPredefinida = {
-      id: Date.now().toString(),
-      ...nuevaTarea
-    }
-    setTareas(prev => [...prev, tarea])
-    setNuevaTarea({ nombre: '', tipo: 'preventivo', categoria: 'General' })
-    setModalTareaOpen(false)
-    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50)
-    setToast({ text: 'Tarea agregada', type: 'success' })
-  }, [nuevaTarea])
+  // Paginación
+  const [pageTareas, setPageTareas]   = useState(1)
+  const [pagePiezas, setPagePiezas]   = useState(1)
 
-  const eliminarTarea = useCallback((id: string) => {
-    setTareas(prev => prev.filter(t => t.id !== id))
-    if (navigator.vibrate) navigator.vibrate(50)
-    setToast({ text: 'Tarea eliminada', type: 'success' })
+  // Resetear página al cambiar búsqueda o tab
+  useEffect(() => { setPageTareas(1) }, [debouncedSearchTareas])
+  useEffect(() => { setPagePiezas(1) }, [debouncedSearchPiezas])
+  useEffect(() => { setPageTareas(1); setPagePiezas(1) }, [tab])
+
+  const showToast = useCallback((text: string, type: ToastData['type'] = 'success') => {
+    setToast({ text, type })
   }, [])
 
-  const actualizarTarea = useCallback(() => {
-    if (!editTarea) return
-    if (!editTarea.nombre.trim()) {
-      setToast({ text: 'El nombre es requerido', type: 'error' })
-      return
-    }
-    setTareas(prev => prev.map(t => t.id === editTarea.id ? editTarea : t))
-    setModoEdicion(null)
-    setEditTarea(null)
-    setToast({ text: 'Tarea actualizada', type: 'success' })
-  }, [editTarea])
-
-  // ==========================================================================
-  // CRUD PIEZAS
-  // ==========================================================================
-
-  const agregarPieza = useCallback(() => {
-    if (!nuevaPieza.nombre.trim()) {
-      setToast({ text: 'El nombre de la pieza es requerido', type: 'error' })
-      return
-    }
-    const pieza: PiezaPredefinida = {
-      id: Date.now().toString(),
-      ...nuevaPieza
-    }
-    setPiezas(prev => [...prev, pieza])
-    setNuevaPieza({ nombre: '', categoria: 'Categoria Generica' })
-    setModalPiezaOpen(false)
-    if (navigator.vibrate) navigator.vibrate(50)
-    setToast({ text: 'Pieza agregada', type: 'success' })
-  }, [nuevaPieza])
-
-  const eliminarPieza = useCallback((id: string) => {
-    setPiezas(prev => prev.filter(p => p.id !== id))
-    if (navigator.vibrate) navigator.vibrate(50)
-    setToast({ text: 'Pieza eliminada', type: 'success' })
-  }, [])
-
-  const actualizarPieza = useCallback(() => {
-    if (!editPieza) return
-    if (!editPieza.nombre.trim()) {
-      setToast({ text: 'El nombre es requerido', type: 'error' })
-      return
-    }
-    setPiezas(prev => prev.map(p => p.id === editPieza.id ? editPieza : p))
-    setModoEdicion(null)
-    setEditPieza(null)
-    setToast({ text: 'Pieza actualizada', type: 'success' })
-  }, [editPieza])
-
-  // ==========================================================================
-  // FILTRADO CON DEBOUNCE
-  // ==========================================================================
+  // ── Filtrado ──────────────────────────────────────────────────────────────
 
   const tareasFiltradas = useMemo(() => {
-    if (!debouncedTareas) return tareas
-    const term = debouncedTareas.toLowerCase()
-    return tareas.filter(t => 
+    if (!debouncedSearchTareas) return tareas
+    const term = debouncedSearchTareas.toLowerCase()
+    return tareas.filter(t =>
       t.nombre.toLowerCase().includes(term) ||
       t.categoria.toLowerCase().includes(term) ||
       t.tipo.includes(term)
     )
-  }, [tareas, debouncedTareas])
+  }, [tareas, debouncedSearchTareas])
 
   const piezasFiltradas = useMemo(() => {
-    if (!debouncedPiezas) return piezas
-    const term = debouncedPiezas.toLowerCase()
-    return piezas.filter(p => 
+    if (!debouncedSearchPiezas) return piezas
+    const term = debouncedSearchPiezas.toLowerCase()
+    return piezas.filter(p =>
       p.nombre.toLowerCase().includes(term) ||
       p.categoria.toLowerCase().includes(term)
     )
-  }, [piezas, debouncedPiezas])
+  }, [piezas, debouncedSearchPiezas])
 
-  // Estadísticas
+  // ── Estadísticas ──────────────────────────────────────────────────────────
+
   const stats = useMemo(() => ({
-    totalTareas: tareas.length,
-    preventivas: tareas.filter(t => t.tipo === 'preventivo').length,
-    correctivas: tareas.filter(t => t.tipo === 'correctivo').length,
-    ambos: tareas.filter(t => t.tipo === 'ambos').length,
-    totalPiezas: piezas.length
+    total:      tareas.length,
+    preventivo: tareas.filter(t => t.tipo === 'preventivo').length,
+    correctivo: tareas.filter(t => t.tipo === 'correctivo').length,
+    ambos:      tareas.filter(t => t.tipo === 'ambos').length,
+    piezas:     piezas.length,
   }), [tareas, piezas])
 
-  // ==========================================================================
-  // RENDER
-  // ==========================================================================
+  // ── Handlers de Tareas ────────────────────────────────────────────────────
+
+  const handleCrearTarea = useCallback(() => {
+    if (!formTarea.nombre.trim()) {
+      showToast('El nombre de la tarea es requerido', 'error')
+      notificationHaptic('error')
+      return
+    }
+    crearTarea({ nombre: formTarea.nombre.trim(), tipo: formTarea.tipo, categoria: formTarea.categoria.trim() || 'General' })
+    setFormTarea(FORM_TAREA_VACIO)
+    setModalTarea(false)
+    haptic('medium')
+    showToast(isOnline ? 'Tarea agregada' : 'Tarea guardada (sin conexión)')
+  }, [formTarea, crearTarea, isOnline, showToast])
+
+  const handleActualizarTarea = useCallback(() => {
+    if (!editTarea?.nombre.trim()) {
+      showToast('El nombre es requerido', 'error')
+      notificationHaptic('error')
+      return
+    }
+    actualizarTarea(editTarea)
+    setEditTarea(null)
+    haptic('light')
+    showToast('Tarea actualizada')
+  }, [editTarea, actualizarTarea, showToast])
+
+  const handleEliminarTarea = useCallback((id: string) => {
+    eliminarTarea(id)
+    haptic('medium')
+    showToast('Tarea eliminada')
+  }, [eliminarTarea, showToast])
+
+  // ── Handlers de Piezas ────────────────────────────────────────────────────
+
+  const handleCrearPieza = useCallback(() => {
+    if (!formPieza.nombre.trim()) {
+      showToast('El nombre de la pieza es requerido', 'error')
+      notificationHaptic('error')
+      return
+    }
+    crearPieza({ nombre: formPieza.nombre.trim(), categoria: formPieza.categoria.trim() || 'Categoría Genérica' })
+    setFormPieza(FORM_PIEZA_VACIO)
+    setModalPieza(false)
+    haptic('medium')
+    showToast(isOnline ? 'Pieza agregada' : 'Pieza guardada (sin conexión)')
+  }, [formPieza, crearPieza, isOnline, showToast])
+
+  const handleActualizarPieza = useCallback(() => {
+    if (!editPieza?.nombre.trim()) {
+      showToast('El nombre es requerido', 'error')
+      notificationHaptic('error')
+      return
+    }
+    actualizarPieza(editPieza)
+    setEditPieza(null)
+    haptic('light')
+    showToast('Pieza actualizada')
+  }, [editPieza, actualizarPieza, showToast])
+
+  const handleEliminarPieza = useCallback((id: string) => {
+    eliminarPieza(id)
+    haptic('medium')
+    showToast('Pieza eliminada')
+  }, [eliminarPieza, showToast])
+
+  // ── Guard ─────────────────────────────────────────────────────────────────
 
   if (!user) return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <div className="text-center text-slate-400">Debes iniciar sesión</div>
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <p className="text-slate-400 text-sm">Debes iniciar sesión para continuar</p>
     </div>
   )
 
-  if (loading) return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
-      <LoadingSkeleton />
-    </div>
-  )
+  // ── Paginación: elementos visibles ────────────────────────────────────────
+
+  const visibleTareas = useMemo(() => tareasFiltradas.slice(0, pageTareas * PAGE_SIZE), [tareasFiltradas, pageTareas])
+  const visiblePiezas = useMemo(() => piezasFiltradas.slice(0, pagePiezas * PAGE_SIZE), [piezasFiltradas, pagePiezas])
+  const hasMoreTareas = visibleTareas.length < tareasFiltradas.length
+  const hasMorePiezas = visiblePiezas.length < piezasFiltradas.length
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 pb-20">
-              {/* Header sticky con indicador de sincronización */}
-        <header 
-          style={{ paddingTop: 'env(safe-area-inset-top)' }}
-        >
-        <div className="flex items-center gap-3 max-w-6xl mx-auto">
-          <button 
-            onClick={() => router.back()} 
-            className="p-2 -ml-2 text-blue-400 active:bg-slate-800 rounded-full touch-manipulation"
+    <div
+      className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 overscroll-none"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
+      {/* ── Header sticky ── */}
+      <header
+        className="
+          sticky top-0 z-40
+          bg-slate-900/90 backdrop-blur-md
+          border-b border-slate-800/60
+          px-4 py-3
+        "
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+      >
+        <div className="flex items-center gap-3 max-w-2xl mx-auto">
+          <button
+            onClick={() => router.back()}
+            className="
+              w-10 h-10 flex items-center justify-center rounded-full
+              text-blue-400 active:bg-slate-800
+              touch-manipulation shrink-0
+            "
             aria-label="Volver"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <div className="flex-1">
-            <h1 className="text-xl font-bold text-white">Tareas y Repuestos</h1>
-            <div className="flex items-center gap-2 text-xs">
-              {cambiosPendientes ? (
-                <span className="flex items-center gap-1 text-amber-400">
-                  <Clock className="w-3 h-3" />
-                  Cambios sin guardar
-                </span>
-              ) : ultimoGuardado ? (
-                <span className="text-slate-500">
-                  Guardado {ultimoGuardado.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              ) : null}
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold text-white leading-tight truncate">
+                Tareas y Repuestos
+              </h1>
+              {isMutating && (
+                <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin shrink-0" />
+              )}
             </div>
+            <NetworkIndicator
+              isOnline={isOnline}
+              pendingCount={pendingCount}
+              isFlushing={isFlushing}
+            />
           </div>
-          {cambiosPendientes && (
-            <button
-              onClick={() => guardarTodosLosCambios(false)}
-              disabled={guardando}
-              className="p-2 text-blue-400 active:bg-slate-800 rounded-full touch-manipulation"
-              aria-label="Guardar ahora"
-            >
-              <Save className="w-5 h-5" />
-            </button>
-          )}
         </div>
       </header>
 
-      {/* Toast */}
-      {toast && (
-        <Toast 
-          message={toast.text} 
-          type={toast.type} 
-          onClose={() => setToast(null)} 
-        />
+      {/* ── Banner offline ── */}
+      {!isOnline && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center gap-2">
+          <WifiOff className="w-4 h-4 text-amber-400 shrink-0" />
+          <p className="text-xs text-amber-300">
+            Modo offline — los cambios se sincronizarán al reconectar
+          </p>
+        </div>
       )}
 
-      <main className="max-w-6xl mx-auto px-4 py-5 space-y-6">
-        {/* Stats horizontales scrollable */}
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-          <StatCard label="Total Tareas" value={stats.totalTareas} color="text-blue-400" icon={ListChecks} />
-          <StatCard label="Preventivas" value={stats.preventivas} color="text-emerald-400" icon={Wrench} />
-          <StatCard label="Correctivas" value={stats.correctivas} color="text-amber-400" icon={AlertCircle} />
-          <StatCard label="Ambos" value={stats.ambos} color="text-purple-400" icon={RotateCw} />
-          <StatCard label="Piezas" value={stats.totalPiezas} color="text-cyan-400" icon={Package} />
-        </div>
+      {/* ── Toast ── */}
+      {toast && <Toast toast={toast} onClose={() => setToast(null)} />}
 
-        {/* Tabs */}
-        <SegmentedControl active={tabActiva} onChange={setTabActiva} />
-
-        {/* Panel Tareas */}
-        {tabActiva === 'tareas' && (
-          <div className="bg-slate-800/40 rounded-2xl border border-slate-700/50 overflow-hidden">
-            <div className="p-4 border-b border-slate-700/50 flex items-center justify-between">
-              <h2 className="text-white font-semibold">Tareas predefinidas</h2>
-              <button
-                onClick={() => setModalTareaOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-300 rounded-xl active:scale-[0.98] transition-all touch-manipulation"
-                aria-label="Agregar tarea"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Agregar</span>
-              </button>
+      {/* ── Contenido principal ── */}
+      <main
+        className="max-w-2xl mx-auto px-4 py-5 space-y-5"
+        style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+      >
+        {isLoading ? (
+          <Skeleton />
+        ) : (
+          <>
+            {/* Stats scrollables */}
+            <div
+              className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide"
+              style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+            >
+              <StatChip label="Total Tareas" value={stats.total}      colorClass="text-blue-400"    Icon={ListChecks} />
+              <StatChip label="Preventivas"  value={stats.preventivo} colorClass="text-emerald-400" Icon={Wrench}     />
+              <StatChip label="Correctivas"  value={stats.correctivo} colorClass="text-amber-400"   Icon={AlertCircle}/>
+              <StatChip label="Ambos"        value={stats.ambos}      colorClass="text-purple-400"  Icon={RotateCw}   />
+              <StatChip label="Repuestos"    value={stats.piezas}     colorClass="text-cyan-400"    Icon={Package}    />
             </div>
-            <div className="p-4">
-              <SearchBar 
-                value={busquedaTareas} 
-                onChange={setBusquedaTareas} 
-                placeholder="Buscar tarea..." 
-              />
-              <div className="mt-4 space-y-2">
-                {tareasFiltradas.length === 0 ? (
-                  <EmptyState 
-                    icon={ListChecks} 
-                    title="Sin tareas" 
-                    description={busquedaTareas ? "No hay coincidencias" : "Agrega tareas usando el botón +"} 
+
+            {/* Tabs */}
+            <div className="flex bg-slate-800/60 rounded-2xl p-1.5 border border-slate-700/40">
+              {(
+                [
+                  { key: 'tareas', label: 'Tareas',    Icon: ListChecks, active: 'bg-blue-500/20 text-blue-300'   },
+                  { key: 'piezas', label: 'Repuestos',  Icon: Package,    active: 'bg-purple-500/20 text-purple-300'},
+                ] as const
+              ).map(({ key, label, Icon, active }) => (
+                <button
+                  key={key}
+                  onClick={() => { haptic('light'); setTab(key) }}
+                  aria-pressed={tab === key}
+                  className={`
+                    flex-1 flex items-center justify-center gap-2
+                    min-h-[44px] rounded-xl text-sm font-medium
+                    transition-all touch-manipulation select-none
+                    ${tab === key ? active : 'text-slate-400 active:text-slate-200'}
+                  `}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* ── Panel Tareas ── */}
+            {tab === 'tareas' && (
+              <section className="bg-slate-800/40 rounded-2xl border border-slate-700/40 overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-700/40">
+                  <h2 className="text-white font-semibold text-sm">
+                    Tareas predefinidas
+                    <span className="text-slate-500 font-normal ml-1">
+                      ({visibleTareas.length}{hasMoreTareas ? `+${tareasFiltradas.length - visibleTareas.length}` : ''})
+                    </span>
+                  </h2>
+                  <button
+                    onClick={() => { haptic('light'); setModalTarea(true) }}
+                    className="
+                      flex items-center gap-1.5 pl-3 pr-4 min-h-[36px]
+                      bg-blue-500/15 text-blue-300 border border-blue-500/30 rounded-xl
+                      text-sm font-medium active:bg-blue-500/25
+                      touch-manipulation transition-all
+                    "
+                    aria-label="Agregar tarea"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Agregar
+                  </button>
+                </div>
+
+                <div className="p-4 space-y-3">
+                  <SearchInput
+                    value={searchTareas}
+                    onChange={setSearchTareas}
+                    placeholder="Buscar tarea…"
                   />
-                ) : (
-                  <SwipeableList>
-                    {tareasFiltradas.map(tarea => (
-                      <SwipeableListItem
-                        key={tarea.id}
-                        swipeLeft={{
-                          content: (
-                            <div className="flex h-full items-center gap-2 px-4 bg-red-600 text-white rounded-r-lg">
-                              <Trash2 className="w-5 h-5" />
-                              <span className="text-sm font-medium">Eliminar</span>
-                            </div>
-                          ),
-                          action: () => eliminarTarea(tarea.id)
-                        }}
-                        swipeRight={{
-                          content: (
-                            <div className="flex h-full items-center gap-2 px-4 bg-blue-600 text-white rounded-l-lg">
-                              <Edit3 className="w-5 h-5" />
-                              <span className="text-sm font-medium">Editar</span>
-                            </div>
-                          ),
-                          action: () => {
-                            setEditTarea(tarea)
-                            setModoEdicion({ tipo: 'tarea', id: tarea.id })
-                          }
-                        }}
-                      >
-                        <div className="bg-slate-800/60 rounded-xl p-4 mb-2 border border-slate-700/50">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <p className="text-white font-medium">{tarea.nombre}</p>
-                              <div className="flex flex-wrap gap-2 mt-2">
-                                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                  tarea.tipo === 'preventivo' ? 'bg-emerald-500/20 text-emerald-300' :
-                                  tarea.tipo === 'correctivo' ? 'bg-amber-500/20 text-amber-300' :
-                                  'bg-purple-500/20 text-purple-300'
-                                }`}>
-                                  {tarea.tipo}
-                                </span>
-                                <span className="text-xs px-2 py-0.5 bg-slate-700/80 text-slate-300 rounded-full">
+
+                  <div className="space-y-2">
+                    {tareasFiltradas.length === 0 ? (
+                      <EmptyState
+                        Icon={ListChecks}
+                        title="Sin tareas"
+                        description={searchTareas ? 'No hay resultados para tu búsqueda' : 'Agrega tareas con el botón Agregar'}
+                      />
+                    ) : (
+                      <>
+                        {/* LISTA CON TARJETAS Y BOTONES INLINE */}
+                        {visibleTareas.map(tarea => (
+                          <div
+                            key={tarea.id}
+                            className="
+                              bg-slate-800/70 rounded-xl px-4 py-3.5
+                              border border-slate-700/40
+                              flex items-start gap-3
+                              transition-colors hover:bg-slate-800
+                            "
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="text-white font-medium text-sm leading-snug truncate">
+                                {tarea.nombre}
+                              </p>
+                              <div className="flex flex-wrap gap-1.5 mt-2">
+                                <TipoChip tipo={tarea.tipo} />
+                                <span className="text-xs px-2 py-0.5 bg-slate-700/70 text-slate-400 rounded-full border border-slate-600/40">
                                   {tarea.categoria}
                                 </span>
                               </div>
                             </div>
-                            <ContextMenu 
-                              onEdit={() => {
-                                setEditTarea(tarea)
-                                setModoEdicion({ tipo: 'tarea', id: tarea.id })
-                              }}
-                              onDelete={() => eliminarTarea(tarea.id)}
-                            />
-                          </div>
-                        </div>
-                      </SwipeableListItem>
-                    ))}
-                  </SwipeableList>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Panel Piezas */}
-        {tabActiva === 'piezas' && (
-          <div className="bg-slate-800/40 rounded-2xl border border-slate-700/50 overflow-hidden">
-            <div className="p-4 border-b border-slate-700/50 flex items-center justify-between">
-              <h2 className="text-white font-semibold">Piezas predefinidas</h2>
-              <button
-                onClick={() => setModalPiezaOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-500/20 text-purple-300 rounded-xl active:scale-[0.98] transition-all touch-manipulation"
-                aria-label="Agregar pieza"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Agregar</span>
-              </button>
-            </div>
-            <div className="p-4">
-              <SearchBar 
-                value={busquedaPiezas} 
-                onChange={setBusquedaPiezas} 
-                placeholder="Buscar pieza..." 
-              />
-              <div className="mt-4 space-y-2">
-                {piezasFiltradas.length === 0 ? (
-                  <EmptyState 
-                    icon={Package} 
-                    title="Sin piezas" 
-                    description={busquedaPiezas ? "No hay coincidencias" : "Agrega piezas usando el botón +"} 
-                  />
-                ) : (
-                  <SwipeableList>
-                    {piezasFiltradas.map(pieza => (
-                      <SwipeableListItem
-                        key={pieza.id}
-                        swipeLeft={{
-                          content: (
-                            <div className="flex h-full items-center gap-2 px-4 bg-red-600 text-white rounded-r-lg">
-                              <Trash2 className="w-5 h-5" />
-                              <span className="text-sm font-medium">Eliminar</span>
+                            {/* Botones de acción inline */}
+                            <div className="flex gap-1.5 shrink-0">
+                              <button
+                                onClick={() => { haptic('light'); setEditTarea(tarea) }}
+                                className="
+                                  w-8 h-8 flex items-center justify-center
+                                  rounded-lg bg-blue-500/10 text-blue-400
+                                  active:bg-blue-500/20
+                                  touch-manipulation transition-all
+                                "
+                                aria-label="Editar tarea"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleEliminarTarea(tarea.id)}
+                                className="
+                                  w-8 h-8 flex items-center justify-center
+                                  rounded-lg bg-red-500/10 text-red-400
+                                  active:bg-red-500/20
+                                  touch-manipulation transition-all
+                                "
+                                aria-label="Eliminar tarea"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </div>
-                          ),
-                          action: () => eliminarPieza(pieza.id)
-                        }}
-                        swipeRight={{
-                          content: (
-                            <div className="flex h-full items-center gap-2 px-4 bg-blue-600 text-white rounded-l-lg">
-                              <Edit3 className="w-5 h-5" />
-                              <span className="text-sm font-medium">Editar</span>
-                            </div>
-                          ),
-                          action: () => {
-                            setEditPieza(pieza)
-                            setModoEdicion({ tipo: 'pieza', id: pieza.id })
-                          }
-                        }}
-                      >
-                        <div className="bg-slate-800/60 rounded-xl p-4 mb-2 border border-slate-700/50">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <p className="text-white font-medium">{pieza.nombre}</p>
-                              <p className="text-xs text-slate-400 mt-1">{pieza.categoria}</p>
-                            </div>
-                            <ContextMenu 
-                              onEdit={() => {
-                                setEditPieza(pieza)
-                                setModoEdicion({ tipo: 'pieza', id: pieza.id })
-                              }}
-                              onDelete={() => eliminarPieza(pieza.id)}
-                            />
                           </div>
-                        </div>
-                      </SwipeableListItem>
-                    ))}
-                  </SwipeableList>
-                )}
-              </div>
-            </div>
-          </div>
+                        ))}
+
+                        {/* Paginación: botón "Mostrar más" */}
+                        {hasMoreTareas && (
+                          <button
+                            onClick={() => {
+                              haptic('light')
+                              setPageTareas(p => p + 1)
+                            }}
+                            className="
+                              w-full min-h-[48px] mt-2
+                              flex items-center justify-center gap-1.5
+                              text-sm font-medium text-blue-300
+                              bg-blue-500/10 border border-blue-500/20
+                              rounded-xl active:bg-blue-500/20
+                              touch-manipulation transition-all
+                            "
+                          >
+                            Mostrar más ({tareasFiltradas.length - visibleTareas.length} restantes)
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* ── Panel Piezas ── */}
+            {tab === 'piezas' && (
+              <section className="bg-slate-800/40 rounded-2xl border border-slate-700/40 overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-700/40">
+                  <h2 className="text-white font-semibold text-sm">
+                    Repuestos predefinidos
+                    <span className="text-slate-500 font-normal ml-1">
+                      ({visiblePiezas.length}{hasMorePiezas ? `+${piezasFiltradas.length - visiblePiezas.length}` : ''})
+                    </span>
+                  </h2>
+                  <button
+                    onClick={() => { haptic('light'); setModalPieza(true) }}
+                    className="
+                      flex items-center gap-1.5 pl-3 pr-4 min-h-[36px]
+                      bg-purple-500/15 text-purple-300 border border-purple-500/30 rounded-xl
+                      text-sm font-medium active:bg-purple-500/25
+                      touch-manipulation transition-all
+                    "
+                    aria-label="Agregar repuesto"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Agregar
+                  </button>
+                </div>
+
+                <div className="p-4 space-y-3">
+                  <SearchInput
+                    value={searchPiezas}
+                    onChange={setSearchPiezas}
+                    placeholder="Buscar repuesto…"
+                  />
+
+                  <div className="space-y-2">
+                    {piezasFiltradas.length === 0 ? (
+                      <EmptyState
+                        Icon={Package}
+                        title="Sin repuestos"
+                        description={searchPiezas ? 'No hay resultados para tu búsqueda' : 'Agrega repuestos con el botón Agregar'}
+                      />
+                    ) : (
+                      <>
+                        {visiblePiezas.map(pieza => (
+                          <div
+                            key={pieza.id}
+                            className="
+                              bg-slate-800/70 rounded-xl px-4 py-3.5
+                              border border-slate-700/40
+                              flex items-start gap-3
+                              transition-colors hover:bg-slate-800
+                            "
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="text-white font-medium text-sm leading-snug truncate">
+                                {pieza.nombre}
+                              </p>
+                              <span className="text-xs text-slate-400 mt-1 inline-block">
+                                {pieza.categoria}
+                              </span>
+                            </div>
+
+                            <div className="flex gap-1.5 shrink-0">
+                              <button
+                                onClick={() => { haptic('light'); setEditPieza(pieza) }}
+                                className="
+                                  w-8 h-8 flex items-center justify-center
+                                  rounded-lg bg-blue-500/10 text-blue-400
+                                  active:bg-blue-500/20
+                                  touch-manipulation transition-all
+                                "
+                                aria-label="Editar repuesto"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleEliminarPieza(pieza.id)}
+                                className="
+                                  w-8 h-8 flex items-center justify-center
+                                  rounded-lg bg-red-500/10 text-red-400
+                                  active:bg-red-500/20
+                                  touch-manipulation transition-all
+                                "
+                                aria-label="Eliminar repuesto"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+
+                        {hasMorePiezas && (
+                          <button
+                            onClick={() => {
+                              haptic('light')
+                              setPagePiezas(p => p + 1)
+                            }}
+                            className="
+                              w-full min-h-[48px] mt-2
+                              flex items-center justify-center gap-1.5
+                              text-sm font-medium text-purple-300
+                              bg-purple-500/10 border border-purple-500/20
+                              rounded-xl active:bg-purple-500/20
+                              touch-manipulation transition-all
+                            "
+                          >
+                            Mostrar más ({piezasFiltradas.length - visiblePiezas.length} restantes)
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+          </>
         )}
       </main>
 
-      {/* Botón de guardado manual flotante (solo si hay cambios pendientes) */}
-      {cambiosPendientes && (
-        <div 
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-2rem)] max-w-md"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-        >
-          <button
-            onClick={() => guardarTodosLosCambios(false)}
-            disabled={guardando}
-            className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-medium shadow-xl active:scale-[0.98] transition-all touch-manipulation disabled:opacity-70 shadow-blue-900/20"
-          >
-            {guardando ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Guardando...</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                <span>Guardar cambios pendientes</span>
-              </>
-            )}
-          </button>
-        </div>
-      )}
+      {/* ── Modales de CREACIÓN (conservados) ── */}
+      <BottomSheet
+        isOpen={modalTarea}
+        onClose={() => setModalTarea(false)}
+        title="Nueva tarea"
+      >
+        <FormularioTarea
+          form={formTarea}
+          onChange={setFormTarea}
+          onSubmit={handleCrearTarea}
+          submitLabel="Agregar tarea"
+          accentClass="bg-blue-500/20 text-blue-300 border border-blue-500/30"
+        />
+      </BottomSheet>
 
-      {/* Modales de agregar/editar */}
-      <BottomSheetModal isOpen={modalTareaOpen} onClose={() => setModalTareaOpen(false)} title="Nueva tarea">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Nombre</label>
-            <input
-              type="text"
-              value={nuevaTarea.nombre}
-              onChange={(e) => setNuevaTarea(prev => ({ ...prev, nombre: e.target.value }))}
-              placeholder="Ej: Cambio de aceite"
-              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-              autoFocus
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Tipo</label>
-            <select
-              value={nuevaTarea.tipo}
-              onChange={(e) => setNuevaTarea(prev => ({ ...prev, tipo: e.target.value as any }))}
-              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-            >
-              <option value="preventivo">Preventivo</option>
-              <option value="correctivo">Correctivo</option>
-              <option value="ambos">Ambos</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Categoría</label>
-            <input
-              type="text"
-              value={nuevaTarea.categoria}
-              onChange={(e) => setNuevaTarea(prev => ({ ...prev, categoria: e.target.value }))}
-              placeholder="Ej: Motor"
-              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-            />
-          </div>
-          <button 
-            onClick={agregarTarea} 
-            className="w-full py-3.5 bg-blue-500/20 text-blue-300 rounded-xl font-medium active:scale-[0.98] transition-all"
-          >
-            Agregar tarea
-          </button>
-        </div>
-      </BottomSheetModal>
+      <BottomSheet
+        isOpen={modalPieza}
+        onClose={() => setModalPieza(false)}
+        title="Nuevo repuesto"
+      >
+        <FormularioPieza
+          form={formPieza}
+          onChange={setFormPieza}
+          onSubmit={handleCrearPieza}
+          submitLabel="Agregar repuesto"
+          accentClass="bg-purple-500/20 text-purple-300 border border-purple-500/30"
+        />
+      </BottomSheet>
 
-      <BottomSheetModal isOpen={modalPiezaOpen} onClose={() => setModalPiezaOpen(false)} title="Nueva pieza">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Nombre</label>
-            <input
-              type="text"
-              value={nuevaPieza.nombre}
-              onChange={(e) => setNuevaPieza(prev => ({ ...prev, nombre: e.target.value }))}
-              placeholder="Ej: Filtro de aceite"
-              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-              autoFocus
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Categoría</label>
-            <input
-              type="text"
-              value={nuevaPieza.categoria}
-              onChange={(e) => setNuevaPieza(prev => ({ ...prev, categoria: e.target.value }))}
-              placeholder="Ej: Filtros"
-              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-            />
-          </div>
-          <button 
-            onClick={agregarPieza} 
-            className="w-full py-3.5 bg-purple-500/20 text-purple-300 rounded-xl font-medium active:scale-[0.98] transition-all"
-          >
-            Agregar pieza
-          </button>
-        </div>
-      </BottomSheetModal>
+      {/* ── Modales de EDICIÓN (conservados) ── */}
+      <BottomSheet
+        isOpen={!!editTarea}
+        onClose={() => setEditTarea(null)}
+        title="Editar tarea"
+      >
+        {editTarea && (
+          <FormularioTarea
+            form={{ nombre: editTarea.nombre, tipo: editTarea.tipo, categoria: editTarea.categoria }}
+            onChange={f => setEditTarea(prev => prev ? { ...prev, ...f } : null)}
+            onSubmit={handleActualizarTarea}
+            onCancel={() => setEditTarea(null)}
+            submitLabel="Guardar cambios"
+            accentClass="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+          />
+        )}
+      </BottomSheet>
 
-      {/* Modal de edición (reutiliza el mismo bottom sheet) */}
-      {modoEdicion?.tipo === 'tarea' && editTarea && (
-        <BottomSheetModal isOpen={true} onClose={() => { setModoEdicion(null); setEditTarea(null) }} title="Editar tarea">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Nombre</label>
-              <input
-                type="text"
-                value={editTarea.nombre}
-                onChange={(e) => setEditTarea(prev => prev ? { ...prev, nombre: e.target.value } : null)}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Tipo</label>
-              <select
-                value={editTarea.tipo}
-                onChange={(e) => setEditTarea(prev => prev ? { ...prev, tipo: e.target.value as any } : null)}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white"
-              >
-                <option value="preventivo">Preventivo</option>
-                <option value="correctivo">Correctivo</option>
-                <option value="ambos">Ambos</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Categoría</label>
-              <input
-                type="text"
-                value={editTarea.categoria}
-                onChange={(e) => setEditTarea(prev => prev ? { ...prev, categoria: e.target.value } : null)}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white"
-              />
-            </div>
-            <div className="flex gap-3">
-              <button onClick={actualizarTarea} className="flex-1 py-3 bg-emerald-500/20 text-emerald-300 rounded-xl font-medium">Guardar</button>
-              <button onClick={() => { setModoEdicion(null); setEditTarea(null) }} className="flex-1 py-3 bg-slate-700 text-white rounded-xl font-medium">Cancelar</button>
-            </div>
-          </div>
-        </BottomSheetModal>
-      )}
-
-      {modoEdicion?.tipo === 'pieza' && editPieza && (
-        <BottomSheetModal isOpen={true} onClose={() => { setModoEdicion(null); setEditPieza(null) }} title="Editar pieza">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Nombre</label>
-              <input
-                type="text"
-                value={editPieza.nombre}
-                onChange={(e) => setEditPieza(prev => prev ? { ...prev, nombre: e.target.value } : null)}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Categoría</label>
-              <input
-                type="text"
-                value={editPieza.categoria}
-                onChange={(e) => setEditPieza(prev => prev ? { ...prev, categoria: e.target.value } : null)}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white"
-              />
-            </div>
-            <div className="flex gap-3">
-              <button onClick={actualizarPieza} className="flex-1 py-3 bg-emerald-500/20 text-emerald-300 rounded-xl font-medium">Guardar</button>
-              <button onClick={() => { setModoEdicion(null); setEditPieza(null) }} className="flex-1 py-3 bg-slate-700 text-white rounded-xl font-medium">Cancelar</button>
-            </div>
-          </div>
-        </BottomSheetModal>
-      )}
+      <BottomSheet
+        isOpen={!!editPieza}
+        onClose={() => setEditPieza(null)}
+        title="Editar repuesto"
+      >
+        {editPieza && (
+          <FormularioPieza
+            form={{ nombre: editPieza.nombre, categoria: editPieza.categoria }}
+            onChange={f => setEditPieza(prev => prev ? { ...prev, ...f } : null)}
+            onSubmit={handleActualizarPieza}
+            onCancel={() => setEditPieza(null)}
+            submitLabel="Guardar cambios"
+            accentClass="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+          />
+        )}
+      </BottomSheet>
     </div>
   )
-}
-
-// ============================================================================
-// HOOK DE DEBOUNCE
-// ============================================================================
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay)
-    return () => clearTimeout(handler)
-  }, [value, delay])
-  return debouncedValue
 }

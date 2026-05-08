@@ -22,6 +22,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { usePrefetchData } from "@/hooks/useMultiUser"
 
 const navigation = [
   { 
@@ -52,6 +53,7 @@ const secondaryNavigation = [
 export function AppSidebar() {
   const pathname = usePathname()
   const { setOpenMobile, isMobile } = useSidebar()
+  const { prefetchOrdenes, prefetchClientes } = usePrefetchData()
 
   // Close sidebar on mobile when clicking a link
   const handleLinkClick = () => {
@@ -101,7 +103,14 @@ export function AppSidebar() {
                       asChild
                       isActive={isActive}
                     >
-                      <Link href={item.href} onClick={handleLinkClick}>
+                      <Link 
+                        href={item.href} 
+                        onClick={handleLinkClick}
+                        onMouseEnter={() => {
+                          if (item.href === '/ordenes') prefetchOrdenes();
+                          if (item.href === '/clientes') prefetchClientes();
+                        }}
+                      >
                         <item.icon className="h-5 w-5" />
                         <span>{item.name}</span>
                       </Link>

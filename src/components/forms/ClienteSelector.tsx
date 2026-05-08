@@ -95,8 +95,9 @@ const ClienteSelector = memo(function ClienteSelector({
   }
   const handleSuccess = useCallback((cliente: Cliente) => {
     onSeleccionarCliente(cliente);
+    modal.close();
     // La lista de clientes se actualizará desde el componente padre
-  }, [onSeleccionarCliente]);
+  }, [onSeleccionarCliente, modal]);
 
   return (
     <>
