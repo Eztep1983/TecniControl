@@ -3,5 +3,6 @@
     <string name="app_name">TecniControl</string>
     <string name="title_activity_main">TecniControl</string>
     <string name="package_name">com.tecnicontrol.app</string>
+    <string name="default_web_client_id">617743990629-pof354ofe6nsfscpk068k93v4bti21e8.apps.googleusercontent.com</string>
     <string name="custom_url_scheme">com.tecnicontrol.app</string>
 </resources>

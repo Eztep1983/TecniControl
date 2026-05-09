@@ -2,7 +2,6 @@
 'use client'
 import { Cliente, Dispositivo } from '@/types/orden'
 import { Monitor, Laptop, Smartphone, Tablet, HardDrive, ChevronLeft, ChevronRight, Cpu, Package, AlertCircle, Plus } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { DispositivoFormModal } from '@/components/clientes/DispositivoFormModal'
 
@@ -40,7 +39,6 @@ export default function DispositivoSelector({
   onDesseleccionarDispositivo,
   onClienteActualizado
 }: DispositivoSelectorProps) {
-  const router = useRouter()
   const [paginaActual, setPaginaActual] = useState(1)
   const [dispositivoAnimando, setDispositivoAnimando] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)

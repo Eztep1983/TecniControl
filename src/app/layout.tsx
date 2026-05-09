@@ -12,14 +12,14 @@ export const metadata: Metadata = {
   title: "TecniControl - Gestión de Servicios",
   description: "Gestiona tus órdenes de servicio con facilidad.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "data:,",
   },
 };
 
 // app/layout.tsx
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className="h-full">
+    <html>
       <body className="h-full">
         <QueryProvider>
           <AuthProvider>

@@ -542,11 +542,6 @@ export default function OrdenesMantenimientoPage() {
                                 onPrint={imprimirOrden}
                                 variant="table"
                               />
-                              <DownloadButton
-                                orden={orden as OrdenMantenimiento}
-                                onDownload={descargarPDF}
-                                variant="table"
-                              />
                               <ShareButton
                                 orden={orden as OrdenMantenimiento}
                                 onShare={compartirOrden}

@@ -1,0 +1,194 @@
+rules_version = '2';
+
+// ─── TecniControl – Reglas de Seguridad de Firestore ────────────────────────
+//
+// Colecciones de nivel raíz:
+//   users/{uid}                   – Perfil/actividad del usuario (AuthProvider)
+//   clientes/{clienteId}          – Clientes por usuario
+//   ordenes/{ordenId}             – Órdenes de servicio
+//   negocios/{userId}             – Perfil de negocio (doc ID = UID del dueño)
+//   contadores/{contadorId}       – Contadores: por UID (multiuser-helpers) y
+//                                   por tipo 'ordenesMantenimiento', etc. (firebase-utils)
+//   userConfig/{userId}           – Configuración del usuario
+//     └─ tareas/{tareaId}         – Subcollección: tareas predefinidas
+//     └─ piezas/{piezaId}         – Subcollección: piezas predefinidas
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Funciones de ayuda ────────────────────────────────────────────────────
+
+    /// Devuelve true si el request viene de un usuario autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    /// Devuelve true si el UID del token coincide con el campo userId pasado
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    /// Verifica que el campo userId del payload entrante sea el mismo UID del token
+    function incomingUserId() {
+      return request.resource.data.userId == request.auth.uid;
+    }
+
+    // ── users ─────────────────────────────────────────────────────────────────
+    //  • Creado por AuthProvider al hacer sign-in (campos: uid, email, role, etc.)
+    //  • El docId es el UID del usuario; solo él puede leer o escribir su propio doc.
+
+    match /users/{userId} {
+      allow read:   if isOwner(userId);
+      allow create: if isOwner(userId)
+                       && request.resource.data.uid == userId;
+      allow update: if isOwner(userId)
+                       // No se puede cambiar el uid ni el rol desde el cliente
+                       && (!request.resource.data.diff(resource.data).affectedKeys()
+                             .hasAny(['uid', 'role']));
+      allow delete: if false; // No se eliminan usuarios desde el cliente
+    }
+
+    // ── clientes ──────────────────────────────────────────────────────────────
+    //  • Cada cliente pertenece al técnico que lo creó (campo userId).
+    //  • Solo ese técnico puede leer, crear, actualizar o eliminar sus clientes.
+
+    match /clientes/{clienteId} {
+      allow read: if isAuthenticated()
+                     && resource.data.userId == request.auth.uid;
+
+      allow create: if isAuthenticated()
+                       && incomingUserId()
+                       && request.resource.data.keys().hasAll(['userId', 'name'])
+                       && request.resource.data.name is string
+                       && request.resource.data.name.size() > 0;
+
+      allow update: if isAuthenticated()
+                       && resource.data.userId == request.auth.uid
+                       // No se puede transferir el cliente a otro usuario
+                       && request.resource.data.userId == resource.data.userId;
+
+      allow delete: if isAuthenticated()
+                       && resource.data.userId == request.auth.uid;
+    }
+
+    // ── ordenes ───────────────────────────────────────────────────────────────
+    //  • Cada orden lleva el campo userId del técnico emisor.
+    //  • Solo ese técnico puede ver o modificar sus órdenes.
+    //  • El tipo debe ser 'mantenimiento' o 'garantia'.
+
+    match /ordenes/{ordenId} {
+      allow read: if isAuthenticated()
+                     && resource.data.userId == request.auth.uid;
+
+      allow create: if isAuthenticated()
+                       && incomingUserId()
+                       && request.resource.data.keys().hasAll(['userId', 'tipo'])
+                       && request.resource.data.tipo in ['mantenimiento', 'garantia'];
+
+      allow update: if isAuthenticated()
+                       && resource.data.userId == request.auth.uid
+                       // No se puede transferir la orden a otro usuario
+                       && request.resource.data.userId == resource.data.userId;
+
+      allow delete: if isAuthenticated()
+                       && resource.data.userId == request.auth.uid;
+    }
+
+    // ── negocios ──────────────────────────────────────────────────────────────
+    //  • El documento ID es el mismo UID del técnico.
+    //  • Solo el propietario puede acceder a su perfil de negocio.
+
+    match /negocios/{userId} {
+      allow read:   if isOwner(userId);
+      allow create: if isOwner(userId) && incomingUserId();
+      allow update: if isOwner(userId)
+                       && request.resource.data.userId == userId;
+      allow delete: if isOwner(userId);
+    }
+
+    // ── contadores ────────────────────────────────────────────────────────────
+    //  Hay DOS tipos de documentos en esta colección:
+    //
+    //  1. contadores/{uid}  — por usuario (multiuser-helpers.ts)
+    //     El campo 'siguiente' solo puede incrementarse.
+    //
+    //  2. contadores/ordenesMantenimiento | ordenesDiagnostico | ...
+    //     Contadores globales por TIPO de orden (firebase-utils.ts).
+    //     Cualquier usuario autenticado puede leer y actualizar (transacción);
+    //     el campo 'ultimoNumero' solo puede crecer.
+
+    match /contadores/{contadorId} {
+      // Lectura: el propio usuario (si es su doc de UID) o cualquier auth (contador global)
+      allow read: if isAuthenticated()
+                     && (request.auth.uid == contadorId
+                         || contadorId.matches('ordenes(Mantenimiento|Diagnostico|Garantia|Entrega)'));
+
+      // Creación: solo el propio usuario para su doc de UID,
+      // o cualquier autenticado para contadores globales (firebase-utils crea en transacción)
+      allow create: if isAuthenticated()
+                       && (request.auth.uid == contadorId
+                             ? incomingUserId()
+                             : contadorId.matches('ordenes(Mantenimiento|Diagnostico|Garantia|Entrega)'));
+
+      // Actualización: igual que create, pero ultimoNumero/siguiente solo sube
+      allow update: if isAuthenticated()
+                       && (request.auth.uid == contadorId
+                             ? (request.resource.data.userId == contadorId
+                                && request.resource.data.siguiente >= resource.data.siguiente)
+                             : (contadorId.matches('ordenes(Mantenimiento|Diagnostico|Garantia|Entrega)')
+                                && request.resource.data.ultimoNumero >= resource.data.ultimoNumero));
+
+      allow delete: if false;
+    }
+
+    // ── userConfig ────────────────────────────────────────────────────────────
+    //  • Documento raíz de configuración; el docId es el UID del técnico.
+
+    match /userConfig/{userId} {
+      allow read:  if isOwner(userId);
+      allow write: if isOwner(userId);
+
+      // ── subcollección: tareas predefinidas ──────────────────────────────────
+      //  • El tipo debe ser 'preventivo', 'correctivo' o 'ambos'.
+
+      match /tareas/{tareaId} {
+        allow read: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+                         && request.resource.data.keys().hasAll(['nombre', 'tipo', 'categoria'])
+                         && request.resource.data.tipo in ['preventivo', 'correctivo', 'ambos']
+                         && request.resource.data.nombre is string
+                         && request.resource.data.nombre.size() > 0;
+
+        allow update: if isOwner(userId)
+                         && request.resource.data.tipo in ['preventivo', 'correctivo', 'ambos'];
+
+        allow delete: if isOwner(userId);
+      }
+
+      // ── subcollección: piezas predefinidas ──────────────────────────────────
+
+      match /piezas/{piezaId} {
+        allow read: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+                         && request.resource.data.keys().hasAll(['nombre', 'categoria'])
+                         && request.resource.data.nombre is string
+                         && request.resource.data.nombre.size() > 0;
+
+        allow update: if isOwner(userId);
+
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    // ── Denegación global ─────────────────────────────────────────────────────
+    //  Cualquier colección no listada queda bloqueada por defecto (principio
+    //  de mínimo privilegio).
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+  }
+}

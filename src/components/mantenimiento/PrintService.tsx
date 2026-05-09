@@ -43,127 +43,196 @@ const generarContenidoHTML = (
       <title>Orden de Mantenimiento #${orden.idPersonalizado}</title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
         body { 
-          font-family: Arial, sans-serif; margin: 20px; 
-          background-color: #fff; color: #000;
-          font-size: 14px; line-height: 1.4;
+          font-family: 'Inter', Arial, sans-serif; margin: 0; padding: 20px;
+          background-color: #fff; color: #1a1a1a;
+          font-size: 12px; line-height: 1.5;
         }
         .header { 
-          text-align: center; margin-bottom: 20px; 
-          border-bottom: 2px solid #333; padding-bottom: 15px;
+          display: flex; justify-content: space-between; align-items: flex-start;
+          margin-bottom: 25px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px;
         }
-        .negocio-info {
-          display: flex; align-items: center; justify-content: center;
-          margin-bottom: 15px; gap: 15px; flex-wrap: wrap;
+        .negocio-info { display: flex; align-items: center; gap: 15px; }
+        .negocio-logo { width: 80px; height: 80px; object-fit: contain; border-radius: 8px; }
+        .negocio-details h1 { margin: 0; font-size: 18px; color: #111; font-weight: 700; }
+        .negocio-details p { margin: 2px 0; font-size: 11px; color: #4b5563; }
+        .orden-meta { text-align: right; }
+        .orden-meta h2 { margin: 0; font-size: 16px; color: #2563eb; font-weight: 700; }
+        .orden-meta p { margin: 2px 0; font-size: 11px; color: #4b5563; }
+
+        .section { margin-bottom: 20px; page-break-inside: avoid; }
+        .section-title { 
+          background-color: #f3f4f6; padding: 6px 12px; border-radius: 6px;
+          margin-bottom: 10px; font-size: 13px; font-weight: 700; color: #1f2937;
+          text-transform: uppercase; letter-spacing: 0.05em; border-left: 4px solid #2563eb;
         }
-        .negocio-logo { max-width: 80px; max-height: 80px; object-fit: contain; }
-        .negocio-details { text-align: center; }
-        .negocio-details h1 { margin: 0; font-size: 20px; color: #000; }
-        .negocio-details p { margin: 3px 0; font-size: 12px; color: #666; }
-        .orden-info { margin-top: 10px; }
-        .orden-info h2 { margin: 0; font-size: 18px; color: #000; }
-        .orden-info p { margin: 3px 0; color: #666; font-size: 12px; }
-        .section { margin-bottom: 15px; page-break-inside: avoid; }
-        .section h2 { 
-          border-bottom: 1px solid #333; padding-bottom: 3px; 
-          margin-bottom: 8px; font-size: 16px; color: #000;
-        }
-        .flex-container { display: flex; justify-content: space-between; gap: 15px; flex-wrap: wrap; }
-        .cliente, .dispositivo { width: 100%; min-width: 250px; }
-        .info-row {
-          display: flex; justify-content: space-between;
-          padding: 3px 0; border-bottom: 1px dotted #ddd; margin-bottom: 3px;
-        }
-        .info-label { font-weight: bold; color: #333; flex-shrink: 0; margin-right: 10px; }
-        .info-value { text-align: right; word-break: break-word; }
-        table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
-        th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
-        th { background-color: #f5f5f5; font-weight: bold; }
+        
+        .grid-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .info-group { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+        .info-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f3f4f6; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-weight: 600; color: #6b7280; font-size: 10px; text-transform: uppercase; }
+        .info-value { color: #111827; font-weight: 500; text-align: right; }
+
+        .data-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-top: 5px; }
+        .data-label { font-weight: 700; font-size: 11px; color: #374151; margin-bottom: 4px; display: block; }
+        .data-content { color: #4b5563; font-size: 11px; white-space: pre-wrap; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background-color: #f9fafb; font-weight: 700; color: #374151; font-size: 11px; text-transform: uppercase; }
+        td { color: #4b5563; font-size: 11px; }
+
         .badge { 
-          padding: 2px 6px; border-radius: 10px; 
-          font-size: 10px; font-weight: bold; display: inline-block;
+          padding: 4px 10px; border-radius: 9999px; font-size: 10px; font-weight: 700; 
+          text-transform: uppercase; display: inline-block;
         }
-        .preventivo { background-color: #d1fae5; color: #065f46; }
-        .correctivo { background-color: #ffedd5; color: #9a3412; }
-        .tasks-list { padding-left: 18px; }
-        .tasks-list li { margin-bottom: 5px; line-height: 1.3; }
-        .no-print { display: block; text-align: center; margin-top: 20px; }
-        @media (min-width: 600px) {
-          body { margin: 40px; }
-          .cliente, .dispositivo { width: 48%; }
-          .negocio-logo { max-width: 100px; max-height: 100px; }
-          .negocio-details h1 { font-size: 24px; }
-          .orden-info h2 { font-size: 20px; }
-          .section h2 { font-size: 18px; }
+        .badge-preventivo { background-color: #dcfce7; color: #166534; }
+        .badge-correctivo { background-color: #ffedd5; color: #9a3412; }
+        .badge-diagnostico { background-color: #dbeafe; color: #1e40af; }
+        .badge-instalacion { background-color: #f3e8ff; color: #6b21a8; }
+
+        .signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; }
+        .signature-box { border-top: 1px solid #374151; padding-top: 10px; text-align: center; }
+        .signature-img { max-width: 180px; max-height: 80px; margin-bottom: 5px; object-fit: contain; }
+        .signature-name { font-weight: 700; color: #111827; font-size: 12px; }
+        .signature-role { color: #6b7280; font-size: 10px; text-transform: uppercase; }
+
+        .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #9ca3af; border-top: 1px solid #f3f4f6; padding-top: 15px; }
+
+        .no-print { display: flex; justify-content: center; gap: 10px; margin-top: 30px; }
+        .btn-print { 
+          background: #2563eb; color: white; border: none; padding: 10px 20px; 
+          border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;
         }
+
         @media print {
-          .no-print { display: none; }
-          body { margin: 15px; font-size: 12px; }
-          .header { margin-bottom: 15px; }
-          .section { margin-bottom: 12px; }
+          .no-print { display: none !important; }
+          body { padding: 0; margin: 0; }
+          .info-group { border: 1px solid #eee; }
         }
       </style>
     </head>
     <body>
       <div class="header">
         <div class="negocio-info">
-          ${negocio?.logoUrl ? `<img src="${negocio.logoUrl}" alt="${negocio.nombre}" class="negocio-logo">` : ''}
+          ${negocio?.logoUrl 
+            ? `<img src="${negocio.logoUrl}" alt="Logo" class="negocio-logo" crossorigin="anonymous">` 
+            : `<div class="negocio-logo" style="background:#f3f4f6; display:flex; align-items:center; justify-content:center; border:1px dashed #ccc;">
+                <span style="color:#999; font-size:10px;">Sin Logo</span>
+               </div>`
+          }
           <div class="negocio-details">
-            <h1>${negocio?.nombre || 'Nombre del Negocio'}</h1>
-            ${negocio?.direccion ? `<p>${negocio.direccion}</p>` : ''}
-            ${negocio?.telefono ? `<p>Teléfono: ${negocio.telefono}</p>` : ''}
-            ${negocio?.email ? `<p>Email: ${negocio.email}</p>` : ''}
+            <h1>${negocio?.nombre || 'TecniControl Service'}</h1>
             ${negocio?.nit ? `<p>NIT: ${negocio.nit}</p>` : ''}
+            ${negocio?.direccion ? `<p>${negocio.direccion}</p>` : ''}
+            ${negocio?.telefono ? `<p>Tel: ${negocio.telefono}</p>` : ''}
+            ${negocio?.email ? `<p>${negocio.email}</p>` : ''}
           </div>
         </div>
-        <div class="orden-info">
-          <h2>Orden de Mantenimiento #${orden.idPersonalizado}</h2>
-          <p>Fecha: ${formatFecha(orden.fechaCreacion)} ${orden.horaCreacion || ''}</p>
-        </div>
-      </div>
-
-      <div class="flex-container">
-        <div class="cliente section">
-          <h2>Información del Cliente</h2>
-          <div class="info-row"><span class="info-label">Nombre:</span><span class="info-value">${orden.cliente?.name || 'N/A'}</span></div>
-          <div class="info-row"><span class="info-label">Teléfono:</span><span class="info-value">${orden.cliente?.phone || 'N/A'}</span></div>
-          <div class="info-row"><span class="info-label">Cédula:</span><span class="info-value">${orden.cliente?.cedula || 'N/A'}</span></div>
-          <div class="info-row"><span class="info-label">Email:</span><span class="info-value">${orden.cliente?.email || 'N/A'}</span></div>
-          <div class="info-row"><span class="info-label">Dirección:</span><span class="info-value">${orden.cliente?.address || 'N/A'}</span></div>
-        </div>
-
-        <div class="dispositivo section">
-          <h2>Información del Dispositivo</h2>
-          <div class="info-row"><span class="info-label">Tipo:</span><span class="info-value">${orden.dispositivo?.tipo || 'N/A'}</span></div>
-          <div class="info-row"><span class="info-label">Marca/Modelo:</span><span class="info-value">${orden.dispositivo?.marca || ''} ${orden.dispositivo?.modelo || ''}</span></div>
-          <div class="info-row"><span class="info-label">Número de Serie:</span><span class="info-value">${orden.dispositivo?.numeroSerie || 'N/A'}</span></div>
-          <div class="info-row">
-            <span class="info-label">Tipo de Mantenimiento:</span>
-            <span class="info-value">
-              <span class="badge ${orden.tipoMantenimiento === 'preventivo' ? 'preventivo' : 'correctivo'}">
-                ${orden.tipoMantenimiento}
-              </span>
+        <div class="orden-meta">
+          <h2>ORDEN DE SERVICIO</h2>
+          <p style="font-weight:700; font-size:14px; color:#111;"># ${orden.idPersonalizado}</p>
+          <p>Fecha: ${formatFecha(orden.fechaCreacion)}</p>
+          <p>Hora: ${orden.horaCreacion || '--:--'}</p>
+          <div style="margin-top:5px;">
+            <span class="badge badge-${orden.tipoMantenimiento}">
+              ${orden.tipoMantenimiento}
             </span>
           </div>
         </div>
       </div>
 
-      <div class="section">
-        <h2>Tareas Realizadas</h2>
-        ${orden.tareasRealizadas?.length > 0
-          ? `<ol class="tasks-list">${orden.tareasRealizadas.map((t: string) => `<li>${t}</li>`).join('')}</ol>`
-          : '<p>No se registraron tareas</p>'
-        }
+      <div class="grid-info section">
+        <div class="info-group">
+          <div class="section-title" style="border-left-color: #2563eb;">Información del Cliente</div>
+          <div class="info-row"><span class="info-label">Nombre</span><span class="info-value">${orden.cliente?.name || 'N/A'}</span></div>
+          <div class="info-row"><span class="info-label">Teléfono</span><span class="info-value">${orden.cliente?.phone || 'N/A'}</span></div>
+          <div class="info-row"><span class="info-label">Documento</span><span class="info-value">${orden.cliente?.cedula || 'N/A'}</span></div>
+          <div class="info-row"><span class="info-label">Dirección</span><span class="info-value">${orden.cliente?.address || 'N/A'}</span></div>
+        </div>
+
+        <div class="info-group">
+          <div class="section-title" style="border-left-color: #10b981;">Información del Equipo</div>
+          <div class="info-row"><span class="info-label">Tipo</span><span class="info-value">${orden.dispositivo?.tipo || 'N/A'}</span></div>
+          <div class="info-row"><span class="info-label">Marca/Modelo</span><span class="info-value">${orden.dispositivo?.marca || ''} ${orden.dispositivo?.modelo || ''}</span></div>
+          <div class="info-row"><span class="info-label">S/N</span><span class="info-value">${orden.dispositivo?.numeroSerie || 'N/A'}</span></div>
+          ${orden.contador ? `
+            <div class="info-row">
+              <span class="info-label">Contador (${orden.contador.tipo})</span>
+              <span class="info-value">${orden.contador.valor}</span>
+            </div>
+          ` : ''}
+          ${orden.contadorMaquina ? `
+            <div class="info-row">
+              <span class="info-label">Contador de Máquina</span>
+              <span class="info-value">${orden.contadorMaquina.toLocaleString()}</span>
+            </div>
+          ` : ''}
+        </div>
       </div>
+
+      ${orden.tipoMantenimiento === 'diagnostico' ? `
+        <div class="section">
+          <div class="section-title" style="border-left-color: #f59e0b;">Detalle del Diagnóstico</div>
+          <div class="grid-info">
+            <div class="data-box">
+              <span class="data-label">Observaciones Iniciales</span>
+              <div class="data-content">${orden.observacionesIniciales || 'N/A'}</div>
+            </div>
+            <div class="data-box">
+              <span class="data-label">Pruebas Realizadas</span>
+              <div class="data-content">${orden.pruebasRealizadas || 'N/A'}</div>
+            </div>
+          </div>
+          <div class="data-box" style="margin-top:10px;">
+            <span class="data-label">Diagnóstico Final</span>
+            <div class="data-content" style="font-weight:600; color:#111;">${orden.diagnosticoFinal || 'N/A'}</div>
+          </div>
+        </div>
+      ` : ''}
+
+      ${orden.tipoMantenimiento === 'instalacion' ? `
+        <div class="section">
+          <div class="section-title" style="border-left-color: #8b5cf6;">Detalle de Instalación</div>
+          <div class="data-box">
+            <span class="data-label">Configuraciones Realizadas</span>
+            <div class="data-content">
+              ${orden.instalacionConfiguracion 
+                ? (orden.instalacionConfiguracionTipos?.join(', ') || 'Instalación estándar')
+                : 'No se realizaron configuraciones'
+              }
+            </div>
+          </div>
+          ${orden.instalacionRecomendaciones ? `
+            <div class="data-box" style="margin-top:10px;">
+              <span class="data-label">Recomendaciones del Técnico</span>
+              <div class="data-content">${orden.instalacionRecomendacionesDetalle || 'N/A'}</div>
+            </div>
+          ` : ''}
+        </div>
+      ` : ''}
+
+      ${(orden.tipoMantenimiento === 'preventivo' || orden.tipoMantenimiento === 'correctivo') ? `
+        <div class="section">
+          <div class="section-title">Tareas Realizadas</div>
+          <div class="data-box">
+            <ul style="margin:0; padding-left:15px; font-size:11px; color:#4b5563;">
+              ${orden.tareasRealizadas?.map((t: string) => `<li>${t}</li>`).join('') || '<li>No se registraron tareas</li>'}
+            </ul>
+          </div>
+        </div>
+      ` : ''}
 
       ${orden.piezasUsadas?.length > 0 ? `
         <div class="section">
-          <h2>Piezas Utilizadas</h2>
+          <div class="section-title">Repuestos / Materiales</div>
           <table>
-            <thead><tr><th>Pieza</th><th>Cantidad</th></tr></thead>
+            <thead><tr><th>Descripción</th><th style="text-align:right">Cantidad</th></tr></thead>
             <tbody>
               ${orden.piezasUsadas.map((p: { pieza: string; cantidad: number }) =>
-                `<tr><td>${p.pieza}</td><td>${p.cantidad}</td></tr>`
+                `<tr><td>${p.pieza}</td><td style="text-align:right">${p.cantidad}</td></tr>`
               ).join('')}
             </tbody>
           </table>
@@ -171,15 +240,47 @@ const generarContenidoHTML = (
       ` : ''}
 
       <div class="section">
-        <h2>Garantía</h2>
-        <div class="info-row"><span class="info-label">Desde:</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoDesde)}</span></div>
-        <div class="info-row"><span class="info-label">Hasta:</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoHasta)}</span></div>
-        <div class="info-row"><span class="info-label">Descripción:</span><span class="info-value">${orden.garantiaDescripcion || 'No se especificó garantía'}</span></div>
+        <div class="section-title" style="border-left-color: #6b7280;">Garantía y Observaciones</div>
+        <div class="grid-info">
+          <div class="info-group">
+            <div class="info-row"><span class="info-label">Vigencia Desde</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoDesde)}</span></div>
+            <div class="info-row"><span class="info-label">Vigencia Hasta</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoHasta)}</span></div>
+          </div>
+          <div class="data-box" style="margin:0;">
+            <span class="data-label">Términos de Garantía</span>
+            <div class="data-content">${orden.garantiaDescripcion || 'Garantía estándar según políticas de la empresa.'}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="signatures">
+        <div class="signature-box">
+          ${orden.firmaCliente
+            ? `<img src="${orden.firmaCliente}" alt="Firma Cliente" class="signature-img">`
+            : '<div style="height:80px; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:10px;">Firma No Registrada</div>'
+          }
+          <div class="signature-name">${orden.nombreFirmante || orden.cliente?.name || 'Cliente'}</div>
+          <div class="signature-role">Firma del Cliente</div>
+        </div>
+        <div class="signature-box">
+          <div style="height:80px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:10px;">
+            <div style="border-bottom:1px solid #ccc; width:150px; text-align:center; padding-bottom:5px;">
+              <span style="font-size:12px; font-weight:700; color:#333;">${negocio?.nombre || 'Técnico Autorizado'}</span>
+            </div>
+          </div>
+          <div class="signature-name">Técnico Responsable</div>
+          <div class="signature-role">TecniControl Service</div>
+        </div>
+      </div>
+
+      <div class="footer">
+        Documento generado electrónicamente por TecniControl. 
+        Este documento es un comprobante de servicio y no representa una factura legal de venta.
       </div>
 
       <div class="no-print">
-        <button onclick="window.print()" style="padding:8px 16px;background:#065f46;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">
-          Imprimir
+        <button class="btn-print" onclick="window.print()" style="padding:8px 16px;background:#065f46;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">
+          Imprimir Ahora
         </button>
       </div>
     </body>
@@ -236,7 +337,24 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
    * Compatible con web y WebView de Capacitor.
    */
   const generarPDFBlob = useCallback(async (orden: OrdenMantenimiento): Promise<Blob> => {
-    const contenido = generarContenidoHTML(orden, negocio, formatFecha, formatGarantiaFecha)
+    let negocioProcesado = negocio;
+    if (negocio?.logoUrl && !negocio.logoUrl.startsWith('data:')) {
+      try {
+        const res = await fetch(negocio.logoUrl, { mode: 'cors' });
+        const blob = await res.blob();
+        const base64Url = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        negocioProcesado = { ...negocio, logoUrl: base64Url };
+      } catch (err) {
+        console.warn('Error al convertir logo a base64 para el PDF', err);
+      }
+    }
+
+    const contenido = generarContenidoHTML(orden, negocioProcesado, formatFecha, formatGarantiaFecha)
 
     const container = document.createElement('div')
     container.innerHTML = contenido
@@ -327,7 +445,17 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
         document.body.removeChild(link)
         URL.revokeObjectURL(url)
       }
-    } catch (error) {
+    } catch (error: any) {
+      const isCanceled = 
+        !error ||
+        error?.name === 'AbortError' || 
+        error?.message?.toLowerCase().includes('canceled') ||
+        error?.message?.toLowerCase().includes('cancelado') ||
+        (typeof error === 'string' && error.toLowerCase().includes('canceled')) ||
+        (typeof error === 'object' && Object.keys(error).length === 0)
+
+      if (isCanceled) return
+
       console.error('Error al descargar PDF:', error)
       throw error
     }
@@ -408,8 +536,18 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
           await fallbackWebCompartir()
         }
       }
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') return
+    } catch (error: any) {
+      // Ignorar si el usuario canceló la acción (común en Capacitor/Web Share)
+      const isCanceled = 
+        !error ||
+        error?.name === 'AbortError' || 
+        error?.message?.toLowerCase().includes('canceled') ||
+        error?.message?.toLowerCase().includes('cancelado') ||
+        (typeof error === 'string' && error.toLowerCase().includes('canceled')) ||
+        (typeof error === 'object' && Object.keys(error).length === 0)
+
+      if (isCanceled) return
+      
       console.error('Error al compartir orden:', error)
     }
   }, [generarPDFBlob, blobToBase64, descargarPDF])
@@ -419,26 +557,81 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
    * En WebView de Capacitor abre el diálogo de impresión del sistema.
    * Se usa window.open en lugar de iframe para mayor compatibilidad con WebViews.
    */
-  const imprimirOrden = useCallback((orden: OrdenMantenimiento) => {
-    const contenido = generarContenidoHTML(orden, negocio, formatFecha, formatGarantiaFecha)
+  /**
+   * Imprime la orden.
+   * En plataformas nativas de Capacitor, window.print() no funciona correctamente.
+   * Por lo tanto, redirigimos a compartir el PDF, que es el estándar en móviles.
+   */
+  const imprimirOrden = useCallback(async (orden: OrdenMantenimiento) => {
+    if (isNativePlatform()) {
+      // En móvil, compartir es la mejor forma de "imprimir" (permite enviar a impresora o compartir)
+      await compartirOrden(orden)
+    } else {
+      // En Web, usamos el flujo tradicional de ventana de impresión
+      let negocioProcesado = negocio;
+      if (negocio?.logoUrl && !negocio.logoUrl.startsWith('data:')) {
+        try {
+          const res = await fetch(negocio.logoUrl, { mode: 'cors' });
+          const blob = await res.blob();
+          const base64Url = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          negocioProcesado = { ...negocio, logoUrl: base64Url };
+        } catch (err) {
+          console.warn('Error al convertir logo a base64 para imprimir', err);
+        }
+      }
 
-    const ventana = window.open('', '_blank', 'width=800,height=600')
-    if (!ventana) {
-      console.error('No se pudo abrir la ventana de impresión. Verifica que los popups no estén bloqueados.')
-      return
+      const contenido = generarContenidoHTML(orden, negocioProcesado, formatFecha, formatGarantiaFecha)
+      const ventana = window.open('', '_blank', 'width=800,height=600')
+      
+      if (!ventana) {
+        alert('No se pudo abrir la ventana de impresión. Por favor, permite los pop-ups en este sitio.')
+        return
+      }
+
+      ventana.document.open()
+      ventana.document.write(contenido)
+      ventana.document.close()
+
+      // Esperar a que las imágenes (logo) carguen antes de imprimir
+      const waitImages = () => {
+        const images = ventana.document.getElementsByTagName('img')
+        let loaded = 0
+        if (images.length === 0) {
+          ventana.focus()
+          ventana.print()
+          ventana.onafterprint = () => ventana.close()
+          return
+        }
+        for (let i = 0; i < images.length; i++) {
+          if (images[i].complete) {
+            loaded++
+          } else {
+            images[i].onload = () => {
+              loaded++
+              if (loaded === images.length) {
+                ventana.focus()
+                ventana.print()
+                ventana.onafterprint = () => ventana.close()
+              }
+            }
+          }
+        }
+        if (loaded === images.length) {
+          ventana.focus()
+          ventana.print()
+          ventana.onafterprint = () => ventana.close()
+        }
+      }
+
+      ventana.onload = waitImages
     }
+  }, [negocio, formatFecha, formatGarantiaFecha, compartirOrden])
 
-    ventana.document.open()
-    ventana.document.write(contenido)
-    ventana.document.close()
-
-    ventana.onload = () => {
-      ventana.focus()
-      ventana.print()
-      // Cierra la ventana después de que el usuario termine con el diálogo de impresión
-      ventana.onafterprint = () => ventana.close()
-    }
-  }, [negocio, formatFecha, formatGarantiaFecha])
 
   return {
     imprimirOrden,

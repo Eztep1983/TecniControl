@@ -35,7 +35,7 @@ import type { TareaPredefinida, PiezaPredefinida } from '@/lib/configuracion-hel
 import { useAuth } from '@/components/auth/AuthProvider'
 import {
   ArrowLeft, ListChecks, Package, Plus, Trash2, Edit3,
-  X, Search, MoreVertical, AlertCircle, CheckCircle,
+  X, Search, AlertCircle, CheckCircle,
   Wrench, RotateCw, WifiOff, Loader2, CloudOff,
   RefreshCw
 } from 'lucide-react'
@@ -726,10 +726,8 @@ export default function TareasRepuestosPage() {
       className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 overscroll-none"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      {/* ── Header sticky ── */}
       <header
         className="
-          sticky top-0 z-40
           bg-slate-900/90 backdrop-blur-md
           border-b border-slate-800/60
           px-4 py-3

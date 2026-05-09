@@ -10,6 +10,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import icono from "@/public/icono.png"
 import {
   Sidebar,
   SidebarContent,
@@ -78,12 +79,16 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild size="lg">
               <Link href="/ordenes" className="flex items-center gap-2" onClick={handleLinkClick}>
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-                  <span className="font-bold">TC</span>
+                <div className="flex aspect-square size-14 items-center justify-center rounded-lg overflow-hidden bg-black">
+                  <img 
+                    src={icono.src} 
+                    alt="TecniControl" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
                   <span className="font-semibold">TecniControl</span>
-                  <span className="text-xs text-muted-foreground">Gestión de Servicios</span>
+                  <span className="text-xs text-muted-foreground">Gestión de Servicios Técnicos</span>
                 </div>
               </Link>
             </SidebarMenuButton>

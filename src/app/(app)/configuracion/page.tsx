@@ -1,4 +1,5 @@
 // app/configuracion/page.tsx
+
 'use client'
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/basic/card";
@@ -78,17 +79,64 @@ export default function ConfiguracionPage() {
 
     try {
       setUploading(true);
-      const storage = getStorage();
-      const storageRef = ref(storage, `negocios/${user.uid}/logo/${file.name}`);
       
-      // Subir archivo
-      const snapshot = await uploadBytes(storageRef, file);
+      // Redimensionar y convertir a WebP usando Canvas
+      const compressedFile = await new Promise<File>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            
+            // Mantener proporciones, max 2000px ancho
+            const MAX_WIDTH = 2000;
+            if (width > MAX_WIDTH) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height);
+            }
+            
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const newName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
+                resolve(new File([blob], newName, { type: 'image/webp' }));
+              } else {
+                reject(new Error('No se pudo convertir la imagen a WebP'));
+              }
+            }, 'image/webp', 0.85);
+          };
+          img.onerror = reject;
+          if (event.target?.result) {
+            img.src = event.target.result as string;
+          } else {
+            reject(new Error('No se pudo leer el archivo'));
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const storage = getStorage();
+      const storageRef = ref(storage, `negocios/${user.uid}/logo/${compressedFile.name}`);
+      
+      // Subir archivo optimizado
+      const snapshot = await uploadBytes(storageRef, compressedFile);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
       // Actualizar estado local
       setNegocio(prev => ({ ...prev, logoUrl: downloadURL }));
     } catch (error) {
       console.error('Error subiendo logo:', error);
+      alert('Hubo un error optimizando o subiendo la imagen. Intenta con otra imagen.');
     } finally {
       setUploading(false);
     }
@@ -153,7 +201,7 @@ export default function ConfiguracionPage() {
         </div>
 
         {/* Información del Negocio */}
-        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 mb-6 transition-colors hover:border-gray-600/50">
+        <Card className="bg-gray-800/50 border-gray-700/50 mb-6 transition-colors hover:border-gray-600/50">
           <CardHeader className="border-b border-gray-700/50 bg-gradient-to-r from-gray-800/50 to-transparent">
             <div className="flex items-center justify-between">
               <div>
@@ -215,7 +263,7 @@ export default function ConfiguracionPage() {
                     className="hidden"
                   />
                   <p className="text-xs text-gray-400">
-                    Formatos: JPG, PNG, SVG. Tamaño recomendado: 400x400px
+                    Formatos: JPG, PNG, WebP, SVG. Tamaño recomendado: 400x400px
                   </p>
                 </div>
               </div>
@@ -318,44 +366,6 @@ export default function ConfiguracionPage() {
                     </>
                   )}
                 </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Preferencias del Sistema */}
-        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 mb-6 transition-colors hover:border-gray-600/50">
-          <CardHeader className="border-b border-gray-700/50 bg-gradient-to-r from-gray-800/50 to-transparent">
-            <CardTitle className="text-white flex items-center gap-2 text-xl">
-              <Bell className="w-5 h-5 text-purple-400" />
-              Preferencias del Sistema
-            </CardTitle>
-            <CardDescription className="text-gray-400 mt-1">
-              Personaliza las notificaciones y recordatorios
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-5">
-              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-700/20 border border-gray-700/50 transition-colors hover:border-gray-600/50">
-                <div className="space-y-1 flex-1">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-blue-400" />
-                    <Label className="text-gray-200 font-medium cursor-pointer">Notificaciones por email</Label>
-                  </div>
-                  <p className="text-sm text-gray-400">Recibe alertas importantes en tu correo electrónico</p>
-                </div>
-                <Switch className="data-[state=checked]:bg-blue-600" />
-              </div>
-              
-              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-700/20 border border-gray-700/50 transition-colors hover:border-gray-600/50">
-                <div className="space-y-1 flex-1">
-                  <div className="flex items-center gap-2">
-                    <Bell className="w-4 h-4 text-purple-400" />
-                    <Label className="text-gray-200 font-medium cursor-pointer">Recordatorios automáticos</Label>
-                  </div>
-                  <p className="text-sm text-gray-400">Alertas de mantenimientos y servicios pendientes</p>
-                </div>
-                <Switch className="data-[state=checked]:bg-purple-600" />
               </div>
             </div>
           </CardContent>

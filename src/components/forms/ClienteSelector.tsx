@@ -2,7 +2,6 @@
 'use client'
 import { Cliente } from '@/types/orden'
 import { Search, UserPlus, X, MapPin, Phone, Mail, HardDrive, Clock, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState, memo } from 'react'
 import { ClienteViewModal } from '../clientes/ClienteViewModal'
 import { ClienteFormModal } from '../clientes/ClienteFormModal'
@@ -25,7 +24,6 @@ const ClienteSelector = memo(function ClienteSelector({
   onSeleccionarCliente,
   onDesseleccionarCliente
 }: Omit<ClienteSelectorProps, 'busquedaCliente' | 'setBusquedaCliente'>) {
-  const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [paginaActual, setPaginaActual] = useState(1)
   const [clienteAnimando, setClienteAnimando] = useState<string | null>(null)

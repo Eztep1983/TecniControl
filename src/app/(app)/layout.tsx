@@ -4,13 +4,15 @@
 import React, { useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import { usePathname } from 'next/navigation'
-
+import icono from "@/public/icono.png"
 import { SidebarProvider, SidebarInset, SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/shadcnui/app-sidebar"
 import { UserProfile } from '@/components/auth/UserProfile'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { Separator } from "@/components/ui/separator"
 import Link from 'next/link'
+import { MobileNav } from '@/components/shadcnui/mobile-nav'
+import { PageTransition } from '@/components/ui/PageTransition'
 
 import { NetworkStatusBanner } from '@/components/ui/NetworkStatusBanner'
 
@@ -27,21 +29,33 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     <>
       <NetworkStatusBanner />
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-gray-800 px-4">
-        <SidebarTrigger className="-ml-1 text-gray-300 hover:text-white hover:bg-gray-700" />
+        <SidebarTrigger className="hidden sm:flex -ml-1 text-gray-300 hover:text-white hover:bg-gray-700" />
         <Separator orientation="vertical" className="mr-2 h-4 bg-gray-700" />
         <div className="flex flex-1 items-center justify-between">
           <Link 
             href="/ordenes"
             className="flex items-center hover:opacity-80 transition-opacity"
           >
+            <div className="mr-2 flex aspect-square size-8 items-center justify-center rounded-lg overflow-hidden bg-black">
+              <img 
+                src={icono.src} 
+                alt="TecniControl" 
+                className="w-full h-full object-cover"
+              />
+            </div>
             <span className="text-xl font-bold text-blue-400">TecniControl</span>
           </Link>
           <UserProfile />
         </div>
       </header>
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-900">
-        <div className="max-w-7xl mx-auto">{children}</div>
+      <main className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-6 lg:p-8 lg:pb-8 bg-gray-900">
+        <div className="max-w-7xl mx-auto h-full relative">
+          <PageTransition>
+            {children}
+          </PageTransition>
+        </div>
       </main>
+      <MobileNav />
     </>
   )
 }

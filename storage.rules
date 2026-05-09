@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// ─── TecniControl – Reglas de Seguridad de Firebase Storage ─────────────────
+//
+// Ruta usada por la app:
+//   negocios/{userId}/logo/{filename}  – Logo del negocio subido en configuración
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Logo del negocio ──────────────────────────────────────────────────────
+    //  • Solo el propietario (uid == userId) puede subir o leer su logo.
+    //  • Se aceptan únicamente imágenes (MIME image/*).
+    //  • Tamaño máximo: 5 MB (los archivos ya se comprimen en el cliente a WebP).
+
+    match /negocios/{userId}/logo/{filename} {
+      allow read:  if request.auth != null && request.auth.uid == userId;
+
+      allow write: if request.auth != null
+                      && request.auth.uid == userId
+                      && request.resource.contentType.matches('image/.*')
+                      && request.resource.size <= 5 * 1024 * 1024; // 5 MB
+    }
+
+    // ── Denegación global ─────────────────────────────────────────────────────
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

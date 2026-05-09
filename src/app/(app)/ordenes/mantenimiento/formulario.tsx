@@ -425,6 +425,20 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   // EFFECTS
   // ============================================================================
   
+  // Ocultar MobileNav cuando el formulario está abierto
+  useEffect(() => {
+    const mobileNav = document.getElementById('mobile-nav')
+    if (mobileNav) {
+      mobileNav.style.display = 'none'
+    }
+    
+    return () => {
+      if (mobileNav) {
+        mobileNav.style.display = ''
+      }
+    }
+  }, [])
+
   // Cargar clientes al montar
   useEffect(() => {
     if (!user?.uid) return

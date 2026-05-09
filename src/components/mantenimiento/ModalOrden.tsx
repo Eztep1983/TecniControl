@@ -454,6 +454,15 @@ const ModalFooter = memo(({
     </div>
     
     <div className="flex flex-col sm:flex-row gap-2 order-1 sm:order-2">
+      <button
+        onClick={onPrint}
+        className="bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 text-green-400 px-4 py-2.5 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-md hover:shadow-lg w-full sm:w-auto font-medium"
+        aria-label="Imprimir orden"
+        title="Imprimir"
+      >
+        <Printer className="w-4 h-4 flex-shrink-0" />
+        <span>Imprimir</span>
+      </button>
       {onDownload && (
         <button
           onClick={onDownload}

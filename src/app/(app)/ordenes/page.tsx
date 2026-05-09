@@ -1,6 +1,7 @@
 'use client'
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, Suspense } from 'react'
 import Link from 'next/link'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { 
   Shield, 
   Wrench, 
@@ -23,6 +24,20 @@ import { usePrintService } from '@/components/mantenimiento/PrintService'
 import AnimatedContent from '@/components/ui/AnimatedContent'
 
 export default function OrdenesDashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+      </div>
+    }>
+      <OrdenesDashboardContent />
+    </Suspense>
+  )
+}
+
+function OrdenesDashboardContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, loading: authLoading } = useAuth()
   const queryClient = useQueryClient()
   const { prefetchClientes } = usePrefetchData()
@@ -43,7 +58,20 @@ export default function OrdenesDashboardPage() {
     if (localStorage.getItem('draft_mantenimiento')) {
       setHayBorrador(true)
     }
-  }, [])
+
+    if (searchParams.get('nueva') === 'true') {
+      setMostrarFormulario(true);
+      // Remove query param to prevent reopening on reload
+      router.replace('/ordenes', { scroll: false });
+    }
+
+    const handleOpenForm = () => setMostrarFormulario(true);
+    window.addEventListener('open-nueva-orden', handleOpenForm);
+
+    return () => {
+      window.removeEventListener('open-nueva-orden', handleOpenForm);
+    };
+  }, [searchParams, router])
 
   // Filtrar solo mantenimiento (aunque ya vienen limitadas, aseguramos tipo)
   const ordenesMantenimiento = useMemo(() => {
