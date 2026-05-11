@@ -1,8 +1,7 @@
-// components/clientes/ClientesDataTable.tsx
 "use client";
 
 import * as React from "react";
-import { memo, useState, useMemo, useEffect, useCallback } from "react";
+import { memo, useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/basic/button";
 import {
   Dialog,
@@ -25,15 +24,18 @@ import {
   ChevronRight,
   Users,
   IdCard,
+  History,
 } from "lucide-react";
 import type { Cliente } from "@/types/orden";
 import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import CountUp from "../ui/CountUp";
+import { useHapticFeedback } from "@/hooks/clientes/useHapticFeedback";
+import { useMediaQuery } from "@/hooks/clientes/useMediaQuery";
 
-// ── CSS animaciones (inyectado una sola vez) ───────────────────────────────────
-const CARD_ANIM_ID = "clientes-card-anim";
+// ── CSS de animación (inyectado una sola vez) ────────────────────────────────
+const CARD_ANIM_ID = "clientes-card-anim-v2";
 const CARD_ANIM_CSS = `
 @keyframes cardFadeIn {
   from { opacity: 0; transform: translateY(8px); }
@@ -55,15 +57,16 @@ function injectCardAnim() {
   document.head.appendChild(s);
 }
 
-// ── Props ─────────────────────────────────────────────────────────────────────
+// ── Props del componente principal ──────────────────────────────────────────
 interface ClientesDataTableProps {
   data: Cliente[];
   onDelete: (id: string) => void;
   onView: (cliente: Cliente) => void;
   onEdit: (cliente: Cliente) => void;
+  onHistorial: (cliente: Cliente) => void; // Nueva prop
 }
 
-// ── Tarjeta individual memoizada ──────────────────────────────────────────────
+// ── Tarjeta individual con swipe to delete y haptic ─────────────────────────
 interface ClienteCardProps {
   client: Cliente;
   isExiting: boolean;
@@ -71,6 +74,7 @@ interface ClienteCardProps {
   onView: (c: Cliente) => void;
   onEdit: (c: Cliente) => void;
   onDeleteClick: (id: string) => void;
+  onHistorial: (c: Cliente) => void;
 }
 
 const ClienteCard = memo(function ClienteCard({
@@ -80,28 +84,86 @@ const ClienteCard = memo(function ClienteCard({
   onView,
   onEdit,
   onDeleteClick,
+  onHistorial,
 }: ClienteCardProps) {
-  const handleView = useCallback(() => onView(client), [client, onView]);
+  const haptic = useHapticFeedback();
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  // Estados para swipe to delete (solo móvil)
+  const [swipeX, setSwipeX] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const startXRef = useRef(0);
+  const deleteThreshold = -80; // px para activar eliminación
+
+  const handleView = useCallback(() => {
+    haptic.selection();
+    onView(client);
+  }, [client, haptic, onView]);
+
   const handleEdit = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
+      haptic.impactLight();
       onEdit(client);
     },
-    [client, onEdit]
+    [client, haptic, onEdit]
   );
-  const handleDelete = useCallback(
-    () => onDeleteClick(client.id!),
-    [client.id, onDeleteClick]
+
+  const handleHistorial = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      haptic.selection();
+      onHistorial(client);
+    },
+    [client, haptic, onHistorial]
   );
+
+  const handleDelete = useCallback(() => {
+    haptic.impactMedium();
+    onDeleteClick(client.id!);
+  }, [client.id, haptic, onDeleteClick]);
+
+  // ── Swipe handlers (solo móvil) ─────────────────────────────────────────
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!isMobile) return;
+    startXRef.current = e.touches[0].clientX;
+    setIsSwiping(true);
+  }, [isMobile]);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isMobile || !isSwiping) return;
+    const delta = e.touches[0].clientX - startXRef.current;
+    if (delta < 0) {
+      setSwipeX(Math.max(delta, deleteThreshold)); // solo permitir negativo
+    } else {
+      setSwipeX(0);
+    }
+  }, [isMobile, isSwiping, deleteThreshold]);
+
+  const onTouchEnd = useCallback(() => {
+    if (!isMobile) return;
+    if (swipeX <= deleteThreshold) {
+      handleDelete();
+    }
+    setSwipeX(0);
+    setIsSwiping(false);
+  }, [isMobile, swipeX, deleteThreshold, handleDelete]);
 
   return (
     <div
-      className={`cliente-card-enter relative bg-gray-800/50 rounded-2xl border border-gray-700/40 overflow-hidden active:scale-[0.99] transition-[opacity,transform]${
-        isExiting ? " cliente-card-exit" : ""
+      className={`cliente-card-enter relative bg-gray-800/50 rounded-2xl border border-gray-700/40 overflow-hidden active:scale-[0.98] transition-all ${
+        isExiting ? "cliente-card-exit" : ""
       }`}
-      style={{ animationDelay: `${animDelay}ms` }}
+      style={{
+        animationDelay: `${animDelay}ms`,
+        transform: isMobile ? `translateX(${swipeX}px)` : undefined,
+        transition: isSwiping ? "none" : "transform 0.2s ease-out",
+      }}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
     >
-      {/* Área clickeable → abre modal de vista */}
+      {/* Área clickeable → Ver cliente */}
       <button onClick={handleView} className="w-full text-left p-4 focus:outline-none">
         {/* Header */}
         <div className="flex items-center gap-3 mb-3">
@@ -138,41 +200,51 @@ const ClienteCard = memo(function ClienteCard({
         </div>
       </button>
 
-      {/* Barra de acciones */}
+      {/* Barra de acciones con touch targets ampliados (44px mínimo) */}
       <div className="flex items-center border-t border-gray-700/40">
         <button
           onClick={handleEdit}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-gray-500 hover:text-white hover:bg-gray-700/30 active:bg-gray-700/50 transition-colors"
+          className="flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium text-gray-500 hover:text-white hover:bg-gray-700/30 active:bg-gray-700/50 transition-colors min-h-[44px]"
         >
-          <Edit className="w-3.5 h-3.5" />
-          Editar
+          <Edit className="w-4 h-4" />
+          <span className="hidden xs:inline">Editar</span>
         </button>
 
         <div className="w-px h-7 bg-gray-700/40" />
 
         <button
           onClick={handleView}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-gray-500 hover:text-white hover:bg-gray-700/30 active:bg-gray-700/50 transition-colors"
+          className="flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium text-gray-500 hover:text-white hover:bg-gray-700/30 active:bg-gray-700/50 transition-colors min-h-[44px]"
         >
-          <Eye className="w-3.5 h-3.5" />
-          Ver
+          <Eye className="w-4 h-4" />
+          <span className="hidden xs:inline">Ver</span>
+        </button>
+
+        <div className="w-px h-7 bg-gray-700/40" />
+
+        <button
+          onClick={handleHistorial}
+          className="flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium text-gray-500 hover:text-white hover:bg-gray-700/30 active:bg-gray-700/50 transition-colors min-h-[44px]"
+        >
+          <History className="w-4 h-4" />
+          <span className="hidden xs:inline">Historial</span>
         </button>
 
         <div className="w-px h-7 bg-gray-700/40" />
 
         <button
           onClick={handleDelete}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-red-500/60 hover:text-red-400 hover:bg-red-500/8 active:bg-red-500/15 transition-colors"
+          className="flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium text-red-500/60 hover:text-red-400 hover:bg-red-500/8 active:bg-red-500/15 transition-colors min-h-[44px]"
           aria-label="Eliminar cliente"
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          <Trash2 className="w-4 h-4" />
         </button>
       </div>
     </div>
   );
 });
 
-// ── Paginación ────────────────────────────────────────────────────────────────
+// ── Componente de paginación mejorado ────────────────────────────────────────
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
@@ -203,11 +275,11 @@ const Pagination = memo(function Pagination({
   }, [currentPage, totalPages]);
 
   return (
-    <div className="flex items-center justify-between gap-2 pt-1">
+    <div className="flex items-center justify-between gap-2 pt-2">
       <button
         onClick={() => onPage(currentPage - 1)}
         disabled={currentPage === 1}
-        className="flex items-center gap-1.5 h-10 px-4 rounded-xl bg-gray-700/40 hover:bg-gray-700 text-sm text-gray-300 font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        className="flex items-center gap-1.5 h-12 px-5 rounded-xl bg-gray-700/40 hover:bg-gray-700 text-sm text-gray-300 font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 min-w-[100px] justify-center"
       >
         <ChevronLeft className="w-4 h-4" />
         Anterior
@@ -216,14 +288,14 @@ const Pagination = memo(function Pagination({
       <div className="flex items-center gap-1">
         {pages.map((item, idx) =>
           item === "..." ? (
-            <span key={`e-${idx}`} className="w-7 text-center text-xs text-gray-600">
+            <span key={`e-${idx}`} className="w-8 text-center text-xs text-gray-600">
               ···
             </span>
           ) : (
             <button
               key={item}
               onClick={() => onPage(item as number)}
-              className={`w-9 h-9 rounded-xl text-sm font-medium transition-all ${
+              className={`w-10 h-10 rounded-xl text-sm font-medium transition-all active:scale-95 ${
                 currentPage === item
                   ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
                   : "text-gray-500 hover:bg-gray-700/50 hover:text-gray-300"
@@ -236,9 +308,9 @@ const Pagination = memo(function Pagination({
       </div>
 
       <button
-        onClick={() => onPage(currentPage + 2)}
+        onClick={() => onPage(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="flex items-center gap-1.5 h-10 px-4 rounded-xl bg-gray-700/40 hover:bg-gray-700 text-sm text-gray-300 font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        className="flex items-center gap-1.5 h-12 px-5 rounded-xl bg-gray-700/40 hover:bg-gray-700 text-sm text-gray-300 font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 min-w-[100px] justify-center"
       >
         Siguiente
         <ChevronRight className="w-4 h-4" />
@@ -247,14 +319,16 @@ const Pagination = memo(function Pagination({
   );
 });
 
-// ── Componente principal ──────────────────────────────────────────────────────
+// ── Componente principal ─────────────────────────────────────────────────────
 export function ClientesDataTable({
   data,
   onDelete,
   onView,
   onEdit,
+  onHistorial,
 }: ClientesDataTableProps) {
   const { toast } = useToast();
+  const haptic = useHapticFeedback();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -263,8 +337,10 @@ export function ClientesDataTable({
   const [isDeleting, setIsDeleting] = useState(false);
   const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
 
-  // Inyectar CSS una sola vez
-  useEffect(() => { injectCardAnim(); }, []);
+  // Inyectar CSS animación
+  useEffect(() => {
+    injectCardAnim();
+  }, []);
 
   const totalPages = Math.max(1, Math.ceil(data.length / itemsPerPage));
 
@@ -278,11 +354,12 @@ export function ClientesDataTable({
     return data.slice(start, start + itemsPerPage);
   }, [currentPage, data, itemsPerPage]);
 
-  // ── Callbacks estables ────────────────────────────────────────────────────
+  // ── Eliminación con haptic y animación ──────────────────────────────────
   const handleDeleteClick = useCallback((id: string) => {
+    haptic.impactMedium();
     setClienteToDelete(id);
     setDeleteDialogOpen(true);
-  }, []);
+  }, [haptic]);
 
   const handleDeleteConfirm = useCallback(async () => {
     if (!clienteToDelete) return;
@@ -298,7 +375,6 @@ export function ClientesDataTable({
           next.delete(clienteToDelete);
           return next;
         });
-        // Retroceder página si era el último elemento
         if (paginatedClientes.length === 1 && currentPage > 1) {
           setCurrentPage((p) => p - 1);
         }
@@ -320,28 +396,33 @@ export function ClientesDataTable({
     }
   }, [clienteToDelete, currentPage, onDelete, paginatedClientes.length, toast]);
 
-  const handleDeleteCancel = useCallback(() => setDeleteDialogOpen(false), []);
+  const handleDeleteCancel = useCallback(() => {
+    haptic.selection();
+    setDeleteDialogOpen(false);
+  }, [haptic]);
 
   const goToPage = useCallback(
     (page: number) => {
       if (page < 1 || page > totalPages) return;
+      haptic.selection();
       setCurrentPage(page);
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
-    [totalPages]
+    [haptic, totalPages]
   );
 
   const handleItemsPerPageChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
+      haptic.selection();
       setItemsPerPage(Number(e.target.value));
       setCurrentPage(1);
     },
-    []
+    [haptic]
   );
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-3 pb-6">
+    <div className="space-y-4 pb-6">
       {/* Modal confirmación eliminar */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="w-[calc(100%-2rem)] max-w-sm mx-auto rounded-2xl bg-gray-800 border-gray-700">
@@ -410,7 +491,7 @@ export function ClientesDataTable({
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500">Ver</span>
           <select
-            className="h-8 rounded-lg border border-gray-700 bg-gray-800/50 px-2 text-sm text-white focus:border-blue-500/50 outline-none"
+            className="h-9 rounded-lg border border-gray-700 bg-gray-800/50 px-2 text-sm text-white focus:border-blue-500/50 outline-none"
             value={itemsPerPage}
             onChange={handleItemsPerPageChange}
           >
@@ -435,6 +516,7 @@ export function ClientesDataTable({
               onView={onView}
               onEdit={onEdit}
               onDeleteClick={handleDeleteClick}
+              onHistorial={onHistorial}
             />
           ))}
         </div>

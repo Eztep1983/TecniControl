@@ -29,12 +29,11 @@
  */
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import { useTareasYPiezas } from '@/hooks/useTareasYPiezas'
 import type { TareaPredefinida, PiezaPredefinida } from '@/lib/configuracion-helpers'
 import { useAuth } from '@/components/auth/AuthProvider'
 import {
-  ArrowLeft, ListChecks, Package, Plus, Trash2, Edit3,
+  ListChecks, Package, Plus, Trash2, Edit3,
   X, Search, AlertCircle, CheckCircle,
   Wrench, RotateCw, WifiOff, Loader2, CloudOff,
   RefreshCw
@@ -128,7 +127,7 @@ const Toast = ({ toast, onClose }: { toast: ToastData; onClose: () => void }) =>
     <div
       className={`
         fixed bottom-[calc(env(safe-area-inset-bottom)+80px)] left-4 right-4 z-[60]
-        flex items-center gap-3 p-4 rounded-2xl border shadow-2xl backdrop-blur-md
+        flex items-center gap-3 p-4 rounded-2xl border shadow-2xl 
         animate-in slide-in-from-bottom-4 duration-300
         ${styles[toast.type]}
       `}
@@ -176,7 +175,7 @@ const BottomSheet = ({ isOpen, onClose, title, children }: BottomSheetProps) => 
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60"
         onClick={onClose}
       />
 
@@ -564,7 +563,6 @@ const PAGE_SIZE = 5
 
 export default function TareasRepuestosPage() {
   const { user } = useAuth()
-  const router = useRouter()
 
   const {
     tareas, piezas, isLoading, isMutating,
@@ -707,7 +705,7 @@ export default function TareasRepuestosPage() {
   // ── Guard ─────────────────────────────────────────────────────────────────
 
   if (!user) return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+    <div className="flex flex-1 items-center justify-center">
       <p className="text-slate-400 text-sm">Debes iniciar sesión para continuar</p>
     </div>
   )
@@ -723,30 +721,17 @@ export default function TareasRepuestosPage() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 overscroll-none"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 overscroll-none"
     >
       <header
         className="
-          bg-slate-900/90 backdrop-blur-md
+          bg-slate-900/90 
           border-b border-slate-800/60
           px-4 py-3
         "
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
         <div className="flex items-center gap-3 max-w-2xl mx-auto">
-          <button
-            onClick={() => router.back()}
-            className="
-              w-10 h-10 flex items-center justify-center rounded-full
-              text-blue-400 active:bg-slate-800
-              touch-manipulation shrink-0
-            "
-            aria-label="Volver"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-bold text-white leading-tight truncate">

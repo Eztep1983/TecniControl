@@ -20,40 +20,75 @@ export default function FirmaInput({
   setNombreFirmante
 }: FirmaInputProps) {
   const sigCanvas = useRef<SignatureCanvas>(null)
+  const lastSignatureRef = useRef<string>(firmaCliente)
+
+  // Actualizar el ref de la firma cada vez que cambie
+  useEffect(() => {
+    lastSignatureRef.current = firmaCliente
+  }, [firmaCliente])
 
   // Restaurar firma al montar o cuando cambie firmaCliente (si el canvas está vacío)
   useEffect(() => {
     const restoreSignature = () => {
       if (firmaCliente && sigCanvas.current && sigCanvas.current.isEmpty()) {
-        sigCanvas.current.fromDataURL(firmaCliente)
+        try {
+          sigCanvas.current.fromDataURL(firmaCliente)
+        } catch (e) {
+          console.error('Error restaurando firma:', e)
+        }
       }
     }
 
     // Intentar restaurar inmediatamente
     restoreSignature()
     
-    // Y un pequeño delay por si el canvas está terminando de inicializarse
-    const timer = setTimeout(restoreSignature, 100)
-    return () => clearTimeout(timer)
+    // Y un par de intentos con delay por si el canvas está terminando de inicializarse
+    const timer1 = setTimeout(restoreSignature, 100)
+    const timer2 = setTimeout(restoreSignature, 500)
+    return () => {
+      clearTimeout(timer1)
+      clearTimeout(timer2)
+    }
   }, [firmaCliente])
 
   // Manejar el redimensionamiento del canvas (común cuando se abre el teclado en móvil)
   useEffect(() => {
+    let resizeTimer: any;
     const handleResize = () => {
-      if (sigCanvas.current && firmaCliente) {
-        // Al redimensionar, el canvas se limpia solo. 
-        // Esperamos un momento a que el navegador termine el layout del teclado
-        setTimeout(() => {
-          if (sigCanvas.current && sigCanvas.current.isEmpty()) {
-            sigCanvas.current.fromDataURL(firmaCliente)
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const signature = lastSignatureRef.current;
+        if (sigCanvas.current && signature && sigCanvas.current.isEmpty()) {
+          // El canvas se limpia al redimensionar. Restauramos desde el ref.
+          try {
+            sigCanvas.current.fromDataURL(signature)
+          } catch (e) {
+            console.warn('Firma no restaurada aún, reintentando...');
+            setTimeout(() => sigCanvas.current?.fromDataURL(signature), 200);
           }
-        }, 150)
-      }
-    }
+        }
+      }, 250); // Tiempo suficiente para que el teclado termine de salir
+    };
 
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [firmaCliente])
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      clearTimeout(resizeTimer);
+    }
+  }, [])
+
+  const [localNombre, setLocalNombre] = React.useState(nombreFirmante)
+
+  // Sincronizar nombre local con el prop si este cambia externamente
+  useEffect(() => {
+    setLocalNombre(nombreFirmante)
+  }, [nombreFirmante])
+
+  const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valor = e.target.value
+    setLocalNombre(valor)
+    setNombreFirmante(valor) // Sincronizamos inmediatamente pero el re-render ahora es más controlado
+  }
 
   const limpiarFirma = useCallback(() => {
     sigCanvas.current?.clear()
@@ -87,8 +122,8 @@ export default function FirmaInput({
             <input
               type="text"
               required
-              value={nombreFirmante || ''}
-              onChange={(e) => setNombreFirmante(e.target.value)}
+              value={localNombre || ''}
+              onChange={handleNombreChange}
               className="w-full px-4 py-3 rounded-xl border border-gray-600/50 bg-gray-700/50 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-500"
               placeholder="Nombre completo del cliente o representante"
             />

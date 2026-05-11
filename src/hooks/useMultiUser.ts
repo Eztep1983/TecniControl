@@ -8,7 +8,6 @@ import {
   getNegocioPorUsuario,
   crearNegocio 
 } from '@/lib/multiuser-helpers';
-import { Cliente, Orden, Negocio } from '@/types/orden';
 
 import { 
   obtenerProximoNumeroOrden, 
@@ -68,6 +67,8 @@ export const useOrdenesUsuario = () => {
         ...ordenData,
         idPersonalizado,
         userId,
+        clienteId: ordenData.cliente?.id || ordenData.clienteId,
+        dispositivoId: ordenData.dispositivo?.id || ordenData.dispositivoId,
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -107,6 +108,8 @@ export const useCrearOrden = () => {
         ...ordenData,
         idPersonalizado,
         userId: user!.uid,
+        clienteId: ordenData.cliente?.id || ordenData.clienteId,
+        dispositivoId: ordenData.dispositivo?.id || ordenData.dispositivoId,
         createdAt: new Date(),
         updatedAt: new Date()
       };

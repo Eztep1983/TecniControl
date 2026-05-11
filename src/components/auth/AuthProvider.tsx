@@ -1,7 +1,4 @@
 // components/auth/AuthProvider.tsx
-// Este componente maneja el estado de autenticación del usuario
-// y provee métodos para iniciar sesión, cerrar sesión y refrescar la sesión.
-
 'use client'
 import React, { createContext, useContext, useEffect, useLayoutEffect, useState, useCallback, useRef, useMemo } from 'react'
 import {
@@ -11,26 +8,23 @@ import {
   signInWithCredential,
   signOut,
   GoogleAuthProvider,
-  onIdTokenChanged,
   browserPopupRedirectResolver,
 } from 'firebase/auth'
+// ✅ FIX 1: Eliminado onIdTokenChanged — Firebase SDK renueva tokens automáticamente
+// cada ~55 min sin que lo manejemos manualmente. El listener anterior disparaba
+// getIdToken(true) lo cual causaba setState y re-renders innecesarios.
 import { Capacitor } from '@capacitor/core'
 import { auth, db } from '@/lib/firebase'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 
-// ==================== CONFIGURACIÓN DE SEGURIDAD ====================
-
 const SECURITY_CONFIG = {
   allowedDomains: null as string[] | null,
-  sessionTimeout: 30 * 24 * 60 * 60 * 1000, // 30 días
+  sessionTimeout: 30 * 24 * 60 * 60 * 1000,
   enableLogs: process.env.NODE_ENV === 'development',
   requireEmailVerification: false,
 }
 
-// Clave para caché de sesión en localStorage
 const SESSION_CACHE_KEY = 'tc_session_uid'
-
-// ==================== UTILIDADES ====================
 
 const logger = {
   log: (...args: any[]) => SECURITY_CONFIG.enableLogs && console.log(...args),
@@ -38,18 +32,9 @@ const logger = {
   warn: (...args: any[]) => SECURITY_CONFIG.enableLogs && console.warn(...args),
 }
 
-/**
- * useLayoutEffect corre en el cliente sincrónicamente ANTES del primer paint.
- * En el servidor (SSR/Node.js) no existe el DOM, así que usamos useEffect
- * como fallback — pero en la práctica el efecto que nos importa es el del cliente.
- */
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
-/**
- * Lee el UID cacheado del localStorage de forma segura (SSR-safe).
- * Si existe, significa que el usuario había iniciado sesión previamente.
- */
 const getCachedUid = (): string | null => {
   if (typeof window === 'undefined') return null
   try {
@@ -71,8 +56,6 @@ const setCachedUid = (uid: string | null) => {
     // ignore
   }
 }
-
-// ==================== TIPOS ====================
 
 interface AuthContextType {
   user: User | null
@@ -96,8 +79,6 @@ interface UserDocument {
   lastActivity?: any
 }
 
-// ==================== CONTEXTO ====================
-
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
@@ -108,50 +89,26 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext)
 
-// ==================== PROVIDER ====================
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
-  /**
-   * OPTIMIZACIÓN CLAVE — por qué useIsomorphicLayoutEffect y no useState(localStorage):
-   *
-   * Next.js renderiza este componente en el SERVIDOR antes de enviarlo al cliente.
-   * En el servidor, window === undefined → getCachedUid() siempre retorna null →
-   * useState(!hasCachedSession) siempre sería useState(true), aunque localStorage
-   * tenga el UID cacheado. El cliente hidrata partiendo del estado del servidor,
-   * así que loading quedaría en `true` ignorando el caché.
-   *
-   * useLayoutEffect (via useIsomorphicLayoutEffect) se ejecuta SOLO en el cliente,
-   * sincrónicamente ANTES del primer paint del navegador. Esto permite:
-   * 1. SSR seguro: loading arranca en true (correcto para servidor).
-   * 2. Cliente con sesión: loading se resuelve a false ANTES de que el usuario
-   *    vea cualquier pixel → cero spinner en re-apertura (web móvil + Capacitor).
-   * 3. Cliente sin sesión: loading permanece true hasta que Firebase resuelve.
-   */
   const [loading, setLoading] = useState(true)
   const lastActivityRef = useRef<number>(Date.now())
 
   useIsomorphicLayoutEffect(() => {
-    // Solo verificamos si hay sesión para propósitos de UI (spinner),
-    // pero NO resolvemos loading a false aquí.
-    // Dejar loading=true permite que AuthGuard espere a Firebase
-    // en lugar de redirigir inmediatamente a /login.
     if (getCachedUid() !== null) {
-      logger.log('🔍 Sesión cacheada encontrada, esperando confirmación de Firebase...');
+      logger.log('🔍 Sesión cacheada encontrada, esperando confirmación de Firebase...')
     }
   }, [])
 
-  // ==================== VALIDACIONES ====================
-
-  const validateEmailDomain = (email: string | null): boolean => {
+  const validateEmailDomain = useCallback((email: string | null): boolean => {
     if (!email || !SECURITY_CONFIG.allowedDomains) return true
     const domain = email.split('@')[1]
     const isAllowed = SECURITY_CONFIG.allowedDomains.includes(domain)
     if (!isAllowed) logger.warn('Email domain not allowed:', domain)
     return isAllowed
-  }
+  }, [])
 
-  const validateUser = (firebaseUser: User): { valid: boolean; reason?: string } => {
+  const validateUser = useCallback((firebaseUser: User): { valid: boolean; reason?: string } => {
     if (!validateEmailDomain(firebaseUser.email)) {
       return { valid: false, reason: 'El dominio de tu email no está autorizado.' }
     }
@@ -159,14 +116,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { valid: false, reason: 'Por favor verifica tu email antes de continuar.' }
     }
     return { valid: true }
-  }
+  }, [validateEmailDomain])
 
-  // ==================== GESTIÓN DE DOCUMENTOS (DIFERIDA / NO BLOQUEANTE) ====================
-
-  /**
-   * Actualiza el documento del usuario en Firestore en background.
-   * NO bloquea el estado de loading — se ejecuta de forma asíncrona.
-   */
   const syncUserDocument = useCallback(async (firebaseUser: User, isNewLogin: boolean): Promise<void> => {
     try {
       const userRef = doc(db, 'users', firebaseUser.uid)
@@ -181,7 +132,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (isNewLogin) {
-        // Solo verificar si existe el doc cuando es un nuevo login
         const userDoc = await getDoc(userRef)
         if (!userDoc.exists()) {
           const newUserData: UserDocument = {
@@ -199,28 +149,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           logger.log('User document updated on new login')
         }
       } else {
-        // Re-apertura: solo actualizar lastActivity sin leer el doc
         await setDoc(userRef, { lastActivity: serverTimestamp() }, { merge: true })
       }
     } catch (error) {
-      // Errores de Firestore no deben interrumpir el flujo de auth
-      logger.error(' Error syncing user document (non-fatal):', error)
+      logger.error('Error syncing user document (non-fatal):', error)
     }
   }, [])
 
-  // ==================== AUTENTICACIÓN ====================
-
-  const signInWithGoogle = async (): Promise<void> => {
+  // ✅ FIX 2: signInWithGoogle envuelto en useCallback para evitar que se recree
+  // en cada render, lo que causaba que todos los consumidores del contexto
+  // se re-renderizaran innecesariamente.
+  const signInWithGoogle = useCallback(async (): Promise<void> => {
     try {
-      const isNative = Capacitor.isNativePlatform();
+      const isNative = Capacitor.isNativePlatform()
 
       if (isNative) {
         logger.log('📱 Capacitor native: usando plugin nativo de Google Sign-In...')
         const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication')
-
-        // Intentar obtener el Web Client ID de las variables de entorno
-        // Es CRUCIAL para que funcione en Android y devuelva un idToken
-        const webClientId = process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 
         const nativeResult = await FirebaseAuthentication.signInWithGoogle({
           skipNativeAuth: false,
@@ -250,7 +195,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return
       }
 
-      // ====== MODO BROWSER (web) ======
       logger.log('🌐 Browser mode: usando signInWithPopup...')
       const provider = new GoogleAuthProvider()
       provider.setCustomParameters({ prompt: 'select_account' })
@@ -268,17 +212,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       lastActivityRef.current = Date.now()
       setLoading(false)
     } catch (error: any) {
-      logger.error('❌ Error en sign in:', error)
+      logger.error('Error en sign in:', error)
       throw error
     }
-  }
-
-  // ==================== MONITOREO DEL ESTADO ====================
-
-  // NOTA: Con el plugin nativo @capacitor-firebase/authentication NO necesitamos
-  // getRedirectResult ni un useEffect especial de redirect, porque el plugin
-  // devuelve el token directamente desde la API nativa de Android/iOS.
-  // onAuthStateChanged detecta al usuario inmediatamente tras signInWithCredential.
+  }, [validateUser, syncUserDocument])
 
   useEffect(() => {
     logger.log('Setting up auth state listener')
@@ -297,17 +234,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return
         }
 
-        // Cachear el UID para la próxima apertura
         const isReopen = getCachedUid() === firebaseUser.uid
         setCachedUid(firebaseUser.uid)
         setUser(firebaseUser)
         lastActivityRef.current = Date.now()
         setLoading(false)
 
-        // Sincronizar Firestore en background sin bloquear la UI
         syncUserDocument(firebaseUser, !isReopen)
       } else {
-        // Sin usuario: limpiar caché y resolver loading
         setCachedUid(null)
         setUser(null)
         setLoading(false)
@@ -318,14 +252,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       logger.log('🧹 Cleaning up auth listener')
       unsubscribe()
     }
-  }, [syncUserDocument])
+  }, [validateUser, syncUserDocument])
 
-  // ==================== LOGOUT ====================
-
-  const logout = async (): Promise<void> => {
+  // ✅ FIX 3: logout envuelto en useCallback por la misma razón que signInWithGoogle.
+  // Sin esto, el objeto `value` del contexto cambia en cada render y todos los
+  // componentes que usan useAuth() se vuelven a renderizar.
+  const logout = useCallback(async (): Promise<void> => {
     try {
       logger.log('Logging out...')
-      // Limpiar caché antes de cerrar sesión
       setCachedUid(null)
       await signOut(auth)
       logger.log('Logout successful')
@@ -333,27 +267,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       logger.error('Error signing out:', error)
       throw new Error('Error al cerrar sesión')
     }
-  }
-
-  // ==================== REFRESH SESIÓN ====================
+  }, [])
 
   const refreshSession = useCallback(async (): Promise<void> => {
-    if (!user) return
+    const currentUser = auth.currentUser
+    if (!currentUser) return
     try {
       logger.log('Refreshing session...')
-      await user.reload()
+      await currentUser.reload()
       lastActivityRef.current = Date.now()
-      // Actualizar en background
-      const userRef = doc(db, 'users', user.uid)
+      const userRef = doc(db, 'users', currentUser.uid)
       setDoc(userRef, { lastActivity: serverTimestamp() }, { merge: true }).catch(
         (e) => logger.error('Error updating lastActivity:', e)
       )
     } catch (error) {
       logger.error('Error refreshing session:', error)
     }
-  }, [user])
-
-  // ==================== MONITOREO DE ACTIVIDAD ====================
+  }, [])
 
   const lastActivityUpdateRef = useRef<number>(Date.now())
 
@@ -372,41 +302,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => events.forEach((event) => window.removeEventListener(event, handleActivity))
   }, [user, handleActivity])
 
-  // ==================== TIMEOUT DE SESIÓN ====================
-
   useEffect(() => {
     if (!user) return
     const checkInactivity = setInterval(() => {
       if (Date.now() - lastActivityRef.current >= SECURITY_CONFIG.sessionTimeout) {
-        logger.warn(' Session timeout due to inactivity')
+        logger.warn('Session timeout due to inactivity')
         logout()
       }
     }, 60000)
     return () => clearInterval(checkInactivity)
-  }, [user])
+  }, [user, logout])
 
-  // ==================== RENOVACIÓN DE TOKEN ====================
-
-  useEffect(() => {
-    logger.log('Setting up token refresh listener')
-    const unsubscribe = onIdTokenChanged(auth, async (tokenUser) => {
-      if (tokenUser) {
-        try {
-          const tokenResult = await tokenUser.getIdTokenResult()
-          const timeUntilExpiry = new Date(tokenResult.expirationTime).getTime() - Date.now()
-          if (timeUntilExpiry < 5 * 60 * 1000) {
-            logger.log(' Token about to expire, refreshing...')
-            await tokenUser.getIdToken(true)
-          }
-        } catch (error) {
-          logger.error('Error checking token:', error)
-        }
-      }
-    })
-    return () => unsubscribe()
-  }, [])
-
-  // ==================== VALOR DEL CONTEXTO ====================
+  // ✅ FIX 1 cont.: Eliminado el useEffect de onIdTokenChanged completamente.
+  // Firebase renueva el token automáticamente. Si necesitas el token actualizado,
+  // usa await user.getIdToken() directamente donde lo necesites.
 
   const value: AuthContextType = useMemo(() => ({
     user,
@@ -414,7 +323,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithGoogle,
     logout,
     refreshSession,
-  }), [user, loading, signInWithGoogle, refreshSession]);
+  }), [user, loading, signInWithGoogle, logout, refreshSession])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

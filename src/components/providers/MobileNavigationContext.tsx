@@ -1,0 +1,188 @@
+"use client";
+
+/**
+ * MobileNavigationContext
+ *
+ * Gestiona la vista activa en mobile sin provocar full-page reloads.
+ * En Android/Capacitor cada router.push() de Next.js fuerza una recarga
+ * del WebView; este contexto sustituye esa navegación por un swap de
+ * componentes en el cliente, manteniendo el estado de TanStack Query.
+ *
+ * – En mobile (< 640px) el layout renderiza el componente de la vista activa.
+ * – En desktop el layout renderiza los `children` normales de Next.js.
+ * – Las URLs siguen sincronizadas via history.pushState (sin reload).
+ */
+
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
+import { usePathname } from "next/navigation";
+
+// ─── Tipos de vista ───────────────────────────────────────────────────────────
+
+export type AppView =
+  | "ordenes"
+  | "ordenes/mantenimiento"
+  | "clientes"
+  | "tareas-repuestos"
+  | "configuracion";
+
+// Mapeo pathname → AppView
+const PATHNAME_TO_VIEW: Record<string, AppView> = {
+  "/ordenes": "ordenes",
+  "/ordenes/mantenimiento": "ordenes/mantenimiento",
+  "/clientes": "clientes",
+  "/tareas-repuestos": "tareas-repuestos",
+  "/configuracion": "configuracion",
+};
+
+// Mapeo AppView → pathname canónico
+export const VIEW_TO_PATHNAME: Record<AppView, string> = {
+  ordenes: "/ordenes",
+  "ordenes/mantenimiento": "/ordenes/mantenimiento",
+  clientes: "/clientes",
+  "tareas-repuestos": "/tareas-repuestos",
+  configuracion: "/configuracion",
+};
+
+// Orden de tabs para animaciones (de izquierda a derecha)
+export const TAB_ORDER: AppView[] = [
+  "ordenes",
+  "clientes",
+  "tareas-repuestos",
+  "configuracion",
+];
+
+function pathnameToView(pathname: string): AppView {
+  // Coincidencia exacta primero
+  if (PATHNAME_TO_VIEW[pathname]) return PATHNAME_TO_VIEW[pathname];
+  // Coincidencia por prefijo (subrutas)
+  if (pathname.startsWith("/ordenes/mantenimiento"))
+    return "ordenes/mantenimiento";
+  if (pathname.startsWith("/ordenes")) return "ordenes";
+  if (pathname.startsWith("/clientes")) return "clientes";
+  if (pathname.startsWith("/tareas-repuestos")) return "tareas-repuestos";
+  if (pathname.startsWith("/configuracion")) return "configuracion";
+  return "ordenes";
+}
+
+// ─── Contexto ─────────────────────────────────────────────────────────────────
+
+interface MobileNavigationContextValue {
+  activeView: AppView;
+  /** Navegar a una vista (mobile: swap de componente; sincroniza URL) */
+  navigateTo: (view: AppView) => void;
+  /** Dirección de la animación (1=derecha, -1=izquierda, 0=mismo nivel) */
+  slideDirection: number;
+  /** true cuando la app corre en modo mobile (< sm breakpoint) */
+  isMobileNav: boolean;
+}
+
+const MobileNavigationContext = createContext<MobileNavigationContextValue>({
+  activeView: "ordenes",
+  navigateTo: () => {},
+  slideDirection: 0,
+  isMobileNav: false,
+});
+
+// ─── Provider ─────────────────────────────────────────────────────────────────
+
+export function MobileNavigationProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const [isMobileNav, setIsMobileNav] = useState(false);
+  const [activeView, setActiveView] = useState<AppView>(() =>
+    pathnameToView(pathname)
+  );
+  const [slideDirection, setSlideDirection] = useState(0);
+  const prevViewRef = useRef<AppView>(activeView);
+
+  // Detectar si estamos en mobile
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const update = (e: MediaQueryListEvent | MediaQueryList) => {
+      setIsMobileNav(e.matches);
+    };
+    update(mq);
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  // Sincronizar vista cuando Next.js navega (deep-link, back/forward)
+  useEffect(() => {
+    const view = pathnameToView(pathname);
+    if (view !== activeView) {
+      const prevIdx = TAB_ORDER.indexOf(prevViewRef.current);
+      const nextIdx = TAB_ORDER.indexOf(view);
+      setSlideDirection(
+        nextIdx > prevIdx ? 1 : nextIdx < prevIdx ? -1 : 0
+      );
+      prevViewRef.current = view;
+      setActiveView(view);
+    }
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const navigateTo = useCallback(
+    (view: AppView) => {
+      if (view === activeView) return;
+
+      // Calcular dirección de animación
+      const prevIdx = TAB_ORDER.indexOf(activeView);
+      const nextIdx = TAB_ORDER.indexOf(view);
+      setSlideDirection(
+        nextIdx > prevIdx ? 1 : nextIdx < prevIdx ? -1 : 0
+      );
+
+      prevViewRef.current = activeView;
+      setActiveView(view);
+
+      // Sincronizar URL sin reload (solo en mobile)
+      if (isMobileNav) {
+        const url = VIEW_TO_PATHNAME[view];
+        window.history.pushState({ mobileNav: true, view }, "", url);
+      }
+    },
+    [activeView, isMobileNav]
+  );
+
+  // Manejar botón "atrás" del sistema en mobile
+  useEffect(() => {
+    if (!isMobileNav) return;
+
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state?.mobileNav && e.state?.view) {
+        const view = e.state.view as AppView;
+        const prevIdx = TAB_ORDER.indexOf(activeView);
+        const nextIdx = TAB_ORDER.indexOf(view);
+        setSlideDirection(nextIdx > prevIdx ? 1 : nextIdx < prevIdx ? -1 : 0);
+        prevViewRef.current = activeView;
+        setActiveView(view);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [isMobileNav, activeView]);
+
+  return (
+    <MobileNavigationContext.Provider
+      value={{ activeView, navigateTo, slideDirection, isMobileNav }}
+    >
+      {children}
+    </MobileNavigationContext.Provider>
+  );
+}
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
+export function useMobileNavigation() {
+  return useContext(MobileNavigationContext);
+}

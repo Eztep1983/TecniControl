@@ -2,9 +2,9 @@
 import { useState, useEffect, useMemo, useCallback, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { 
-  Shield, 
-  Wrench, 
+import {
+  Shield,
+  Wrench,
   Plus,
   Clock,
   Loader2,
@@ -26,7 +26,7 @@ import AnimatedContent from '@/components/ui/AnimatedContent'
 export default function OrdenesDashboardPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+      <div className="flex flex-1 items-center justify-center p-4">
         <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
       </div>
     }>
@@ -103,7 +103,7 @@ function OrdenesDashboardContent() {
   // Loading state
   if (authLoading || (ordenesLoading && user?.uid && ordenesRecientesRaw.length === 0)) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+      <div className="flex flex-1 items-center justify-center p-4">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-blue-500 animate-spin mx-auto mb-4" />
           <p className="text-gray-400 text-sm">
@@ -117,7 +117,7 @@ function OrdenesDashboardContent() {
   // No authenticated
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+      <div className="flex flex-1 items-center justify-center p-4">
         <div className="text-center bg-gray-800/50 rounded-xl p-8 max-w-md">
           <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield className="w-8 h-8 text-red-400" />
@@ -146,15 +146,15 @@ function OrdenesDashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pb-20">
+    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Header Profile/Title */}
       <div className="bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 pt-safe">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
-                Bienvenido,<br/>
-                {user.displayName} 
+                Bienvenido,<br />
+                {user.displayName}
               </h1>
               <p className="text-sm sm:text-base text-gray-400">
                 Resumen de servicios técnicos
@@ -217,31 +217,31 @@ function OrdenesDashboardContent() {
           <div className="flex overflow-x-auto gap-3 pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] -mx-4 px-4 sm:mx-0 sm:px-0">
             {/* Total Widget */}
             <div className="snap-start shrink-0 w-32 bg-gray-800/80 border border-gray-700/50 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden group">
-               <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-               <ClipboardList className="w-6 h-6 text-gray-400 mb-2" />
-               <span className="text-2xl font-bold text-white">{stats.total}</span>
-               <span className="text-xs text-gray-400 mt-1">Total</span>
+              <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <ClipboardList className="w-6 h-6 text-gray-400 mb-2" />
+              <span className="text-2xl font-bold text-white">{stats.total}</span>
+              <span className="text-xs text-gray-400 mt-1">Total</span>
             </div>
-            
+
             <div className="snap-start shrink-0 w-32 bg-gray-800/80 border border-green-500/20 rounded-2xl p-4 flex flex-col items-center justify-center">
-               <Wrench className="w-6 h-6 text-green-400 mb-2" />
-               <span className="text-2xl font-bold text-white">{stats.preventivos}</span>
-               <span className="text-xs text-gray-400 mt-1">Preventivos</span>
+              <Wrench className="w-6 h-6 text-green-400 mb-2" />
+              <span className="text-2xl font-bold text-white">{stats.preventivos}</span>
+              <span className="text-xs text-gray-400 mt-1">Preventivos</span>
             </div>
             <div className="snap-start shrink-0 w-32 bg-gray-800/80 border border-orange-500/20 rounded-2xl p-4 flex flex-col items-center justify-center">
-               <Wrench className="w-6 h-6 text-orange-400 mb-2" />
-               <span className="text-2xl font-bold text-white">{stats.correctivos}</span>
-               <span className="text-xs text-gray-400 mt-1">Correctivos</span>
+              <Wrench className="w-6 h-6 text-orange-400 mb-2" />
+              <span className="text-2xl font-bold text-white">{stats.correctivos}</span>
+              <span className="text-xs text-gray-400 mt-1">Correctivos</span>
             </div>
             <div className="snap-start shrink-0 w-32 bg-gray-800/80 border border-blue-500/20 rounded-2xl p-4 flex flex-col items-center justify-center">
-               <Wrench className="w-6 h-6 text-blue-400 mb-2" />
-               <span className="text-2xl font-bold text-white">{stats.diagnosticos}</span>
-               <span className="text-xs text-gray-400 mt-1">Diagnósticos</span>
+              <Wrench className="w-6 h-6 text-blue-400 mb-2" />
+              <span className="text-2xl font-bold text-white">{stats.diagnosticos}</span>
+              <span className="text-xs text-gray-400 mt-1">Diagnósticos</span>
             </div>
             <div className="snap-start shrink-0 w-32 bg-gray-800/80 border border-purple-500/20 rounded-2xl p-4 flex flex-col items-center justify-center">
-               <Wrench className="w-6 h-6 text-purple-400 mb-2" />
-               <span className="text-2xl font-bold text-white">{stats.instalaciones}</span>
-               <span className="text-xs text-gray-400 mt-1">Instalaciones</span>
+              <Wrench className="w-6 h-6 text-purple-400 mb-2" />
+              <span className="text-2xl font-bold text-white">{stats.instalaciones}</span>
+              <span className="text-xs text-gray-400 mt-1">Instalaciones</span>
             </div>
           </div>
         </div>
@@ -270,7 +270,7 @@ function OrdenesDashboardContent() {
               ))}
             </div>
           ) : (
-             <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6 text-center">
+            <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6 text-center">
               <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Clock className="w-6 h-6 text-blue-400" />
               </div>
@@ -281,7 +281,7 @@ function OrdenesDashboardContent() {
           )}
 
           {stats.total > 3 && (
-            <Link 
+            <Link
               href="/ordenes/mantenimiento"
               className="flex items-center justify-center w-full py-4 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors bg-gray-800/30 hover:bg-gray-800/50 rounded-xl border border-gray-700/50"
             >

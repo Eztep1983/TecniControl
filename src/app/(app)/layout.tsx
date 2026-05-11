@@ -13,8 +13,9 @@ import { Separator } from "@/components/ui/separator"
 import Link from 'next/link'
 import { MobileNav } from '@/components/shadcnui/mobile-nav'
 import { PageTransition } from '@/components/ui/PageTransition'
-
 import { NetworkStatusBanner } from '@/components/ui/NetworkStatusBanner'
+import { MobileNavigationProvider } from '@/components/providers/MobileNavigationContext'
+import { MobileAppShell } from '@/components/providers/MobileAppShell'
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -48,11 +49,18 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           <UserProfile />
         </div>
       </header>
-      <main className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-6 lg:p-8 lg:pb-8 bg-gray-900">
-        <div className="max-w-7xl mx-auto h-full relative">
-          <PageTransition>
-            {children}
-          </PageTransition>
+      <main className="flex flex-col flex-1 overflow-y-auto p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-6 lg:p-8 lg:pb-8 bg-gray-900">
+        <div className="max-w-7xl mx-auto w-full flex flex-col flex-1 relative">
+          {/* 
+            MobileAppShell intercepta la navegación en mobile renderizando
+            componentes en lugar de hacer full-page reloads de Next.js.
+            En desktop retorna los children normales con PageTransition.
+          */}
+          <MobileAppShell>
+            <PageTransition>
+              {children}
+            </PageTransition>
+          </MobileAppShell>
         </div>
       </main>
       <MobileNav />
@@ -81,11 +89,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <LayoutContent>{children}</LayoutContent>
-      </SidebarInset>
-    </SidebarProvider>
+    <MobileNavigationProvider>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset className="flex flex-col min-h-screen">
+          <LayoutContent>{children}</LayoutContent>
+        </SidebarInset>
+      </SidebarProvider>
+    </MobileNavigationProvider>
   )
 }

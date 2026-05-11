@@ -157,7 +157,7 @@ export default function OrdenesMantenimientoPage() {
 
   if (authLoading || (loading && user?.uid && todasLasOrdenes.length === 0)) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col p-4 sm:p-8">
+      <div className="flex flex-1 flex-col p-4 sm:p-8">
         <div className="max-w-7xl mx-auto w-full space-y-6">
           <div className="flex justify-between items-center">
             <Skeleton className="h-8 w-64 bg-gray-700/50" />
@@ -176,7 +176,7 @@ export default function OrdenesMantenimientoPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
+      <div className="flex flex-1 items-center justify-center p-4">
         <div className="text-center">
           <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-6">
             <p className="text-gray-400">Debes iniciar sesión para acceder a esta página.</p>
@@ -187,7 +187,7 @@ export default function OrdenesMantenimientoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-3 sm:p-4 lg:p-8">
+    <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-3 sm:p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-4 sm:mb-6">
@@ -632,13 +632,6 @@ export default function OrdenesMantenimientoPage() {
                 <p className="text-xl sm:text-2xl font-bold text-purple-400">
                   {stats.instalaciones}
                 </p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 hover:shadow-lg transition-shadow">
-            <div className="flex items-center">
-              <div className="bg-amber-500/20 p-2 sm:p-3 rounded-lg flex-shrink-0">
-                <Wrench className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
               </div>
             </div>
           </div>

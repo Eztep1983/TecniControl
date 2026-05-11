@@ -223,19 +223,27 @@ const sembrarPiezas = async (uid: string): Promise<void> => {
 // ─── Datos por defecto ────────────────────────────────────────────────────────
 
 const TAREAS_DEFAULT: TareaPredefinida[] = [
-  { id: 'def_t1', nombre: 'Limpieza interna del equipo',        tipo: 'preventivo', categoria: 'Limpieza'     },
-  { id: 'def_t2', nombre: 'Limpieza de ventiladores',           tipo: 'preventivo', categoria: 'Limpieza'     },
-  { id: 'def_t3', nombre: 'Actualización de drivers',           tipo: 'preventivo', categoria: 'Software'     },
-  { id: 'def_t4', nombre: 'Diagnóstico de fallas del sistema',  tipo: 'correctivo', categoria: 'Diagnóstico'  },
-  { id: 'def_t5', nombre: 'Eliminación de virus y malware',     tipo: 'correctivo', categoria: 'Seguridad'    },
-  { id: 'def_t6', nombre: 'Reemplazo de disco duro defectuoso', tipo: 'correctivo', categoria: 'Hardware'     },
+  { id: 'def_t1', nombre: 'Limpieza de unidad fusora',                tipo: 'preventivo', categoria: 'Limpieza'      },
+  { id: 'def_t2', nombre: 'Limpieza de rodillos de alimentación',     tipo: 'preventivo', categoria: 'Limpieza'      },
+  { id: 'def_t3', nombre: 'Calibración de calidad de impresión',      tipo: 'preventivo', categoria: 'Calibración'   },
+  { id: 'def_t4', nombre: 'Diagnóstico de atasco de papel',           tipo: 'correctivo', categoria: 'Diagnóstico'   },
+  { id: 'def_t5', nombre: 'Reemplazo de tóner agotado',               tipo: 'correctivo', categoria: 'Consumibles'   },
+  { id: 'def_t6', nombre: 'Cambio de drum/unidad de imagen',          tipo: 'correctivo', categoria: 'Hardware'      },
+  { id: 'def_t7', nombre: 'Actualización de firmware del equipo',     tipo: 'preventivo', categoria: 'Software'      },
+  { id: 'def_t8', nombre: 'Configuración de escaneo en red',          tipo: 'correctivo', categoria: 'Redes'         },
+  { id: 'def_t9', nombre: 'Revisión de sensores de papel',            tipo: 'preventivo', categoria: 'Diagnóstico'   },
+  { id: 'def_t10', nombre: 'Mantenimiento de ADF/escaner automático', tipo: 'preventivo', categoria: 'Escáner'      },
 ]
 
 const PIEZAS_DEFAULT: PiezaPredefinida[] = [
-  { id: 'def_p1', nombre: 'Disco Duro SSD',    categoria: 'Almacenamiento' },
-  { id: 'def_p2', nombre: 'Memoria RAM',        categoria: 'Memoria'       },
-  { id: 'def_p3', nombre: 'Ventilador CPU',     categoria: 'Refrigeración' },
-  { id: 'def_p4', nombre: 'Fuente de Poder',    categoria: 'Energía'       },
-  { id: 'def_p5', nombre: 'Teclado',            categoria: 'Periféricos'   },
-  { id: 'def_p6', nombre: 'Mouse',              categoria: 'Periféricos'   },
+  { id: 'def_p1', nombre: 'Tóner',                    categoria: 'Consumibles'  },
+  { id: 'def_p2', nombre: 'Drum / Unidad de imagen',  categoria: 'Impresión'    },
+  { id: 'def_p3', nombre: 'Unidad fusora',            categoria: 'Fusión'       },
+  { id: 'def_p4', nombre: 'Rodillo de alimentación',  categoria: 'Papel'        },
+  { id: 'def_p5', nombre: 'Banda de transferencia',   categoria: 'Transferencia'},
+  { id: 'def_p6', nombre: 'Chip de tóner',            categoria: 'Electrónica'  },
+  { id: 'def_p7', nombre: 'ADF / Alimentador',        categoria: 'Escáner'      },
+  { id: 'def_p8', nombre: 'Fuente de poder',          categoria: 'Energía'      },
+  { id: 'def_p9', nombre: 'Sensor de papel',          categoria: 'Sensores'     },
+  { id: 'def_p10', nombre: 'Cabezal de impresión',    categoria: 'Impresión'    },
 ]

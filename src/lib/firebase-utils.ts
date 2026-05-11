@@ -37,12 +37,10 @@ export const obtenerProximoNumeroOrden = async (tipoOrden: 'mantenimiento' | 'di
 };
 
 // Función para formatear el ID según el tipo
-export const formatearIdOrden = (numero: number, tipoOrden: 'mantenimiento' | 'diagnostico' | 'garantia' | 'entrega' = 'mantenimiento'): string => {
+export const formatearIdOrden = (numero: number, tipoOrden: 'mantenimiento'): string => {
   const prefijos = {
-    mantenimiento: 'OMAN',
-    diagnostico: 'ODIA',
-    garantia: 'OGAR',
-    entrega: 'OENT'
+    mantenimiento: 'OSER',
+
   };
   
   return `${prefijos[tipoOrden]}${numero.toString().padStart(3, '0')}`;

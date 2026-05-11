@@ -74,7 +74,7 @@ service cloud.firestore {
     // ── ordenes ───────────────────────────────────────────────────────────────
     //  • Cada orden lleva el campo userId del técnico emisor.
     //  • Solo ese técnico puede ver o modificar sus órdenes.
-    //  • El tipo debe ser 'mantenimiento' o 'garantia'.
+    //  • El tipo debe ser 'mantenimiento'.
 
     match /ordenes/{ordenId} {
       allow read: if isAuthenticated()
@@ -83,7 +83,7 @@ service cloud.firestore {
       allow create: if isAuthenticated()
                        && incomingUserId()
                        && request.resource.data.keys().hasAll(['userId', 'tipo'])
-                       && request.resource.data.tipo in ['mantenimiento', 'garantia'];
+                       && request.resource.data.tipo == 'mantenimiento';
 
       allow update: if isAuthenticated()
                        && resource.data.userId == request.auth.uid
@@ -121,21 +121,21 @@ service cloud.firestore {
       // Lectura: el propio usuario (si es su doc de UID) o cualquier auth (contador global)
       allow read: if isAuthenticated()
                      && (request.auth.uid == contadorId
-                         || contadorId.matches('ordenes(Mantenimiento|Diagnostico|Garantia|Entrega)'));
+                         || contadorId.matches('ordenes(Mantenimiento|Diagnostico|Entrega)'));
 
       // Creación: solo el propio usuario para su doc de UID,
       // o cualquier autenticado para contadores globales (firebase-utils crea en transacción)
       allow create: if isAuthenticated()
                        && (request.auth.uid == contadorId
                              ? incomingUserId()
-                             : contadorId.matches('ordenes(Mantenimiento|Diagnostico|Garantia|Entrega)'));
+                             : contadorId.matches('ordenes(Mantenimiento|Diagnostico|Entrega)'));
 
       // Actualización: igual que create, pero ultimoNumero/siguiente solo sube
       allow update: if isAuthenticated()
                        && (request.auth.uid == contadorId
                              ? (request.resource.data.userId == contadorId
                                 && request.resource.data.siguiente >= resource.data.siguiente)
-                             : (contadorId.matches('ordenes(Mantenimiento|Diagnostico|Garantia|Entrega)')
+                             : (contadorId.matches('ordenes(Mantenimiento|Diagnostico|Entrega)')
                                 && request.resource.data.ultimoNumero >= resource.data.ultimoNumero));
 
       allow delete: if false;

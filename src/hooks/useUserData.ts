@@ -21,19 +21,19 @@ export const useUserData = () => {
     queryKey: ['userData', user?.uid],
     queryFn: async () => {
       if (!user?.uid) return null
-      
+
       const userRef = doc(db, 'users', user.uid)
       const userDoc = await getDoc(userRef)
-      
+
       if (userDoc.exists()) {
         return userDoc.data() as UserData
       }
       return null
     },
     enabled: !!user?.uid,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   })
 
   return { userData, loading, error }
 }
-
-

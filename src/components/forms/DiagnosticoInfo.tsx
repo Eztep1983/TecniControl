@@ -1,7 +1,8 @@
 // components/forms/DiagnosticoInfo.tsx
 'use client'
-import { Stethoscope, FileText, AlertCircle, Activity, Hash } from 'lucide-react'
-import React, { memo, useCallback, useMemo } from 'react'
+import { FileText, AlertCircle, Activity, Mic, MicOff, CheckCircle2 } from 'lucide-react'
+import React, { memo, useCallback, useMemo, useState, useEffect, useRef, useId } from 'react'
+import { SpeechRecognition } from '@capacitor-community/speech-recognition'
 
 interface DiagnosticoInfoProps {
   observacionesIniciales: string
@@ -12,67 +13,424 @@ interface DiagnosticoInfoProps {
   onCambiarDiagnostico: (valor: string) => void
 }
 
-// Componente de encabezado de sección memoizado
-const SectionHeader = memo(({ 
-  icon: Icon, 
-  title, 
+// ─── Singleton de audio: solo 1 campo graba a la vez ─────────────────────────
+// Evita el race condition donde todos los campos reciben partialResults
+const audioManager = {
+  activeFieldId: null as string | null,
+  listeners: new Map<string, (matches: string[]) => void>(),
+
+  register(id: string, handler: (matches: string[]) => void) {
+    this.listeners.set(id, handler)
+  },
+
+  unregister(id: string) {
+    this.listeners.delete(id)
+    if (this.activeFieldId === id) this.activeFieldId = null
+  },
+
+  setActive(id: string | null) {
+    this.activeFieldId = id
+  },
+
+  dispatch(matches: string[]) {
+    if (this.activeFieldId) {
+      this.listeners.get(this.activeFieldId)?.(matches)
+    }
+  },
+}
+
+// ─── Inicialización global de listeners (una sola vez por sesión) ────────────
+let globalListenerReady = false
+
+// Configuración de reinicio automático al detectar silencio
+const restartManager = {
+  // Función que el campo activo registra para reiniciarse
+  restartFn: null as (() => Promise<void>) | null,
+
+  setRestart(fn: (() => Promise<void>) | null) {
+    this.restartFn = fn
+  },
+
+  async triggerRestart() {
+    if (this.restartFn) {
+      // Pequeña pausa para que el sistema de audio libere recursos antes de reiniciar
+      await new Promise(r => setTimeout(r, 250))
+      await this.restartFn?.()
+    }
+  },
+}
+
+async function ensureGlobalListener() {
+  if (globalListenerReady) return
+  globalListenerReady = true
+  try {
+    // Listener de resultados parciales → despacha al campo activo
+    await SpeechRecognition.addListener(
+      'partialResults',
+      (data: { matches?: string[] }) => {
+        if (data?.matches?.length) {
+          audioManager.dispatch(data.matches)
+        }
+      }
+    )
+
+    // Listener de estado → detecta cuando el SO corta por silencio y reinicia
+    await SpeechRecognition.addListener(
+      'listeningState',
+      (state: { status: string }) => {
+        // 'stopped' llega cuando el SO corta la sesión por silencio o timeout
+        if (state?.status === 'stopped') {
+          // Solo reiniciamos si hay un campo que sigue queriendo grabar
+          restartManager.triggerRestart()
+        }
+      }
+    )
+  } catch (e) {
+    console.error('[Speech] global listener error:', e)
+    globalListenerReady = false
+  }
+}
+
+// ─── Hook de voz ─────────────────────────────────────────────────────────────
+function useSpeechInput(
+  value: string,
+  onChange: (v: string) => void,
+  label: string
+) {
+  const fieldId = useId()
+
+  const [isRecording, setIsRecording] = useState(false)
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null)
+  const [isAvailable, setIsAvailable] = useState(false)
+
+  const onChangeRef = useRef(onChange)
+  const valueRef = useRef(value)
+  // baseTextRef: lo que había ANTES de esta sesión de grabación continua.
+  // Se actualiza al confirmar lo reconocido (en partialResults) para que
+  // cada reinicio por silencio acumule sobre el texto ya dictado.
+  const baseTextRef = useRef('')
+  const isRecordingRef = useRef(false)
+  // Texto reconocido en la sesión actual (antes de reiniciar)
+  const lastRecognizedRef = useRef('')
+
+  useEffect(() => { onChangeRef.current = onChange }, [onChange])
+  useEffect(() => { valueRef.current = value }, [value])
+
+  // ── Inicialización ──
+  useEffect(() => {
+    let mounted = true
+    const init = async () => {
+      try {
+        const { available } = await SpeechRecognition.available()
+        if (!mounted) return
+        setIsAvailable(available)
+        if (!available) return
+
+        await ensureGlobalListener()
+
+        const { speechRecognition } = await SpeechRecognition.checkPermissions()
+        if (!mounted) return
+        if (speechRecognition === 'granted') {
+          setHasPermission(true)
+        } else {
+          const res = await SpeechRecognition.requestPermissions()
+          if (mounted) setHasPermission(res.speechRecognition === 'granted')
+        }
+      } catch (e) {
+        console.error('[Speech] init error:', e)
+        if (mounted) { setIsAvailable(false); setHasPermission(false) }
+      }
+    }
+    init()
+    return () => { mounted = false }
+  }, [])
+
+  // ── Handler de partialResults: acumula texto correctamente entre reinicios ──
+  useEffect(() => {
+    audioManager.register(fieldId, (matches: string[]) => {
+      const recognized = matches[0]
+      lastRecognizedRef.current = recognized
+
+      const base = baseTextRef.current.trim()
+      const needsSeparator = base && !/[.,!?]$/.test(base)
+      const newValue = base
+        ? `${base}${needsSeparator ? '. ' : ' '}${recognized}`
+        : recognized
+
+      onChangeRef.current(newValue)
+    })
+    return () => audioManager.unregister(fieldId)
+  }, [fieldId])
+
+  // ── Función interna de inicio (sin efectos secundarios de estado) ──
+  // La usamos tanto en startListening como en el auto-restart
+  const doStart = useCallback(async () => {
+    try {
+      await SpeechRecognition.start({
+        language: 'es-ES',
+        maxResults: 1,
+        prompt: `Dictando: ${label}`,
+        partialResults: true,
+        popup: false,
+      })
+    } catch (e: any) {
+      if (e?.message?.includes('already started') || e?.code === 'ALREADY_RUNNING') {
+        // Ya estaba corriendo; ignorar
+        return
+      }
+      console.error('[Speech] doStart error:', e)
+      // Si falla de verdad, dejamos de intentar
+      isRecordingRef.current = false
+      audioManager.setActive(null)
+      restartManager.setRestart(null)
+      setIsRecording(false)
+    }
+  }, [label])
+
+  // ── Auto-restart: se llama desde restartManager cuando el SO corta por silencio ──
+  const autoRestart = useCallback(async () => {
+    // Solo reiniciamos si este campo sigue queriendo grabar
+    if (!isRecordingRef.current || audioManager.activeFieldId !== fieldId) return
+
+    // Confirmar el último texto reconocido como nueva base para seguir acumulando
+    if (lastRecognizedRef.current) {
+      baseTextRef.current = valueRef.current
+      lastRecognizedRef.current = ''
+    }
+
+    await doStart()
+  }, [fieldId, doStart])
+
+  const requestPermission = useCallback(async () => {
+    try {
+      const res = await SpeechRecognition.requestPermissions()
+      setHasPermission(res.speechRecognition === 'granted')
+      return res.speechRecognition === 'granted'
+    } catch (e) {
+      console.error('[Speech] requestPermissions error:', e)
+      return false
+    }
+  }, [])
+
+  const startListening = useCallback(async () => {
+    if (!isAvailable) {
+      alert('El reconocimiento de voz no está disponible en este dispositivo')
+      return
+    }
+
+    let permitted = hasPermission
+    if (!permitted) {
+      permitted = await requestPermission()
+      if (!permitted) return
+    }
+
+    // Si otro campo graba, detenerlo primero
+    if (audioManager.activeFieldId && audioManager.activeFieldId !== fieldId) {
+      restartManager.setRestart(null)
+      try { await SpeechRecognition.stop() } catch (_) {}
+      await new Promise(r => setTimeout(r, 150))
+    }
+
+    // Inicializar estado
+    baseTextRef.current = valueRef.current
+    lastRecognizedRef.current = ''
+    audioManager.setActive(fieldId)
+    isRecordingRef.current = true
+    setIsRecording(true)
+
+    // Registrar función de auto-restart para este campo
+    restartManager.setRestart(autoRestart)
+
+    await doStart()
+  }, [isAvailable, hasPermission, fieldId, requestPermission, autoRestart, doStart])
+
+  const stopListening = useCallback(async () => {
+    isRecordingRef.current = false
+    audioManager.setActive(null)
+    restartManager.setRestart(null) // cancelar auto-restart
+    setIsRecording(false)
+    try {
+      await SpeechRecognition.stop()
+    } catch (e) {
+      console.error('[Speech] stop error:', e)
+    }
+  }, [])
+
+  // Limpiar si el componente se desmonta mientras graba
+  useEffect(() => {
+    return () => {
+      if (isRecordingRef.current) {
+        isRecordingRef.current = false
+        audioManager.setActive(null)
+        restartManager.setRestart(null)
+        SpeechRecognition.stop().catch(() => {})
+      }
+    }
+  }, [])
+
+  return {
+    isRecording,
+    hasPermission,
+    isAvailable,
+    startListening,
+    stopListening,
+    requestPermission,
+  }
+}
+
+// ─── Haptic feedback ──────────────────────────────────────────────────────────
+const useHapticFeedback = () =>
+  useCallback((duration = 10) => {
+    if (typeof window !== 'undefined' && window.navigator?.vibrate) {
+      window.navigator.vibrate(duration)
+    }
+  }, [])
+
+// ─── SectionHeader ────────────────────────────────────────────────────────────
+const SectionHeader = memo(({
+  icon: Icon,
+  title,
   description,
-  colorClass 
-}: { 
+  colorClass,
+  itemCount,
+  isComplete,
+}: {
   icon: React.ComponentType<any>
   title: string
   description: string
   colorClass?: string
+  itemCount?: number
+  isComplete?: boolean
 }) => (
   <div className="flex items-start gap-4 mb-5">
-    {/* Touch target ampliado y activo para feedback táctil */}
-    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg touch-manipulation active:scale-95 transition-transform ${
+    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg transition-all duration-300 ${
       colorClass || 'bg-gray-700/50 text-gray-400'
     }`}>
-      <Icon className="w-6 h-6" />
+      {isComplete
+        ? <CheckCircle2 className="w-6 h-6 text-white" />
+        : <Icon className="w-6 h-6" />}
     </div>
-    <div className="min-w-0">
-      <h3 className="text-lg font-bold text-white tracking-tight leading-tight">{title}</h3>
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h3 className="text-lg font-bold text-white tracking-tight leading-tight">{title}</h3>
+        {!!itemCount && itemCount > 0 && (
+          <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
+            {itemCount} elemento{itemCount !== 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
       <p className="text-sm text-gray-400 mt-1 line-clamp-1">{description}</p>
     </div>
   </div>
 ))
-
 SectionHeader.displayName = 'SectionHeader'
 
-// Sugerencias rápidas optimizadas para entrada táctil
-const QuickSuggestions = memo(({ 
-  suggestions, 
-  onSelect 
-}: { 
-  suggestions: string[], 
-  onSelect: (val: string) => void 
+// ─── MicButton ────────────────────────────────────────────────────────────────
+const MicButton = memo(({
+  isRecording,
+  hasPermission,
+  isAvailable,
+  onStart,
+  onStop,
+}: {
+  isRecording: boolean
+  hasPermission: boolean | null
+  isAvailable: boolean
+  onStart: () => void
+  onStop: () => void
 }) => {
-  const handleSelect = useCallback((text: string) => {
-    onSelect(text)
-  }, [onSelect])
+  if (!isAvailable) return null
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2 mt-3 no-scrollbar snap-x [-webkit-overflow-scrolling:touch]">
-      {suggestions.map((text, idx) => (
-        <button
-          key={idx}
-          type="button"
-          onClick={() => handleSelect(text)}
-          // Touch target mínimo 44x44 (padding vertical + horizontal)
-          className="snap-start shrink-0 px-4 py-2 min-h-[44px] bg-blue-500/10 active:bg-blue-500/20 border border-blue-500/30 rounded-full text-xs font-medium text-blue-300 transition-all active:scale-95 whitespace-nowrap touch-manipulation"
-        >
-          + {text}
-        </button>
-      ))}
+    <button
+      type="button"
+      onClick={isRecording ? onStop : onStart}
+      disabled={hasPermission === false}
+      aria-label={isRecording ? 'Detener grabación' : 'Iniciar grabación de voz'}
+      title={
+        hasPermission === false
+          ? 'Se necesita permiso de micrófono'
+          : isRecording
+            ? 'Toca para detener'
+            : 'Toca para dictar por voz'
+      }
+      className={`
+        absolute top-3 right-3 p-2.5 rounded-xl transition-all duration-200
+        touch-manipulation select-none
+        ${isRecording
+          ? 'bg-red-500 text-white shadow-lg shadow-red-500/40 scale-110'
+          : hasPermission === false
+            ? 'bg-gray-700/30 text-gray-600 cursor-not-allowed'
+            : 'bg-gray-700/60 text-gray-400 active:scale-95 active:bg-blue-500/30'
+        }
+      `}
+    >
+      {isRecording
+        ? <MicOff className="w-5 h-5" />
+        : <Mic className="w-5 h-5" />}
+
+      {/* Ondas animadas mientras graba */}
+      {isRecording && (
+        <span className="absolute inset-0 rounded-xl">
+          <span className="absolute inset-0 rounded-xl bg-red-500/30 animate-ping" />
+        </span>
+      )}
+    </button>
+  )
+})
+MicButton.displayName = 'MicButton'
+
+// ─── RecordingIndicator ───────────────────────────────────────────────────────
+const RecordingIndicator = memo(({ isRecording, onStop }: {
+  isRecording: boolean
+  onStop: () => void
+}) => {
+  if (!isRecording) return null
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+      <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+      </span>
+      <span className="text-xs text-red-400 font-medium">
+        Escuchando… habla en español
+      </span>
+      <button
+        type="button"
+        onClick={onStop}
+        className="ml-auto text-xs text-red-400 underline touch-manipulation min-h-[32px] px-1"
+      >
+        Detener
+      </button>
     </div>
   )
 })
+RecordingIndicator.displayName = 'RecordingIndicator'
 
-QuickSuggestions.displayName = 'QuickSuggestions'
+// ─── PermissionWarning ────────────────────────────────────────────────────────
+const PermissionWarning = memo(({ show, onRequest }: {
+  show: boolean
+  onRequest: () => void
+}) => {
+  if (!show) return null
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+      <AlertCircle className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+      <span className="text-xs text-yellow-400">Se necesita permiso de micrófono</span>
+      <button
+        type="button"
+        onClick={onRequest}
+        className="ml-auto text-xs text-yellow-400 underline touch-manipulation"
+      >
+        Solicitar
+      </button>
+    </div>
+  )
+})
+PermissionWarning.displayName = 'PermissionWarning'
 
-// Componente de textarea optimizado para Android (evita lag al escribir)
-const TextAreaField = memo(({ 
+// ─── TextAreaField ────────────────────────────────────────────────────────────
+const TextAreaField = memo(({
   label,
   placeholder,
   value,
@@ -80,7 +438,6 @@ const TextAreaField = memo(({
   rows = 4,
   required = false,
   helpText,
-  suggestions = []
 }: {
   label: string
   placeholder: string
@@ -89,94 +446,110 @@ const TextAreaField = memo(({
   rows?: number
   required?: boolean
   helpText?: string
-  suggestions?: string[]
 }) => {
-  // Uso de useCallback estable para evitar recrear función en cada render
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onChange(e.target.value)
-  }, [onChange])
+  const vibrate = useHapticFeedback()
+  const speech = useSpeechInput(value, onChange, label)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleClear = useCallback(() => {
+    vibrate(5)
     onChange('')
-  }, [onChange])
+    textareaRef.current?.focus()
+  }, [onChange, vibrate])
 
-  const handleAddSuggestion = useCallback((text: string) => {
-    const newValue = value.trim() 
-      ? value.endsWith('.') || value.endsWith(',') 
-        ? `${value} ${text.toLowerCase()}`
-        : `${value}, ${text.toLowerCase()}`
-      : text;
-    onChange(newValue);
-  }, [value, onChange]);
+  const itemCount = useMemo(
+    () => value.split(/[,.]/).filter(s => s.trim().length > 0).length,
+    [value]
+  )
+
+  const handleStart = useCallback(() => {
+    vibrate(8)
+    speech.startListening()
+  }, [speech, vibrate])
+
+  const handleStop = useCallback(() => {
+    vibrate(5)
+    speech.stopListening()
+  }, [speech, vibrate])
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-between items-end px-1">
+      {/* Label row */}
+      <div className="flex justify-between items-center px-1">
         <label className="block text-sm font-bold text-gray-400 uppercase tracking-widest">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
-        {value && (
-          <button 
-            type="button" 
-            onClick={handleClear}
-            className="text-xs text-red-400 active:text-red-300 font-medium transition-colors touch-manipulation min-h-[44px] px-2"
-          >
-            Limpiar
-          </button>
-        )}
-      </div>
-      
-      <div className="relative group">
-        <textarea
-          value={value}
-          onChange={handleChange}
-          placeholder={placeholder}
-          rows={rows}
-          required={required}
-          // Desactivamos autocorrección y corrector ortográfico para evitar sobrecarga en Android
-          autoCorrect="off"
-          autoCapitalize="none"
-          spellCheck="false"
-          // Aseguramos tamaño de fuente mínimo para evitar zoom automático en Android (>=16px)
-          style={{ fontSize: '16px' }}
-          className="w-full px-4 py-4 bg-gray-900/40 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-none shadow-inner"
-        />
-        <div className="absolute top-4 right-4 text-gray-700 pointer-events-none group-focus-within:text-blue-500/30 transition-colors">
-          <FileText className="w-5 h-5" />
+        <div className="flex items-center gap-2">
+          {itemCount > 0 && (
+            <span className="text-[10px] text-gray-500 bg-gray-700/30 px-2 py-1 rounded-full">
+              {itemCount}
+            </span>
+          )}
+          {value && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="text-xs text-gray-500 active:text-red-400 font-medium transition-colors touch-manipulation min-h-[44px] px-2"
+            >
+              Limpiar
+            </button>
+          )}
         </div>
       </div>
 
-      {suggestions.length > 0 && (
-        <QuickSuggestions suggestions={suggestions} onSelect={handleAddSuggestion} />
-      )}
-      
-      {helpText && (
-        <p className="text-[11px] text-gray-500 px-1 italic">{helpText}</p>
+      {/* Textarea + mic */}
+      <div className="relative">
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={rows}
+          required={required}
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          style={{ fontSize: '16px' }}
+          className={`
+            w-full px-4 py-4 pr-14
+            bg-gray-900/40 border-2 rounded-2xl
+            text-white placeholder-gray-600
+            focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/40
+            transition-all resize-none shadow-inner
+            ${speech.isRecording ? 'border-red-500/40' : 'border-gray-700/50'}
+          `}
+        />
+
+        <MicButton
+          isRecording={speech.isRecording}
+          hasPermission={speech.hasPermission}
+          isAvailable={speech.isAvailable}
+          onStart={handleStart}
+          onStop={handleStop}
+        />
+      </div>
+
+      {/* Estados del micrófono */}
+      <RecordingIndicator isRecording={speech.isRecording} onStop={handleStop} />
+      <PermissionWarning
+        show={speech.isAvailable && speech.hasPermission === false}
+        onRequest={speech.requestPermission}
+      />
+
+      {/* Help text */}
+      {helpText && !speech.isRecording && (
+        <p className="text-[11px] text-gray-600 px-1 flex items-center gap-1">
+          <AlertCircle className="w-3 h-3 flex-shrink-0 text-gray-600" />
+          {helpText}
+        </p>
       )}
     </div>
   )
 })
-
 TextAreaField.displayName = 'TextAreaField'
 
-// Sugerencias predefinidas (constante fuera del componente)
-const SUGGESTIONS = {
-  observaciones: [
-    "No enciende", "Pantalla rota", "Ruido excesivo", "Lento", "Sobrecalentamiento", 
-    "Virus/Malware", "Derrame de líquido", "Falla carga", "Sin señal wifi"
-  ],
-  pruebas: [
-    "Prueba de encendido", "Limpieza física", "Test de RAM", "Test de Disco", 
-    "Revisión voltajes", "Escaneo antivirus", "Prueba de carga", "Reinstalación OS"
-  ],
-  diagnostico: [
-    "Falla en fuente", "Disco dañado", "Cambio pasta térmica", "Requiere formateo", 
-    "Batería agotada", "Teclado defectuoso", "Corto en placa", "Sin fallas"
-  ]
-};
-
-// Componente principal
+// ─── Componente principal ─────────────────────────────────────────────────────
 const DiagnosticoInfo = memo(function DiagnosticoInfo({
   observacionesIniciales,
   pruebasRealizadas,
@@ -185,116 +558,116 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
   onCambiarPruebas,
   onCambiarDiagnostico,
 }: DiagnosticoInfoProps) {
+  const count = (s: string) =>
+    s.split(/[,.]/).filter(t => t.trim().length > 0).length
+
+  const isComplete = (s: string) => s.trim().length > 10
 
   return (
-    // Contenedor principal con scroll suave y desactivación de gestos no deseados
-    <div className="space-y-8 max-w-3xl mx-auto pb-10 touch-pan-y">
-      
+    <div className="space-y-6 max-w-3xl mx-auto pb-10 touch-pan-y">
+
       {/* Observaciones Iniciales */}
-      <section className="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all active:border-blue-500/30">
+      <section className={`
+        bg-gray-800/40 rounded-3xl p-6 border shadow-xl transition-all duration-300
+        ${isComplete(observacionesIniciales)
+          ? 'border-blue-500/30 shadow-blue-500/5'
+          : 'border-gray-700/50'}
+      `}>
         <SectionHeader
           icon={FileText}
-          title="Estado Inicial"
-          description="Lo que se observa al recibir el equipo"
-          colorClass="bg-blue-500 text-white shadow-blue-500/20"
+          title="Observación Inicial"
+          description="Estado del equipo al recibirlo"
+          colorClass="bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-500/20"
+          itemCount={count(observacionesIniciales)}
+          isComplete={isComplete(observacionesIniciales)}
         />
-        
         <TextAreaField
           label="Observaciones de Entrada"
-          placeholder="Ejemplo: No enciende, pantalla parpadea..."
+          placeholder="Ej: Atasca papel, copia con líneas verticales…"
           value={observacionesIniciales}
           onChange={onCambiarObservaciones}
           rows={3}
           required
-          suggestions={SUGGESTIONS.observaciones}
-          helpText="Describe los síntomas y el estado físico actual"
+          helpText="Síntomas y estado físico actual. Toca el micrófono para dictar."
         />
       </section>
 
       {/* Pruebas Realizadas */}
-      <section className="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all active:border-purple-500/30">
+      <section className={`
+        bg-gray-800/40 rounded-3xl p-6 border shadow-xl transition-all duration-300
+        ${isComplete(pruebasRealizadas)
+          ? 'border-purple-500/30 shadow-purple-500/5'
+          : 'border-gray-700/50'}
+      `}>
         <SectionHeader
           icon={Activity}
           title="Procedimientos"
           description="Acciones técnicas ejecutadas"
-          colorClass="bg-purple-500 text-white shadow-purple-500/20"
+          colorClass="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-purple-500/20"
+          itemCount={count(pruebasRealizadas)}
+          isComplete={isComplete(pruebasRealizadas)}
         />
-        
         <TextAreaField
           label="Pruebas Realizadas"
-          placeholder="Ejemplo: Test de fuente de poder, revisión de voltajes..."
+          placeholder="Ej: Test de unidad de imagen y rodillos de alimentación…"
           value={pruebasRealizadas}
           onChange={onCambiarPruebas}
           rows={3}
           required
-          suggestions={SUGGESTIONS.pruebas}
-          helpText="Enumera las pruebas clave realizadas durante el análisis"
+          helpText="Enumera las pruebas clave del análisis técnico. Toca el micrófono para dictar."
         />
       </section>
 
       {/* Diagnóstico Final */}
-      <section className="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 shadow-xl transition-all active:border-green-500/30">
+      <section className={`
+        bg-gray-800/40 rounded-3xl p-6 border shadow-xl transition-all duration-300
+        ${isComplete(diagnosticoFinal)
+          ? 'border-green-500/30 shadow-green-500/5'
+          : 'border-gray-700/50'}
+      `}>
         <SectionHeader
           icon={AlertCircle}
           title="Conclusión"
           description="Veredicto final del servicio técnico"
-          colorClass="bg-green-500 text-white shadow-green-500/20"
+          colorClass="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-green-500/20"
+          itemCount={count(diagnosticoFinal)}
+          isComplete={isComplete(diagnosticoFinal)}
         />
-        
         <TextAreaField
           label="Diagnóstico Final"
-          placeholder="Ejemplo: Requiere cambio de SSD y pasta térmica..."
+          placeholder="Ej: Requiere cambio de cilindros y cuchilla de limpieza…"
           value={diagnosticoFinal}
           onChange={onCambiarDiagnostico}
           rows={3}
           required
-          suggestions={SUGGESTIONS.diagnostico}
-          helpText="Conclusión definitiva para informar al cliente"
+          helpText="Conclusión para informar al cliente y generar presupuesto. Toca el micrófono para dictar."
         />
       </section>
 
-      {/* Información de ayuda */}
-      <div className="bg-amber-500/5 border border-amber-500/20 rounded-3xl p-6 flex items-start gap-5 touch-manipulation">
-        <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center shrink-0">
-          <AlertCircle className="w-6 h-6 text-amber-500" />
-        </div>
-        <div className="space-y-1">
-          <h4 className="text-sm font-bold text-amber-500 uppercase tracking-widest">Nota Técnica</h4>
-          <p className="text-sm text-gray-400 leading-relaxed">
-            Un buen diagnóstico ahorra tiempo y evita malentendidos. 
-            Documenta de forma profesional para facilitar la aprobación del presupuesto por parte del cliente.
-          </p>
+      {/* Tips */}
+      <div className="border border-blue-500/30 bg-blue-500/5 rounded-3xl p-5 flex items-start gap-4">
+        <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+        <div className="space-y-1.5">
+          <h4 className="text-xs font-bold text-blue-400 uppercase tracking-widest">
+            Tips para un diagnóstico profesional
+          </h4>
+          <ul className="text-sm text-gray-400 leading-relaxed space-y-1">
+            <li>• Sé específico y objetivo en las observaciones</li>
+            <li>• Documenta todas las pruebas, incluso las que salieron bien</li>
+            <li>• El diagnóstico debe incluir causa raíz y solución propuesta</li>
+            <li>• El micrófono funciona mejor en ambientes silenciosos</li>
+            <li>• Solo un campo puede grabar a la vez</li>
+          </ul>
         </div>
       </div>
-      
-      {/* Estilos específicos para android: scroll táctil suave y eliminación de highlight táctil */}
+
       <style jsx global>{`
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-          -webkit-overflow-scrolling: touch;
-        }
-        /* Elimina el resaltado gris al tocar elementos en Android */
-        * {
-          -webkit-tap-highlight-color: transparent;
-        }
-        /* Mejora el rendimiento del scroll en contenedores */
-        .overflow-x-auto {
-          -webkit-overflow-scrolling: touch;
-          scroll-behavior: smooth;
-        }
-        /* Asegura que los inputs no hagan zoom en Android (font-size >= 16px) */
-        input, textarea {
-          font-size: 16px;
-        }
+        * { -webkit-tap-highlight-color: transparent; }
+        input, textarea, button { font-size: 16px; }
       `}</style>
     </div>
   )
 })
-
 DiagnosticoInfo.displayName = 'DiagnosticoInfo'
 
 export default DiagnosticoInfo
