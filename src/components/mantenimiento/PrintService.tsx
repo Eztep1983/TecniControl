@@ -11,16 +11,9 @@ interface PrintServiceProps {
 // DETECCIÓN DE ENTORNO
 // ============================================================================
 
-/**
- * Detecta si la app corre dentro de un WebView de Capacitor.
- * Capacitor inyecta window.Capacitor al inicializar.
- */
 const isCapacitor = (): boolean =>
   typeof window !== 'undefined' && !!(window as any).Capacitor
 
-/**
- * Detecta si la plataforma es nativa (iOS o Android) en Capacitor.
- */
 const isNativePlatform = (): boolean => {
   const cap = (window as any).Capacitor
   return isCapacitor() && cap?.getPlatform?.() !== 'web'
@@ -333,51 +326,109 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
   }, [])
 
   /**
+   * Convierte una URL de imagen a base64.
+   * Silencia errores de CORS — si falla, devuelve null.
+   */
+  const urlToBase64 = useCallback(async (url: string): Promise<string | null> => {
+    try {
+      const res = await fetch(url, { mode: 'cors' })
+      if (!res.ok) return null
+      const blob = await res.blob()
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result as string)
+        reader.onerror = () => reject(new Error('FileReader error'))
+        reader.readAsDataURL(blob)
+      })
+    } catch {
+      return null
+    }
+  }, [])
+
+  /**
    * Genera el PDF como Blob usando html2pdf.js.
-   * Compatible con web y WebView de Capacitor.
+   *
+   * Estrategia de reintentos:
+   *   1. Intenta con el logo convertido a base64 (necesario para html2canvas).
+   *   2. Si falla (ej. CORS en Capacitor WebView), reintenta SIN logo.
+   *   3. Si sigue fallando, lanza el error para que el caller lo maneje.
+   *
+   * Compatible con web y WebView de Capacitor Android/iOS.
    */
   const generarPDFBlob = useCallback(async (orden: OrdenMantenimiento): Promise<Blob> => {
-    let negocioProcesado = negocio;
-    if (negocio?.logoUrl && !negocio.logoUrl.startsWith('data:')) {
-      try {
-        const res = await fetch(negocio.logoUrl, { mode: 'cors' });
-        const blob = await res.blob();
-        const base64Url = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-        negocioProcesado = { ...negocio, logoUrl: base64Url };
-      } catch (err) {
-        console.warn('Error al convertir logo a base64 para el PDF', err);
-      }
-    }
-
-    const contenido = generarContenidoHTML(orden, negocioProcesado, formatFecha, formatGarantiaFecha)
-
-    const container = document.createElement('div')
-    container.innerHTML = contenido
-    container.querySelectorAll('.no-print').forEach(el => el.remove())
-
     const html2pdf = (await import('html2pdf.js')).default
 
     const opt = {
       margin: 10,
       filename: `Orden_${orden.idPersonalizado}.pdf`,
-      image: { type: 'jpeg' as const, quality: 0.98 },
-      // useCORS: true permite cargar imágenes externas (e.g. el logo del negocio)
-      html2canvas: { scale: 2, useCORS: true },
+      image: { type: 'jpeg' as const, quality: 0.95 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        // En WebViews de Capacitor, allowTaint evita que imágenes externas
+        // que no pasan CORS rompan todo el canvas.
+        allowTaint: false,
+        logging: false,
+      },
       jsPDF: {
         unit: 'mm' as const,
         format: 'a4' as const,
-        orientation: 'portrait' as const
+        orientation: 'portrait' as const,
+      },
+    }
+
+    // ── Intento 1: con logo ──────────────────────────────────────────────────
+    let negocioProcesado = { ...negocio }
+
+    if (negocio?.logoUrl && !negocio.logoUrl.startsWith('data:')) {
+      const base64 = await urlToBase64(negocio.logoUrl)
+      if (base64) {
+        negocioProcesado = { ...negocio, logoUrl: base64 }
+      } else {
+        // No se pudo convertir el logo — ya lo omitimos en el primer intento
+        // para evitar que html2canvas falle por la imagen externa.
+        console.warn('[generarPDFBlob] Logo no convertible a base64, se omitirá.')
+        negocioProcesado = { ...negocio, logoUrl: null }
       }
     }
 
-    const blob: Blob = await html2pdf().set(opt).from(container).output('blob')
-    return blob
-  }, [negocio, formatFecha, formatGarantiaFecha])
+    const buildContainer = (neg: any) => {
+      const contenido = generarContenidoHTML(orden, neg, formatFecha, formatGarantiaFecha)
+      const container = document.createElement('div')
+      // Fuera del DOM visible para no afectar layout
+      container.style.position = 'absolute'
+      container.style.left = '-9999px'
+      container.style.top = '-9999px'
+      container.innerHTML = contenido
+      container.querySelectorAll('.no-print').forEach(el => el.remove())
+      document.body.appendChild(container)
+      return container
+    }
+
+    // Primer intento
+    const container1 = buildContainer(negocioProcesado)
+    try {
+      const blob: Blob = await html2pdf().set(opt).from(container1).output('blob')
+      document.body.removeChild(container1)
+      return blob
+    } catch (err1) {
+      document.body.removeChild(container1)
+      console.warn('[generarPDFBlob] Intento 1 fallido, reintentando sin logo:', err1)
+    }
+
+    // ── Intento 2: sin logo (fallback seguro) ────────────────────────────────
+    const negocioSinLogo = { ...negocio, logoUrl: null }
+    const container2 = buildContainer(negocioSinLogo)
+    try {
+      const blob: Blob = await html2pdf().set(opt).from(container2).output('blob')
+      document.body.removeChild(container2)
+      return blob
+    } catch (err2) {
+      document.body.removeChild(container2)
+      console.error('[generarPDFBlob] Intento 2 (sin logo) también falló:', err2)
+      throw err2
+    }
+  }, [negocio, formatFecha, formatGarantiaFecha, urlToBase64])
 
   /**
    * Convierte un Blob a string base64 puro (sin el prefijo data:...).
@@ -388,7 +439,6 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
       const reader = new FileReader()
       reader.onload = () => {
         const result = reader.result as string
-        // Resultado: "data:application/pdf;base64,XXXXX" — extraemos solo la parte base64
         const base64 = result.split(',')[1]
         resolve(base64)
       }
@@ -399,16 +449,6 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
 
   /**
    * Descarga / guarda el PDF.
-   *
-   * Plataforma nativa (Capacitor Android/iOS):
-   *   1. Guarda el archivo en el directorio Documents del dispositivo.
-   *   2. Lo abre con la app predeterminada de PDF del sistema.
-   *   Requiere instalar:
-   *     npm install @capacitor/filesystem @capacitor-community/file-opener
-   *     npx cap sync
-   *
-   * Web / WebView en modo web:
-   *   Descarga estándar con <a download>.
    */
   const descargarPDF = useCallback(async (orden: OrdenMantenimiento) => {
     try {
@@ -421,7 +461,6 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
 
         const base64Data = await blobToBase64(blob)
 
-        // Se usa Directory.Data para evitar problemas de permisos de almacenamiento en Android moderno.
         const result = await Filesystem.writeFile({
           path: filename,
           data: base64Data,
@@ -435,7 +474,6 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
           openWithDefault: true
         })
       } else {
-        // Web: descarga con enlace temporal
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = url
@@ -446,9 +484,9 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
         URL.revokeObjectURL(url)
       }
     } catch (error: any) {
-      const isCanceled = 
+      const isCanceled =
         !error ||
-        error?.name === 'AbortError' || 
+        error?.name === 'AbortError' ||
         error?.message?.toLowerCase().includes('canceled') ||
         error?.message?.toLowerCase().includes('cancelado') ||
         (typeof error === 'string' && error.toLowerCase().includes('canceled')) ||
@@ -463,16 +501,6 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
 
   /**
    * Comparte el PDF usando el sheet nativo o Web Share API.
-   *
-   * Plataforma nativa (Capacitor Android/iOS):
-   *   1. Escribe el PDF en el directorio Cache (temporal, sin permisos extra).
-   *   2. Invoca el share sheet nativo del sistema operativo.
-   *   Requiere instalar:
-   *     npm install @capacitor/filesystem @capacitor/share
-   *     npx cap sync
-   *
-   * Web:
-   *   Intenta Web Share API con File. Si no está disponible, hace fallback a descargar.
    */
   const compartirOrden = useCallback(async (orden: OrdenMantenimiento) => {
     try {
@@ -485,7 +513,6 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
 
         const base64Data = await blobToBase64(blob)
 
-        // Cache: temporal, no necesita permisos de almacenamiento externo
         const result = await Filesystem.writeFile({
           path: filename,
           data: base64Data,
@@ -500,20 +527,14 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
           dialogTitle: 'Compartir Orden'
         })
       } else {
-        // Web: Web Share API con File (frecuentemente falla en PC o por timeouts en Chrome)
         const file = new File([blob], filename, { type: 'application/pdf' })
         const textoOrden = `Orden de mantenimiento #${orden.idPersonalizado} - ${orden.dispositivo?.marca || ''} ${orden.dispositivo?.modelo || ''}`
 
         const fallbackWebCompartir = async () => {
-          // Si estamos en Web y falla el share nativo, descargamos el archivo y damos la opción de WhatsApp
           await descargarPDF(orden)
-          
           const telefono = orden.cliente?.phone ? orden.cliente.phone.replace(/\D/g, '') : ''
           const mensaje = encodeURIComponent(`Hola ${orden.cliente?.name || ''}, te adjunto la orden de mantenimiento #${orden.idPersonalizado}.\n\n(Nota: Por favor adjunta el PDF que se acaba de descargar)`)
-          
           const waUrl = telefono ? `https://wa.me/${telefono}?text=${mensaje}` : `https://api.whatsapp.com/send?text=${mensaje}`
-          
-          // Usamos confirmacion simple para que el usuario entienda qué pasó
           if (window.confirm('El entorno web no permite compartir el archivo directamente. El PDF se descargará automáticamente.\n\n¿Deseas abrir WhatsApp ahora para enviarlo manualmente?')) {
             window.open(waUrl, '_blank')
           }
@@ -528,66 +549,57 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
             })
           } catch (shareErr) {
             if (shareErr instanceof Error && shareErr.name === 'AbortError') return
-            console.warn('Web Share falló (ej. pérdida de activación segura), usando fallback de WhatsApp...', shareErr)
+            console.warn('Web Share falló, usando fallback de WhatsApp...', shareErr)
             await fallbackWebCompartir()
           }
         } else {
-          // Fallback: si el API no soporta compartir el archivo
           await fallbackWebCompartir()
         }
       }
     } catch (error: any) {
-      // Ignorar si el usuario canceló la acción (común en Capacitor/Web Share)
-      const isCanceled = 
+      const isCanceled =
         !error ||
-        error?.name === 'AbortError' || 
+        error?.name === 'AbortError' ||
         error?.message?.toLowerCase().includes('canceled') ||
         error?.message?.toLowerCase().includes('cancelado') ||
         (typeof error === 'string' && error.toLowerCase().includes('canceled')) ||
         (typeof error === 'object' && Object.keys(error).length === 0)
 
       if (isCanceled) return
-      
+
       console.error('Error al compartir orden:', error)
     }
   }, [generarPDFBlob, blobToBase64, descargarPDF])
 
   /**
-   * Imprime la orden abriendo una nueva ventana.
-   * En WebView de Capacitor abre el diálogo de impresión del sistema.
-   * Se usa window.open en lugar de iframe para mayor compatibilidad con WebViews.
-   */
-  /**
    * Imprime la orden.
-   * En plataformas nativas de Capacitor, window.print() no funciona correctamente.
-   * Por lo tanto, redirigimos a compartir el PDF, que es el estándar en móviles.
+   * En plataformas nativas redirige a compartir (el SO puede enviar a impresora).
+   * En web abre ventana con diálogo de impresión.
    */
   const imprimirOrden = useCallback(async (orden: OrdenMantenimiento) => {
     if (isNativePlatform()) {
-      // En móvil, compartir es la mejor forma de "imprimir" (permite enviar a impresora o compartir)
       await compartirOrden(orden)
     } else {
-      // En Web, usamos el flujo tradicional de ventana de impresión
-      let negocioProcesado = negocio;
+      let negocioProcesado = negocio
       if (negocio?.logoUrl && !negocio.logoUrl.startsWith('data:')) {
         try {
-          const res = await fetch(negocio.logoUrl, { mode: 'cors' });
-          const blob = await res.blob();
+          const res = await fetch(negocio.logoUrl, { mode: 'cors' })
+          const blob = await res.blob()
           const base64Url = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-          negocioProcesado = { ...negocio, logoUrl: base64Url };
+            const reader = new FileReader()
+            reader.onloadend = () => resolve(reader.result as string)
+            reader.onerror = reject
+            reader.readAsDataURL(blob)
+          })
+          negocioProcesado = { ...negocio, logoUrl: base64Url }
         } catch (err) {
-          console.warn('Error al convertir logo a base64 para imprimir', err);
+          console.warn('Error al convertir logo a base64 para imprimir', err)
         }
       }
 
       const contenido = generarContenidoHTML(orden, negocioProcesado, formatFecha, formatGarantiaFecha)
       const ventana = window.open('', '_blank', 'width=800,height=600')
-      
+
       if (!ventana) {
         alert('No se pudo abrir la ventana de impresión. Por favor, permite los pop-ups en este sitio.')
         return
@@ -597,7 +609,6 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
       ventana.document.write(contenido)
       ventana.document.close()
 
-      // Esperar a que las imágenes (logo) carguen antes de imprimir
       const waitImages = () => {
         const images = ventana.document.getElementsByTagName('img')
         let loaded = 0
@@ -631,7 +642,6 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
       ventana.onload = waitImages
     }
   }, [negocio, formatFecha, formatGarantiaFecha, compartirOrden])
-
 
   return {
     imprimirOrden,
@@ -725,11 +735,6 @@ interface DownloadButtonProps {
   variant?: 'table' | 'card'
 }
 
-/**
- * Botón de descarga de PDF.
- * Expuesto como componente separado para usarse donde sea necesario
- * (por ejemplo en ModalOrden o en la tabla de órdenes).
- */
 export const DownloadButton: React.FC<DownloadButtonProps> = ({ orden, onDownload, variant = 'table' }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()

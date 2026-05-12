@@ -6,16 +6,16 @@ import { PrintButton, ShareButton, DownloadButton } from './PrintService'
 
 interface OrdenCardProps {
   orden: OrdenMantenimiento
-  onView: (orden: OrdenMantenimiento) => void
-  onPrint: (orden: OrdenMantenimiento) => void
-  onShare: (orden: OrdenMantenimiento) => void
-  onDownload: (orden: OrdenMantenimiento) => void
+  onView: (orden: OrdenMantenimiento) => void | Promise<void>
+  onPrint: (orden: OrdenMantenimiento) => void | Promise<void>
+  onShare: (orden: OrdenMantenimiento) => void | Promise<void>
+  onDownload: (orden: OrdenMantenimiento) => void | Promise<void>
   getTipoColor: (tipo: string) => string
   formatFecha: (fecha: any) => string
 }
 
 // FIX: eliminado el memo() exterior duplicado — ya se aplica en la declaración
-const OrdenCard: React.FC<OrdenCardProps> = memo(({
+const OrdenCard = memo(({
   orden,
   onView,
   onPrint,
@@ -23,7 +23,7 @@ const OrdenCard: React.FC<OrdenCardProps> = memo(({
   onDownload,
   getTipoColor,
   formatFecha
-}) => {
+}: OrdenCardProps) => {
   const handleCardClick = useCallback(() => {
     onView(orden)
   }, [onView, orden])

@@ -4,10 +4,13 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo, useReducer } from 'react'
 import { OrdenMantenimiento, Cliente, Dispositivo } from '@/types/orden'
+import { createPortal } from 'react-dom';
 import {
-  ArrowLeft, Monitor, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench,
-  ClipboardCheck, GaugeCircle, Laptop, ShieldCheck, PenLine, Check
+  ArrowLeft,  ChevronRight, ChevronLeft, CheckCircle, Users, Wrench,
+  ClipboardCheck, GaugeCircle, Laptop, ShieldCheck, PenLine, Check, Share2, Printer, X, Download
 } from 'lucide-react'
+import { motion, AnimatePresence } from 'motion/react'
+import { Haptics, NotificationType } from '@capacitor/haptics'
 import { useAuth } from '@/components/auth/AuthProvider'
 import {
   getClientesPorUsuario,
@@ -496,12 +499,15 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   // ============================================================================
   useEffect(() => {
     if (state.ordenCreada) {
+      // Notificar éxito con vibración si está disponible
+      Haptics.notification({ type: NotificationType.Success }).catch(() => {})
+      
       const timeoutId = setTimeout(() => {
         localStorage.removeItem('draft_mantenimiento')
-      }, 150)
+      }, 100)
       return () => clearTimeout(timeoutId)
     }
-  }, [state.ordenCreada, state.loading])
+  }, [state.ordenCreada])
 
   // ============================================================================
   // UTILIDADES MEMOIZADAS
@@ -665,124 +671,106 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   // SUBMIT OPTIMIZADO
   // ============================================================================
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault()
+const handleSubmit = useCallback(async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!user?.uid) {
-      alert('Usuario no autenticado')
-      return
+  if (!user?.uid) {
+    alert('Usuario no autenticado');
+    return;
+  }
+
+  dispatch({ type: 'SET_LOADING', payload: true });
+
+  try {
+    // Construimos la orden sin idPersonalizado (la mutación lo genera)
+    const todasLasTareas = [
+      ...state.tareasSeleccionadas,
+      ...state.tareasPersonalizadas.filter(t => t.trim())
+    ];
+
+    const piezasUsadasFiltradas = state.piezasUsadas
+      .filter(pieza => pieza?.pieza?.trim())
+      .map(pieza => ({
+        pieza: pieza.pieza,
+        cantidad: pieza.cantidad || 1
+      }));
+
+    let contadorParaGuardar: any = null;
+    if (state.mostrarContador && state.contador) {
+      contadorParaGuardar = {
+        tipo: state.contador.tipo,
+        valor: state.contador.valor || 0,
+        fechaRegistro: new Date(state.contador.fechaRegistro)
+      };
+      if (state.contador.unidadPersonalizada?.trim())
+        contadorParaGuardar.unidadPersonalizada = state.contador.unidadPersonalizada.trim();
+      if (state.contador.notas?.trim())
+        contadorParaGuardar.notas = state.contador.notas.trim();
     }
 
-    dispatch({ type: 'SET_LOADING', payload: true })
+    const nuevaOrden: any = {
+      tipo: 'mantenimiento',
+      horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      cliente: state.clienteSeleccionado!,
+      clienteId: state.clienteSeleccionado!.id,
+      dispositivo: state.dispositivoSeleccionado!,
+      dispositivoId: state.dispositivoSeleccionado!.id,
+      fechaCreacion: new Date(),
+      tipoMantenimiento: state.tipoMantenimiento,
+      tareasRealizadas: todasLasTareas,
+      piezasUsadas: piezasUsadasFiltradas,
+      userId: user.uid,
+    };
 
-    try {
-      const proximoNumero = await obtenerProximoNumeroOrden('mantenimiento')
-      const idPersonalizado = formatearIdOrden(proximoNumero, 'mantenimiento')
+    if (contadorParaGuardar) nuevaOrden.contador = contadorParaGuardar;
 
-      const todasLasTareas = [
-        ...state.tareasSeleccionadas,
-        ...state.tareasPersonalizadas.filter(t => t.trim())
-      ]
-
-      const piezasUsadasFiltradas = state.piezasUsadas
-        .filter(pieza => pieza?.pieza?.trim())
-        .map(pieza => ({
-          pieza: pieza.pieza,
-          cantidad: pieza.cantidad || 1
-        }))
-
-      let contadorParaGuardar: any = null
-
-      if (state.mostrarContador && state.contador) {
-        contadorParaGuardar = {
-          tipo: state.contador.tipo,
-          valor: state.contador.valor || 0,
-          fechaRegistro: new Date(state.contador.fechaRegistro)
-        }
-
-        if (state.contador.unidadPersonalizada && state.contador.unidadPersonalizada.trim()) {
-          contadorParaGuardar.unidadPersonalizada = state.contador.unidadPersonalizada.trim()
-        }
-
-        if (state.contador.notas && state.contador.notas.trim()) {
-          contadorParaGuardar.notas = state.contador.notas.trim()
-        }
-      }
-
-      const nuevaOrden: any = {
-        tipo: 'mantenimiento',
-        horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        cliente: state.clienteSeleccionado!,
-        clienteId: state.clienteSeleccionado!.id,
-        dispositivo: state.dispositivoSeleccionado!,
-        dispositivoId: state.dispositivoSeleccionado!.id,
-        fechaCreacion: new Date(),
-        tipoMantenimiento: state.tipoMantenimiento,
-        tareasRealizadas: todasLasTareas,
-        piezasUsadas: piezasUsadasFiltradas,
-        idPersonalizado,
-        userId: user.uid,
-      }
-
-      if (contadorParaGuardar) {
-        nuevaOrden.contador = contadorParaGuardar
-      }
-
-      if (state.tipoMantenimiento === 'diagnostico') {
-        nuevaOrden.observacionesIniciales = state.observacionesIniciales.trim()
-        nuevaOrden.pruebasRealizadas = state.pruebasRealizadas.trim()
-        nuevaOrden.diagnosticoFinal = state.diagnosticoFinal.trim()
-
-        if (state.contadorMaquina !== undefined && state.contadorMaquina !== null) {
-          nuevaOrden.contadorMaquina = state.contadorMaquina
-        }
-      }
-
-      if (state.tipoMantenimiento === 'instalacion') {
-        nuevaOrden.instalacionRecomendaciones = state.instalacionRecomendaciones
-        nuevaOrden.instalacionRecomendacionesDetalle = state.instalacionRecomendacionesDetalle
-        nuevaOrden.instalacionConfiguracion = state.instalacionConfiguracion
-        nuevaOrden.instalacionConfiguracionTipos = state.instalacionConfiguracionTipos
-      }
-
-      if (state.garantiaTiempoDesde) {
-        nuevaOrden.garantiaTiempoDesde = new Date(state.garantiaTiempoDesde)
-      }
-
-      if (state.garantiaTiempoHasta) {
-        nuevaOrden.garantiaTiempoHasta = new Date(state.garantiaTiempoHasta)
-      }
-
-      if (state.garantiaDescripcion && state.garantiaDescripcion.trim()) {
-        nuevaOrden.garantiaDescripcion = state.garantiaDescripcion.trim()
-      }
-
-      if (state.firmaCliente) {
-        nuevaOrden.firmaCliente = state.firmaCliente
-      }
-      if (state.nombreFirmante) {
-        nuevaOrden.nombreFirmante = state.nombreFirmante.trim()
-      }
-      if (state.validacionCliente) {
-        nuevaOrden.validacionCliente = state.validacionCliente
-      }
-
-      Object.keys(nuevaOrden).forEach(key => {
-        if (nuevaOrden[key] === undefined) {
-          delete nuevaOrden[key]
-        }
-      })
-
-      const resultado = await crearOrdenMutate(nuevaOrden)
-
-      dispatch({ type: 'SET_ORDEN_CREADA', payload: resultado })
-    } catch (error) {
-      console.error('Error creando orden:', error)
-      alert('Error al crear la orden: ' + (error instanceof Error ? error.message : 'Error desconocido'))
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false })
+    if (state.tipoMantenimiento === 'diagnostico') {
+      nuevaOrden.observacionesIniciales = state.observacionesIniciales.trim();
+      nuevaOrden.pruebasRealizadas = state.pruebasRealizadas.trim();
+      nuevaOrden.diagnosticoFinal = state.diagnosticoFinal.trim();
+      if (state.contadorMaquina !== undefined) nuevaOrden.contadorMaquina = state.contadorMaquina;
     }
-  }, [user?.uid, state, onSuccess, crearOrdenMutate])
+
+    if (state.tipoMantenimiento === 'instalacion') {
+      nuevaOrden.instalacionRecomendaciones = state.instalacionRecomendaciones;
+      nuevaOrden.instalacionRecomendacionesDetalle = state.instalacionRecomendacionesDetalle;
+      nuevaOrden.instalacionConfiguracion = state.instalacionConfiguracion;
+      nuevaOrden.instalacionConfiguracionTipos = state.instalacionConfiguracionTipos;
+    }
+
+    if (state.garantiaTiempoDesde) nuevaOrden.garantiaTiempoDesde = new Date(state.garantiaTiempoDesde);
+    if (state.garantiaTiempoHasta) nuevaOrden.garantiaTiempoHasta = new Date(state.garantiaTiempoHasta);
+    if (state.garantiaDescripcion.trim()) nuevaOrden.garantiaDescripcion = state.garantiaDescripcion.trim();
+    if (state.firmaCliente) nuevaOrden.firmaCliente = state.firmaCliente;
+    if (state.nombreFirmante) nuevaOrden.nombreFirmante = state.nombreFirmante.trim();
+    if (state.validacionCliente) nuevaOrden.validacionCliente = state.validacionCliente;
+
+    // Limpiar undefineds
+    Object.keys(nuevaOrden).forEach(key => {
+      if (nuevaOrden[key] === undefined) delete nuevaOrden[key];
+    });
+
+    // Ejecutar la mutación (ya genera el ID y guarda)
+    const resultado = await crearOrdenMutate(nuevaOrden);
+
+    // Usamos el objeto que devuelve la mutación como orden creada
+    // Si por algún motivo no viene, construimos uno mínimo
+    const ordenFinal = resultado ?? {
+      ...nuevaOrden,
+      idPersonalizado: 'generada', // se mostrará hasta que se refresque
+    };
+
+    dispatch({ type: 'SET_ORDEN_CREADA', payload: ordenFinal });
+
+    // NOTA: NO llamamos a onSuccess aquí, para que el usuario vea la pantalla de éxito
+    // El botón "Volver a la lista" de la pantalla de éxito sí llama a onSuccess y onClose
+  } catch (error) {
+    console.error('Error creando orden:', error);
+    alert('Error al crear la orden: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+  } finally {
+    dispatch({ type: 'SET_LOADING', payload: false });
+  }
+}, [user?.uid, state, crearOrdenMutate]);
 
   // ============================================================================
   // UTILIDADES MEMOIZADAS
@@ -1027,7 +1015,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   return (
     <div className="h-full w-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-gray-900/95 border-b border-gray-800 backdrop-blur-sm">
+      <header className="sticky top-0 z-30 bg-gray-900/95 border-b border-gray-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center space-x-3">
           <button
             onClick={onClose}
@@ -1048,7 +1036,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       </header>
 
       {/* Stepper Mobile (carrusel horizontal) - SOLO pasos accesibles */}
-      <div className="lg:hidden sticky top-[57px] z-20 bg-gray-900/90 backdrop-blur-sm border-b border-gray-800">
+      <div className="lg:hidden sticky top-[57px] z-20 bg-gray-900/90 border-b border-gray-800">
         <div className="overflow-x-auto no-scrollbar">
           <div className="flex px-4 py-3 gap-4 min-w-max">
             {STEPS_CONFIG.map((step, index) => {
@@ -1149,7 +1137,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       </main>
 
       {/* Barra de navegación inferior flotante */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-gray-900/95 border-t border-gray-800 backdrop-blur-sm"
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-gray-900/95 border-t border-gray-800"
            style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}>
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <button
@@ -1177,7 +1165,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                 type="submit"
                 form="mantenimiento-form"
                 disabled={state.loading}
-                className="flex items-center justify-center h-12 px-6 text-base font-bold text-white bg-gradient-to-r from-blue-500 to-blue-500 rounded-xl hover:from-blue-700 hover:to-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 shadow-lg shadow-green-500/30 touch-manipulation"
+                className="flex items-center justify-center h-12 px-6 text-base font-bold text-white bg-gradient-to-r from-blue-500 to-blue-500 rounded-xl hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 shadow-lg shadow-blue-600/30 touch-manipulation"
               >
                 {state.loading ? (
                   <>
@@ -1192,9 +1180,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                     <CheckCircle className="w-5 h-5 mr-2" />
                     Crear Orden
                   </>
-                  
                 )}
-                
               </button>
             </div>
           ) : (
@@ -1225,6 +1211,66 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
           </div>
         )}
       </div>
+
+      {/* Pantalla de Éxito Premium */}
+        {/* Pantalla de Éxito Premium - Renderizada en portal para evitar problemas de containing block */}
+        {state.ordenCreada &&
+          createPortal(
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-950/90 backdrop-blur-md p-4"
+              >
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  className="bg-gray-900 border border-gray-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative"
+                >
+                  <div className="p-8 flex flex-col items-center text-center">
+                    <motion.div
+                      initial={{ scale: 0, rotate: -45 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", damping: 12, delay: 0.2 }}
+                      className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-blue-600/40"
+                    >
+                      <Check className="w-10 h-10 text-white stroke-[3px]" />
+                    </motion.div>
+
+                    <h2 className="text-2xl font-bold text-white mb-2">¡Orden Generada!</h2>
+                    <p className="text-gray-400 mb-6">
+                      La orden <span className="text-blue-400 font-mono">#{state.ordenCreada.idPersonalizado}</span> ha sido registrada correctamente.
+                    </p>
+
+                    <div className="w-full space-y-3">
+                      <button
+                        onClick={() => compartirOrden(state.ordenCreada!)}
+                        className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center gap-3 font-bold transition-all active:scale-95 shadow-lg shadow-blue-600/30"
+                      >
+                        <Share2 className="w-5 h-5" />
+                        Compartir Orden
+                      </button>
+                      <button
+                        onClick={() => {
+                          onSuccess();
+                          onClose();
+                        }}
+                        className="w-full h-12 mt-4 text-gray-400 hover:text-white font-medium transition-colors"
+                      >
+                        Volver a la lista
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Decoración premium */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-600 to-transparent opacity-50" />
+                </motion.div>
+              </motion.div>
+            </AnimatePresence>,
+            document.body
+          )
+        }
     </div>
   )
 }

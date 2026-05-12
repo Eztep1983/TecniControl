@@ -44,7 +44,7 @@ function OrdenesDashboardContent() {
   const { data: ordenesRecientesRaw = [], isLoading: ordenesLoading } = useOrdenesRecientes(3)
   const { estadisticas, loading: statsLoading } = useEstadisticasUsuario()
   const { negocio } = useNegocio()
-  const { imprimirOrden, compartirOrden, descargarPDF, formatFecha } = usePrintService({ negocio })
+  const { imprimirOrden, compartirOrden, descargarPDF, formatFecha, generarPDFBlob } = usePrintService({ negocio })
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [hayBorrador, setHayBorrador] = useState(false)
@@ -295,13 +295,14 @@ function OrdenesDashboardContent() {
 
       {/* Modal View Orden */}
       {ordenSeleccionada && (
-        <ModalOrden
-          orden={ordenSeleccionada}
-          onClose={() => setOrdenSeleccionada(null)}
-          onPrint={imprimirOrden}
-          onShare={compartirOrden}
-          onDownload={descargarPDF}
-        />
+          <ModalOrden
+            orden={ordenSeleccionada}
+            onClose={() => setOrdenSeleccionada(null)}
+            onPrint={imprimirOrden}
+            onShare={compartirOrden}
+            onDownload={descargarPDF}
+            generarPDFBlob={generarPDFBlob}  
+          />
       )}
     </div>
   )

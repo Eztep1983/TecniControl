@@ -10,7 +10,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { useOrdenesInfinitas, usePrefetchData } from '@/hooks/useMultiUser'
 import { useNegocio } from '@/hooks/useNegocio'
 import { useDebounce } from 'use-debounce'
-import ModalOrden from '@/components/mantenimiento/ModalOrden'
+import { ModalOrden } from '@/components/mantenimiento/ModalOrden'
 import OrdenCard from '@/components/mantenimiento/OrdenCard'
 import { PrintButton, ShareButton, DownloadButton, usePrintService } from '@/components/mantenimiento/PrintService'
 import { Skeleton } from '@/components/ui/basic/skeleton'
@@ -42,7 +42,7 @@ export default function OrdenesMantenimientoPage() {
   } = useOrdenesInfinitas(10)
   const { negocio } = useNegocio()
 
-  const { imprimirOrden, compartirOrden, descargarPDF, formatFecha } = usePrintService({ negocio })
+  const { generarPDFBlob, imprimirOrden, compartirOrden, descargarPDF, formatFecha } = usePrintService({ negocio })
   const [busqueda, setBusqueda] = useState('')
   const [debouncedBusqueda] = useDebounce(busqueda, 300);
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
@@ -52,6 +52,7 @@ export default function OrdenesMantenimientoPage() {
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
   const [esMobile, setEsMobile] = useState(false)
   const [aplicandoFiltro, setAplicandoFiltro] = useState(false)
+
 
   // Aplanar las páginas de órdenes
   const todasLasOrdenes = useMemo(() => {
@@ -656,9 +657,11 @@ export default function OrdenesMantenimientoPage() {
             onPrint={imprimirOrden}
             onShare={compartirOrden}
             onDownload={descargarPDF}
+            generarPDFBlob={generarPDFBlob}  
           />
         )}
       </div>
     </div>
   );
 }
+
