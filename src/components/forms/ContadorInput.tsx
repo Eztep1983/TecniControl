@@ -148,7 +148,7 @@ const ContadorInput = React.memo(function ContadorInput({
           group relative overflow-hidden cursor-pointer
           p-5 rounded-2xl border-2 transition-all duration-300
           ${mostrarContador 
-            ? 'bg-amber-500/10 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.15)]' 
+            ? 'bg-blue-500/10 border-blue-500 shadow-[0_0_20px_rgba(245,158,11,0.15)]' 
             : 'bg-gray-800/40 border-gray-700 hover:border-gray-500'
           }
         `}
@@ -157,12 +157,12 @@ const ContadorInput = React.memo(function ContadorInput({
           <div className="flex items-center gap-4">
             <div className={`
               w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500
-              ${mostrarContador ? 'bg-amber-500 text-white rotate-[360deg]' : 'bg-gray-700 text-gray-400'}
+              ${mostrarContador ? 'bg-blue-500 text-white rotate-[360deg]' : 'bg-gray-700 text-gray-400'}
             `}>
               <Hash className="w-6 h-6" />
             </div>
             <div>
-              <h3 className={`font-bold text-lg transition-colors ${mostrarContador ? 'text-amber-400' : 'text-gray-200'}`}>
+              <h3 className={`font-bold text-lg transition-colors ${mostrarContador ? 'text-blue-400' : 'text-gray-200'}`}>
                 Registro de Contador
               </h3>
               <p className="text-sm text-gray-500">
@@ -173,7 +173,7 @@ const ContadorInput = React.memo(function ContadorInput({
           
           <div className={`
             w-14 h-8 rounded-full p-1 transition-colors duration-300 flex items-center
-            ${mostrarContador ? 'bg-amber-500' : 'bg-gray-600'}
+            ${mostrarContador ? 'bg-blue-500' : 'bg-gray-600'}
           `}>
             <div className={`
               w-6 h-6 bg-white rounded-full shadow-lg transition-transform duration-300 transform
@@ -184,17 +184,75 @@ const ContadorInput = React.memo(function ContadorInput({
         
         {/* Decoración de fondo */}
         {mostrarContador && (
-          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl" />
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl" />
         )}
       </div>
 
       {mostrarContador && contadorActual && (
         <div className="space-y-6 animate-in slide-in-from-top-4 duration-500">
+
+                    {/* Valor del Contador - Foco Central */}
+          <section className="bg-gray-800/30 rounded-3xl p-6 border border-gray-700/50 space-y-6">
+            <div className="text-center space-y-1">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em]">Valor Actual</span>
+              <div className="flex items-center justify-center gap-6">
+                <button
+                  type="button"
+                  onClick={() => ajustarValor(-1)}
+                  disabled={contadorActual.valor <= 0}
+                  className="w-14 h-14 rounded-2xl bg-gray-700 flex items-center justify-center text-white active:scale-90 disabled:opacity-30 transition-all"
+                >
+                  <Minus className="w-6 h-6" />
+                </button>
+                
+                <div className="relative group min-w-[180px]">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={valorFormateado}
+                    onChange={handleValorChange}
+                    className={`
+                      w-full bg-transparent text-5xl font-black text-center focus:outline-none transition-colors
+                      ${tipoConfig.textColor}
+                    `}
+                  />
+                  <div className={`h-1 w-full mt-2 rounded-full transition-all duration-500 ${tipoConfig.bgColor}`} />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => ajustarValor(1)}
+                  className={`
+                    w-14 h-14 rounded-2xl flex items-center justify-center text-white active:scale-90 transition-all shadow-lg
+                    ${tipoConfig.color.includes('blue') ? 'bg-blue-500 shadow-blue-500/20' : 'bg-blue-500 shadow-blue-500/20'}
+                  `}
+                  style={{ background: `linear-gradient(to bottom right, ${tipoConfig.color.split(' ')[0].replace('from-', '')}, ${tipoConfig.color.split(' ')[1].replace('to-', '')})` }}
+                >
+                  <Plus className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Accesos rápidos */}
+            <div className="flex justify-center gap-2">
+              {[10, 100, 1000].map(val => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => handleChange('valor', contadorActual.valor + val)}
+                  className="px-4 py-2 rounded-xl bg-gray-700/50 text-gray-300 text-sm font-bold hover:bg-gray-700 active:scale-95 transition-all"
+                >
+                  +{val}
+                </button>
+              ))}
+            </div>
+          </section>
+
           
           {/* Tipos de Contador - Grid Optimizado para Pulgares */}
           <section className="space-y-3">
             <div className="flex items-center gap-2 px-1">
-              <Target className="w-4 h-4 text-amber-500" />
+              <Target className="w-4 h-4 text-blue-500" />
               <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">Tipo de Medición</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -229,75 +287,18 @@ const ContadorInput = React.memo(function ContadorInput({
             </div>
           </section>
 
-          {/* Valor del Contador - Foco Central */}
-          <section className="bg-gray-800/30 rounded-3xl p-6 border border-gray-700/50 space-y-6">
-            <div className="text-center space-y-1">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em]">Valor Actual</span>
-              <div className="flex items-center justify-center gap-6">
-                <button
-                  type="button"
-                  onClick={() => ajustarValor(-1)}
-                  disabled={contadorActual.valor <= 0}
-                  className="w-14 h-14 rounded-2xl bg-gray-700 flex items-center justify-center text-white active:scale-90 disabled:opacity-30 transition-all"
-                >
-                  <Minus className="w-6 h-6" />
-                </button>
-                
-                <div className="relative group min-w-[180px]">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={valorFormateado}
-                    onChange={handleValorChange}
-                    className={`
-                      w-full bg-transparent text-5xl font-black text-center focus:outline-none transition-colors
-                      ${tipoConfig.textColor}
-                    `}
-                  />
-                  <div className={`h-1 w-full mt-2 rounded-full transition-all duration-500 ${tipoConfig.bgColor}`} />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => ajustarValor(1)}
-                  className={`
-                    w-14 h-14 rounded-2xl flex items-center justify-center text-white active:scale-90 transition-all shadow-lg
-                    ${tipoConfig.color.includes('amber') ? 'bg-amber-500 shadow-amber-500/20' : 'bg-amber-500 shadow-amber-500/20'}
-                  `}
-                  style={{ background: `linear-gradient(to bottom right, ${tipoConfig.color.split(' ')[0].replace('from-', '')}, ${tipoConfig.color.split(' ')[1].replace('to-', '')})` }}
-                >
-                  <Plus className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-
-            {/* Accesos rápidos */}
-            <div className="flex justify-center gap-2">
-              {[10, 100, 1000].map(val => (
-                <button
-                  key={val}
-                  type="button"
-                  onClick={() => handleChange('valor', contadorActual.valor + val)}
-                  className="px-4 py-2 rounded-xl bg-gray-700/50 text-gray-300 text-sm font-bold hover:bg-gray-700 active:scale-95 transition-all"
-                >
-                  +{val}
-                </button>
-              ))}
-            </div>
-          </section>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Fecha */}
-            <div className="space-y-2">
+            <div className="space-y-2 hidden">
               <label className="text-xs font-bold text-gray-500 uppercase px-1">Fecha Registro</label>
               <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-500" />
+                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500" />
                 <input
                   type="date"
                   value={contadorActual.fechaRegistro}
                   onChange={(e) => handleChange('fechaRegistro', e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
-                  className="w-full bg-gray-800/50 border-2 border-gray-700 rounded-2xl pl-12 pr-4 py-4 text-white focus:border-amber-500 focus:outline-none transition-all"
+                  className="w-full bg-gray-800/50 border-2 border-gray-700 rounded-2xl pl-12 pr-4 py-4 text-white focus:border-blue-500 focus:outline-none transition-all"
                 />
               </div>
             </div>
@@ -320,7 +321,7 @@ const ContadorInput = React.memo(function ContadorInput({
 
           {/* Notas */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-500 uppercase px-1">Observaciones</label>
+            <label className="text-xs font-bold text-gray-500 uppercase px-1">Observaciones (Opcional)</label>
             <div className="relative">
               <MessageSquare className="absolute left-4 top-4 w-5 h-5 text-gray-500" />
               <textarea
@@ -329,7 +330,7 @@ const ContadorInput = React.memo(function ContadorInput({
                 placeholder="Anotaciones adicionales sobre el estado del contador..."
                 rows={3}
                 maxLength={500}
-                className="w-full bg-gray-800/50 border-2 border-gray-700 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:border-amber-500 focus:outline-none resize-none transition-all"
+                className="w-full bg-gray-800/50 border-2 border-gray-700 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none resize-none transition-all"
               />
             </div>
           </div>
@@ -345,7 +346,7 @@ const ContadorInput = React.memo(function ContadorInput({
           <div className="space-y-1">
             <h4 className="text-sm font-bold text-blue-400">¿Por qué registrar el contador?</h4>
             <p className="text-sm text-gray-400 leading-relaxed">
-              Permite predecir fallas, programar mantenimientos preventivos y llevar un historial exacto del ciclo de vida de los componentes del equipo.
+              Permite predecir fallas, programar mantenimientos preventivos y llevar un historial exacto del ciclo de vida de los componentes del equipo aplica solamente si el equipo cuenta con medidor de algun tipo.
             </p>
           </div>
         </div>

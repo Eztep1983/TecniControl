@@ -26,12 +26,7 @@ export default function GarantiaInput({
   const [mostrarInfo, setMostrarInfo] = useState(false)
   
   // Estado local para el toggle
-  const [aplicaGarantia, setAplicaGarantia] = useState<boolean>(mesesGarantia > 0)
-
-  // Sincronizar estado inicial por si cambia desde fuera
-  useEffect(() => {
-    setAplicaGarantia(mesesGarantia > 0 && garantiaDescripcion !== 'No aplica garantía')
-  }, [mesesGarantia, garantiaDescripcion])
+const [aplicaGarantia, setAplicaGarantia] = useState<boolean>(false)
 
   // Handle del switch
   const handleToggleGarantia = (checked: boolean) => {
@@ -126,7 +121,7 @@ export default function GarantiaInput({
           </div>
           <div>
             <h3 className="text-lg sm:text-xl font-bold text-gray-100 flex items-center gap-2">
-              Garantía
+              Garantía del servicio
               {aplicaGarantia && (
                  <button type="button" onClick={() => setMostrarInfo(!mostrarInfo)} className="p-1 hover:bg-gray-700 rounded-full transition-colors">
                    <Info className="w-4 h-4 text-gray-400" />
@@ -154,7 +149,7 @@ export default function GarantiaInput({
         >
           <span className="sr-only">Activar garantía</span>
           <span
-            aria-hidden="true"
+            aria-hidden="false"
             className={`
               pointer-events-none inline-block h-7 w-7 sm:h-8 sm:w-8 transform rounded-full bg-white shadow-md 
               transition duration-300 ease-in-out
@@ -183,60 +178,7 @@ export default function GarantiaInput({
       {/* Condicional: Formulario completo vs Banner de vacío */}
       {aplicaGarantia ? (
         <div className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
-          
-          {/* Fila: Fecha de inicio y vencimiento */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-blue-400" />
-                Fecha de inicio
-                <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="date"
-                required
-                value={garantiaTiempoDesde}
-                onChange={(e) => onCambiarFechaDesde(e.target.value)}
-                max={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
-              />
-              {errorFecha && (
-                <div className="flex items-center gap-1.5 mt-2 text-xs text-yellow-400 animate-in fade-in slide-in-from-top-1 duration-200">
-                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span>{errorFecha}</span>
-                </div>
-              )}
-              {garantiaTiempoDesde && !errorFecha && (
-                <div className="flex items-center gap-1.5 mt-2 text-xs text-green-400 animate-in fade-in slide-in-from-top-1 duration-200">
-                  <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span>Fecha válida</span>
-                </div>
-              )}
-            </div>
-          
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-blue-400" />
-                Vencimiento
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  readOnly
-                  value={formatearFechaVencimiento()}
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-800 rounded-xl text-gray-400 cursor-not-allowed text-sm sm:text-base outline-none"
-                />
-                {diasRestantes !== null && diasRestantes > 0 && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 bg-blue-500/20 px-2.5 py-1 rounded-lg">
-                    <span className="text-xs text-blue-300 font-medium tracking-wide">
-                      {diasRestantes} DÍAS
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          
+                    
           {/* Seccion: Duración (Botones Responsive) */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
@@ -279,6 +221,59 @@ export default function GarantiaInput({
             <div className="flex items-center gap-1.5 text-xs text-gray-500 ml-1">
                <Shield className="w-3.5 h-3.5 text-gray-600" />
                Garantía seleccionada: <span className="text-gray-300 font-medium">{mesesGarantia} {mesesGarantia === 1 ? 'mes' : 'meses'}</span>
+            </div>
+          </div>
+          
+          {/* Fila: Fecha de inicio y vencimiento */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2 hidden">
+              <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-blue-400" />
+                Fecha de inicio
+                <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="date"
+                required
+                value={garantiaTiempoDesde}
+                onChange={(e) => onCambiarFechaDesde(e.target.value)}
+                max={new Date(Date() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+              />
+              {errorFecha && (
+                <div className="flex items-center gap-1.5 mt-2 text-xs text-yellow-400 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>{errorFecha}</span>
+                </div>
+              )}
+              {garantiaTiempoDesde && !errorFecha && (
+                <div className="flex items-center gap-1.5 mt-2 text-xs text-green-400 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>Fecha válida</span>
+                </div>
+              )}
+            </div>
+          
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-blue-400" />
+                Vencimiento
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  readOnly
+                  value={formatearFechaVencimiento()}
+                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-800 rounded-xl text-gray-400 cursor-not-allowed text-sm sm:text-base outline-none"
+                />
+                {diasRestantes !== null && diasRestantes > 0 && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 bg-blue-500/20 px-2.5 py-1 rounded-lg">
+                    <span className="text-xs text-blue-300 font-medium tracking-wide">
+                      {diasRestantes} DÍAS
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           
@@ -330,16 +325,20 @@ export default function GarantiaInput({
           </div>
         </div>
       ) : (
+        
         /* Estado OFF de Garantía */
-        <div className="bg-gray-800/30 border border-gray-700/30 rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-300">
-           <div className="w-16 h-16 rounded-full bg-gray-800/80 flex items-center justify-center mb-4 border border-gray-700/50">
-             <ShieldOff className="w-8 h-8 text-gray-500" />
-           </div>
-           <h4 className="text-lg font-medium text-gray-300 mb-1">Sin cobertura de garantía</h4>
-           <p className="text-sm text-gray-500 max-w-sm">
-             Esta orden de mantenimiento se registrará sin tiempos de vencimiento ni coberturas adicionales aplicables.
-           </p>
+        <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-3xl flex gap-4 items-start">
+          <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+            <Info className="w-5 h-5 text-blue-400" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-sm font-bold text-blue-400">¿Por qué registrar la garantía?</h4>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Registrar la garantía del servicio permite un seguimiento preciso de la cobertura del equipo, asegurando que el cliente reciba soporte técnico adecuado durante el periodo especificado y facilitando la gestión de mantenimientos preventivos entre otros.
+            </p>
+          </div>
         </div>
+        
       )}
     </div>
   )

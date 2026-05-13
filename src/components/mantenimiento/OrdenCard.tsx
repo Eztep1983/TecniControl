@@ -77,11 +77,7 @@ const OrdenCard = memo(({
           <Eye className="w-4 h-4" />
           <span>Ver</span>
         </button>
-        <PrintButton
-          orden={orden}
-          onPrint={onPrint}
-          variant="card"
-        />
+
         <DownloadButton
           orden={orden}
           onDownload={onDownload}

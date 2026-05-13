@@ -22,12 +22,10 @@ export default function FirmaInput({
   const sigCanvas = useRef<SignatureCanvas>(null)
   const lastSignatureRef = useRef<string>(firmaCliente)
 
-  // Actualizar el ref de la firma cada vez que cambie
   useEffect(() => {
     lastSignatureRef.current = firmaCliente
   }, [firmaCliente])
 
-  // Restaurar firma al montar o cuando cambie firmaCliente (si el canvas está vacío)
   useEffect(() => {
     const restoreSignature = () => {
       if (firmaCliente && sigCanvas.current && sigCanvas.current.isEmpty()) {
@@ -39,10 +37,7 @@ export default function FirmaInput({
       }
     }
 
-    // Intentar restaurar inmediatamente
     restoreSignature()
-    
-    // Y un par de intentos con delay por si el canvas está terminando de inicializarse
     const timer1 = setTimeout(restoreSignature, 100)
     const timer2 = setTimeout(restoreSignature, 500)
     return () => {
@@ -51,43 +46,32 @@ export default function FirmaInput({
     }
   }, [firmaCliente])
 
-  // Manejar el redimensionamiento del canvas (común cuando se abre el teclado en móvil)
   useEffect(() => {
-    let resizeTimer: any;
+    let resizeTimer: any
     const handleResize = () => {
-      clearTimeout(resizeTimer);
+      clearTimeout(resizeTimer)
       resizeTimer = setTimeout(() => {
-        const signature = lastSignatureRef.current;
+        const signature = lastSignatureRef.current
         if (sigCanvas.current && signature && sigCanvas.current.isEmpty()) {
-          // El canvas se limpia al redimensionar. Restauramos desde el ref.
           try {
             sigCanvas.current.fromDataURL(signature)
           } catch (e) {
-            console.warn('Firma no restaurada aún, reintentando...');
-            setTimeout(() => sigCanvas.current?.fromDataURL(signature), 200);
+            console.warn('Firma no restaurada aún, reintentando...')
+            setTimeout(() => sigCanvas.current?.fromDataURL(signature), 200)
           }
         }
-      }, 250); // Tiempo suficiente para que el teclado termine de salir
-    };
+      }, 250)
+    }
 
     window.addEventListener('resize', handleResize)
     return () => {
       window.removeEventListener('resize', handleResize)
-      clearTimeout(resizeTimer);
+      clearTimeout(resizeTimer)
     }
   }, [])
 
-  const [localNombre, setLocalNombre] = React.useState(nombreFirmante)
-
-  // Sincronizar nombre local con el prop si este cambia externamente
-  useEffect(() => {
-    setLocalNombre(nombreFirmante)
-  }, [nombreFirmante])
-
   const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const valor = e.target.value
-    setLocalNombre(valor)
-    setNombreFirmante(valor) // Sincronizamos inmediatamente pero el re-render ahora es más controlado
+    setNombreFirmante(e.target.value)
   }
 
   const limpiarFirma = useCallback(() => {
@@ -99,7 +83,6 @@ export default function FirmaInput({
     if (sigCanvas.current?.isEmpty()) {
       setFirmaCliente('')
     } else {
-      // Guardamos la firma como data URL
       const dataUrl = sigCanvas.current?.getTrimmedCanvas().toDataURL('image/png')
       if (dataUrl) {
         setFirmaCliente(dataUrl)
@@ -122,7 +105,7 @@ export default function FirmaInput({
             <input
               type="text"
               required
-              value={localNombre || ''}
+              value={nombreFirmante || ''}
               onChange={handleNombreChange}
               className="w-full px-4 py-3 rounded-xl border border-gray-600/50 bg-gray-700/50 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-500"
               placeholder="Nombre completo del cliente o representante"
@@ -145,14 +128,15 @@ export default function FirmaInput({
             </div>
             
             <div className="border-2 border-dashed border-gray-600/50 rounded-xl bg-white overflow-hidden relative shadow-inner touch-none" style={{ height: 200 }}>
+              {/* @ts-ignore: canvasContextAttributes es soportado por la librería aunque no esté tipado */}
               <SignatureCanvas
                 ref={sigCanvas}
                 penColor="black"
                 canvasProps={{ 
                   className: 'w-full h-full cursor-crosshair',
-                  // Esto ayuda a que el canvas mantenga una resolución decente
                   style: { display: 'block' }
                 }}
+                canvasContextAttributes={{ willReadFrequently: true }}
                 onEnd={guardarFirma}
               />
               {!firmaCliente && (
