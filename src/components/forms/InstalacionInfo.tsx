@@ -17,20 +17,21 @@ interface InstalacionInfoProps {
 }
 
 const PREDEFINED_RECOMENDACIONES = [
-  "Realizar mantenimiento preventivo cada 6 meses.",
-  "No desconectar el dispositivo incorrectamente.",
-  "Utilizar regulador de voltaje.",
+  "Usar estabilizador de voltaje o regulador de voltaje.",
+  "Realizar mantenimiento preventivo periodicamente.",
+  "Usar cable de red de buena calidad.",
   "Mantener el equipo en ambiente limpio.",
   "Verificar conexión de red periódicamente."
 ]
 
 const PREDEFINED_CONFIGURACIONES = [
+  "Instalación de equipo",
   "Instalación de impresora",
+  "Instalación de firmware",
   "Configuración de escáner",
   "Configuración de red",
   "Configuración WiFi",
   "Configuración de drivers",
-  "Configuración de impresión compartida"
 ]
 
 const SectionHeader = memo(({ 
@@ -181,7 +182,7 @@ const InstalacionInfo = memo(function InstalacionInfo({
           <SectionHeader
             icon={FileText}
             title="Recomendaciones"
-            description="Opcional: Consejos para el cuidado del equipo"
+            description="Consejos para el cuidado del equipo"
             colorClass={recomendaciones ? "bg-green-500 text-white shadow-green-500/20" : "bg-gray-700 text-gray-400"}
           />
           <button

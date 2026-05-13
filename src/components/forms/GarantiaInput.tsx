@@ -325,20 +325,18 @@ const [aplicaGarantia, setAplicaGarantia] = useState<boolean>(false)
           </div>
         </div>
       ) : (
-        
         /* Estado OFF de Garantía */
         <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-3xl flex gap-4 items-start">
           <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
             <Info className="w-5 h-5 text-blue-400" />
           </div>
           <div className="space-y-1">
-            <h4 className="text-sm font-bold text-blue-400">¿Por qué registrar la garantía?</h4>
-            <p className="text-sm text-gray-400 leading-relaxed">
+            <h4 className="text-lg text-center font-bold text-blue-400">¿Por qué registrar la garantía?</h4>
+            <p className="text-sm text-gray-400 text-justify leading-relaxed">
               Registrar la garantía del servicio permite un seguimiento preciso de la cobertura del equipo, asegurando que el cliente reciba soporte técnico adecuado durante el periodo especificado y facilitando la gestión de mantenimientos preventivos entre otros.
             </p>
           </div>
         </div>
-        
       )}
     </div>
   )

@@ -32,7 +32,7 @@ export function ClienteHistorialModal({
   const { ordenes, loading, error, refrescar } = useOrdenesCliente(clienteId);
   const [selectedOrden, setSelectedOrden] = useState<Orden | null>(null);
   const { negocio } = useNegocioUsuario();
-  const { imprimirOrden, compartirOrden, descargarPDF } = usePrintService({ negocio });
+  const { imprimirOrden, compartirOrden, descargarPDF, generarPDFBlob } = usePrintService({ negocio });
   const haptic = useHapticFeedback();
 
   // Cerrar con swipe (mobile)
@@ -203,6 +203,7 @@ export function ClienteHistorialModal({
       )}
       {selectedOrden && (
         <ModalOrden
+          generarPDFBlob={generarPDFBlob}
           orden={selectedOrden}
           onClose={closeOrdenModal}
           onPrint={imprimirOrden}

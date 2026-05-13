@@ -6,10 +6,14 @@ interface UsePullToRefreshOptions {
   threshold?: number;
 }
 
-export function usePullToRefresh({ onRefresh, enabled = true, threshold = 80 }: UsePullToRefreshOptions) {
+export function usePullToRefresh<T extends HTMLElement>({ 
+  onRefresh, 
+  enabled = true, 
+  threshold = 80 
+}: UsePullToRefreshOptions) {
   const startYRef = useRef(0);
   const refreshingRef = useRef(false);
-  const containerRef = useRef<HTMLElement | null>(null);
+  const containerRef = useRef<T | null>(null);
 
   useEffect(() => {
     if (!enabled) return;

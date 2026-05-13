@@ -4,7 +4,8 @@ import { Cliente, Dispositivo } from '@/types/orden'
 import {
   Monitor, Laptop, Smartphone, Tablet, HardDrive,
   Cpu, Package, AlertCircle, Plus, CheckCircle2,
-  ChevronDown, ArrowRight
+  ChevronDown, ArrowRight,
+  Printer
 } from 'lucide-react'
 import { useState, memo } from 'react'
 import { DispositivoFormModal } from '@/components/clientes/DispositivoFormModal'
@@ -23,11 +24,13 @@ const LOAD_MORE_STEP = 6
 /* ── Icono según tipo de dispositivo ──────────────────────────────── */
 function getIconoDispositivo(tipo: string) {
   const t = tipo.toLowerCase()
-  if (t.includes('laptop') || t.includes('portátil')) return Laptop
+  if (t.includes('impresora') || t.includes('multifuncional') || t.includes('scanner') || t.includes('plotter') || t.includes('Fotocopiadora') ) return Printer
   if (t.includes('celular') || t.includes('móvil') || t.includes('smartphone')) return Smartphone
+  if (t.includes('computadora') || t.includes('pc') || t.includes('laptop')) return Laptop
   if (t.includes('tablet')) return Tablet
+  if (t.includes('monitor')) return Monitor
   if (t.includes('disco') || t.includes('hdd') || t.includes('ssd')) return HardDrive
-  return Monitor
+  return Cpu
 }
 
 /* ── Color de estado ──────────────────────────────────────────────── */
@@ -170,8 +173,8 @@ export default function DispositivoSelector({
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-base font-semibold text-gray-200">Seleccionar Dispositivo</p>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-lg font-semibold text-gray-200">DISPOSITIVOS DEL CLIENTE</p>
+            <p className="text-md text-gray-500 mt-0.5">
               {dispositivos.length} dispositivo{dispositivos.length !== 1 ? 's' : ''} registrado{dispositivos.length !== 1 ? 's' : ''}
             </p>
           </div>
@@ -183,7 +186,7 @@ export default function DispositivoSelector({
             className="flex-shrink-0 min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/25 text-blue-400 hover:text-blue-300 rounded-xl text-sm font-medium transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Nuevo</span>
+            <span className="sm:inline">Nuevo</span>
           </button>
         </div>
 

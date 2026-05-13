@@ -1,6 +1,6 @@
 // components/forms/MantenimientoInfo.tsx
 'use client'
-import { Settings, Shield, Wrench, Stethoscope, Monitor, ShieldCheck, CheckCircle2 } from 'lucide-react'
+import { Settings, Shield, Wrench, Stethoscope, Monitor, CheckCircle2, ArrowUpIcon } from 'lucide-react'
 import TareasInput from './TareasInput'
 import PiezasInput from './PiezasInput'
 import DiagnosticoInfo from './DiagnosticoInfo'
@@ -385,11 +385,11 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                       <span className="block text-sm font-bold uppercase tracking-wider text-gray-400 group-hover:text-gray-200">
                         {config.nombre}
                       </span>
-                      <p className="text-[11px] mt-0.5 text-gray-600 group-hover:text-gray-500">
+                      <p className="text-[15px] mt-0.5 text-gray-600 group-hover:text-gray-500">
                         {tipo === 'preventivo' && 'Mantenimiento de rutina'}
                         {tipo === 'correctivo' && 'Reparación de fallas'}
                         {tipo === 'diagnostico' && 'Evaluación técnica'}
-                        {tipo === 'instalacion' && 'Puesta en marcha'}
+                        {tipo === 'instalacion' && 'Entrega de equipos y configuraciones'}
                       </p>
                     </div>
                     
@@ -472,7 +472,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                       </motion.div>
                     </div>
                     <p className="text-[11px] mt-0.5 text-white/60">
-                      Trabajando en {TIPO_CONFIG[tipoMantenimiento].nombre.toLowerCase()}
+                       {TIPO_CONFIG[tipoMantenimiento].nombre.toLowerCase()} de equipo.
                     </p>
                   </div>
                 </div>
@@ -502,11 +502,11 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
-                className="py-12 text-center text-gray-500 border-2 border-dashed border-gray-700/30 rounded-xl"
+                className="py-6 text-center text-gray-500 border-2 border-dashed border-gray-700/30 rounded-xl"
               >
                 <motion.div
                   animate={{ 
-                    y: [0, -5, 0],
+                    y: [0, -10, 0],
                   }}
                   transition={{ 
                     duration: 2, 
@@ -514,7 +514,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                     repeatType: "reverse"
                   }}
                 >
-                  <Settings className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <ArrowUpIcon className="w-12 h-12 mx-auto mb-3 opacity-30 bg-blue-700/50 rounded-xl" />
                 </motion.div>
                 Selecciona un tipo de trabajo arriba para comenzar
               </motion.div>

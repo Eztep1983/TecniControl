@@ -194,8 +194,8 @@ const ClienteSelector = memo(function ClienteSelector({
         {/* Header row */}
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-lg font-semibold text-gray-200">Seleccionar Cliente</p>
-            <p className="text-sm text-gray-500 mt-0.5">Busca o crea un cliente</p>
+            <p className="text-xl font-semibold text-gray-200">SELECCIONAR CLIENTE</p>
+            <p className="text-md text-gray-500 mt-0.5">Busca o crea un cliente</p>
           </div>
 
           {/* Nuevo Cliente — primary CTA, full thumb-friendly height */}
@@ -342,7 +342,7 @@ const ClienteRow = memo(function ClienteRow({
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className="font-medium text-white text-sm truncate">{cliente.name}</div>
+        <div className="font-medium text-white text-md truncate">{cliente.name}</div>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           <span className="text-xs text-gray-400 truncate max-w-[140px]">{cliente.email}</span>
           {cliente.phone && (

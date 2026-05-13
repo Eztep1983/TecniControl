@@ -253,9 +253,9 @@ const ContadorInput = React.memo(function ContadorInput({
           <section className="space-y-3">
             <div className="flex items-center gap-2 px-1">
               <Target className="w-4 h-4 text-blue-500" />
-              <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">Tipo de Medición</span>
+              <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">Registrar Tipo de Medición Como:</span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
               {TIPOS_CONTADOR.map((tipo) => {
                 const isSelected = contadorActual.tipo === tipo.valor;
                 const IconComponent = tipo.Icon;
@@ -344,9 +344,9 @@ const ContadorInput = React.memo(function ContadorInput({
             <Info className="w-5 h-5 text-blue-400" />
           </div>
           <div className="space-y-1">
-            <h4 className="text-sm font-bold text-blue-400">¿Por qué registrar el contador?</h4>
-            <p className="text-sm text-gray-400 leading-relaxed">
-              Permite predecir fallas, programar mantenimientos preventivos y llevar un historial exacto del ciclo de vida de los componentes del equipo aplica solamente si el equipo cuenta con medidor de algun tipo.
+            <h4 className="text-lg text-center font-bold text-blue-400">¿Por qué registrar el contador?</h4>
+            <p className="text-sm text-gray-400 text-center leading-relaxed">
+              Permite predecir fallas, programar mantenimientos preventivos y llevar un historial exacto del ciclo de vida de los componentes del equipo aplica solamente si el equipo cuenta con medidor de algún tipo.
             </p>
           </div>
         </div>
