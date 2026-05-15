@@ -5,6 +5,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthProvider"; 
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import QueryProvider from "@/components/providers/QueryProvider";
+import CapacitorProvider from "@/components/providers/CapacitorProvider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -16,17 +17,18 @@ export const metadata: Metadata = {
   },
 };
 
-// app/layout.tsx
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html>
       <body className="h-full">
         <QueryProvider>
-          <AuthProvider>
-            <AuthGuard>
-              {children}
-            </AuthGuard>
-          </AuthProvider>
+          <CapacitorProvider>
+            <AuthProvider>
+              <AuthGuard>
+                {children}
+              </AuthGuard>
+            </AuthProvider>
+          </CapacitorProvider>
         </QueryProvider>
       </body>
     </html>

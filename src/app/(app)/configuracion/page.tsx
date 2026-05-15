@@ -13,6 +13,8 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Negocio } from '@/types/orden';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/basic/tabs";
+import CuentaYSeguridad from '@/components/configuracion/CuentaYSeguridad';
 
 interface NegocioConUsuario extends Negocio {
   userId: string;
@@ -200,8 +202,20 @@ export default function ConfiguracionPage() {
           </div>
         </div>
 
-        {/* Información del Negocio */}
-        <Card className="bg-gray-800/50 border-gray-700/50 mb-6 transition-colors hover:border-gray-600/50">
+        {/* Tabs */}
+        <Tabs defaultValue="negocio" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 max-w-[400px] mb-8 bg-gray-800/50 border border-gray-700/50">
+            <TabsTrigger value="negocio" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-400">
+              Mi Negocio
+            </TabsTrigger>
+            <TabsTrigger value="cuenta" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-400">
+              Cuenta y Seguridad
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="negocio" className="space-y-6">
+            {/* Información del Negocio */}
+            <Card className="bg-gray-800/50 border-gray-700/50 mb-6 transition-colors hover:border-gray-600/50">
           <CardHeader className="border-b border-gray-700/50 bg-gradient-to-r from-gray-800/50 to-transparent">
             <div className="flex items-center justify-between">
               <div>
@@ -368,8 +382,14 @@ export default function ConfiguracionPage() {
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="cuenta">
+          <CuentaYSeguridad />
+        </TabsContent>
+      </Tabs>
 
         {/* Footer informativo */}
         <div className="text-center text-sm text-gray-500 mt-8">

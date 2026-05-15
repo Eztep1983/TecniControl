@@ -22,6 +22,8 @@ import ModalOrden from '@/components/mantenimiento/ModalOrden'
 import OrdenCard from '@/components/mantenimiento/OrdenCard'
 import { usePrintService } from '@/components/mantenimiento/PrintService'
 import AnimatedContent from '@/components/ui/AnimatedContent'
+import WelcomeScreen from '@/components/onboarding/WelcomeScreen'
+import OnboardingSuccess from '@/components/onboarding/OnboardingSuccess'
 
 export default function OrdenesDashboardPage() {
   return (
@@ -49,12 +51,25 @@ function OrdenesDashboardContent() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [hayBorrador, setHayBorrador] = useState(false)
   const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenMantenimiento | null>(null)
+  
+  // Onboarding state
+  const [showWelcome, setShowWelcome] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [isOnboardingMode, setIsOnboardingMode] = useState(false)
 
   const refrescarDatos = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid] })
   }, [queryClient, user?.uid])
 
   useEffect(() => {
+    // Check onboarding
+    if (typeof window !== 'undefined') {
+      const completed = localStorage.getItem('has_completed_onboarding');
+      if (!completed) {
+        setShowWelcome(true);
+      }
+    }
+
     if (localStorage.getItem('draft_mantenimiento')) {
       setHayBorrador(true)
     }
@@ -129,17 +144,49 @@ function OrdenesDashboardContent() {
     )
   }
 
+  if (showWelcome) {
+    return (
+      <WelcomeScreen 
+        onStartOnboarding={() => {
+          setShowWelcome(false);
+          setIsOnboardingMode(true);
+          setMostrarFormulario(true);
+        }} 
+      />
+    );
+  }
+
+  if (showSuccess) {
+    return (
+      <OnboardingSuccess 
+        onFinish={() => {
+          localStorage.setItem('has_completed_onboarding', 'true');
+          setShowSuccess(false);
+          refrescarDatos();
+        }} 
+      />
+    );
+  }
+
   if (mostrarFormulario) {
     return (
       <FormularioMantenimiento
+        isOnboarding={isOnboardingMode}
         onClose={() => {
           setMostrarFormulario(false);
+          setIsOnboardingMode(false);
           if (localStorage.getItem('draft_mantenimiento')) setHayBorrador(true);
         }}
         onSuccess={() => {
           setMostrarFormulario(false);
           setHayBorrador(false);
-          refrescarDatos();
+          
+          if (isOnboardingMode) {
+            setIsOnboardingMode(false);
+            setShowSuccess(true);
+          } else {
+            refrescarDatos();
+          }
         }}
       />
     );

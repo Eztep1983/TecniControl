@@ -14,5 +14,5 @@ ext {
     androidxEspressoCoreVersion = '3.7.0'
     cordovaAndroidVersion = '15.0.0'
     firebaseAuthVersion = '24.0.1'
-    kotlin_version = '2.3.21'
+    kotlin_version = '2.1.20'
 }

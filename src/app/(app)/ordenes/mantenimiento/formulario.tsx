@@ -32,6 +32,7 @@ import { usePersistentReducer } from '@/hooks/usePersistentReducer'
 interface FormularioMantenimientoProps {
   onClose: () => void
   onSuccess: () => void
+  isOnboarding?: boolean
 }
 
 export interface Pieza {
@@ -395,13 +396,13 @@ const STEPS_CONFIG = [
 
 
 
-export default function FormularioMantenimiento({ onClose, onSuccess }: FormularioMantenimientoProps) {
+export default function FormularioMantenimiento({ onClose, onSuccess, isOnboarding }: FormularioMantenimientoProps) {
   const { user } = useAuth()
   const { negocio } = useNegocio()
   const { imprimirOrden, compartirOrden } = usePrintService({ negocio })
   const { mutateAsync: crearOrdenMutate } = useCrearOrden()
   const [state, dispatch] = usePersistentReducer(
-    'draft_mantenimiento',
+    isOnboarding ? 'draft_onboarding' : 'draft_mantenimiento',
     formReducer,
     initialState,
     useCallback((savedState: FormState) => ({ ...savedState, loading: false }), [])
@@ -424,6 +425,61 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       }
     }
   }, [])
+
+  // Inyectar datos de prueba para Onboarding
+  useEffect(() => {
+    if (isOnboarding) {
+      // Usar setTimeout para asegurarse de que el dispatch ocurra después del primer render
+      setTimeout(() => {
+        dispatch({ 
+          type: 'SET_CLIENTE_SELECCIONADO', 
+          payload: { 
+            id: 'test_cliente', 
+            name: 'Juan Pérez (Cliente de Prueba)', 
+            email: 'juan@ejemplo.com', 
+            phone: '555-0123', 
+            address: 'Av. Siempre Viva 123',
+            tipo: 'persona',
+            userId: user?.uid || 'test',
+            cedula: '1234567890',
+            dispositivos: []
+          } as unknown as Cliente
+        });
+        
+        dispatch({
+          type: 'SET_DISPOSITIVO_SELECCIONADO',
+          payload: {
+            id: 'test_dispositivo',
+            type: 'computadora',
+            tipo: 'computadora',
+            brand: 'TechBrand',
+            marca: 'TechBrand',
+            model: 'ProBook X200',
+            modelo: 'ProBook X200',
+            serialNumber: 'SN-987654321',
+            numeroSerie: 'SN-987654321',
+            clienteId: 'test_cliente',
+          } as unknown as Dispositivo
+        });
+
+        dispatch({ type: 'SET_TIPO_MANTENIMIENTO', payload: 'preventivo' });
+        dispatch({ type: 'TOGGLE_TAREA_PREDEFINIDA', payload: 'Limpieza interna y externa' });
+        dispatch({ type: 'TOGGLE_TAREA_PREDEFINIDA', payload: 'Optimización de sistema' });
+        
+        dispatch({ type: 'TOGGLE_GARANTIA_HABILITADA' });
+        dispatch({ type: 'SET_GARANTIA_DESCRIPCION', payload: 'Garantía extendida por onboarding' });
+        dispatch({ type: 'SET_MESES_GARANTIA', payload: 6 });
+        
+        // Simular una firma base64 de 1x1 transparente para pasar la validación
+        dispatch({ type: 'TOGGLE_FIRMA_HABILITADA' });
+        dispatch({ type: 'SET_FIRMA_CLIENTE', payload: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=' });
+        dispatch({ type: 'SET_VALIDACION_CLIENTE', payload: true });
+
+        // Permitir que todos los pasos se puedan acceder directamente
+        dispatch({ type: 'SET_HIGHEST_STEP_COMPLETED', payload: 6 });
+      }, 500);
+    }
+  }, [isOnboarding]);
 
   // Cargar clientes al montar
   useEffect(() => {
@@ -513,11 +569,11 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       Haptics.notification({ type: NotificationType.Success }).catch(() => {})
       
       const timeoutId = setTimeout(() => {
-        localStorage.removeItem('draft_mantenimiento')
+        localStorage.removeItem(isOnboarding ? 'draft_onboarding' : 'draft_mantenimiento')
       }, 100)
       return () => clearTimeout(timeoutId)
     }
-  }, [state.ordenCreada])
+  }, [state.ordenCreada, isOnboarding])
 
   // ============================================================================
   // UTILIDADES MEMOIZADAS
