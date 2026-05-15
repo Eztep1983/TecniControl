@@ -63,22 +63,26 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
         <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-2">
           Contacto
         </p>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0">
-            <Mail className="w-4 h-4 text-gray-400" />
+        {cliente.email && (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0">
+              <Mail className="w-4 h-4 text-gray-400" />
+            </div>
+            <a href={`mailto:${cliente.email}`} className="text-sm text-blue-400 truncate py-2">
+              {cliente.email}
+            </a>
           </div>
-          <a href={`mailto:${cliente.email}`} className="text-sm text-blue-400 truncate py-2">
-            {cliente.email}
-          </a>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0">
-            <Phone className="w-4 h-4 text-gray-400" />
+        )}
+        {cliente.phone && (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0">
+              <Phone className="w-4 h-4 text-gray-400" />
+            </div>
+            <a href={`tel:${cliente.phone}`} className="text-sm text-blue-400 py-2">
+              {cliente.phone}
+            </a>
           </div>
-          <a href={`tel:${cliente.phone}`} className="text-sm text-blue-400 py-2">
-            {cliente.phone}
-          </a>
-        </div>
+        )}
         {cliente.address && (
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0">
@@ -122,19 +126,6 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
         )}
       </section>
 
-      {/* Acciones rápidas */}
-      <section className="px-5 py-4">
-        <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-3">Acciones rápidas</p>
-        <div className="grid grid-cols-2 gap-3 touch-manipulation">
-          <button onClick={handleHistorialClick} className="flex items-center gap-3 p-3 rounded-xl bg-gray-800/60 border border-gray-700/40 hover:bg-gray-800 active:bg-gray-700 min-h-[64px]">
-            <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/15 flex items-center justify-center"><History className="w-5 h-5 text-amber-400" /></div>
-            <div className="text-left"><p className="text-sm font-medium text-white">Ver Historial</p><p className="text-[11px] text-gray-500">Órdenes anteriores</p></div>
-          </button>
-        </div>
-        <button onClick={handleEditClick} className="mt-3 w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 active:bg-blue-500/30 min-h-[48px]">
-          <Edit className="w-4 h-4 text-blue-400" /><span className="text-sm font-medium text-blue-400">Editar cliente</span>
-        </button>
-      </section>
     </>
   );
 

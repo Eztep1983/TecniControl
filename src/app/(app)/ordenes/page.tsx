@@ -44,7 +44,7 @@ function OrdenesDashboardContent() {
   const { data: ordenesRecientesRaw = [], isLoading: ordenesLoading } = useOrdenesRecientes(3)
   const { estadisticas, loading: statsLoading } = useEstadisticasUsuario()
   const { negocio } = useNegocio()
-  const { imprimirOrden, compartirOrden, descargarPDF, formatFecha, generarPDFBlob } = usePrintService({ negocio })
+  const { imprimirOrden, compartirOrden, descargarPDF, formatFecha, generarPDFBlob, generarHTML } = usePrintService({ negocio })
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [hayBorrador, setHayBorrador] = useState(false)
@@ -301,7 +301,8 @@ function OrdenesDashboardContent() {
             onPrint={imprimirOrden}
             onShare={compartirOrden}
             onDownload={descargarPDF}
-            generarPDFBlob={generarPDFBlob}  
+            generarPDFBlob={generarPDFBlob}
+            generarHTML={generarHTML}
           />
       )}
     </div>

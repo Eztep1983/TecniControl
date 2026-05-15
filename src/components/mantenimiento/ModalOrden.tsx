@@ -135,6 +135,7 @@ const TouchButton = ({
  */
 type PreviewState =
   | { status: "loading"; attempt: number }
+  | { status: "ready-html"; html: string }
   | { status: "ready-web"; url: string }
   | { status: "ready-native" }
   | { status: "error"; message: string; raw: unknown };
@@ -146,6 +147,7 @@ const PDFPreviewView = ({
   onShare,
   onDownload,
   generarPDFBlob,
+  generarHTML,
 }: {
   orden: OrdenMantenimiento;
   onBack: () => void;
@@ -153,6 +155,7 @@ const PDFPreviewView = ({
   onShare?: (orden: OrdenMantenimiento) => void;
   onDownload?: (orden: OrdenMantenimiento) => void;
   generarPDFBlob: (orden: OrdenMantenimiento) => Promise<Blob>;
+  generarHTML?: (orden: OrdenMantenimiento) => Promise<string>;
 }) => {
   const [state, setState] = useState<PreviewState>({ status: "loading", attempt: 1 });
   const urlRef = useRef<string | null>(null);
@@ -183,17 +186,22 @@ const PDFPreviewView = ({
       }
 
       try {
-        const blob = await generarPDFBlob(orden);
-        if (cancelled) return;
-
-        if (native) {
-          // En nativo no usamos blob URL — el iframe no puede abrirlos en WebView.
-          // Solo validamos que se generó correctamente.
-          setState({ status: "ready-native" });
+        if (generarHTML) {
+          const html = await generarHTML(orden);
+          if (cancelled) return;
+          setState({ status: "ready-html", html });
         } else {
-          const url = URL.createObjectURL(blob);
-          urlRef.current = url;
-          setState({ status: "ready-web", url });
+          // Fallback a Blob URL si generarHTML no está disponible
+          const blob = await generarPDFBlob(orden);
+          if (cancelled) return;
+  
+          if (native) {
+            setState({ status: "ready-native" });
+          } else {
+            const url = URL.createObjectURL(blob);
+            urlRef.current = url;
+            setState({ status: "ready-web", url });
+          }
         }
       } catch (err: unknown) {
         if (cancelled) return;
@@ -210,7 +218,7 @@ const PDFPreviewView = ({
 
     generate();
     return () => { cancelled = true; };
-  }, [orden, generarPDFBlob, native]);
+  }, [orden, generarPDFBlob, generarHTML, native]);
 
   // ── Footer de acciones (compartido entre estados) ──────────────────────────
   const footerActions = (
@@ -280,7 +288,7 @@ const PDFPreviewView = ({
         {state.status === "loading" && (
           <Loader2 className="w-4 h-4 text-blue-400 animate-spin flex-shrink-0" />
         )}
-        {(state.status === "ready-web" || state.status === "ready-native") && (
+        {(state.status === "ready-web" || state.status === "ready-html" || state.status === "ready-native") && (
           <div className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
         )}
       </header>
@@ -398,6 +406,16 @@ const PDFPreviewView = ({
             className="w-full h-full border-0 block"
           />
         )}
+
+        {/* ── Listo en HTML: iframe con srcDoc (optimizado para móvil) ── */}
+        {state.status === "ready-html" && (
+          <iframe
+            srcDoc={state.html}
+            title="Vista previa de la orden"
+            className="w-full h-full border-0 block bg-white"
+            sandbox="allow-same-origin"
+          />
+        )}
       </div>
 
       {/* Footer: no mostrar en estado error (ya tiene sus propios botones) */}
@@ -423,7 +441,7 @@ const DetailView = ({
   onShare?: (orden: OrdenMantenimiento) => void;
   onDownload?: (orden: OrdenMantenimiento) => void;
 }) => (
-  <div className="flex flex-col h-full">
+  <div className="flex flex-col h-[900px]">
     {/* Header */}
     <header className="px-4 py-3 bg-gray-950/90 border-b border-white/5 sticky top-0 z-10 flex items-center gap-3 flex-shrink-0 safe-top">
       <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center flex-shrink-0">
@@ -759,6 +777,7 @@ export const ModalOrden = ({
   onDownload,
   onShare,
   generarPDFBlob,
+  generarHTML,
 }: {
   orden: OrdenMantenimiento | null;
   onClose: () => void;
@@ -770,6 +789,11 @@ export const ModalOrden = ({
    *   const { generarPDFBlob } = usePrintService({ negocio })
    */
   generarPDFBlob: (orden: OrdenMantenimiento) => Promise<Blob>;
+  /**
+   * Función que genera el HTML en string de la orden. Se obtiene de usePrintService:
+   *   const { generarHTML } = usePrintService({ negocio })
+   */
+  generarHTML?: (orden: OrdenMantenimiento) => Promise<string>;
 }) => {
   const [view, setView] = useState<ModalView>("detail");
   const [mounted, setMounted] = useState(false);
@@ -852,7 +876,7 @@ export const ModalOrden = ({
         </div>
 
         {/* Vistas */}
-        {view === "detail" ? (
+        {view === "detail" && (
           <DetailView
             orden={orden}
             onClose={onClose}
@@ -860,14 +884,16 @@ export const ModalOrden = ({
             onShare={onShare}
             onDownload={onDownload}
           />
-        ) : (
+        )}
+        {view === "preview" && (
           <PDFPreviewView
             orden={orden}
-            onBack={handleBack}
+            onBack={() => setView("detail")}
             onPrint={onPrint}
             onShare={onShare}
             onDownload={onDownload}
             generarPDFBlob={generarPDFBlob}
+            generarHTML={generarHTML}
           />
         )}
       </div>

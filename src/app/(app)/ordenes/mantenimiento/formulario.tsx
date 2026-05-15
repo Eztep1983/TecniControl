@@ -16,7 +16,6 @@ import {
   getClientesPorUsuario,
 } from '@/lib/multiuser-helpers'
 import { useCrearOrden } from '@/hooks/useMultiUser'
-import { obtenerProximoNumeroOrden, formatearIdOrden } from '@/lib/firebase-utils'
 import { useNegocio } from '@/hooks/useNegocio'
 import { usePrintService } from '@/components/mantenimiento/PrintService'
 
@@ -78,6 +77,7 @@ export interface FormState {
   contadorMaquina?: number
 
   // Garantía
+  garantiaHabilitada: boolean
   garantiaDescripcion: string
   garantiaTiempoDesde: string
   garantiaTiempoHasta: string
@@ -91,9 +91,9 @@ export interface FormState {
   mantenimientoColecciones: Record<string, any>
 
   // Firma
-  firmaCliente: string
+  firmaHabilitada: boolean
+  firmaCliente: string | null
   validacionCliente: boolean
-  nombreFirmante: string
 
   // Éxito
   ordenCreada?: OrdenMantenimiento
@@ -122,6 +122,7 @@ type FormAction =
   | { type: 'SET_GARANTIA_TIEMPO_DESDE'; payload: string }
   | { type: 'SET_GARANTIA_TIEMPO_HASTA'; payload: string }
   | { type: 'SET_MESES_GARANTIA'; payload: number }
+  | { type: 'TOGGLE_GARANTIA_HABILITADA' }
   | { type: 'SET_CONTADOR'; payload: Contador | null }
   | { type: 'TOGGLE_CONTADOR' }
   | { type: 'SET_ORDEN_CREADA'; payload: OrdenMantenimiento }
@@ -131,9 +132,9 @@ type FormAction =
   | { type: 'SET_INSTALACION_CONFIGURACION'; payload: boolean }
   | { type: 'TOGGLE_INSTALACION_CONFIGURACION_TIPO'; payload: string }
   | { type: 'ADD_INSTALACION_CONFIGURACION_PERSONALIZADA'; payload: string }
-  | { type: 'SET_FIRMA_CLIENTE'; payload: string }
+  | { type: 'SET_FIRMA_CLIENTE'; payload: string | null }
   | { type: 'SET_VALIDACION_CLIENTE'; payload: boolean }
-  | { type: 'SET_NOMBRE_FIRMANTE'; payload: string }
+  | { type: 'TOGGLE_FIRMA_HABILITADA' }
 
 const initialState: FormState = {
   currentStep: 'cliente',
@@ -151,6 +152,7 @@ const initialState: FormState = {
   pruebasRealizadas: '',
   diagnosticoFinal: '',
   contadorMaquina: undefined,
+  garantiaHabilitada: false,
   garantiaDescripcion: '',
   garantiaTiempoDesde: '',
   garantiaTiempoHasta: '',
@@ -163,9 +165,9 @@ const initialState: FormState = {
   instalacionConfiguracionTipos: [],
   instalacionConfiguracionPersonalizada: '',
   mantenimientoColecciones: {},
-  firmaCliente: '',
+  firmaHabilitada: false, // Por defecto apagado
+  firmaCliente: null,
   validacionCliente: false,
-  nombreFirmante: '',
 }
 
 function formReducer(state: FormState, action: FormAction): FormState {
@@ -299,6 +301,9 @@ function formReducer(state: FormState, action: FormAction): FormState {
     case 'SET_MESES_GARANTIA':
       return { ...state, mesesGarantia: action.payload }
 
+    case 'TOGGLE_GARANTIA_HABILITADA':
+      return { ...state, garantiaHabilitada: !state.garantiaHabilitada }
+
     case 'SET_CONTADOR':
       return { ...state, contador: action.payload }
 
@@ -366,8 +371,11 @@ function formReducer(state: FormState, action: FormAction): FormState {
     case 'SET_VALIDACION_CLIENTE':
       return { ...state, validacionCliente: action.payload }
 
-    case 'SET_NOMBRE_FIRMANTE':
-      return { ...state, nombreFirmante: action.payload }
+    case 'TOGGLE_FIRMA_HABILITADA':
+      return {
+        ...state,
+        firmaHabilitada: !state.firmaHabilitada
+      }
 
     default:
       return state
@@ -441,11 +449,13 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     }
   }, [user?.uid])
 
-  // Inicializar fecha de garantía
+  // Inicializar fecha de garantía solo si está vacía
   useEffect(() => {
-    const hoy = new Date().toISOString().split('T')[0]
-    dispatch({ type: 'SET_GARANTIA_TIEMPO_DESDE', payload: hoy })
-  }, [])
+    if (!state.garantiaTiempoDesde) {
+      const hoy = new Date().toISOString().split('T')[0]
+      dispatch({ type: 'SET_GARANTIA_TIEMPO_DESDE', payload: hoy })
+    }
+  }, [state.garantiaTiempoDesde])
 
   // Calcular fecha hasta de garantía (optimizado)
   const fechaGarantiaHasta = useMemo(() => {
@@ -543,9 +553,12 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     },
     3: () => true, // contador
     4: () => true, // garantia
-    5: () => (state.nombreFirmante || '').trim() !== '' && state.validacionCliente && !!state.firmaCliente, // firma
+    5: () => { // firma
+      if (!state.firmaHabilitada) return true;
+      return state.validacionCliente && !!state.firmaCliente;
+    },
     6: () => true, // resumen
-  }), [state.clienteSeleccionado, state.dispositivoSeleccionado, state.tipoMantenimiento, state.observacionesIniciales, state.pruebasRealizadas, state.diagnosticoFinal, state.tareasSeleccionadas, state.tareasPersonalizadas, state.instalacionConfiguracion, state.instalacionRecomendaciones, state.nombreFirmante, state.validacionCliente, state.firmaCliente])
+  }), [state.clienteSeleccionado, state.dispositivoSeleccionado, state.tipoMantenimiento, state.observacionesIniciales, state.pruebasRealizadas, state.diagnosticoFinal, state.tareasSeleccionadas, state.tareasPersonalizadas, state.instalacionConfiguracion, state.instalacionRecomendaciones, state.garantiaHabilitada, state.firmaHabilitada, state.validacionCliente, state.firmaCliente])
 
   // Verifica si un paso específico es accesible
   const isStepAccessible = useCallback((stepIndex: number) => {
@@ -741,9 +754,12 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => {
     if (state.garantiaTiempoDesde) nuevaOrden.garantiaTiempoDesde = new Date(state.garantiaTiempoDesde);
     if (state.garantiaTiempoHasta) nuevaOrden.garantiaTiempoHasta = new Date(state.garantiaTiempoHasta);
     if (state.garantiaDescripcion.trim()) nuevaOrden.garantiaDescripcion = state.garantiaDescripcion.trim();
-    if (state.firmaCliente) nuevaOrden.firmaCliente = state.firmaCliente;
-    if (state.nombreFirmante) nuevaOrden.nombreFirmante = state.nombreFirmante.trim();
-    if (state.validacionCliente) nuevaOrden.validacionCliente = state.validacionCliente;
+    
+    // Manejo de firma opcional
+    nuevaOrden.firmaCliente = state.firmaHabilitada ? state.firmaCliente : null;
+    nuevaOrden.nombreFirmante = state.firmaHabilitada ? (state.clienteSeleccionado?.name || 'Cliente') : null;
+    nuevaOrden.validacionCliente = state.firmaHabilitada ? state.validacionCliente : false;
+    nuevaOrden.garantiaHabilitada = state.garantiaHabilitada;
 
     // Limpiar undefineds
     Object.keys(nuevaOrden).forEach(key => {
@@ -957,6 +973,8 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => {
       case 'garantia':
         return (
           <GarantiaInput
+            garantiaHabilitada={state.garantiaHabilitada}
+            onToggleGarantia={() => dispatch({ type: 'TOGGLE_GARANTIA_HABILITADA' })}
             garantiaTiempoDesde={state.garantiaTiempoDesde}
             garantiaTiempoHasta={state.garantiaTiempoHasta}
             mesesGarantia={state.mesesGarantia}
@@ -973,12 +991,12 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => {
       case 'firma':
         return (
           <FirmaInput
-            firmaCliente={state.firmaCliente}
+            firmaHabilitada={state.firmaHabilitada}
+            onToggleFirma={() => dispatch({ type: 'TOGGLE_FIRMA_HABILITADA' })}
+            firmaCliente={state.firmaCliente || ''}
             setFirmaCliente={(firma) => dispatch({ type: 'SET_FIRMA_CLIENTE', payload: firma })}
             validacionCliente={state.validacionCliente}
             setValidacionCliente={(valida) => dispatch({ type: 'SET_VALIDACION_CLIENTE', payload: valida })}
-            nombreFirmante={state.nombreFirmante}
-            setNombreFirmante={(nombre) => dispatch({ type: 'SET_NOMBRE_FIRMANTE', payload: nombre })}
           />
         )
 
@@ -1137,7 +1155,7 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => {
       </main>
 
       {/* Barra de navegación inferior flotante */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-gray-900/95 border-t border-gray-800"
+      <div className="h-24 w-full fixed bottom-0 left-0 right-0 z-30 bg-gray-900/95 border-t border-gray-800"
            style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}>
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <button
@@ -1206,7 +1224,7 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => {
               {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'diagnostico' && 'Completa todos los campos del diagnóstico'}
               {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'instalacion' && 'Configura o agrega recomendaciones para continuar'}
               {state.currentStep === 'mantenimiento' && state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && 'Agrega al menos una tarea para continuar'}
-              {state.currentStep === 'firma' && 'Proporciona nombre, firma y confirmación para continuar'}
+              {state.currentStep === 'firma' && 'Debe aceptar los términos y firmar para continuar'}
             </p>
           </div>
         )}

@@ -8,7 +8,7 @@ interface InstalacionInfoProps {
   recomendacionesDetalle: string
   configuracion: boolean
   configuracionTipos: string[]
-  
+
   onToggleRecomendaciones: (valor: boolean) => void
   onCambiarRecomendacionesDetalle: (valor: string) => void
   onToggleConfiguracion: (valor: boolean) => void
@@ -34,26 +34,26 @@ const PREDEFINED_CONFIGURACIONES = [
   "Configuración de drivers",
 ]
 
-const SectionHeader = memo(({ 
-  icon: Icon, 
-  title, 
+const SectionHeader = memo(({
+  icon: Icon,
+  title,
   description,
-  colorClass 
-}: { 
+  colorClass
+}: {
   icon: React.ComponentType<any>
   title: string
   description: string
   colorClass?: string
 }) => (
-  <div className="flex items-start gap-4 mb-5">
-    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${
+  <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5">
+    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${
       colorClass || 'bg-gray-700/50 text-gray-400'
     }`}>
-      <Icon className="w-6 h-6" />
+      <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
     </div>
     <div className="min-w-0">
-      <h3 className="text-lg font-bold text-white tracking-tight leading-tight">{title}</h3>
-      <p className="text-sm text-gray-400 mt-1 line-clamp-1">{description}</p>
+      <h3 className="text-base sm:text-lg font-bold text-white tracking-tight leading-tight">{title}</h3>
+      <p className="text-xs sm:text-sm text-gray-400 mt-1 line-clamp-1">{description}</p>
     </div>
   </div>
 ))
@@ -73,8 +73,8 @@ const InstalacionInfo = memo(function InstalacionInfo({
 }: InstalacionInfoProps) {
 
   const handleAddRecomendacion = useCallback((text: string) => {
-    const newValue = recomendacionesDetalle.trim() 
-      ? recomendacionesDetalle.endsWith('.') || recomendacionesDetalle.endsWith(',') 
+    const newValue = recomendacionesDetalle.trim()
+      ? recomendacionesDetalle.endsWith('.') || recomendacionesDetalle.endsWith(',')
         ? `${recomendacionesDetalle} ${text}`
         : `${recomendacionesDetalle}, ${text}`
       : text;
@@ -82,13 +82,13 @@ const InstalacionInfo = memo(function InstalacionInfo({
   }, [recomendacionesDetalle, onCambiarRecomendacionesDetalle]);
 
   return (
-    <div className="space-y-8 max-w-3xl mx-auto pb-10">
-      
+    <div className="space-y-6 sm:space-y-8 max-w-3xl mx-auto pb-10 px-3 sm:px-4">
+
       {/* Sección Configuraciones */}
-      <section className={`bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border transition-all duration-300 group ${
+      <section className={`bg-gray-800/40 rounded-3xl p-4 sm:p-6 border transition-all duration-300 group ${
         configuracion ? 'border-blue-500/50 shadow-blue-500/10' : 'border-gray-700/50'
       }`}>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-start sm:items-center justify-between mb-4 sm:mb-6 gap-2">
           <SectionHeader
             icon={Settings}
             title="Configuración"
@@ -98,19 +98,19 @@ const InstalacionInfo = memo(function InstalacionInfo({
           <button
             type="button"
             onClick={() => onToggleConfiguracion(!configuracion)}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-              configuracion 
-                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
+            className={`shrink-0 px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-sm font-bold transition-all ${
+              configuracion
+                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                 : 'bg-gray-700/50 text-gray-400 border border-gray-600/50'
             }`}
           >
-            {configuracion ? 'X' : 'Activar'}
+            {configuracion ? 'X' : 'Mostrar'}
           </button>
         </div>
 
         {configuracion && (
           <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               {PREDEFINED_CONFIGURACIONES.map((tipo) => {
                 const isSelected = configuracionTipos.includes(tipo)
                 return (
@@ -134,7 +134,7 @@ const InstalacionInfo = memo(function InstalacionInfo({
                 )
               })}
             </div>
-            
+
             <div className="mt-4">
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">
                 Otras Configuraciones
@@ -142,8 +142,8 @@ const InstalacionInfo = memo(function InstalacionInfo({
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Agregar configuración personalizada..."
-                  className="flex-1 px-4 py-3 bg-gray-900/40 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                  placeholder="Agregar configuración..."
+                  className="flex-1 px-4 py-3 bg-gray-900/40 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm sm:text-base"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault()
@@ -175,10 +175,10 @@ const InstalacionInfo = memo(function InstalacionInfo({
       </section>
 
       {/* Sección Recomendaciones */}
-      <section className={`bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 border transition-all duration-300 group ${
+      <section className={`bg-gray-800/40 rounded-3xl p-4 sm:p-6 border transition-all duration-300 group ${
         recomendaciones ? 'border-green-500/50 shadow-green-500/10' : 'border-gray-700/50'
       }`}>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-start sm:items-center justify-between mb-4 sm:mb-6 gap-2">
           <SectionHeader
             icon={FileText}
             title="Recomendaciones"
@@ -188,18 +188,18 @@ const InstalacionInfo = memo(function InstalacionInfo({
           <button
             type="button"
             onClick={() => onToggleRecomendaciones(!recomendaciones)}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-              recomendaciones 
-                ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+            className={`shrink-0 px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-sm font-bold transition-all ${
+              recomendaciones
+                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                 : 'bg-gray-700/50 text-gray-400 border border-gray-600/50'
             }`}
           >
-            {recomendaciones ? 'X' : 'Activar'}
+            {recomendaciones ? 'X' : 'Mostrar'}
           </button>
         </div>
 
         {recomendaciones && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="space-y-5 sm:space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="space-y-3">
               <label className="block text-sm font-bold text-gray-400 uppercase tracking-widest px-1">
                 Detalles de Recomendación
@@ -209,7 +209,7 @@ const InstalacionInfo = memo(function InstalacionInfo({
                 onChange={(e) => onCambiarRecomendacionesDetalle(e.target.value)}
                 placeholder="Escribe recomendaciones personalizadas..."
                 rows={3}
-                className="w-full px-4 py-4 bg-gray-900/40 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all resize-none shadow-inner"
+                className="w-full px-4 py-4 bg-gray-900/40 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all resize-none shadow-inner text-sm sm:text-base"
               />
             </div>
 

@@ -371,6 +371,7 @@ export function ClientesList() {
               {showTable && (
                 <ClientesDataTable
                   data={filteredClientes}
+                  totalGlobal={clientes.length}
                   onDelete={handleDelete}
                   onView={modal.openView}
                   onEdit={modal.openEdit}

@@ -60,6 +60,7 @@ if (typeof document !== "undefined" && !document.getElementById(CARD_ANIM_ID)) {
 // ── Props del componente principal ──────────────────────────────────────────
 interface ClientesDataTableProps {
   data: Cliente[];
+  totalGlobal?: number;
   onDelete: (id: string) => void;
   onView: (cliente: Cliente) => void;
   onEdit: (cliente: Cliente) => void;
@@ -254,14 +255,18 @@ const ClienteCard = memo(function ClienteCard({
 
           {/* Info contacto */}
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2 min-w-0">
-              <Mail className="w-3 h-3 text-gray-600 flex-shrink-0" aria-hidden="true" />
-              <p className="text-xs text-gray-400 truncate">{client.email}</p>
-            </div>
-            <div className="flex items-center gap-2 min-w-0">
-              <Phone className="w-3 h-3 text-gray-600 flex-shrink-0" aria-hidden="true" />
-              <p className="text-xs text-gray-400 truncate">{client.phone}</p>
-            </div>
+            {client.email && (
+              <div className="flex items-center gap-2 min-w-0">
+                <Mail className="w-3 h-3 text-gray-600 flex-shrink-0" aria-hidden="true" />
+                <p className="text-xs text-gray-400 truncate">{client.email}</p>
+              </div>
+            )}
+            {client.phone && (
+              <div className="flex items-center gap-2 min-w-0">
+                <Phone className="w-3 h-3 text-gray-600 flex-shrink-0" aria-hidden="true" />
+                <p className="text-xs text-gray-400 truncate">{client.phone}</p>
+              </div>
+            )}
             {client.address && (
               <div className="flex items-start gap-2 min-w-0">
                 <MapPin className="w-3 h-3 text-gray-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
@@ -332,6 +337,9 @@ const Pagination = memo(function Pagination({
   totalPages,
   onPage,
 }: PaginationProps) {
+  const isMobile = useMediaQuery("(max-width: 640px)");
+  const haptic = useHapticFeedback();
+
   // FIX: Las elipsis usan un key único basado en posición, no en el string "..."
   // para evitar colisiones cuando hay dos elipsis en la lista.
   const pages = useMemo(() => {
@@ -345,7 +353,6 @@ const Pagination = memo(function Pagination({
     const result: (number | { type: "ellipsis"; key: string })[] = [];
     visible.forEach((p, idx) => {
       if (idx > 0 && p - visible[idx - 1] > 1) {
-        // FIX: key único con posición para que React no confunda dos elipsis
         result.push({ type: "ellipsis", key: `ellipsis-${idx}` });
       }
       result.push(p);
@@ -353,27 +360,77 @@ const Pagination = memo(function Pagination({
     return result;
   }, [currentPage, totalPages]);
 
+  const handlePageChange = useCallback((p: number) => {
+    if (p === currentPage || p < 1 || p > totalPages) return;
+    haptic.selection();
+    onPage(p);
+  }, [currentPage, totalPages, haptic, onPage]);
+
+  if (isMobile) {
+    return (
+      <div className="sticky bottom-6 left-0 right-0 z-20 px-4 mt-8 pointer-events-none">
+        <nav
+          aria-label="Paginación móvil"
+          className="mx-auto max-w-[280px] flex items-center justify-between bg-gray-900/80 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-1.5 shadow-2xl shadow-black/60 ring-1 ring-white/10 pointer-events-auto transition-transform active:scale-[0.98]"
+        >
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="flex items-center justify-center w-11 h-11 rounded-xl bg-gray-800/60 text-gray-400 hover:text-white disabled:opacity-20 disabled:pointer-events-none active:scale-90 transition-all focus:outline-none"
+            aria-label="Anterior"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+
+          <div className="flex flex-col items-center px-4">
+            <span className="text-[9px] uppercase tracking-[0.2em] text-gray-500 font-bold mb-0.5 leading-none">
+              Página
+            </span>
+            <div className="flex items-center gap-1.5 leading-none">
+              <span className="text-sm font-black text-blue-400 tabular-nums">
+                {currentPage}
+              </span>
+              <span className="text-[10px] text-gray-600 font-medium">/</span>
+              <span className="text-xs font-semibold text-gray-500 tabular-nums">
+                {totalPages}
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="flex items-center justify-center w-11 h-11 rounded-xl bg-gray-800/60 text-gray-400 hover:text-white disabled:opacity-20 disabled:pointer-events-none active:scale-90 transition-all focus:outline-none"
+            aria-label="Siguiente"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </nav>
+      </div>
+    );
+  }
+
   return (
-    // FIX: nav + aria-label para que lectores de pantalla anuncien el rol
-    <nav aria-label="Paginación de clientes" className="flex items-center justify-between gap-2 pt-2">
+    <nav
+      aria-label="Paginación de clientes"
+      className="flex items-center justify-between gap-4 pt-6 border-t border-gray-800/50 mt-4"
+    >
       <button
-        onClick={() => onPage(currentPage - 1)}
+        onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="flex items-center gap-1.5 h-12 px-4 sm:px-5 rounded-xl bg-gray-700/40 hover:bg-gray-700 text-sm text-gray-300 font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 min-w-[44px] justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
-        aria-label="Página anterior"
+        className="flex items-center gap-2 h-11 px-4 rounded-xl bg-gray-800/40 hover:bg-gray-700/60 text-sm text-gray-300 font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500/50 outline-none"
       >
-        <ChevronLeft className="w-4 h-4" aria-hidden="true" />
-        <span className="hidden sm:inline">Anterior</span>
+        <ChevronLeft className="w-4 h-4" />
+        <span>Anterior</span>
       </button>
 
-      <div className="flex items-center gap-1" role="list" aria-label="Páginas">
+      <div className="flex items-center gap-1.5">
         {pages.map((item) => {
           if (typeof item === "object") {
             return (
               <span
                 key={item.key}
-                role="listitem"
-                className="w-8 text-center text-xs text-gray-600"
+                className="w-8 text-center text-xs text-gray-600 font-bold"
                 aria-hidden="true"
               >
                 ···
@@ -383,15 +440,12 @@ const Pagination = memo(function Pagination({
           return (
             <button
               key={item}
-              role="listitem"
-              onClick={() => onPage(item)}
-              // FIX: aria-current="page" para que lectores de pantalla anuncien la página activa
+              onClick={() => handlePageChange(item)}
               aria-current={currentPage === item ? "page" : undefined}
-              aria-label={`Ir a página ${item}`}
-              className={`w-10 h-10 rounded-xl text-sm font-medium transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 ${
+              className={`min-w-[40px] h-10 rounded-xl text-sm font-bold transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500/50 outline-none ${
                 currentPage === item
-                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                  : "text-gray-500 hover:bg-gray-700/50 hover:text-gray-300"
+                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                  : "text-gray-500 hover:bg-gray-800/60 hover:text-gray-300"
               }`}
             >
               {item}
@@ -401,21 +455,22 @@ const Pagination = memo(function Pagination({
       </div>
 
       <button
-        onClick={() => onPage(currentPage + 1)}
+        onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="flex items-center gap-1.5 h-12 px-4 sm:px-5 rounded-xl bg-gray-700/40 hover:bg-gray-700 text-sm text-gray-300 font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 min-w-[44px] justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
-        aria-label="Página siguiente"
+        className="flex items-center gap-2 h-11 px-4 rounded-xl bg-gray-800/40 hover:bg-gray-700/60 text-sm text-gray-300 font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500/50 outline-none"
       >
-        <span className="hidden sm:inline">Siguiente</span>
-        <ChevronRight className="w-4 h-4" aria-hidden="true" />
+        <span>Siguiente</span>
+        <ChevronRight className="w-4 h-4" />
       </button>
     </nav>
   );
 });
 
+
 // ── Componente principal ─────────────────────────────────────────────────────
 export function ClientesDataTable({
   data,
+  totalGlobal,
   onDelete,
   onView,
   onEdit,
@@ -531,7 +586,7 @@ export function ClientesDataTable({
   );
 
   return (
-    <div ref={scrollContainerRef} className="space-y-4 pb-6">
+    <div ref={scrollContainerRef} className="space-y-4 pb-24 sm:pb-8">
       {/* Modal confirmación eliminar */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="w-[calc(100%-2rem)] max-w-sm mx-auto rounded-2xl bg-gray-800 border-gray-700">
@@ -576,7 +631,7 @@ export function ClientesDataTable({
         className="bg-gradient-to-br from-blue-400/8 to-blue-900/15 rounded-2xl border border-blue-500/15 px-4 py-3 flex items-center gap-3"
         role="status"
         aria-live="polite"
-        aria-label={`Total de clientes: ${data.length}`}
+        aria-label={`Total de clientes: ${totalGlobal ?? data.length}`}
       >
         <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center flex-shrink-0">
           <Users className="w-5 h-5 text-blue-400" aria-hidden="true" />
@@ -587,7 +642,7 @@ export function ClientesDataTable({
           </p>
           <CountUp
             from={0}
-            to={data.length}
+            to={totalGlobal ?? data.length}
             direction="up"
             duration={1}
             className="text-2xl font-bold text-white leading-tight"
@@ -596,38 +651,39 @@ export function ClientesDataTable({
         </div>
       </div>
 
-      {/* Controles de paginación superior */}
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-xs text-gray-500" aria-live="polite">
-          {data.length === 0
-            ? "Sin clientes"
-            : `${(currentPage - 1) * itemsPerPage + 1}–${Math.min(
-                currentPage * itemsPerPage,
-                data.length
-              )} de ${data.length}`}
-        </p>
-        <div className="flex items-center gap-2">
-          {/* FIX: Label con htmlFor correctamente vinculado al select */}
-          <label
-            htmlFor="items-per-page-select"
-            className="text-xs text-gray-500"
-          >
-            Mostrar
-          </label>
-          <select
-            id="items-per-page-select"
-            className="h-9 rounded-lg border border-gray-700 bg-gray-800/50 px-2 text-sm text-white focus:border-blue-500/50 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
-            value={itemsPerPage}
-            onChange={handleItemsPerPageChange}
-          >
-            {[5, 10, 20, 50].map((n) => (
-              <option key={n} value={n}>
-                {n} por página
-              </option>
-            ))}
-          </select>
+      {/* Controles de paginación superior & Progress Bar */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-0.5">
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-none">
+              {totalGlobal && data.length !== totalGlobal ? "Resultados Filtrados" : "Mostrando"}
+            </p>
+            <p className="text-xs text-gray-300 font-medium" aria-live="polite">
+              {data.length === 0
+                ? "Sin resultados"
+                : `${(currentPage - 1) * itemsPerPage + 1} a ${Math.min(
+                    currentPage * itemsPerPage,
+                    data.length
+                  )} de ${data.length}`}
+            </p>
+          </div>
+
+
         </div>
+
+        {/* Visual Progress Bar (Premium UX) */}
+        {data.length > 0 && (
+          <div className="h-1.5 w-full bg-gray-800/50 rounded-full overflow-hidden border border-gray-700/20 shadow-inner">
+            <div
+              className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.3)] transition-all duration-500 ease-out"
+              style={{
+                width: `${data.length > 0 ? Math.min(100, (Math.min(currentPage * itemsPerPage, data.length) / data.length) * 100) : 0}%`,
+              }}
+            />
+          </div>
+        )}
       </div>
+
 
       {/* Grid de tarjetas */}
       {paginatedClientes.length > 0 ? (

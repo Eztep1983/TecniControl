@@ -72,8 +72,8 @@ const formSchema = z.object({
     .string()
     .min(4, { message: "Mínimo 4 caracteres" })
     .regex(/^[0-9A-Za-z-]+$/, { message: "Solo números, letras y guiones" }),
-  email: z.string().email({ message: "Email inválido" }),
-  phone: z.string().min(8, { message: "Teléfono muy corto" }),
+  email: z.string().email({ message: "Email inválido" }).optional().or(z.literal("")),
+  phone: z.string().optional().or(z.literal("")).refine(val => !val || val.length >= 8, { message: "Teléfono muy corto" }),
   address: z.string().optional(),
   dispositivos: z
     .array(dispositivoSchema)
@@ -302,7 +302,7 @@ const Step1Content = memo(function Step1Content({
           name="email"
           render={({ field }) => (
             <FormItem className="space-y-1.5">
-              <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Email *</FormLabel>
+              <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Email <span className="text-gray-600 font-normal">(opcional)</span></FormLabel>
               <FormControl>
                 <Input
                   type="email"
@@ -324,7 +324,7 @@ const Step1Content = memo(function Step1Content({
           name="phone"
           render={({ field }) => (
             <FormItem className="space-y-1.5">
-              <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Teléfono *</FormLabel>
+              <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Teléfono <span className="text-gray-600 font-normal">(opcional)</span></FormLabel>
               <FormControl>
                 <Input
                   type="tel"

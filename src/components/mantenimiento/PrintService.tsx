@@ -271,11 +271,7 @@ const generarContenidoHTML = (
         Este documento es un comprobante de servicio y no representa una factura legal de venta.
       </div>
 
-      <div class="no-print">
-        <button class="btn-print" onclick="window.print()" style="padding:8px 16px;background:#065f46;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;">
-          Imprimir Ahora
-        </button>
-      </div>
+
     </body>
     </html>
   `
@@ -446,6 +442,23 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
       reader.readAsDataURL(blob)
     })
   }, [])
+
+  /**
+   * Genera el HTML string de la orden.
+   */
+  const generarHTML = useCallback(async (orden: OrdenMantenimiento): Promise<string> => {
+    let negocioProcesado = { ...negocio }
+
+    if (negocio?.logoUrl && !negocio.logoUrl.startsWith('data:')) {
+      const base64 = await urlToBase64(negocio.logoUrl)
+      if (base64) {
+        negocioProcesado = { ...negocio, logoUrl: base64 }
+      } else {
+        negocioProcesado = { ...negocio, logoUrl: null }
+      }
+    }
+    return generarContenidoHTML(orden, negocioProcesado, formatFecha, formatGarantiaFecha)
+  }, [negocio, formatFecha, formatGarantiaFecha, urlToBase64])
 
   /**
    * Descarga / guarda el PDF.
@@ -648,6 +661,7 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
     compartirOrden,
     descargarPDF,
     generarPDFBlob,
+    generarHTML,
     formatFecha,
     formatGarantiaFecha
   }

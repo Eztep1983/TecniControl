@@ -38,7 +38,7 @@ export default function ResumenMantenimiento({
       {/* Header con feedback táctil para móvil */}
       <div className="px-4 pt-2">
         <div 
-          className="bg-transparent rounded-2xl p-5 shadow-lg active:scale-[0.98] transition-transform duration-150"
+          className="bg-transparent rounded-2xl p-5 shadow-2xl active:scale-[0.98] transition-transform duration-150"
           role="status"
           aria-label="Resumen de orden"
         >
@@ -49,7 +49,7 @@ export default function ResumenMantenimiento({
             </h1>
           </div>
           <p className="text-blue-100 text-center text-sm mt-2">
-            Revisa los detalles antes de continuar
+            Revisa los detalles antes de generar la orden.
           </p>
         </div>
       </div>
@@ -57,7 +57,7 @@ export default function ResumenMantenimiento({
       {/* Tarjetas con haptic feedback en móvil */}
       <div className="space-y-4 px-4">
         {/* Cliente y Dispositivo - Grid responsive */}
-        <div className="bg-white/10 rounded-2xl p-5 shadow-lg border border-white/20">
+        <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-blue-300">
@@ -92,7 +92,7 @@ export default function ResumenMantenimiento({
         </div>
 
         {/* Mantenimiento/Diagnóstico - Sección principal */}
-        <div className="bg-white/10 rounded-2xl p-5 shadow-lg border border-white/20">
+        <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
           <div className="flex items-center gap-2 mb-4">
             <Wrench className="w-5 h-5 text-purple-300" />
             <h3 className="text-sm font-semibold text-purple-300 uppercase tracking-wide">
@@ -216,14 +216,14 @@ export default function ResumenMantenimiento({
 
         {/* Contador */}
         {state.mostrarContador && state.contador && (
-          <div className="bg-gradient-to-br from-amber-900/30 to-orange-900/30 rounded-2xl p-5 shadow-lg border border-amber-500/20">
+          <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
             <div className="flex items-center gap-2 mb-3">
-              <Clock className="w-5 h-5 text-amber-300" />
-              <h3 className="text-sm font-semibold text-amber-300 uppercase tracking-wide">Medición</h3>
+              <Clock className="w-5 h-5 text-blue-300" />
+              <h3 className="text-sm font-semibold text-blue-300 uppercase tracking-wide">Medición</h3>
             </div>
             <div className="flex items-baseline gap-2 mb-3">
-              <span className="text-4xl font-bold text-amber-300">{state.contador.valor.toLocaleString()}</span>
-              <span className="text-base text-gray-300 capitalize">{state.contador.tipo}</span>
+              <span className="text-4xl font-bold text-white">{state.contador.valor.toLocaleString()}</span>
+              <span className="text-lg text-gray-300 capitalize">{state.contador.tipo}</span>
             </div>
             {state.contador.notas && (
               <p className="text-sm text-gray-300 pt-3 border-t border-amber-500/20">{state.contador.notas}</p>
@@ -233,7 +233,7 @@ export default function ResumenMantenimiento({
 
         {/* Garantía */}
         {(state.garantiaDescripcion || state.mesesGarantia > 0) && (
-          <div className="bg-white/10 rounded-2xl p-5 shadow-lg border border-white/20">
+          <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
             <div className="flex items-center gap-2 mb-3">
               <Shield className="w-5 h-5 text-red-300" />
               <h3 className="text-sm font-semibold text-red-300 uppercase tracking-wide">Garantía</h3>
@@ -256,12 +256,13 @@ export default function ResumenMantenimiento({
         )}
 
         {/* Firma */}
-        {state.firmaCliente && (
-          <div className="bg-white/10 rounded-2xl p-5 shadow-lg border border-white/20">
-            <div className="flex items-center gap-2 mb-4">
-              <PenTool className="w-5 h-5 text-blue-300" />
-              <h3 className="text-sm font-semibold text-blue-300 uppercase tracking-wide">Firma del Cliente</h3>
-            </div>
+        <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
+          <div className="flex items-center gap-2 mb-4">
+            <PenTool className="w-5 h-5 text-blue-300" />
+            <h3 className="text-sm font-semibold text-blue-300 uppercase tracking-wide">Firma del Cliente</h3>
+          </div>
+          
+          {state.firmaHabilitada && state.firmaCliente ? (
             <div className="space-y-4">
               <div className="bg-white rounded-xl p-3 w-full">
                 <img 
@@ -271,19 +272,23 @@ export default function ResumenMantenimiento({
                   loading="lazy"
                 />
               </div>
-              {state.nombreFirmante && (
-                <div className="text-center">
-                  <p className="text-sm text-gray-400">Firmado por:</p>
-                  <p className="text-base font-semibold text-white">{state.nombreFirmante}</p>
-                </div>
-              )}
+              <div className="text-center">
+                <p className="text-sm text-gray-400">Responsable de recepción:</p>
+                <p className="text-base font-semibold text-white">{state.clienteSeleccionado?.name || 'Cliente'}</p>
+              </div>
               <div className="flex items-center justify-center gap-2 text-green-400 text-sm bg-green-400/10 px-4 py-2 rounded-full">
                 <CheckCircle className="w-4 h-4" />
                 <span>Validado por el cliente</span>
               </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="py-8 flex flex-col items-center justify-center text-gray-500 bg-black/20 rounded-xl border border-dashed border-gray-700">
+              <PenTool className="w-8 h-8 mb-2 opacity-20" />
+              <p className="text-sm font-medium">Sin firma registrada</p>
+              <p className="text-xs opacity-60">El técnico marcó esta orden sin firma</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Estilos adicionales para mejor experiencia móvil */}

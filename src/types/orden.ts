@@ -16,8 +16,8 @@ export interface Cliente {
   userId: string; 
   name: string;
   cedula: string;
-  email: string;
-  phone: string;
+  email?: string;
+  phone?: string;
   address?: string;
   dispositivos: Dispositivo[];
   createdAt?: string;

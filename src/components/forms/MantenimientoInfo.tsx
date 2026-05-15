@@ -1,6 +1,6 @@
 // components/forms/MantenimientoInfo.tsx
 'use client'
-import { Settings, Shield, Wrench, Stethoscope, Monitor, CheckCircle2, ArrowUpIcon } from 'lucide-react'
+import { Settings, Shield, Wrench, Stethoscope, Monitor, CheckCircle2, ArrowUpIcon, ArrowLeft } from 'lucide-react'
 import TareasInput from './TareasInput'
 import PiezasInput from './PiezasInput'
 import DiagnosticoInfo from './DiagnosticoInfo'
@@ -484,8 +484,8 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                   whileTap={{ scale: 0.95 }}
                   className="flex items-center gap-2 px-4 py-2.5 bg-gray-900/60 hover:bg-gray-800 text-gray-300 hover:text-white text-xs font-bold rounded-xl border border-gray-700/50 transition-all active:scale-95 touch-manipulation shadow-sm relative z-10"
                 >
-                  <Wrench className="w-3.5 h-3.5" />
-                  <span>CAMBIAR</span>
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">CAMBIAR</span>
                 </motion.button>
               </motion.div>
             </motion.div>

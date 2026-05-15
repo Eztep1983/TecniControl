@@ -82,14 +82,24 @@ function useDebounce<T>(value: T, delay: number): T {
 function useKeyboardOffset() {
   const [offset, setOffset] = useState(0)
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const vv = window.visualViewport
     if (!vv) return
+
     const update = () => {
-      const diff = window.innerHeight - vv.height - vv.offsetTop
+      // Calculamos la diferencia entre la ventana total y el área visible
+      // En iOS vv.height disminuye cuando sale el teclado.
+      const diff = window.innerHeight - vv.height
+      // Si el usuario ha hecho scroll hacia abajo, vv.offsetTop será > 0
+      // En algunos casos queremos ignorar el offsetTop si el teclado ya empujó el viewport
       setOffset(Math.max(0, diff))
     }
+
     vv.addEventListener('resize', update)
     vv.addEventListener('scroll', update)
+    // Initial check
+    update()
+
     return () => {
       vv.removeEventListener('resize', update)
       vv.removeEventListener('scroll', update)
@@ -97,6 +107,7 @@ function useKeyboardOffset() {
   }, [])
   return offset
 }
+
 
 // ─── Tipos de formulario ──────────────────────────────────────────────────
 
@@ -145,73 +156,88 @@ const Toast = ({ toast, onClose }: { toast: ToastData; onClose: () => void }) =>
   )
 }
 
-// ─── Componente: Bottom Sheet (conservado) ─────────────────────────────────
+// ─── Componente: Modal Centrado (Actualizado) ───────────────────────────────
 
-interface BottomSheetProps {
+interface ModalProps {
   isOpen: boolean
   onClose: () => void
   title: string
   children: React.ReactNode
 }
 
-const BottomSheet = ({ isOpen, onClose, title, children }: BottomSheetProps) => {
+const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
   const keyboardOffset = useKeyboardOffset()
-  const startY = useRef<number | null>(null)
-  const sheetRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+  const modalRef = useRef<HTMLDivElement>(null)
 
+  // Sincronizar visibilidad para animaciones
   useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    if (isOpen) {
+      const t = setTimeout(() => setIsVisible(true), 10)
+      return () => clearTimeout(t)
+    } else {
+      setIsVisible(false)
+    }
+  }, [isOpen])
+
+  // Bloquear scroll del body
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'none'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
   }, [isOpen])
 
   if (!isOpen) return null
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden"
       role="dialog"
       aria-modal="true"
-      aria-label={title}
     >
-      {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60"
+        className={`absolute inset-0 bg-black/70 transition-opacity duration-300 ${
+          isVisible ? 'opacity-100' : 'opacity-0'
+        }`}
         onClick={onClose}
       />
 
-      {/* Sheet */}
+      {/* Modal Container */}
       <div
-        ref={sheetRef}
-        style={{ paddingBottom: `calc(env(safe-area-inset-bottom) + ${keyboardOffset}px)` }}
-        className="
-          relative bg-slate-900 w-full max-w-lg rounded-t-3xl shadow-2xl
-          border-t border-slate-700/60
-          animate-in slide-in-from-bottom duration-300
-        "
-        onTouchStart={e => { startY.current = e.touches[0].clientY }}
-        onTouchMove={e => {
-          if (!startY.current) return
-          if (e.touches[0].clientY - startY.current > 60) {
-            onClose()
-            startY.current = null
-          }
+        ref={modalRef}
+        style={{
+          // Levantamos el modal sutilmente si el teclado está abierto
+          transform: isVisible 
+            ? `translateY(min(0px, calc(-${keyboardOffset}px / 2.5))) scale(1)` 
+            : 'translateY(20px) scale(0.95)',
+          opacity: isVisible ? 1 : 0,
+          transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          maxHeight: 'calc(100dvh - 40px)',
         }}
+        className="
+          relative bg-slate-900 w-full max-w-sm rounded-[2.5rem]
+          shadow-2xl border border-slate-700/60 flex flex-col overflow-hidden
+          ring-1 ring-white/10
+        "
         onClick={e => e.stopPropagation()}
       >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1.5 bg-slate-700 rounded-full" />
-        </div>
-
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800">
-          <h3 className="text-lg font-semibold text-white">{title}</h3>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800/50 shrink-0">
+          <h3 className="text-xl font-bold text-white tracking-tight">{title}</h3>
           <button
             onClick={onClose}
             className="
-              w-8 h-8 flex items-center justify-center rounded-full
-              text-slate-400 hover:text-white
-              active:bg-slate-800 touch-manipulation
+              w-10 h-10 flex items-center justify-center rounded-2xl
+              bg-slate-800 text-slate-400 hover:text-white
+              active:scale-90 transition-all touch-manipulation
             "
             aria-label="Cerrar"
           >
@@ -219,10 +245,10 @@ const BottomSheet = ({ isOpen, onClose, title, children }: BottomSheetProps) => 
           </button>
         </div>
 
-        {/* Contenido */}
+        {/* Área de Contenido Scrolleable */}
         <div
-          className="p-5 overflow-y-auto overscroll-contain"
-          style={{ maxHeight: `calc(70vh - ${keyboardOffset}px)`, WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+          className="p-6 overflow-y-auto overscroll-contain flex-1"
+          style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {children}
         </div>
@@ -230,6 +256,8 @@ const BottomSheet = ({ isOpen, onClose, title, children }: BottomSheetProps) => 
     </div>
   )
 }
+
+
 
 // ─── Componente: Campo de búsqueda (conservado) ────────────────────────────
 
@@ -626,16 +654,6 @@ export default function TareasRepuestosPage() {
     )
   }, [piezas, debouncedSearchPiezas])
 
-  // ── Estadísticas ──────────────────────────────────────────────────────────
-
-  const stats = useMemo(() => ({
-    total:      tareas.length,
-    preventivo: tareas.filter(t => t.tipo === 'preventivo').length,
-    correctivo: tareas.filter(t => t.tipo === 'correctivo').length,
-    ambos:      tareas.filter(t => t.tipo === 'ambos').length,
-    piezas:     piezas.length,
-  }), [tareas, piezas])
-
   // ── Handlers de Tareas ────────────────────────────────────────────────────
 
   const handleCrearTarea = useCallback(() => {
@@ -748,6 +766,7 @@ export default function TareasRepuestosPage() {
             />
           </div>
         </div>
+        
       </header>
 
       {/* ── Banner offline ── */}
@@ -772,17 +791,8 @@ export default function TareasRepuestosPage() {
           <Skeleton />
         ) : (
           <>
-            {/* Stats scrollables */}
-            <div
-              className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide"
-              style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
-            >
-              <StatChip label="Total Tareas" value={stats.total}      colorClass="text-blue-400"    Icon={ListChecks} />
-              <StatChip label="Preventivas"  value={stats.preventivo} colorClass="text-emerald-400" Icon={Wrench}     />
-              <StatChip label="Correctivas"  value={stats.correctivo} colorClass="text-amber-400"   Icon={AlertCircle}/>
-              <StatChip label="Ambos"        value={stats.ambos}      colorClass="text-purple-400"  Icon={RotateCw}   />
-              <StatChip label="Repuestos"    value={stats.piezas}     colorClass="text-cyan-400"    Icon={Package}    />
-            </div>
+            
+
 
             {/* Tabs */}
             <div className="flex bg-slate-800/60 rounded-2xl p-1.5 border border-slate-700/40">
@@ -1046,8 +1056,8 @@ export default function TareasRepuestosPage() {
         )}
       </main>
 
-      {/* ── Modales de CREACIÓN (conservados) ── */}
-      <BottomSheet
+      {/* ── Modales de CREACIÓN ── */}
+      <Modal
         isOpen={modalTarea}
         onClose={() => setModalTarea(false)}
         title="Nueva tarea"
@@ -1059,9 +1069,9 @@ export default function TareasRepuestosPage() {
           submitLabel="Agregar tarea"
           accentClass="bg-blue-500/20 text-blue-300 border border-blue-500/30"
         />
-      </BottomSheet>
+      </Modal>
 
-      <BottomSheet
+      <Modal
         isOpen={modalPieza}
         onClose={() => setModalPieza(false)}
         title="Nuevo repuesto"
@@ -1073,10 +1083,10 @@ export default function TareasRepuestosPage() {
           submitLabel="Agregar repuesto"
           accentClass="bg-purple-500/20 text-purple-300 border border-purple-500/30"
         />
-      </BottomSheet>
+      </Modal>
 
-      {/* ── Modales de EDICIÓN (conservados) ── */}
-      <BottomSheet
+      {/* ── Modales de EDICIÓN ── */}
+      <Modal
         isOpen={!!editTarea}
         onClose={() => setEditTarea(null)}
         title="Editar tarea"
@@ -1091,9 +1101,9 @@ export default function TareasRepuestosPage() {
             accentClass="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
           />
         )}
-      </BottomSheet>
+      </Modal>
 
-      <BottomSheet
+      <Modal
         isOpen={!!editPieza}
         onClose={() => setEditPieza(null)}
         title="Editar repuesto"
@@ -1108,7 +1118,7 @@ export default function TareasRepuestosPage() {
             accentClass="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
           />
         )}
-      </BottomSheet>
+      </Modal>
     </div>
   )
 }

@@ -29,10 +29,11 @@ export function ClienteHistorialModal({
   onClose,
 }: ClienteHistorialModalProps) {
   const isMobile = useMediaQuery("(max-width: 768px)");
+  
   const { ordenes, loading, error, refrescar } = useOrdenesCliente(clienteId);
   const [selectedOrden, setSelectedOrden] = useState<Orden | null>(null);
   const { negocio } = useNegocioUsuario();
-  const { imprimirOrden, compartirOrden, descargarPDF, generarPDFBlob } = usePrintService({ negocio });
+  const { imprimirOrden, compartirOrden, descargarPDF, generarPDFBlob, generarHTML } = usePrintService({ negocio });
   const haptic = useHapticFeedback();
 
   // Cerrar con swipe (mobile)
@@ -173,7 +174,7 @@ export function ClienteHistorialModal({
           >
             <SheetHeader className="px-5 pt-4 pb-2 border-b border-gray-700/50 text-left sm:text-left">
               <SheetTitle className="text-base font-semibold text-white">Historial de órdenes</SheetTitle>
-              <SheetDescription className="text-xs text-gray-500">{clienteNombre}</SheetDescription>
+              <SheetDescription className="text-lg text-gray-500">{clienteNombre}</SheetDescription>
               <button
                 onClick={onClose}
                 className="absolute right-4 top-4 w-8 h-8 rounded-lg bg-gray-800 active:bg-gray-700 flex items-center justify-center transition-colors"
@@ -204,6 +205,7 @@ export function ClienteHistorialModal({
       {selectedOrden && (
         <ModalOrden
           generarPDFBlob={generarPDFBlob}
+          generarHTML={generarHTML}
           orden={selectedOrden}
           onClose={closeOrdenModal}
           onPrint={imprimirOrden}

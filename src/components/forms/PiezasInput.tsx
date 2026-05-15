@@ -32,7 +32,7 @@ const SelectorCantidad = memo(({
     <button
       type="button"
       onClick={() => cantidad > 1 ? onCambiar(cantidad - 1) : onEliminar()}
-      className="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg transition-all text-gray-400 hover:text-white"
+      className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg transition-all text-gray-400 hover:text-white"
       aria-label="Disminuir cantidad"
     >
       <span className="text-xl font-bold select-none">-</span>
@@ -46,13 +46,13 @@ const SelectorCantidad = memo(({
         if (val > 0 && val <= 999) onCambiar(val);
       }}
       min="1" max="999"
-      className="w-12 text-center bg-transparent border-none text-white text-sm font-bold focus:ring-0 p-0 select-none appearance-none"
+      className="w-10 sm:w-12 text-center bg-transparent border-none text-white text-sm font-bold focus:ring-0 p-0 select-none appearance-none"
     />
     
     <button
       type="button"
       onClick={() => cantidad < 999 ? onCambiar(cantidad + 1) : null}
-      className="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg transition-all text-gray-400 hover:text-white disabled:opacity-30"
+      className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg transition-all text-gray-400 hover:text-white disabled:opacity-30"
       disabled={cantidad >= 999}
       aria-label="Aumentar cantidad"
     >

@@ -4,6 +4,8 @@ import { Calendar, Clock, Shield, ShieldOff, AlertCircle, CheckCircle2, Info } f
 import { useState, useEffect } from 'react'
 
 interface GarantiaInputProps {
+  garantiaHabilitada: boolean
+  onToggleGarantia: () => void
   garantiaTiempoDesde: string
   garantiaTiempoHasta: string
   mesesGarantia: number
@@ -14,6 +16,8 @@ interface GarantiaInputProps {
 }
 
 export default function GarantiaInput({
+  garantiaHabilitada,
+  onToggleGarantia,
   garantiaTiempoDesde,
   garantiaTiempoHasta,
   mesesGarantia,
@@ -25,28 +29,14 @@ export default function GarantiaInput({
   const [errorFecha, setErrorFecha] = useState<string>('')
   const [mostrarInfo, setMostrarInfo] = useState(false)
   
-  // Estado local para el toggle
-const [aplicaGarantia, setAplicaGarantia] = useState<boolean>(false)
-
   // Handle del switch
-  const handleToggleGarantia = (checked: boolean) => {
-    if (!checked) {
-      // Caso off: apagamos y seteamos valores que indicarán que no hay garantía
-      onCambiarMeses(0)
-      onCambiarFechaDesde('')
-      onCambiarDescripcion('No aplica garantía')
-    } else {
-      // Caso on: restauramos valores default (p. ej: 3 meses, hoy)
-      onCambiarMeses(3)
-      onCambiarFechaDesde(new Date().toISOString().split('T')[0])
-      onCambiarDescripcion('')
-    }
-    setAplicaGarantia(checked)
+  const handleToggleGarantia = () => {
+    onToggleGarantia()
   }
 
   // Validar fecha
   useEffect(() => {
-    if (garantiaTiempoDesde && aplicaGarantia) {
+    if (garantiaTiempoDesde && garantiaHabilitada) {
       const fechaSeleccionada = new Date(garantiaTiempoDesde)
       const hoy = new Date()
       hoy.setHours(0, 0, 0, 0)
@@ -69,7 +59,7 @@ const [aplicaGarantia, setAplicaGarantia] = useState<boolean>(false)
     } else {
       setErrorFecha('')
     }
-  }, [garantiaTiempoDesde, aplicaGarantia])
+  }, [garantiaTiempoDesde, garantiaHabilitada])
 
   // Formatear fecha de vencimiento
   const formatearFechaVencimiento = () => {
@@ -112,8 +102,8 @@ const [aplicaGarantia, setAplicaGarantia] = useState<boolean>(false)
       {/* Banner Principal de Control - Toggle Switch */}
       <div className="bg-gray-800/80 border border-gray-700/50 rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-lg hover:border-gray-600/50 transition-colors">
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors duration-300 ${aplicaGarantia ? 'bg-blue-500/20 shadow-inner' : 'bg-gray-700/50 shadow-none'}`}>
-            {aplicaGarantia ? (
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors duration-300 ${garantiaHabilitada ? 'bg-blue-500/20 shadow-inner' : 'bg-gray-700/50 shadow-none'}`}>
+            {garantiaHabilitada ? (
               <Shield className="w-6 h-6 text-blue-400" />
             ) : (
               <ShieldOff className="w-6 h-6 text-gray-400" />
@@ -122,14 +112,14 @@ const [aplicaGarantia, setAplicaGarantia] = useState<boolean>(false)
           <div>
             <h3 className="text-lg sm:text-xl font-bold text-gray-100 flex items-center gap-2">
               Garantía del servicio
-              {aplicaGarantia && (
+              {garantiaHabilitada && (
                  <button type="button" onClick={() => setMostrarInfo(!mostrarInfo)} className="p-1 hover:bg-gray-700 rounded-full transition-colors">
                    <Info className="w-4 h-4 text-gray-400" />
                  </button>
               )}
             </h3>
-            <p className={`text-xs sm:text-sm transition-colors duration-300 ${aplicaGarantia ? 'text-blue-300/80' : 'text-gray-500'}`}>
-              {aplicaGarantia ? 'Incluida en el servicio' : 'No se aplicará garantía'}
+            <p className={`text-xs sm:text-sm transition-colors duration-300 ${garantiaHabilitada ? 'text-blue-300/80' : 'text-gray-500'}`}>
+              {garantiaHabilitada ? 'Incluida en el servicio' : 'No se aplicará garantía'}
             </p>
           </div>
         </div>
@@ -138,13 +128,13 @@ const [aplicaGarantia, setAplicaGarantia] = useState<boolean>(false)
         <button
           type="button"
           role="switch"
-          aria-checked={aplicaGarantia}
-          onClick={() => handleToggleGarantia(!aplicaGarantia)}
+          aria-checked={garantiaHabilitada}
+          onClick={handleToggleGarantia}
           className={`
             relative inline-flex h-8 w-14 sm:h-9 sm:w-16 shrink-0 cursor-pointer rounded-full border-2 border-transparent 
             transition-colors duration-300 ease-in-out focus:outline-none focus-visible:ring-2 
             focus-visible:ring-blue-500 focus-visible:ring-opacity-75 shadow-inner
-            ${aplicaGarantia ? 'bg-blue-500' : 'bg-gray-600'}
+            ${garantiaHabilitada ? 'bg-blue-500' : 'bg-gray-600'}
           `}
         >
           <span className="sr-only">Activar garantía</span>
@@ -153,14 +143,14 @@ const [aplicaGarantia, setAplicaGarantia] = useState<boolean>(false)
             className={`
               pointer-events-none inline-block h-7 w-7 sm:h-8 sm:w-8 transform rounded-full bg-white shadow-md 
               transition duration-300 ease-in-out
-              ${aplicaGarantia ? 'translate-x-6 sm:translate-x-7' : 'translate-x-0'}
+              ${garantiaHabilitada ? 'translate-x-6 sm:translate-x-7' : 'translate-x-0'}
             `}
           />
         </button>
       </div>
 
       {/* Info extra */}
-      {mostrarInfo && aplicaGarantia && (
+      {mostrarInfo && garantiaHabilitada && (
         <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="flex gap-3">
             <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
@@ -176,7 +166,7 @@ const [aplicaGarantia, setAplicaGarantia] = useState<boolean>(false)
       )}
 
       {/* Condicional: Formulario completo vs Banner de vacío */}
-      {aplicaGarantia ? (
+      {garantiaHabilitada ? (
         <div className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
                     
           {/* Seccion: Duración (Botones Responsive) */}
@@ -331,9 +321,9 @@ const [aplicaGarantia, setAplicaGarantia] = useState<boolean>(false)
             <Info className="w-5 h-5 text-blue-400" />
           </div>
           <div className="space-y-1">
-            <h4 className="text-lg text-center font-bold text-blue-400">¿Por qué registrar la garantía?</h4>
-            <p className="text-sm text-gray-400 text-justify leading-relaxed">
-              Registrar la garantía del servicio permite un seguimiento preciso de la cobertura del equipo, asegurando que el cliente reciba soporte técnico adecuado durante el periodo especificado y facilitando la gestión de mantenimientos preventivos entre otros.
+            <h4 className="text-lg font-bold text-blue-400">Garantía opcional</h4>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Puede omitir el registro de garantía desactivando el toggle superior si el servicio no lo requiere.
             </p>
           </div>
         </div>
