@@ -29,7 +29,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <>
       <NetworkStatusBanner />
-      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-gray-800 px-4">
+      <header id="main-header" data-navigation="header" className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-gray-800 px-4">
         <SidebarTrigger className="hidden sm:flex -ml-1 text-gray-300 hover:text-white hover:bg-gray-700" />
         <Separator orientation="vertical" className="mr-2 h-4 bg-gray-700" />
         <div className="flex flex-1 items-center justify-between">

@@ -176,3 +176,23 @@ button, a, [role="button"] {
 .touch-manipulation {
   touch-action: manipulation;
 }
+
+/* Onboarding styles to hide navigation */
+body.onboarding-active #main-header,
+body.onboarding-active [data-sidebar="sidebar"],
+body.onboarding-active #mobile-nav {
+  display: none !important;
+}
+
+body.onboarding-active main {
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 100vh !important;
+  max-width: none !important;
+}
+
+body.onboarding-active .max-w-7xl {
+  max-width: none !important;
+  padding: 0 !important;
+}
+

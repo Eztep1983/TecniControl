@@ -9,7 +9,8 @@ import {
   Clock,
   Loader2,
   ArrowRight,
-  ClipboardList
+  ClipboardList,
+  Stethoscope
 } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { useOrdenesRecientes, useEstadisticasUsuario, usePrefetchData } from '@/hooks/useMultiUser'
@@ -63,10 +64,15 @@ function OrdenesDashboardContent() {
 
   useEffect(() => {
     // Check onboarding
-    if (typeof window !== 'undefined') {
-      const completed = localStorage.getItem('has_completed_onboarding');
+    if (typeof window !== 'undefined' && user?.uid && !statsLoading) {
+      const completed = localStorage.getItem(`has_completed_onboarding_${user.uid}`);
       if (!completed) {
-        setShowWelcome(true);
+        if (estadisticas.totalOrdenes === 0) {
+          setShowWelcome(true);
+        } else {
+          // Si ya tiene órdenes, marcamos el onboarding como completado
+          localStorage.setItem(`has_completed_onboarding_${user.uid}`, 'true');
+        }
       }
     }
 
@@ -86,7 +92,7 @@ function OrdenesDashboardContent() {
     return () => {
       window.removeEventListener('open-nueva-orden', handleOpenForm);
     };
-  }, [searchParams, router])
+  }, [searchParams, router, user?.uid, statsLoading, estadisticas.totalOrdenes])
 
   // Filtrar solo mantenimiento (aunque ya vienen limitadas, aseguramos tipo)
   const ordenesMantenimiento = useMemo(() => {
@@ -160,7 +166,9 @@ function OrdenesDashboardContent() {
     return (
       <OnboardingSuccess 
         onFinish={() => {
-          localStorage.setItem('has_completed_onboarding', 'true');
+          if (user?.uid) {
+            localStorage.setItem(`has_completed_onboarding_${user.uid}`, 'true');
+          }
           setShowSuccess(false);
           refrescarDatos();
         }} 
@@ -263,29 +271,29 @@ function OrdenesDashboardContent() {
           </h2>
           <div className="flex overflow-x-auto gap-3 pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] -mx-4 px-4 sm:mx-0 sm:px-0">
             {/* Total Widget */}
-            <div className="snap-start shrink-0 w-32 bg-gray-800/80 border border-gray-700/50 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden group">
+            <div className="snap-start shrink-0 w-32 bg-trasnparent shadow-2xl border border-gray-700/50 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden group">
               <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               <ClipboardList className="w-6 h-6 text-gray-400 mb-2" />
               <span className="text-2xl font-bold text-white">{stats.total}</span>
               <span className="text-xs text-gray-400 mt-1">Total</span>
             </div>
 
-            <div className="snap-start shrink-0 w-32 bg-gray-800/80 border border-green-500/20 rounded-2xl p-4 flex flex-col items-center justify-center">
-              <Wrench className="w-6 h-6 text-green-400 mb-2" />
+            <div className="snap-start shrink-0 w-32 bg-trasnparent shadow-2xl border border-green-500/20 rounded-2xl p-4 flex flex-col items-center justify-center">
+              <Shield className="w-6 h-6 text-green-400 mb-2" />
               <span className="text-2xl font-bold text-white">{stats.preventivos}</span>
               <span className="text-xs text-gray-400 mt-1">Preventivos</span>
             </div>
-            <div className="snap-start shrink-0 w-32 bg-gray-800/80 border border-orange-500/20 rounded-2xl p-4 flex flex-col items-center justify-center">
+            <div className="snap-start shrink-0 w-32 bg-trasnparent shadow-2xl border border-orange-500/20 rounded-2xl p-4 flex flex-col items-center justify-center">
               <Wrench className="w-6 h-6 text-orange-400 mb-2" />
               <span className="text-2xl font-bold text-white">{stats.correctivos}</span>
               <span className="text-xs text-gray-400 mt-1">Correctivos</span>
             </div>
-            <div className="snap-start shrink-0 w-32 bg-gray-800/80 border border-blue-500/20 rounded-2xl p-4 flex flex-col items-center justify-center">
-              <Wrench className="w-6 h-6 text-blue-400 mb-2" />
+            <div className="snap-start shrink-0 w-32 bg-trasnparent shadow-2xl border border-blue-500/20 rounded-2xl p-4 flex flex-col items-center justify-center">
+              <Stethoscope className="w-6 h-6 text-blue-400 mb-2" />
               <span className="text-2xl font-bold text-white">{stats.diagnosticos}</span>
               <span className="text-xs text-gray-400 mt-1">Diagnósticos</span>
             </div>
-            <div className="snap-start shrink-0 w-32 bg-gray-800/80 border border-purple-500/20 rounded-2xl p-4 flex flex-col items-center justify-center">
+            <div className="snap-start shrink-0 w-32 bg-trasnparent shadow-2xl border border-purple-500/20 rounded-2xl p-4 flex flex-col items-center justify-center">
               <Wrench className="w-6 h-6 text-purple-400 mb-2" />
               <span className="text-2xl font-bold text-white">{stats.instalaciones}</span>
               <span className="text-xs text-gray-400 mt-1">Instalaciones</span>

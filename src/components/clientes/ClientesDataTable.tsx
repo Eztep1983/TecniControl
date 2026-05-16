@@ -492,15 +492,23 @@ export function ClientesDataTable({
 
   const totalPages = Math.max(1, Math.ceil(data.length / itemsPerPage));
 
-  // Ajustar página si queda fuera de rango
-  useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(totalPages);
+  // FIX: Ajustar página si queda fuera de rango (ahora de forma reactiva en el render para evitar flashes)
+  const safePage = useMemo(() => {
+    if (currentPage > totalPages) return totalPages;
+    return currentPage;
   }, [currentPage, totalPages]);
 
+  // Si la página segura es distinta a la actual, sincronizamos el estado en el siguiente efecto
+  useEffect(() => {
+    if (currentPage !== safePage) {
+      setCurrentPage(safePage);
+    }
+  }, [currentPage, safePage]);
+
   const paginatedClientes = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
+    const start = (safePage - 1) * itemsPerPage;
     return data.slice(start, start + itemsPerPage);
-  }, [currentPage, data, itemsPerPage]);
+  }, [safePage, data, itemsPerPage]);
 
   // ── Eliminación ──────────────────────────────────────────────────────────
   const handleDeleteClick = useCallback((id: string) => {
@@ -642,7 +650,7 @@ export function ClientesDataTable({
           </p>
           <CountUp
             from={0}
-            to={totalGlobal ?? data.length}
+            to={Math.max(totalGlobal ?? 0, data.length)}
             direction="up"
             duration={1}
             className="text-2xl font-bold text-white leading-tight"

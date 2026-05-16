@@ -6,8 +6,8 @@ import { useState, useEffect, useCallback, useMemo, useReducer } from 'react'
 import { OrdenMantenimiento, Cliente, Dispositivo } from '@/types/orden'
 import { createPortal } from 'react-dom';
 import {
-  ArrowLeft,  ChevronRight, ChevronLeft, CheckCircle, Users, Wrench,
-  ClipboardCheck, GaugeCircle, Laptop, ShieldCheck, PenLine, Check, Share2, Printer, X, Download
+  ArrowLeft, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench,
+  ClipboardCheck, GaugeCircle, Laptop, ShieldCheck, PenLine, Check, Share2, Sparkles
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Haptics, NotificationType } from '@capacitor/haptics'
@@ -28,11 +28,50 @@ import ContadorInput, { Contador } from '@/components/forms/ContadorInput'
 import FirmaInput from '@/components/forms/FirmaInput'
 import ResumenMantenimiento from '@/components/forms/ResumenMantenimiento'
 import { usePersistentReducer } from '@/hooks/usePersistentReducer'
+import { useKeyboardVisible } from '@/hooks/useKeyboardVisible'
 
 interface FormularioMantenimientoProps {
   onClose: () => void
   onSuccess: () => void
   isOnboarding?: boolean
+}
+
+const ONBOARDING_HINTS: Record<FormStep, { title: string, hint: string, icon: any }> = {
+  cliente: {
+    title: "Identifica al Cliente",
+    icon: <Users className="w-5 h-5" />,
+    hint: "Aquí seleccionas quién solicita el servicio. En el modo real, podrás buscar por nombre o cédula. Hemos pre-seleccionado un cliente de prueba para ti."
+  },
+  dispositivo: {
+    title: "Selecciona el Equipo",
+    icon: <Laptop className="w-5 h-5" />,
+    hint: "Cada cliente puede tener múltiples equipos. Aquí eliges cuál vas a intervenir. Esto mantiene un historial técnico organizado por cada dispositivo."
+  },
+  mantenimiento: {
+    title: "Detalla el Trabajo",
+    icon: <Wrench className="w-5 h-5" />,
+    hint: "Indica qué tipo de servicio realizas y qué tareas completaste. También puedes registrar las piezas que usaste para llevar un control de inventario/costos."
+  },
+  contador: {
+    title: "Registro de Uso",
+    icon: <GaugeCircle className="w-5 h-5" />,
+    hint: "Este paso es opcional. Sirve para anotar unidades, horas de uso o impresiones. Ayuda a predecir cuándo será el próximo mantenimiento."
+  },
+  garantia: {
+    title: "Respaldo del Servicio",
+    icon: <ShieldCheck className="w-5 h-5" />,
+    hint: "Configura cuánto tiempo de garantía ofreces. El sistema calculará automáticamente la fecha de vencimiento y la incluirá en el PDF profesional."
+  },
+  firma: {
+    title: "Validación Legal",
+    icon: <PenLine className="w-5 h-5" />,
+    hint: "Tus clientes pueden firmar directamente en tu pantalla. Esto da validez legal al servicio y asegura que el cliente esté conforme con el trabajo."
+  },
+  resumen: {
+    title: "Revisión Final",
+    icon: <ClipboardCheck className="w-5 h-5" />,
+    hint: "Verifica que toda la información sea correcta antes de generar el documento oficial. Una vez guardado, podrás enviarlo por WhatsApp en un clic."
+  }
 }
 
 export interface Pieza {
@@ -109,6 +148,8 @@ type FormAction =
   | { type: 'SET_DISPOSITIVO_SELECCIONADO'; payload: Dispositivo | null }
   | { type: 'SET_TIPO_MANTENIMIENTO'; payload: FormState['tipoMantenimiento'] }
   | { type: 'TOGGLE_TAREA_PREDEFINIDA'; payload: string }
+  | { type: 'ADD_TAREA_PREDEFINIDA'; payload: string }
+  | { type: 'SET_TAREAS_SELECCIONADAS'; payload: string[] }
   | { type: 'SET_TAREAS_PERSONALIZADAS'; payload: string[] }
   | { type: 'UPDATE_TAREA_PERSONALIZADA'; payload: { index: number; valor: string } }
   | { type: 'ADD_TAREA_PERSONALIZADA'; payload?: string }
@@ -136,6 +177,7 @@ type FormAction =
   | { type: 'SET_FIRMA_CLIENTE'; payload: string | null }
   | { type: 'SET_VALIDACION_CLIENTE'; payload: boolean }
   | { type: 'TOGGLE_FIRMA_HABILITADA' }
+  | { type: 'SET_ONBOARDING_DATA'; payload: { cliente: Cliente; dispositivo: Dispositivo } }
 
 const initialState: FormState = {
   currentStep: 'cliente',
@@ -248,6 +290,17 @@ function formReducer(state: FormState, action: FormAction): FormState {
           ? state.tareasSeleccionadas.filter(t => t !== action.payload)
           : [...state.tareasSeleccionadas, action.payload]
       }
+
+    case 'ADD_TAREA_PREDEFINIDA':
+      return {
+        ...state,
+        tareasSeleccionadas: state.tareasSeleccionadas.includes(action.payload)
+          ? state.tareasSeleccionadas
+          : [...state.tareasSeleccionadas, action.payload]
+      }
+
+    case 'SET_TAREAS_SELECCIONADAS':
+      return { ...state, tareasSeleccionadas: action.payload }
 
     case 'SET_TAREAS_PERSONALIZADAS':
       return { ...state, tareasPersonalizadas: action.payload }
@@ -378,6 +431,40 @@ function formReducer(state: FormState, action: FormAction): FormState {
         firmaHabilitada: !state.firmaHabilitada
       }
 
+    case 'SET_ONBOARDING_DATA':
+      const onboardingMantenimientoData = {
+        tareasSeleccionadas: ['Limpieza interna y externa', 'Optimización de sistema'],
+        tareasPersonalizadas: [''],
+        piezasUsadas: [],
+        observacionesIniciales: '',
+        pruebasRealizadas: '',
+        diagnosticoFinal: '',
+        instalacionRecomendaciones: false,
+        instalacionRecomendacionesDetalle: '',
+        instalacionConfiguracion: false,
+        instalacionConfiguracionTipos: [],
+      };
+      return {
+        ...state,
+        clienteSeleccionado: action.payload.cliente,
+        dispositivoSeleccionado: action.payload.dispositivo,
+        tipoMantenimiento: 'preventivo',
+        tareasSeleccionadas: onboardingMantenimientoData.tareasSeleccionadas,
+        tareasPersonalizadas: onboardingMantenimientoData.tareasPersonalizadas,
+        piezasUsadas: onboardingMantenimientoData.piezasUsadas,
+        mantenimientoColecciones: {
+          ...state.mantenimientoColecciones,
+          preventivo: onboardingMantenimientoData
+        },
+        garantiaHabilitada: true,
+        garantiaDescripcion: 'Garantía extendida por onboarding',
+        mesesGarantia: 6,
+        firmaHabilitada: true,
+        firmaCliente: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+        validacionCliente: true,
+        highestStepCompleted: 6
+      }
+
     default:
       return state
   }
@@ -399,6 +486,7 @@ const STEPS_CONFIG = [
 export default function FormularioMantenimiento({ onClose, onSuccess, isOnboarding }: FormularioMantenimientoProps) {
   const { user } = useAuth()
   const { negocio } = useNegocio()
+  const isKeyboardVisible = useKeyboardVisible()
   const { imprimirOrden, compartirOrden } = usePrintService({ negocio })
   const { mutateAsync: crearOrdenMutate } = useCrearOrden()
   const [state, dispatch] = usePersistentReducer(
@@ -429,55 +517,44 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   // Inyectar datos de prueba para Onboarding
   useEffect(() => {
     if (isOnboarding) {
+      document.body.classList.add('onboarding-active');
+
       // Usar setTimeout para asegurarse de que el dispatch ocurra después del primer render
       setTimeout(() => {
-        dispatch({ 
-          type: 'SET_CLIENTE_SELECCIONADO', 
-          payload: { 
-            id: 'test_cliente', 
-            name: 'Juan Pérez (Cliente de Prueba)', 
-            email: 'juan@ejemplo.com', 
-            phone: '555-0123', 
-            address: 'Av. Siempre Viva 123',
-            tipo: 'persona',
-            userId: user?.uid || 'test',
-            cedula: '1234567890',
-            dispositivos: []
-          } as unknown as Cliente
-        });
-        
+        const testCliente = {
+          id: 'test_cliente',
+          name: 'Juan Pérez (Cliente de Prueba)',
+          email: 'juan@ejemplo.com',
+          phone: '555-0123',
+          address: 'Av. Siempre Viva 123',
+          tipo: 'persona',
+          userId: user?.uid || 'test',
+          cedula: '1234567890',
+          dispositivos: []
+        } as unknown as Cliente;
+
+        const testDispositivo = {
+          id: 'test_dispositivo',
+          type: 'computadora',
+          tipo: 'computadora',
+          brand: 'TechBrand',
+          marca: 'TechBrand',
+          model: 'ProBook X200',
+          modelo: 'ProBook X200',
+          serialNumber: 'SN-987654321',
+          numeroSerie: 'SN-987654321',
+          clienteId: 'test_cliente',
+        } as unknown as Dispositivo;
+
         dispatch({
-          type: 'SET_DISPOSITIVO_SELECCIONADO',
-          payload: {
-            id: 'test_dispositivo',
-            type: 'computadora',
-            tipo: 'computadora',
-            brand: 'TechBrand',
-            marca: 'TechBrand',
-            model: 'ProBook X200',
-            modelo: 'ProBook X200',
-            serialNumber: 'SN-987654321',
-            numeroSerie: 'SN-987654321',
-            clienteId: 'test_cliente',
-          } as unknown as Dispositivo
+          type: 'SET_ONBOARDING_DATA',
+          payload: { cliente: testCliente, dispositivo: testDispositivo }
         });
-
-        dispatch({ type: 'SET_TIPO_MANTENIMIENTO', payload: 'preventivo' });
-        dispatch({ type: 'TOGGLE_TAREA_PREDEFINIDA', payload: 'Limpieza interna y externa' });
-        dispatch({ type: 'TOGGLE_TAREA_PREDEFINIDA', payload: 'Optimización de sistema' });
-        
-        dispatch({ type: 'TOGGLE_GARANTIA_HABILITADA' });
-        dispatch({ type: 'SET_GARANTIA_DESCRIPCION', payload: 'Garantía extendida por onboarding' });
-        dispatch({ type: 'SET_MESES_GARANTIA', payload: 6 });
-        
-        // Simular una firma base64 de 1x1 transparente para pasar la validación
-        dispatch({ type: 'TOGGLE_FIRMA_HABILITADA' });
-        dispatch({ type: 'SET_FIRMA_CLIENTE', payload: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=' });
-        dispatch({ type: 'SET_VALIDACION_CLIENTE', payload: true });
-
-        // Permitir que todos los pasos se puedan acceder directamente
-        dispatch({ type: 'SET_HIGHEST_STEP_COMPLETED', payload: 6 });
       }, 500);
+
+      return () => {
+        document.body.classList.remove('onboarding-active');
+      };
     }
   }, [isOnboarding]);
 
@@ -566,8 +643,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   useEffect(() => {
     if (state.ordenCreada) {
       // Notificar éxito con vibración si está disponible
-      Haptics.notification({ type: NotificationType.Success }).catch(() => {})
-      
+      Haptics.notification({ type: NotificationType.Success }).catch(() => { })
+
       const timeoutId = setTimeout(() => {
         localStorage.removeItem(isOnboarding ? 'draft_onboarding' : 'draft_mantenimiento')
       }, 100)
@@ -622,12 +699,12 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
     // 1. Es el paso actual o uno anterior al más alto completado (para retroceder)
     // 2. O es el siguiente paso después del más alto completado Y el paso actual está completado
     if (stepIndex <= state.highestStepCompleted) return true
-    
+
     // Solo se puede avanzar un paso a la vez desde el highestStepCompleted
     if (stepIndex === state.highestStepCompleted + 1) {
       return stepValidations[state.highestStepCompleted]()
     }
-    
+
     return false
   }, [state.highestStepCompleted, stepValidations])
 
@@ -644,12 +721,12 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
     const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
     if (currentIndex < STEPS_CONFIG.length - 1) {
       const nextIndex = currentIndex + 1
-      
+
       // Actualizar el highestStepCompleted si avanzamos
       if (nextIndex > state.highestStepCompleted && canProceedToNextStep()) {
         dispatch({ type: 'SET_HIGHEST_STEP_COMPLETED', payload: nextIndex })
       }
-      
+
       dispatch({ type: 'SET_CURRENT_STEP', payload: STEPS_CONFIG[nextIndex].key })
       scrollToTop()
     }
@@ -675,7 +752,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   // Handlers de Cliente
   const handleSeleccionarCliente = useCallback((cliente: Cliente) => {
     dispatch({ type: 'SET_CLIENTE_SELECCIONADO', payload: cliente })
-    
+
     // Si estamos en el paso cliente y se selecciona uno, marcar que se puede avanzar
     const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
     if (currentIndex === 0 && state.highestStepCompleted < 1) {
@@ -685,7 +762,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
 
   const handleDesseleccionarCliente = useCallback(() => {
     dispatch({ type: 'SET_CLIENTE_SELECCIONADO', payload: null })
-    
+
     // Si deseleccionamos cliente, reducimos el highestStepCompleted si es necesario
     if (state.highestStepCompleted >= 1) {
       dispatch({ type: 'SET_HIGHEST_STEP_COMPLETED', payload: 0 })
@@ -695,7 +772,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   // Handlers de Dispositivo
   const handleSeleccionarDispositivo = useCallback((dispositivo: Dispositivo) => {
     dispatch({ type: 'SET_DISPOSITIVO_SELECCIONADO', payload: dispositivo })
-    
+
     const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
     if (currentIndex === 1 && state.highestStepCompleted < 2) {
       dispatch({ type: 'SET_HIGHEST_STEP_COMPLETED', payload: 2 })
@@ -704,7 +781,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
 
   const handleDesseleccionarDispositivo = useCallback(() => {
     dispatch({ type: 'SET_DISPOSITIVO_SELECCIONADO', payload: null })
-    
+
     if (state.highestStepCompleted >= 2) {
       dispatch({ type: 'SET_HIGHEST_STEP_COMPLETED', payload: 1 })
     }
@@ -740,109 +817,109 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   // SUBMIT OPTIMIZADO
   // ============================================================================
 
-const handleSubmit = useCallback(async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  if (!user?.uid) {
-    alert('Usuario no autenticado');
-    return;
-  }
+    if (!user?.uid) {
+      alert('Usuario no autenticado');
+      return;
+    }
 
-  dispatch({ type: 'SET_LOADING', payload: true });
+    dispatch({ type: 'SET_LOADING', payload: true });
 
-  try {
-    // Construimos la orden sin idPersonalizado (la mutación lo genera)
-    const todasLasTareas = [
-      ...state.tareasSeleccionadas,
-      ...state.tareasPersonalizadas.filter(t => t.trim())
-    ];
+    try {
+      // Construimos la orden sin idPersonalizado (la mutación lo genera)
+      const todasLasTareas = [
+        ...state.tareasSeleccionadas,
+        ...state.tareasPersonalizadas.filter(t => t.trim())
+      ];
 
-    const piezasUsadasFiltradas = state.piezasUsadas
-      .filter(pieza => pieza?.pieza?.trim())
-      .map(pieza => ({
-        pieza: pieza.pieza,
-        cantidad: pieza.cantidad || 1
-      }));
+      const piezasUsadasFiltradas = state.piezasUsadas
+        .filter(pieza => pieza?.pieza?.trim())
+        .map(pieza => ({
+          pieza: pieza.pieza,
+          cantidad: pieza.cantidad || 1
+        }));
 
-    let contadorParaGuardar: any = null;
-    if (state.mostrarContador && state.contador) {
-      contadorParaGuardar = {
-        tipo: state.contador.tipo,
-        valor: state.contador.valor || 0,
-        fechaRegistro: new Date(state.contador.fechaRegistro)
+      let contadorParaGuardar: any = null;
+      if (state.mostrarContador && state.contador) {
+        contadorParaGuardar = {
+          tipo: state.contador.tipo,
+          valor: state.contador.valor || 0,
+          fechaRegistro: new Date(state.contador.fechaRegistro)
+        };
+        if (state.contador.unidadPersonalizada?.trim())
+          contadorParaGuardar.unidadPersonalizada = state.contador.unidadPersonalizada.trim();
+        if (state.contador.notas?.trim())
+          contadorParaGuardar.notas = state.contador.notas.trim();
+      }
+
+      const nuevaOrden: any = {
+        tipo: 'mantenimiento',
+        horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        cliente: state.clienteSeleccionado!,
+        clienteId: state.clienteSeleccionado!.id,
+        dispositivo: state.dispositivoSeleccionado!,
+        dispositivoId: state.dispositivoSeleccionado!.id,
+        fechaCreacion: new Date(),
+        tipoMantenimiento: state.tipoMantenimiento,
+        tareasRealizadas: todasLasTareas,
+        piezasUsadas: piezasUsadasFiltradas,
+        userId: user.uid,
       };
-      if (state.contador.unidadPersonalizada?.trim())
-        contadorParaGuardar.unidadPersonalizada = state.contador.unidadPersonalizada.trim();
-      if (state.contador.notas?.trim())
-        contadorParaGuardar.notas = state.contador.notas.trim();
+
+      if (contadorParaGuardar) nuevaOrden.contador = contadorParaGuardar;
+
+      if (state.tipoMantenimiento === 'diagnostico') {
+        nuevaOrden.observacionesIniciales = state.observacionesIniciales.trim();
+        nuevaOrden.pruebasRealizadas = state.pruebasRealizadas.trim();
+        nuevaOrden.diagnosticoFinal = state.diagnosticoFinal.trim();
+        if (state.contadorMaquina !== undefined) nuevaOrden.contadorMaquina = state.contadorMaquina;
+      }
+
+      if (state.tipoMantenimiento === 'instalacion') {
+        nuevaOrden.instalacionRecomendaciones = state.instalacionRecomendaciones;
+        nuevaOrden.instalacionRecomendacionesDetalle = state.instalacionRecomendacionesDetalle;
+        nuevaOrden.instalacionConfiguracion = state.instalacionConfiguracion;
+        nuevaOrden.instalacionConfiguracionTipos = state.instalacionConfiguracionTipos;
+      }
+
+      if (state.garantiaTiempoDesde) nuevaOrden.garantiaTiempoDesde = new Date(state.garantiaTiempoDesde);
+      if (state.garantiaTiempoHasta) nuevaOrden.garantiaTiempoHasta = new Date(state.garantiaTiempoHasta);
+      if (state.garantiaDescripcion.trim()) nuevaOrden.garantiaDescripcion = state.garantiaDescripcion.trim();
+
+      // Manejo de firma opcional
+      nuevaOrden.firmaCliente = state.firmaHabilitada ? state.firmaCliente : null;
+      nuevaOrden.nombreFirmante = state.firmaHabilitada ? (state.clienteSeleccionado?.name || 'Cliente') : null;
+      nuevaOrden.validacionCliente = state.firmaHabilitada ? state.validacionCliente : false;
+      nuevaOrden.garantiaHabilitada = state.garantiaHabilitada;
+
+      // Limpiar undefineds
+      Object.keys(nuevaOrden).forEach(key => {
+        if (nuevaOrden[key] === undefined) delete nuevaOrden[key];
+      });
+
+      // Ejecutar la mutación (ya genera el ID y guarda)
+      const resultado = await crearOrdenMutate(nuevaOrden);
+
+      // Usamos el objeto que devuelve la mutación como orden creada
+      // Si por algún motivo no viene, construimos uno mínimo
+      const ordenFinal = resultado ?? {
+        ...nuevaOrden,
+        idPersonalizado: 'generada', // se mostrará hasta que se refresque
+      };
+
+      dispatch({ type: 'SET_ORDEN_CREADA', payload: ordenFinal });
+
+      // NOTA: NO llamamos a onSuccess aquí, para que el usuario vea la pantalla de éxito
+      // El botón "Volver a la lista" de la pantalla de éxito sí llama a onSuccess y onClose
+    } catch (error) {
+      console.error('Error creando orden:', error);
+      alert('Error al crear la orden: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
-
-    const nuevaOrden: any = {
-      tipo: 'mantenimiento',
-      horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      cliente: state.clienteSeleccionado!,
-      clienteId: state.clienteSeleccionado!.id,
-      dispositivo: state.dispositivoSeleccionado!,
-      dispositivoId: state.dispositivoSeleccionado!.id,
-      fechaCreacion: new Date(),
-      tipoMantenimiento: state.tipoMantenimiento,
-      tareasRealizadas: todasLasTareas,
-      piezasUsadas: piezasUsadasFiltradas,
-      userId: user.uid,
-    };
-
-    if (contadorParaGuardar) nuevaOrden.contador = contadorParaGuardar;
-
-    if (state.tipoMantenimiento === 'diagnostico') {
-      nuevaOrden.observacionesIniciales = state.observacionesIniciales.trim();
-      nuevaOrden.pruebasRealizadas = state.pruebasRealizadas.trim();
-      nuevaOrden.diagnosticoFinal = state.diagnosticoFinal.trim();
-      if (state.contadorMaquina !== undefined) nuevaOrden.contadorMaquina = state.contadorMaquina;
-    }
-
-    if (state.tipoMantenimiento === 'instalacion') {
-      nuevaOrden.instalacionRecomendaciones = state.instalacionRecomendaciones;
-      nuevaOrden.instalacionRecomendacionesDetalle = state.instalacionRecomendacionesDetalle;
-      nuevaOrden.instalacionConfiguracion = state.instalacionConfiguracion;
-      nuevaOrden.instalacionConfiguracionTipos = state.instalacionConfiguracionTipos;
-    }
-
-    if (state.garantiaTiempoDesde) nuevaOrden.garantiaTiempoDesde = new Date(state.garantiaTiempoDesde);
-    if (state.garantiaTiempoHasta) nuevaOrden.garantiaTiempoHasta = new Date(state.garantiaTiempoHasta);
-    if (state.garantiaDescripcion.trim()) nuevaOrden.garantiaDescripcion = state.garantiaDescripcion.trim();
-    
-    // Manejo de firma opcional
-    nuevaOrden.firmaCliente = state.firmaHabilitada ? state.firmaCliente : null;
-    nuevaOrden.nombreFirmante = state.firmaHabilitada ? (state.clienteSeleccionado?.name || 'Cliente') : null;
-    nuevaOrden.validacionCliente = state.firmaHabilitada ? state.validacionCliente : false;
-    nuevaOrden.garantiaHabilitada = state.garantiaHabilitada;
-
-    // Limpiar undefineds
-    Object.keys(nuevaOrden).forEach(key => {
-      if (nuevaOrden[key] === undefined) delete nuevaOrden[key];
-    });
-
-    // Ejecutar la mutación (ya genera el ID y guarda)
-    const resultado = await crearOrdenMutate(nuevaOrden);
-
-    // Usamos el objeto que devuelve la mutación como orden creada
-    // Si por algún motivo no viene, construimos uno mínimo
-    const ordenFinal = resultado ?? {
-      ...nuevaOrden,
-      idPersonalizado: 'generada', // se mostrará hasta que se refresque
-    };
-
-    dispatch({ type: 'SET_ORDEN_CREADA', payload: ordenFinal });
-
-    // NOTA: NO llamamos a onSuccess aquí, para que el usuario vea la pantalla de éxito
-    // El botón "Volver a la lista" de la pantalla de éxito sí llama a onSuccess y onClose
-  } catch (error) {
-    console.error('Error creando orden:', error);
-    alert('Error al crear la orden: ' + (error instanceof Error ? error.message : 'Error desconocido'));
-  } finally {
-    dispatch({ type: 'SET_LOADING', payload: false });
-  }
-}, [user?.uid, state, crearOrdenMutate]);
+  }, [user?.uid, state, crearOrdenMutate]);
 
   // ============================================================================
   // UTILIDADES MEMOIZADAS
@@ -885,7 +962,15 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => {
 
   const handleCambiarTipoMantenimiento = useCallback((tipo: typeof state.tipoMantenimiento) => {
     dispatch({ type: 'SET_TIPO_MANTENIMIENTO', payload: tipo })
-  }, [])
+
+    // Si estamos en onboarding y se selecciona preventivo, autoseleccionar tareas de prueba
+    if (isOnboarding && tipo === 'preventivo') {
+      setTimeout(() => {
+        dispatch({ type: 'ADD_TAREA_PREDEFINIDA', payload: 'Limpieza interna y externa' });
+        dispatch({ type: 'ADD_TAREA_PREDEFINIDA', payload: 'Optimización de sistema' });
+      }, 50);
+    }
+  }, [isOnboarding])
 
   const handleSetMostrarTareasPredefinidas = useCallback((mostrar: boolean) => {
     dispatch({ type: 'SET_MOSTRAR_TAREAS_PREDEFINIDAS', payload: mostrar })
@@ -1082,12 +1167,58 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => {
   // RENDER PRINCIPAL
   // ============================================================================
 
-    const currentStepIndex = STEPS_CONFIG.findIndex(s => s.key === state.currentStep)
+  const currentStepIndex = STEPS_CONFIG.findIndex(s => s.key === state.currentStep)
 
 
 
   return (
-    <div className="h-full w-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col overflow-hidden">
+    <div className="h-[calc(100dvh-5rem)] w-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col overflow-hidden relative">
+      {/* Onboarding Contextual Hint & Progress */}
+      <AnimatePresence mode="wait">
+        {isOnboarding && (
+          <motion.div 
+            key={state.currentStep}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="fixed bottom-28 left-4 right-4 z-[35] pointer-events-none"
+          >
+            <div className="max-w-4xl mx-auto space-y-2">
+              {/* Card de Hint */}
+              <div className="bg-blue-600 text-white p-4 rounded-2xl shadow-2xl border border-blue-400/30 flex items-start space-x-4 pointer-events-auto">
+                <div className="bg-white/20 p-2 rounded-xl shrink-0">
+                  {ONBOARDING_HINTS[state.currentStep].icon}
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm mb-0.5">{ONBOARDING_HINTS[state.currentStep].title}</h4>
+                  <p className="text-xs text-blue-50/90 leading-relaxed">
+                    {ONBOARDING_HINTS[state.currentStep].hint}
+                  </p>
+                </div>
+              </div>
+
+              {/* Indicador de Progreso Flotante */}
+              <div className="bg-blue-700/80 backdrop-blur-md px-4 py-2.5 rounded-xl shadow-lg border border-blue-400/20 flex items-center justify-between text-white pointer-events-auto">
+                <div className="flex items-center space-x-2">
+                  <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-200" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-blue-50">
+                    Paso {currentStepIndex + 1} de 7
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  {[...Array(7)].map((_, i) => (
+                    <div 
+                      key={i} 
+                      className={`h-1 w-4 rounded-full transition-all duration-500 ${i <= currentStepIndex ? 'bg-white' : 'bg-blue-400/30'}`} 
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <header className="sticky top-0 z-30 bg-gray-900/95 border-b border-gray-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center space-x-3">
@@ -1117,21 +1248,20 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => {
               const isCompleted = stepValidations[index]?.() && state.highestStepCompleted > index
               const isCurrent = state.currentStep === step.key
               const accessible = isStepAccessible(index)
-              
+
               return (
                 <button
                   key={step.key}
                   onClick={() => goToStep(step.key)}
                   disabled={!accessible}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-full transition-all text-sm font-medium whitespace-nowrap ${
-                    !accessible
+                  className={`flex items-center gap-2 px-3 py-2 rounded-full transition-all text-sm font-medium whitespace-nowrap ${!accessible
                       ? 'bg-gray-800/50 text-gray-600 border border-gray-800 cursor-not-allowed'
                       : isCurrent
-                      ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                      : isCompleted
-                      ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                      : 'bg-gray-800 text-gray-400 border border-gray-700'
-                  }`}
+                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                        : isCompleted
+                          ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                          : 'bg-gray-800 text-gray-400 border border-gray-700'
+                    }`}
                 >
                   {isCompleted ? <CheckCircle className="w-4 h-4" /> : step.icon}
                   <span className="hidden sm:inline">{step.title}</span>
@@ -1156,7 +1286,7 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => {
             const isCompleted = stepValidations[index]?.() && state.highestStepCompleted > index
             const isCurrent = state.currentStep === step.key
             const accessible = isStepAccessible(index)
-            
+
             return (
               <div key={step.key} className="flex items-center flex-1">
                 <button
@@ -1165,35 +1295,32 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => {
                   className={`flex flex-col items-center cursor-pointer disabled:cursor-not-allowed`}
                 >
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
-                      !accessible
+                    className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${!accessible
                         ? 'bg-gray-800/50 border-gray-800 cursor-not-allowed'
                         : isCompleted
-                        ? 'bg-green-500 border-green-500 scale-105'
-                        : isCurrent
-                        ? 'bg-blue-500 border-blue-500 scale-110 shadow-lg shadow-blue-500/50'
-                        : 'bg-gray-700 border-gray-600'
-                    }`}
+                          ? 'bg-green-500 border-green-500 scale-105'
+                          : isCurrent
+                            ? 'bg-blue-500 border-blue-500 scale-110 shadow-lg shadow-blue-500/50'
+                            : 'bg-gray-700 border-gray-600'
+                      }`}
                   >
                     {isCompleted && accessible ? <CheckCircle className="w-6 h-6 text-white" /> : step.icon}
                   </div>
-                  <span className={`text-sm mt-2 text-center font-medium ${
-                    !accessible
+                  <span className={`text-sm mt-2 text-center font-medium ${!accessible
                       ? 'text-gray-600'
                       : isCurrent
-                      ? 'text-blue-400'
-                      : isCompleted
-                      ? 'text-green-400'
-                      : 'text-gray-500'
-                  }`}>
+                        ? 'text-blue-400'
+                        : isCompleted
+                          ? 'text-green-400'
+                          : 'text-gray-500'
+                    }`}>
                     {step.title}
                   </span>
                   <span className="text-xs text-center text-gray-600">{step.description}</span>
                 </button>
                 {index < STEPS_CONFIG.length - 1 && (
-                  <div className={`flex-1 h-1 mx-3 rounded transition-all ${
-                    isCompleted && accessible ? 'bg-green-500' : 'bg-gray-700'
-                  }`} />
+                  <div className={`flex-1 h-1 mx-3 rounded transition-all ${isCompleted && accessible ? 'bg-green-500' : 'bg-gray-700'
+                    }`} />
                 )}
               </div>
             )
@@ -1211,8 +1338,12 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => {
       </main>
 
       {/* Barra de navegación inferior flotante */}
-      <div className="h-24 w-full fixed bottom-0 left-0 right-0 z-30 bg-gray-900/95 border-t border-gray-800"
-           style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}>
+      <div 
+        className={`h-24 w-full fixed bottom-0 left-0 right-0 z-30 bg-gray-900/95 border-t border-gray-800 transition-all duration-300 transform ${
+          isKeyboardVisible ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'
+        }`}
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}
+      >
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <button
             type="button"
@@ -1287,64 +1418,64 @@ const handleSubmit = useCallback(async (e: React.FormEvent) => {
       </div>
 
       {/* Pantalla de Éxito Premium */}
-        {/* Pantalla de Éxito Premium - Renderizada en portal para evitar problemas de containing block */}
-        {state.ordenCreada &&
-          createPortal(
-            <AnimatePresence>
+      {/* Pantalla de Éxito Premium - Renderizada en portal para evitar problemas de containing block */}
+      {state.ordenCreada &&
+        createPortal(
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-950/90 backdrop-blur-md p-4"
+            >
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-950/90 backdrop-blur-md p-4"
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                className="bg-gray-900 border border-gray-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative"
               >
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  className="bg-gray-900 border border-gray-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative"
-                >
-                  <div className="p-8 flex flex-col items-center text-center">
-                    <motion.div
-                      initial={{ scale: 0, rotate: -45 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ type: "spring", damping: 12, delay: 0.2 }}
-                      className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-blue-600/40"
+                <div className="p-8 flex flex-col items-center text-center">
+                  <motion.div
+                    initial={{ scale: 0, rotate: -45 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", damping: 12, delay: 0.2 }}
+                    className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-blue-600/40"
+                  >
+                    <Check className="w-10 h-10 text-white stroke-[3px]" />
+                  </motion.div>
+
+                  <h2 className="text-2xl font-bold text-white mb-2">¡Orden Generada!</h2>
+                  <p className="text-gray-400 mb-6">
+                    La orden <span className="text-blue-400 font-mono">#{state.ordenCreada.idPersonalizado}</span> ha sido registrada correctamente.
+                  </p>
+
+                  <div className="w-full space-y-3">
+                    <button
+                      onClick={() => compartirOrden(state.ordenCreada!)}
+                      className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center gap-3 font-bold transition-all active:scale-95 shadow-lg shadow-blue-600/30"
                     >
-                      <Check className="w-10 h-10 text-white stroke-[3px]" />
-                    </motion.div>
-
-                    <h2 className="text-2xl font-bold text-white mb-2">¡Orden Generada!</h2>
-                    <p className="text-gray-400 mb-6">
-                      La orden <span className="text-blue-400 font-mono">#{state.ordenCreada.idPersonalizado}</span> ha sido registrada correctamente.
-                    </p>
-
-                    <div className="w-full space-y-3">
-                      <button
-                        onClick={() => compartirOrden(state.ordenCreada!)}
-                        className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center gap-3 font-bold transition-all active:scale-95 shadow-lg shadow-blue-600/30"
-                      >
-                        <Share2 className="w-5 h-5" />
-                        Compartir Orden
-                      </button>
-                      <button
-                        onClick={() => {
-                          onSuccess();
-                          onClose();
-                        }}
-                        className="w-full h-12 mt-4 text-gray-400 hover:text-white font-medium transition-colors"
-                      >
-                        Volver a la lista
-                      </button>
-                    </div>
+                      <Share2 className="w-5 h-5" />
+                      Compartir Orden
+                    </button>
+                    <button
+                      onClick={() => {
+                        onSuccess();
+                        onClose();
+                      }}
+                      className="w-full h-12 mt-4 text-gray-400 hover:text-white font-medium transition-colors"
+                    >
+                      Volver a la lista
+                    </button>
                   </div>
-                  
-                  {/* Decoración premium */}
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-600 to-transparent opacity-50" />
-                </motion.div>
+                </div>
+
+                {/* Decoración premium */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-600 to-transparent opacity-50" />
               </motion.div>
-            </AnimatePresence>,
-            document.body
-          )
-        }
+            </motion.div>
+          </AnimatePresence>,
+          document.body
+        )
+      }
     </div>
   )
 }

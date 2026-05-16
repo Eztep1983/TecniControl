@@ -1,10 +1,11 @@
 // components/forms/PiezasInput.tsx
 'use client'
-import { Plus, Trash2, Package, Search, X, AlertCircle } from 'lucide-react'
+import { Plus, Trash2, Package, Search, X, AlertCircle, ChevronDown } from 'lucide-react'
 import { useCallback, memo, useState, useEffect, useMemo, useRef, Dispatch, SetStateAction } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import {  obtenerPiezasPredefinidas, PiezaPredefinida } from '@/lib/configuracionTareasR-helpers'
 import { crearPieza } from '@/lib/configuracion-helpers'
+import { useHapticFeedback } from '@/hooks/clientes/useHapticFeedback'
 
 interface Pieza {
   pieza: string
@@ -27,39 +28,51 @@ const SelectorCantidad = memo(({
   cantidad: number, 
   onCambiar: (c: number) => void, 
   onEliminar: () => void 
-}) => (
-  <div className="flex items-center gap-1 bg-gray-900/80 p-1 rounded-xl border border-gray-700/50 shadow-inner">
-    <button
-      type="button"
-      onClick={() => cantidad > 1 ? onCambiar(cantidad - 1) : onEliminar()}
-      className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg transition-all text-gray-400 hover:text-white"
-      aria-label="Disminuir cantidad"
-    >
-      <span className="text-xl font-bold select-none">-</span>
-    </button>
-    
-    <input
-      type="number"
-      value={cantidad}
-      onChange={(e) => {
-        const val = parseInt(e.target.value) || 0;
-        if (val > 0 && val <= 999) onCambiar(val);
-      }}
-      min="1" max="999"
-      className="w-10 sm:w-12 text-center bg-transparent border-none text-white text-sm font-bold focus:ring-0 p-0 select-none appearance-none"
-    />
-    
-    <button
-      type="button"
-      onClick={() => cantidad < 999 ? onCambiar(cantidad + 1) : null}
-      className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg transition-all text-gray-400 hover:text-white disabled:opacity-30"
-      disabled={cantidad >= 999}
-      aria-label="Aumentar cantidad"
-    >
-      <span className="text-xl font-bold select-none">+</span>
-    </button>
-  </div>
-))
+}) => {
+  const { impactLight } = useHapticFeedback()
+
+  return (
+    <div className="flex items-center gap-1 bg-gray-900/80 p-1 rounded-xl border border-gray-700/50 shadow-inner">
+      <button
+        type="button"
+        onClick={() => {
+          impactLight()
+          cantidad > 1 ? onCambiar(cantidad - 1) : onEliminar()
+        }}
+        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg transition-all text-gray-400 hover:text-white"
+        aria-label="Disminuir cantidad"
+      >
+        <span className="text-xl font-bold select-none">-</span>
+      </button>
+      
+      <input
+        type="number"
+        value={cantidad}
+        onChange={(e) => {
+          const val = parseInt(e.target.value) || 0;
+          if (val > 0 && val <= 999) onCambiar(val);
+        }}
+        min="1" max="999"
+        className="w-10 sm:w-12 text-center bg-transparent border-none text-white text-sm font-bold focus:ring-0 p-0 select-none appearance-none"
+      />
+      
+      <button
+        type="button"
+        onClick={() => {
+          if (cantidad < 999) {
+            impactLight()
+            onCambiar(cantidad + 1)
+          }
+        }}
+        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg transition-all text-gray-400 hover:text-white disabled:opacity-30"
+        disabled={cantidad >= 999}
+        aria-label="Aumentar cantidad"
+      >
+        <span className="text-xl font-bold select-none">+</span>
+      </button>
+    </div>
+  )
+})
 SelectorCantidad.displayName = 'SelectorCantidad'
 
 export default memo(function PiezasInput({
@@ -68,12 +81,15 @@ export default memo(function PiezasInput({
   error: errorExterna
 }: PiezasInputProps) {
   const { user } = useAuth()
+  const { impactLight, selection, success } = useHapticFeedback()
   const [piezasPredefinidas, setPiezasPredefinidas] = useState<PiezaPredefinida[]>([])
   const [loading, setLoading] = useState(true)
   const [errorLocal, setErrorLocal] = useState('')
 
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
+  const [paginaActual, setPaginaActual] = useState(1)
+  const ITEMS_POR_PAGINA = 8
   const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -135,6 +151,12 @@ export default memo(function PiezasInput({
     )
   }, [piezasPredefinidas, query, idsSeleccionadas])
 
+  const opcionesPaginadas = useMemo(() => {
+    return opcionesDisponibles.slice(0, paginaActual * ITEMS_POR_PAGINA)
+  }, [opcionesDisponibles, paginaActual])
+
+  const tieneMasOpciones = opcionesDisponibles.length > opcionesPaginadas.length
+
   const queryLimpio = query.trim()
   const mostrarAgregar = queryLimpio !== '' && 
     !piezasPredefinidas.some(p => (p.nombre || '').toLowerCase() === queryLimpio.toLowerCase()) &&
@@ -145,8 +167,9 @@ export default memo(function PiezasInput({
     setPiezasUsadas(prev => [...prev, {
       pieza: pieza.nombre, cantidad: 1, tipo: 'predefinida', idPredefinida: pieza.id
     }])
-    setQuery(''); setIsOpen(false); inputRef.current?.blur()
-  }, [setPiezasUsadas])
+    selection()
+    setQuery(''); setIsOpen(false); setPaginaActual(1); inputRef.current?.blur()
+  }, [setPiezasUsadas, selection])
 
   const handleAgregarPersonalizada = useCallback((nombre: string) => {
     if (user?.uid) {
@@ -168,12 +191,14 @@ export default memo(function PiezasInput({
     setPiezasUsadas(prev => [...prev, {
       pieza: nombre, cantidad: 1, tipo: 'personalizada'
     }])
-    setQuery(''); setIsOpen(false); inputRef.current?.blur()
-  }, [setPiezasUsadas, user?.uid])
+    success()
+    setQuery(''); setIsOpen(false); setPaginaActual(1); inputRef.current?.blur()
+  }, [setPiezasUsadas, user?.uid, success])
 
   const handleEliminar = useCallback((index: number) => {
+    impactLight()
     setPiezasUsadas(prev => prev.filter((_, i) => i !== index))
-  }, [setPiezasUsadas])
+  }, [setPiezasUsadas, impactLight])
 
   const handleCambiarCantidad = useCallback((index: number, calc: number) => {
     setPiezasUsadas(prev => prev.map((p, i) => i === index ? { ...p, cantidad: calc } : p))
@@ -226,39 +251,61 @@ export default memo(function PiezasInput({
 
         {/* Dropdown Lista */}
         {isOpen && (!loading) && (opcionesDisponibles.length > 0 || mostrarAgregar) && (
-          <div className="absolute top-full left-0 right-0 mt-3 bg-gray-800 border-2 border-gray-700/80 rounded-2xl shadow-2xl shadow-black/80 overflow-hidden z-[100] max-h-72 overflow-y-auto overscroll-contain animate-in fade-in slide-in-from-top-2 duration-200">
-            {mostrarAgregar && (
-              <button
-                type="button"
-                onClick={() => handleAgregarPersonalizada(queryLimpio)}
-                className="w-full text-left px-5 py-4 border-b border-gray-700/50 hover:bg-purple-500/10 text-purple-300 active:bg-purple-500/20 transition-all flex items-center gap-4 group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Plus className="w-5 h-5 text-purple-400" />
-                </div>
-                <div className="flex-1">
-                  <span className="block font-bold text-sm uppercase tracking-wide">Añadir "{queryLimpio}"</span>
-                  <span className="text-[11px] text-purple-400/60 font-medium">Repuesto manual</span>
-                </div>
-              </button>
-            )}
+          <div className="absolute z-50 w-full mt-2 bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="max-h-[300px] overflow-y-auto overscroll-contain">
+              {mostrarAgregar && (
+                <button
+                  type="button"
+                  onClick={() => handleAgregarPersonalizada(queryLimpio)}
+                  className="w-full text-left px-5 py-4 border-b border-gray-700/50 hover:bg-purple-500/10 text-purple-300 active:bg-purple-500/20 transition-all flex items-center gap-4 group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Plus className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="block font-bold text-sm uppercase tracking-wide">Añadir "{queryLimpio}"</span>
+                    <span className="text-[11px] text-purple-400/60 font-medium">Repuesto manual</span>
+                  </div>
+                </button>
+              )}
 
-            {opcionesDisponibles.map(pieza => (
-              <button
-                key={pieza.id}
-                type="button"
-                onClick={() => handleAgregarPredefinida(pieza)}
-                className="w-full text-left px-5 py-4 hover:bg-gray-700/40 active:bg-gray-700/60 text-gray-200 transition-all border-b border-gray-700/30 last:border-0 flex items-center gap-4 group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-gray-700 flex-shrink-0 flex items-center justify-center group-hover:bg-gray-600 transition-colors">
-                  <Package className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
-                </div>
-                <div className="flex-1">
-                  <span className="block font-medium text-sm sm:text-base leading-tight">{pieza.nombre}</span>
-                  {pieza.categoria && <span className="text-[10px] text-gray-500 uppercase tracking-tighter">{pieza.categoria}</span>}
-                </div>
-              </button>
-            ))}
+              {opcionesPaginadas.map(pieza => (
+                <button
+                  key={pieza.id}
+                  type="button"
+                  onClick={() => handleAgregarPredefinida(pieza)}
+                  className="w-full text-left px-5 py-4 hover:bg-gray-700/40 active:bg-gray-700/60 text-gray-200 transition-all border-b border-gray-700/30 last:border-0 flex items-center gap-4 group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-gray-700 flex-shrink-0 flex items-center justify-center group-hover:bg-gray-600 transition-colors">
+                    <Package className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="block font-medium text-sm sm:text-base leading-tight">{pieza.nombre}</span>
+                    {pieza.categoria && <span className="text-[10px] text-gray-500 uppercase tracking-tighter">{pieza.categoria}</span>}
+                  </div>
+                </button>
+              ))}
+
+              {tieneMasOpciones && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setPaginaActual(p => p + 1)
+                    impactLight()
+                  }}
+                  className="w-full py-4 text-center text-purple-400 font-bold text-sm hover:bg-purple-500/5 active:bg-purple-500/10 transition-colors flex items-center justify-center gap-2"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                  Ver más piezas
+                </button>
+              )}
+            </div>
+
+            <div className="bg-gray-800/50 px-4 py-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest flex justify-between items-center">
+              <span>{opcionesDisponibles.length} repuestos</span>
+              {opcionesDisponibles.length > 0 && <span>Pág {paginaActual}</span>}
+            </div>
           </div>
         )}
       </div>

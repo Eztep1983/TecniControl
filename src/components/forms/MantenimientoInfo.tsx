@@ -318,7 +318,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   }
 
   return (
-    <div className="bg-gray-800/20 sm:bg-gray-800/40 rounded-xl sm:border border-gray-700/50 w-full overflow-hidden">
+    <div className="bg-gray-800/20 sm:bg-gray-800/40 rounded-xl sm:border border-gray-700/50 w-full">
       {/* Header Opcional en Desktop */}
       <motion.div 
         className="hidden sm:flex p-5 border-b border-gray-700/50 items-center gap-3"

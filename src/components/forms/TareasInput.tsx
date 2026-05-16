@@ -1,9 +1,10 @@
 // components/forms/TareasInput.tsx
 'use client'
-import { Check, AlertCircle, X, Search, Zap, Plus } from 'lucide-react'
+import { Check, AlertCircle, X, Search, Zap, Plus, ChevronDown } from 'lucide-react'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { crearTarea, obtenerTareasPredefinidas, TareaPredefinida } from '@/lib/configuracionTareasR-helpers'
+import { useHapticFeedback } from '@/hooks/clientes/useHapticFeedback'
 
 interface TareasInputProps {
   tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | ''
@@ -25,12 +26,15 @@ export default function TareasInput({
   onEliminarTareaPersonalizada
 }: TareasInputProps) {
   const { user } = useAuth()
+  const { impactLight, selection, success, error: hapticError } = useHapticFeedback()
   const [tareasPredefinidas, setTareasPredefinidas] = useState<TareaPredefinida[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
+  const [paginaActual, setPaginaActual] = useState(1)
+  const ITEMS_POR_PAGINA = 8
   const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -91,6 +95,12 @@ export default function TareasInput({
     })
   }, [tareasPredefinidas, query, tareasSeleccionadas])
 
+  const opcionesPaginadas = useMemo(() => {
+    return opcionesDisponibles.slice(0, paginaActual * ITEMS_POR_PAGINA)
+  }, [opcionesDisponibles, paginaActual])
+
+  const tieneMasOpciones = opcionesDisponibles.length > opcionesPaginadas.length
+
   const mostrarOpcionAgregar = query.trim() !== '' && 
     !tareasPredefinidas.some(t => (t.nombre || '').toLowerCase() === query.trim().toLowerCase()) &&
     !tareasSeleccionadas.some(t => t.toLowerCase() === query.trim().toLowerCase()) &&
@@ -100,6 +110,7 @@ export default function TareasInput({
   const handleAgregarPersonalizada = useCallback((nuevoValor: string) => {
     if (tareasPersonalizadas.length >= 50) {
       setError('Límite máximo de 50 tareas alcanzado')
+      hapticError()
       setTimeout(() => setError(null), 3000)
       return
     }
@@ -123,25 +134,30 @@ export default function TareasInput({
     }
 
     onAgregarTareaPersonalizada(nuevoValor)
+    success()
     setQuery('')
     setIsOpen(false)
+    setPaginaActual(1)
     inputRef.current?.blur()
-  }, [tareasPersonalizadas.length, onAgregarTareaPersonalizada, user?.uid, tipoMantenimiento])
+  }, [tareasPersonalizadas.length, onAgregarTareaPersonalizada, user?.uid, tipoMantenimiento, success, hapticError])
 
   const handleSeleccionarPredefinida = useCallback((nombre: string) => {
     onToggleTareaPredefinida(nombre)
+    selection()
     setQuery('')
     setIsOpen(false)
+    setPaginaActual(1)
     inputRef.current?.blur()
-  }, [onToggleTareaPredefinida])
+  }, [onToggleTareaPredefinida, selection])
 
   const handleEliminarChip = useCallback((chip: typeof chips[0]) => {
+    impactLight()
     if (chip.esPredefinida) {
       onToggleTareaPredefinida(chip.nombre)
     } else {
       onEliminarTareaPersonalizada(chip.idx)
     }
-  }, [onToggleTareaPredefinida, onEliminarTareaPersonalizada])
+  }, [onToggleTareaPredefinida, onEliminarTareaPersonalizada, impactLight])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -186,41 +202,63 @@ export default function TareasInput({
           )}
         </div>
 
-        {/* Dropdown Lista */}
+        {/*Lista */}
         {isOpen && (!cargando) && (opcionesDisponibles.length > 0 || mostrarOpcionAgregar) && (
-          <div className="absolute top-full left-0 right-0 mt-3 bg-gray-800 border-2 border-gray-700/80 rounded-2xl shadow-2xl shadow-black/80 overflow-hidden z-[100] max-h-72 overflow-y-auto overscroll-contain animate-in fade-in slide-in-from-top-2 duration-200">
-            {mostrarOpcionAgregar && (
-              <button
-                type="button"
-                onClick={() => handleAgregarPersonalizada(query.trim())}
-                className="w-full text-left px-5 py-4 border-b border-gray-700/50 hover:bg-blue-500/10 text-blue-300 active:bg-blue-500/20 transition-all flex items-center gap-4 group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Plus className="w-5 h-5 text-blue-400" />
-                </div>
-                <div className="flex-1">
-                  <span className="block font-bold text-sm uppercase tracking-wide">Añadir "{query.trim()}"</span>
-                  <span className="text-[11px] text-blue-400/60 font-medium">Nueva tarea personalizada</span>
-                </div>
-              </button>
-            )}
+          <div className="absolute z-50 w-full mt-2 bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="max-h-[300px] overflow-y-auto overscroll-contain">
+              {mostrarOpcionAgregar && (
+                <button
+                  type="button"
+                  onClick={() => handleAgregarPersonalizada(query.trim())}
+                  className="w-full text-left px-5 py-4 border-b border-gray-700/50 hover:bg-blue-500/10 text-blue-300 active:bg-blue-500/20 transition-all flex items-center gap-4 group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Plus className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="block font-bold text-sm uppercase tracking-wide">Añadir "{query.trim()}"</span>
+                    <span className="text-[11px] text-blue-400/60 font-medium">Nueva tarea personalizada</span>
+                  </div>
+                </button>
+              )}
 
-            {opcionesDisponibles.map(tarea => (
-              <button
-                key={tarea.id}
-                type="button"
-                onClick={() => handleSeleccionarPredefinida(tarea.nombre)}
-                className="w-full text-left px-5 py-4 hover:bg-gray-700/40 active:bg-gray-700/60 text-gray-200 transition-all border-b border-gray-700/30 last:border-0 flex items-center gap-4 group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-gray-700 flex-shrink-0 flex items-center justify-center group-hover:bg-gray-600 transition-colors">
-                  <Zap className="w-5 h-5 text-gray-400 group-hover:text-yellow-400 transition-colors" />
-                </div>
-                <div className="flex-1">
-                  <span className="block font-medium text-sm sm:text-base leading-tight">{tarea.nombre}</span>
-                  {tarea.categoria && <span className="text-[10px] text-gray-500 uppercase tracking-tighter">{tarea.categoria}</span>}
-                </div>
-              </button>
-            ))}
+              {opcionesPaginadas.map(tarea => (
+                <button
+                  key={tarea.id}
+                  type="button"
+                  onClick={() => handleSeleccionarPredefinida(tarea.nombre)}
+                  className="w-full text-left px-5 py-4 hover:bg-gray-700/40 active:bg-gray-700/60 text-gray-200 transition-all border-b border-gray-700/30 last:border-0 flex items-center gap-4 group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-gray-700 flex-shrink-0 flex items-center justify-center group-hover:bg-gray-600 transition-colors">
+                    <Zap className="w-5 h-5 text-gray-400 group-hover:text-yellow-400 transition-colors" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="block font-medium text-sm sm:text-base leading-tight">{tarea.nombre}</span>
+                    {tarea.categoria && <span className="text-[10px] text-gray-500 uppercase tracking-tighter">{tarea.categoria}</span>}
+                  </div>
+                </button>
+              ))}
+
+              {tieneMasOpciones && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setPaginaActual(p => p + 1)
+                    impactLight()
+                  }}
+                  className="w-full py-4 text-center text-blue-400 font-bold text-sm hover:bg-blue-500/5 active:bg-blue-500/10 transition-colors flex items-center justify-center gap-2"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                  Cargar más resultados
+                </button>
+              )}
+            </div>
+            
+            <div className="bg-gray-800/50 px-4 py-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest flex justify-between items-center">
+              <span>{opcionesDisponibles.length} resultados</span>
+              {opcionesDisponibles.length > 0 && <span>Pág {paginaActual}</span>}
+            </div>
           </div>
         )}
       </div>

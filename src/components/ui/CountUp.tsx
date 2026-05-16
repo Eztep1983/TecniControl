@@ -70,10 +70,12 @@ export default function CountUp({
   );
 
   useEffect(() => {
-    if (ref.current) {
+    // Solo actualizamos el contenido inicial si el motionValue no ha cambiado aún del valor inicial
+    // o si el componente acaba de montarse.
+    if (ref.current && motionValue.get() === (direction === 'down' ? to : from)) {
       ref.current.textContent = formatValue(direction === 'down' ? to : from);
     }
-  }, [from, to, direction, formatValue]);
+  }, [from, to, direction, formatValue, motionValue]);
 
   useEffect(() => {
     if (isInView && startWhen) {
@@ -81,23 +83,32 @@ export default function CountUp({
         onStart();
       }
 
-      const timeoutId = setTimeout(() => {
-        motionValue.set(direction === 'down' ? from : to);
-      }, delay * 1000);
+      const targetValue = direction === 'down' ? from : to;
+      
+      if (delay > 0) {
+        const timeoutId = setTimeout(() => {
+          motionValue.set(targetValue);
+        }, delay * 1000);
 
-      const durationTimeoutId = setTimeout(
-        () => {
+        const durationTimeoutId = setTimeout(() => {
           if (typeof onEnd === 'function') {
             onEnd();
           }
-        },
-        delay * 1000 + duration * 1000
-      );
+        }, (delay + duration) * 1000);
 
-      return () => {
-        clearTimeout(timeoutId);
-        clearTimeout(durationTimeoutId);
-      };
+        return () => {
+          clearTimeout(timeoutId);
+          clearTimeout(durationTimeoutId);
+        };
+      } else {
+        motionValue.set(targetValue);
+        const durationTimeoutId = setTimeout(() => {
+          if (typeof onEnd === 'function') {
+            onEnd();
+          }
+        }, duration * 1000);
+        return () => clearTimeout(durationTimeoutId);
+      }
     }
   }, [isInView, startWhen, motionValue, direction, from, to, delay, onStart, onEnd, duration]);
 
