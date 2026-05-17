@@ -102,15 +102,17 @@ export default function DispositivoSelector({
                   {dispositivoSeleccionado.tipo}
                 </h3>
                 <p className="text-sm text-blue-300/80 mt-0.5">
-                  {dispositivoSeleccionado.marca} {dispositivoSeleccionado.modelo}
+                  {dispositivoSeleccionado.marca}{dispositivoSeleccionado.modelo ? ` ${dispositivoSeleccionado.modelo}` : ''}
                 </p>
 
-                <div className="flex items-center gap-1.5 mt-2">
-                  <Package className="w-3.5 h-3.5 text-blue-400/60" />
-                  <span className="text-xs text-blue-300/60 font-mono">
-                    S/N: {dispositivoSeleccionado.numeroSerie}
-                  </span>
-                </div>
+                {dispositivoSeleccionado.numeroSerie && (
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <Package className="w-3.5 h-3.5 text-blue-400/60" />
+                    <span className="text-xs text-blue-300/60 font-mono">
+                      S/N: {dispositivoSeleccionado.numeroSerie}
+                    </span>
+                  </div>
+                )}
 
                 {estadoStyle && (
                   <span className={`inline-flex items-center mt-2 px-2.5 py-1 rounded-full text-xs font-medium ${estadoStyle}`}>
@@ -262,13 +264,15 @@ const DispositivoRow = memo(function DispositivoRow({
       <div className="flex-1 min-w-0">
         <div className="font-medium text-white text-sm">{dispositivo.tipo}</div>
         <div className="text-xs text-gray-400 mt-0.5">
-          {dispositivo.marca} {dispositivo.modelo}
+          {dispositivo.marca}{dispositivo.modelo ? ` ${dispositivo.modelo}` : ''}
         </div>
         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-          <div className="flex items-center gap-1">
-            <Package className="w-3 h-3 text-gray-600" />
-            <span className="text-xs text-gray-500 font-mono">{dispositivo.numeroSerie}</span>
-          </div>
+          {dispositivo.numeroSerie && (
+            <div className="flex items-center gap-1">
+              <Package className="w-3 h-3 text-gray-600" />
+              <span className="text-xs text-gray-500 font-mono">{dispositivo.numeroSerie}</span>
+            </div>
+          )}
           {estadoStyle && (
             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${estadoStyle}`}>
               {dispositivo.estado}

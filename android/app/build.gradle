@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     namespace = "com.tecnicontrol.app"
-    compileSdk = libs.versions.compileSdk.get().toInteger()
+    compileSdkVersion libs.versions.compileSdk.get().toInteger()
     defaultConfig {
         applicationId "com.tecnicontrol.app"
         minSdk rootProject.ext.minSdkVersion

@@ -8,6 +8,7 @@ import {
   useMobileNavigation,
   AppView,
 } from "@/components/providers/MobileNavigationContext";
+import { useKeyboardVisible } from "@/hooks/useKeyboardVisible";
 
 interface NavItemConfig {
   name: string;
@@ -29,6 +30,7 @@ export function MobileNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { activeView, navigateTo, isMobileNav } = useMobileNavigation();
+  const isKeyboardVisible = useKeyboardVisible();
 
   // Determinar qué vista está activa
   // En mobile usamos el contexto; en desktop usamos el pathname
@@ -78,6 +80,8 @@ export function MobileNav() {
       }
     }
   };
+
+  if (isKeyboardVisible) return null;
 
   return (
     <nav

@@ -46,7 +46,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             </div>
             <span className="text-xl font-bold text-blue-400">TecniControl</span>
           </Link>
-          <UserProfile />
         </div>
       </header>
       <main className="flex flex-col flex-1 overflow-y-auto p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-6 lg:p-8 lg:pb-8 bg-gray-900">

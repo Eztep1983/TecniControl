@@ -45,8 +45,8 @@ const TIPO_OPTIONS = [
 const dispositivoSchema = z.object({
   tipo: z.string().min(1, { message: "Requerido" }),
   marca: z.string().min(1, { message: "Requerido" }),
-  modelo: z.string().min(1, { message: "Requerido" }),
-  numeroSerie: z.string().min(1, { message: "Requerido" }),
+  modelo: z.string().optional().or(z.literal("")),
+  numeroSerie: z.string().optional().or(z.literal("")),
 });
 
 type DispositivoFormValues = z.infer<typeof dispositivoSchema>;
@@ -204,7 +204,7 @@ export function DispositivoFormModal({
                   name="modelo"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs text-gray-400">Modelo *</FormLabel>
+                      <FormLabel className="text-xs text-gray-400">Modelo</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -224,7 +224,7 @@ export function DispositivoFormModal({
                 name="numeroSerie"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs text-gray-400">Número de serie *</FormLabel>
+                    <FormLabel className="text-xs text-gray-400">Número de serie</FormLabel>
                     <FormControl>
                       <Input
                         {...field}

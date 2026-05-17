@@ -1,0 +1,133 @@
+'use client'
+
+import React, { useState, useEffect, useRef } from 'react'
+import { X } from 'lucide-react'
+
+// ─── Hook de keyboard avoidance para iOS / Android ─────────────────────
+export function useKeyboardOffset() {
+  const [offset, setOffset] = useState(0)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const vv = window.visualViewport
+    if (!vv) return
+
+    const update = () => {
+      // Calculamos la diferencia entre la ventana total y el área visible
+      const diff = window.innerHeight - vv.height
+      setOffset(Math.max(0, diff))
+    }
+
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    update()
+
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+    }
+  }, [])
+
+  return offset
+}
+
+interface ModalProps {
+  isOpen: boolean
+  onClose: () => void
+  title: string
+  children: React.ReactNode
+}
+
+export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+  const keyboardOffset = useKeyboardOffset()
+  const [isVisible, setIsVisible] = useState(false)
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  // Sincronizar visibilidad para animaciones
+  useEffect(() => {
+    if (isOpen) {
+      const t = setTimeout(() => setIsVisible(true), 10)
+      return () => clearTimeout(t)
+    } else {
+      setIsVisible(false)
+    }
+  }, [isOpen])
+
+  // Bloquear scroll del body
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'none'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+  }, [isOpen])
+
+  if (!isOpen) return null
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden"
+      role="dialog"
+      aria-modal="true"
+    >
+      {/* Backdrop */}
+      <div
+        className={`absolute inset-0 bg-black/80 transition-opacity duration-300 ${
+          isVisible ? 'opacity-100' : 'opacity-0'
+        }`}
+        onClick={onClose}
+      />
+
+      {/* Modal Container */}
+      <div
+        ref={modalRef}
+        style={{
+          // Levantamos el modal sutilmente si el teclado está abierto (UX optimizado para Android/iOS)
+          transform: isVisible 
+            ? `translateY(min(0px, calc(-${keyboardOffset}px / 2.2))) scale(1)` 
+            : 'translateY(30px) scale(0.95)',
+          opacity: isVisible ? 1 : 0,
+          transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          maxHeight: 'calc(100dvh - 32px)',
+          paddingBottom: keyboardOffset > 0 ? '8px' : '0px',
+        }}
+        className="
+          relative bg-slate-900 w-full max-w-sm rounded-[2.5rem]
+          shadow-2xl border border-slate-700/60 flex flex-col overflow-hidden
+          ring-1 ring-white/10
+        "
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800/50 shrink-0">
+          <h3 className="text-xl font-bold text-white tracking-tight">{title}</h3>
+          <button
+            onClick={onClose}
+            className="
+              w-10 h-10 flex items-center justify-center rounded-2xl
+              bg-slate-800 text-slate-400 hover:text-white
+              active:scale-90 transition-all touch-manipulation
+            "
+            aria-label="Cerrar"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Área de Contenido Scrolleable */}
+        <div
+          className="p-6 overflow-y-auto overscroll-contain flex-1 custom-scrollbar"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -10,7 +10,8 @@ import {
   GoogleAuthProvider,
   browserPopupRedirectResolver,
 } from 'firebase/auth'
-// ✅ FIX 1: Eliminado onIdTokenChanged — Firebase SDK renueva tokens automáticamente
+
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'
 // cada ~55 min sin que lo manejemos manualmente. El listener anterior disparaba
 // getIdToken(true) lo cual causaba setState y re-renders innecesarios.
 import { Capacitor } from '@capacitor/core'
@@ -292,6 +293,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (now - lastActivityUpdateRef.current > 1000) {
       lastActivityUpdateRef.current = now
       lastActivityRef.current = now
+    }
+  }, [])
+
+    useEffect(() => {
+    // Solo en dispositivo nativo, solo una vez al montar
+    if (Capacitor.isNativePlatform()) {
+      GoogleAuth.initialize({
+        clientId: '820146318318-i0r92a8u43998502017o813b6o364o2f.apps.googleusercontent.com',
+        scopes: ['profile', 'email'],
+        grantOfflineAccess: false,
+      })
     }
   }, [])
 

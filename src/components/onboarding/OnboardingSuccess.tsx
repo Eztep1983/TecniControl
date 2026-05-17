@@ -36,25 +36,24 @@ export default function OnboardingSuccess({ onFinish }: OnboardingSuccessProps) 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-8 bg-[#0a0a0b]">
       <AnimatedContent distance={20} direction="vertical" duration={0.6} className="w-full max-w-lg">
-        <div className="bg-gradient-to-br from-green-900/20 via-gray-900 to-black border border-green-500/20 rounded-[2.5rem] p-6 sm:p-10 shadow-2xl relative overflow-hidden text-center">
+        <div className="bg-gradient-to-br from-blue-900/20 via-gray-900 to-black border border-blue-500/20 rounded-[2.5rem] p-6 sm:p-10 shadow-2xl relative overflow-hidden text-center">
           
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-green-500/10 rounded-full blur-[100px]" />
-          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px]" />
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px]" />
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px]" />
           
           <div className="relative z-10">
             <motion.div 
               initial={{ scale: 0.5, rotate: -10 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: "spring", damping: 12, stiffness: 200 }}
-              className="w-24 h-24 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-green-500/30 relative"
+              className="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-blue-500/30 relative"
             >
               <CheckCircle2 className="w-12 h-12 text-white" />
               <motion.div 
                 animate={{ scale: [1, 1.5, 1], opacity: [1, 0, 1] }}
                 transition={{ repeat: Infinity, duration: 1.5 }}
-                className="absolute inset-0 rounded-full border-4 border-green-400/50" 
+                className="absolute inset-0 rounded-full border-4 border-blue-400/50" 
               />
-              <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-yellow-400 animate-pulse" />
             </motion.div>
             
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 tracking-tight">
@@ -83,7 +82,7 @@ export default function OnboardingSuccess({ onFinish }: OnboardingSuccessProps) 
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onFinish}
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white p-5 rounded-[1.25rem] flex items-center justify-center space-x-3 transition-all shadow-xl shadow-green-600/20 group touch-manipulation"
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-500 hover:to-blue-500 text-white p-5 rounded-[1.25rem] flex items-center justify-center space-x-3 transition-all shadow-xl shadow-blue-600/20 group touch-manipulation"
             >
               <LayoutDashboard className="w-5 h-5" />
               <span className="text-lg font-bold">Ir a mi Panel Principal</span>
@@ -102,14 +101,14 @@ function NextStepCard({ icon, title, description, onClick }: { icon: React.React
       onClick={onClick}
       className="flex items-center space-x-4 p-4 rounded-2xl bg-gray-800/40 border border-gray-700/50 hover:bg-gray-800/60 hover:border-gray-600 transition-all text-left w-full group"
     >
-      <div className="bg-gray-900 p-3 rounded-xl text-green-400 group-hover:scale-110 transition-transform">
+      <div className="bg-gray-900 p-3 rounded-xl text-blue-400 group-hover:scale-110 transition-transform">
         {icon}
       </div>
       <div className="flex-1">
         <h3 className="text-white font-bold text-sm mb-0.5">{title}</h3>
         <p className="text-gray-500 text-xs">{description}</p>
       </div>
-      <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-green-400 transition-colors" />
+      <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-blue-400 transition-colors" />
     </button>
   )
 }

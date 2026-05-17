@@ -163,6 +163,7 @@ export function ClienteHistorialModal({
       {isMobile ? (
         <Sheet {...modalProps}>
           <SheetContent
+            hideClose
             side="bottom"
             className="rounded-t-2xl bg-gray-900 border-t border-gray-700/60 p-0 max-h-[85vh] flex flex-col"
             onTouchStart={handleTouchStart}
@@ -172,7 +173,7 @@ export function ClienteHistorialModal({
               if (selectedOrden) e.preventDefault();
             }}
           >
-            <SheetHeader className="px-5 pt-4 pb-2 border-b border-gray-700/50 text-left sm:text-left">
+            <SheetHeader className="px-5 pt-4 pb-2 border-b border-gray-700/50 text-left sm:text-left relative">
               <SheetTitle className="text-base font-semibold text-white">Historial de órdenes</SheetTitle>
               <SheetDescription className="text-lg text-gray-500">{clienteNombre}</SheetDescription>
               <button
@@ -189,14 +190,22 @@ export function ClienteHistorialModal({
       ) : (
         <Dialog {...modalProps}>
           <DialogContent 
+            hideClose
             className="w-[calc(100%-1.5rem)] max-w-md mx-auto rounded-2xl bg-gray-900 border border-gray-700/60 p-0 gap-0 max-h-[85vh] flex flex-col"
             onInteractOutside={(e) => {
               if (selectedOrden) e.preventDefault();
             }}
           >
-            <DialogHeader className="px-5 pt-5 pb-3 border-b border-gray-700/50">
+            <DialogHeader className="px-5 pt-5 pb-3 border-b border-gray-700/50 relative">
               <DialogTitle className="text-base font-semibold text-white">Historial de órdenes</DialogTitle>
               <DialogDescription className="text-xs text-gray-500">{clienteNombre}</DialogDescription>
+              <button
+                onClick={onClose}
+                className="absolute right-4 top-4 w-8 h-8 rounded-lg bg-gray-800 active:bg-gray-700 flex items-center justify-center transition-colors"
+              >
+                <span className="sr-only">Cerrar</span>
+                <X className="w-4 h-4 text-gray-400" />
+              </button>
             </DialogHeader>
             <div className="overflow-y-auto flex-1 p-5">{renderContent()}</div>
           </DialogContent>

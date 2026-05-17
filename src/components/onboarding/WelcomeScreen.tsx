@@ -10,11 +10,11 @@ import {
   Users, 
   Laptop, 
   ClipboardCheck,
-  Smartphone,
-  Star
+
 } from 'lucide-react'
 import AnimatedContent from '@/components/ui/AnimatedContent'
 import { motion } from 'motion/react'
+import logo from '@/public/logo.png'
 
 interface WelcomeScreenProps {
   onStartOnboarding: () => void;
@@ -46,22 +46,21 @@ export default function WelcomeScreen({ onStartOnboarding }: WelcomeScreenProps)
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-500/20 relative"
+              className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-500/20 relative"
             >
-              <Sparkles className="w-8 h-8 text-white" />
-              <motion.div 
-                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg"
-              >
-                <Star className="w-3 h-3 text-gray-900 fill-current" />
-              </motion.div>
+              <div className="w-12 h-12 overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700">
+                <img
+                  src={logo.src}
+                  alt="TecniControl Logo"
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </motion.div>
             
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-3 tracking-tight">
-              ¡Hola! Vamos a <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">configurar tu cuenta</span>
+              ¡Bienvenido a TecniControl!              
             </h1>
-            <p className="text-gray-400 text-sm sm:text-base max-w-sm mx-auto leading-relaxed">
+            <p className="text-gray-400 text-lg sm:text-base max-w-sm mx-auto leading-relaxed">
               En menos de 2 minutos aprenderás a crear órdenes profesionales y compartirlas con tus clientes.
             </p>
           </div>
@@ -87,7 +86,7 @@ export default function WelcomeScreen({ onStartOnboarding }: WelcomeScreenProps)
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+          <div className="grid grid-cols-1sm:grid-cols-2 gap-3 mb-8">
             <LearningItem 
               title="Carga de Datos"
               description="Mira cómo se autocompleta la información."
@@ -114,9 +113,9 @@ export default function WelcomeScreen({ onStartOnboarding }: WelcomeScreenProps)
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={onStartOnboarding}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white p-4 rounded-[1rem] flex items-center justify-center space-x-3 transition-all shadow-xl shadow-blue-600/20 group touch-manipulation"
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white p-4 rounded-[1rem] flex items-center justify-center space-x-3 transition-all shadow-xl shadow-blue-600/20 group touch-manipulation"
           >
-            <span className="text-base font-bold">Comenzar el Recorrido</span>
+            <span className="text-lg font-bold">Comenzar el Recorrido</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </motion.button>
           

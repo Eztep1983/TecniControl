@@ -115,8 +115,8 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
                 </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 ml-10">
                   <div><p className="text-[10px] text-gray-500">Marca</p><p className="text-xs text-gray-300">{d.marca}</p></div>
-                  <div><p className="text-[10px] text-gray-500">Modelo</p><p className="text-xs text-gray-300">{d.modelo}</p></div>
-                  <div className="col-span-2"><p className="text-[10px] text-gray-500">Serie</p><p className="text-xs font-mono text-gray-400">{d.numeroSerie}</p></div>
+                  <div><p className="text-[10px] text-gray-500">Modelo</p><p className="text-xs text-gray-300">{d.modelo || "N/A"}</p></div>
+                  <div className="col-span-2"><p className="text-[10px] text-gray-500">Serie</p><p className="text-xs font-mono text-gray-400">{d.numeroSerie || "N/A"}</p></div>
                 </div>
               </div>
             ))}
@@ -133,7 +133,7 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
     return (
       <>
         <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-          <SheetContent side="bottom" className="rounded-t-2xl bg-gray-900 border-t border-gray-700/60 p-0 max-h-[85vh] flex flex-col" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+          <SheetContent hideClose side="bottom" className="rounded-t-2xl bg-gray-900 border-t border-gray-700/60 p-0 max-h-[85vh] flex flex-col" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
             <SheetHeader className="px-5 pt-5 pb-4 border-b border-gray-700/50 flex-shrink-0 text-left sm:text-left">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">

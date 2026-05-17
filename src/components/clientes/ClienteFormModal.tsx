@@ -62,8 +62,8 @@ const DISPOSITIVO_VACIO = { tipo: "", marca: "", modelo: "", numeroSerie: "" } a
 const dispositivoSchema = z.object({
   tipo: z.string().min(1, { message: "Requerido" }),
   marca: z.string().min(1, { message: "Requerido" }),
-  modelo: z.string().min(1, { message: "Requerido" }),
-  numeroSerie: z.string().min(1, { message: "Requerido" }),
+  modelo: z.string().optional().or(z.literal("")),
+  numeroSerie: z.string().optional().or(z.literal("")),
 });
 
 const formSchema = z.object({
@@ -523,7 +523,7 @@ const DispositivoCard = memo(function DispositivoCard({
             name={`dispositivos.${idx}.modelo`}
             render={({ field: f }) => (
               <FormItem className="space-y-1.5">
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">Modelo *</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">Modelo</FormLabel>
                 <FormControl>
                   <Input
                     {...f}
@@ -544,7 +544,7 @@ const DispositivoCard = memo(function DispositivoCard({
           name={`dispositivos.${idx}.numeroSerie`}
           render={({ field: f }) => (
             <FormItem className="space-y-1.5">
-              <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">Número de serie *</FormLabel>
+              <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">Número de serie</FormLabel>
               <FormControl>
                 <Input
                   {...f}

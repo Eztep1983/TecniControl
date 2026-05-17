@@ -115,7 +115,7 @@ export default function LoginPage() {
   // Mostrar pantalla de redireccionamiento
   if ((user && !loading) || isRedirecting) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-500 dark:from-gray-900 dark:to-gray-950 p-4 transition-colors duration-300">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-cyan-500 to-cyan-500 dark:from-cyan-900 dark:to-cyan-950 p-4 transition-colors duration-300">
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="w-16 h-16 overflow-hidden bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
             <img
@@ -132,7 +132,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-500 dark:from-gray-900 dark:to-gray-950 p-4 transition-colors duration-300">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-white to-blue-200 dark:from-gray-900 dark:to-gray-950 p-4 transition-colors duration-300">
       {/* Toggle de tema - Fixed para mejor accesibilidad */}
       <button
         onClick={toggleDarkMode}

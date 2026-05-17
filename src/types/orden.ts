@@ -4,8 +4,8 @@ export interface Dispositivo {
   id: string;
   tipo: string;
   marca: string;
-  modelo: string;
-  numeroSerie: string;
+  modelo?: string;
+  numeroSerie?: string;
   fechaCompra?: Date;
   observaciones?: string;
   estado?: string;

@@ -1,33 +1,5 @@
 'use client'
 
-/**
- * MEJORAS UI/UX APLICADAS (conservadas):
- *
- * Android:
- *  - Touch targets mínimos de 48dp (min-h-[48px]) en todos los elementos interactivos
- *  - Ripple effect con active:bg-* para feedback táctil visual
- *  - overscroll-behavior: contain para evitar pull-to-refresh accidental del sistema
- *  - Elevación con sombras consistentes con Material Design 3
- *
- * iOS:
- *  - safe-area-inset-* en header, bottom sheet y FAB
- *  - -webkit-overflow-scrolling: touch (momentum scroll en listas)
- *  - Keyboard avoidance con visualViewport API en bottom sheets
- *  - touch-manipulation en todos los botones para eliminar el delay de 300ms de iOS
- *  - Evitar selección de texto accidental en elementos táctiles (select-none)
- *
- * Ambos:
- *  - @capacitor/haptics con fallback a navigator.vibrate
- *  - Indicador de red en header (online/offline)
- *  - Badge con operaciones pendientes de sincronizar
- *  - Optimistic updates: sin spinners de carga, cambios instantáneos
- *
- * REFACTOR VISUAL:
- *  - Lista con tarjetas en lugar de swipeable.
- *  - Botones inline de editar/eliminar (sin menú contextual).
- *  - Paginación “Cargar más” (10 elementos por página).
- */
-
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useTareasYPiezas } from '@/hooks/useTareasYPiezas'
 import type { TareaPredefinida, PiezaPredefinida } from '@/lib/configuracion-helpers'
@@ -38,6 +10,7 @@ import {
   Wrench, RotateCw, WifiOff, Loader2, CloudOff,
   RefreshCw
 } from 'lucide-react'
+import { Modal } from '@/components/ui/Modal'
 
 // ─── Haptics (conservado) ────────────────────────────────────────────────────
 
@@ -77,36 +50,7 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced
 }
 
-// ─── Hook de keyboard avoidance para iOS (conservado) ─────────────────────
-
-function useKeyboardOffset() {
-  const [offset, setOffset] = useState(0)
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const vv = window.visualViewport
-    if (!vv) return
-
-    const update = () => {
-      // Calculamos la diferencia entre la ventana total y el área visible
-      // En iOS vv.height disminuye cuando sale el teclado.
-      const diff = window.innerHeight - vv.height
-      // Si el usuario ha hecho scroll hacia abajo, vv.offsetTop será > 0
-      // En algunos casos queremos ignorar el offsetTop si el teclado ya empujó el viewport
-      setOffset(Math.max(0, diff))
-    }
-
-    vv.addEventListener('resize', update)
-    vv.addEventListener('scroll', update)
-    // Initial check
-    update()
-
-    return () => {
-      vv.removeEventListener('resize', update)
-      vv.removeEventListener('scroll', update)
-    }
-  }, [])
-  return offset
-}
+// Hook de keyboard avoidance importado desde '@/components/ui/Modal'
 
 
 // ─── Tipos de formulario ──────────────────────────────────────────────────
@@ -156,106 +100,7 @@ const Toast = ({ toast, onClose }: { toast: ToastData; onClose: () => void }) =>
   )
 }
 
-// ─── Componente: Modal Centrado (Actualizado) ───────────────────────────────
-
-interface ModalProps {
-  isOpen: boolean
-  onClose: () => void
-  title: string
-  children: React.ReactNode
-}
-
-const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
-  const keyboardOffset = useKeyboardOffset()
-  const [isVisible, setIsVisible] = useState(false)
-  const modalRef = useRef<HTMLDivElement>(null)
-
-  // Sincronizar visibilidad para animaciones
-  useEffect(() => {
-    if (isOpen) {
-      const t = setTimeout(() => setIsVisible(true), 10)
-      return () => clearTimeout(t)
-    } else {
-      setIsVisible(false)
-    }
-  }, [isOpen])
-
-  // Bloquear scroll del body
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-      document.body.style.touchAction = 'none'
-    } else {
-      document.body.style.overflow = ''
-      document.body.style.touchAction = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-      document.body.style.touchAction = ''
-    }
-  }, [isOpen])
-
-  if (!isOpen) return null
-
-  return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div
-        className={`absolute inset-0 bg-black/70 transition-opacity duration-300 ${
-          isVisible ? 'opacity-100' : 'opacity-0'
-        }`}
-        onClick={onClose}
-      />
-
-      {/* Modal Container */}
-      <div
-        ref={modalRef}
-        style={{
-          // Levantamos el modal sutilmente si el teclado está abierto
-          transform: isVisible 
-            ? `translateY(min(0px, calc(-${keyboardOffset}px / 2.5))) scale(1)` 
-            : 'translateY(20px) scale(0.95)',
-          opacity: isVisible ? 1 : 0,
-          transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          maxHeight: 'calc(100dvh - 40px)',
-        }}
-        className="
-          relative bg-slate-900 w-full max-w-sm rounded-[2.5rem]
-          shadow-2xl border border-slate-700/60 flex flex-col overflow-hidden
-          ring-1 ring-white/10
-        "
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800/50 shrink-0">
-          <h3 className="text-xl font-bold text-white tracking-tight">{title}</h3>
-          <button
-            onClick={onClose}
-            className="
-              w-10 h-10 flex items-center justify-center rounded-2xl
-              bg-slate-800 text-slate-400 hover:text-white
-              active:scale-90 transition-all touch-manipulation
-            "
-            aria-label="Cerrar"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Área de Contenido Scrolleable */}
-        <div
-          className="p-6 overflow-y-auto overscroll-contain flex-1"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          {children}
-        </div>
-      </div>
-    </div>
-  )
-}
+// Componente Modal importado desde '@/components/ui/Modal'
 
 
 
@@ -739,12 +584,11 @@ export default function TareasRepuestosPage() {
 
   return (
     <div
-      className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 overscroll-none"
+      className="bg-transparent h-full"
     >
       <header
         className="
-          bg-slate-900/90 
-          border-b border-slate-800/60
+          bg-transparent shadow-2xl
           px-4 py-3
         "
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
@@ -752,7 +596,7 @@ export default function TareasRepuestosPage() {
         <div className="flex items-center gap-3 max-w-2xl mx-auto">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-white leading-tight truncate">
+              <h1 className="text-lg font-bold text-white shadow-2xl leading-tight truncate">
                 Tareas y Repuestos
               </h1>
               {isMutating && (

@@ -36,43 +36,44 @@ interface FormularioMantenimientoProps {
   isOnboarding?: boolean
 }
 
-const ONBOARDING_HINTS: Record<FormStep, { title: string, hint: string, icon: any }> = {
+const ONBOARDING_HINTS: Record<FormStep, { title: string, hint: React.ReactNode, icon: any }> = {
   cliente: {
     title: "Identifica al Cliente",
     icon: <Users className="w-5 h-5" />,
-    hint: "Aquí seleccionas quién solicita el servicio. En el modo real, podrás buscar por nombre o cédula. Hemos pre-seleccionado un cliente de prueba para ti."
+    hint: <span className="text-lg">Aquí seleccionas quién solicita el servicio. En el modo real, podrás buscar por nombre o cédula. Hemos pre-seleccionado un cliente de prueba para ti.</span>
   },
   dispositivo: {
     title: "Selecciona el Equipo",
     icon: <Laptop className="w-5 h-5" />,
-    hint: "Cada cliente puede tener múltiples equipos. Aquí eliges cuál vas a intervenir. Esto mantiene un historial técnico organizado por cada dispositivo."
+    hint: <span className="text-lg">Cada cliente puede tener múltiples equipos. Aquí eliges cuál vas a intervenir. Esto mantiene un historial técnico organizado por cada dispositivo.</span>
   },
   mantenimiento: {
     title: "Detalla el Trabajo",
     icon: <Wrench className="w-5 h-5" />,
-    hint: "Indica qué tipo de servicio realizas y qué tareas completaste. También puedes registrar las piezas que usaste para llevar un control de inventario/costos."
+    hint: <span className="text-lg">Indica qué tipo de servicio realizas y qué tareas completaste. También puedes registrar las piezas que usaste para llevar un control de inventario/costos.</span>
   },
   contador: {
     title: "Registro de Uso",
     icon: <GaugeCircle className="w-5 h-5" />,
-    hint: "Este paso es opcional. Sirve para anotar unidades, horas de uso o impresiones. Ayuda a predecir cuándo será el próximo mantenimiento."
+    hint: <span className="text-lg">Este paso es opcional. Sirve para anotar unidades, horas de uso o impresiones. Ayuda a predecir cuándo será el próximo mantenimiento.</span>
   },
   garantia: {
     title: "Respaldo del Servicio",
     icon: <ShieldCheck className="w-5 h-5" />,
-    hint: "Configura cuánto tiempo de garantía ofreces. El sistema calculará automáticamente la fecha de vencimiento y la incluirá en el PDF profesional."
+    hint: <span className="text-lg">Configura cuánto tiempo de garantía ofreces. El sistema calculará automáticamente la fecha de vencimiento y la incluirá en el PDF profesional.</span>
   },
   firma: {
     title: "Validación Legal",
     icon: <PenLine className="w-5 h-5" />,
-    hint: "Tus clientes pueden firmar directamente en tu pantalla. Esto da validez legal al servicio y asegura que el cliente esté conforme con el trabajo."
+    hint: <span className="text-lg">Tus clientes pueden firmar directamente en tu pantalla. Esto da validez legal al servicio y asegura que el cliente esté conforme con el trabajo.</span>
   },
   resumen: {
     title: "Revisión Final",
     icon: <ClipboardCheck className="w-5 h-5" />,
-    hint: "Verifica que toda la información sea correcta antes de generar el documento oficial. Una vez guardado, podrás enviarlo por WhatsApp en un clic."
+    hint: <span className="text-lg">Verifica que toda la información sea correcta antes de generar el documento oficial. Una vez guardado, podrás enviarlo por WhatsApp en un segundo.</span>
   }
 }
+
 
 export interface Pieza {
   pieza: string
