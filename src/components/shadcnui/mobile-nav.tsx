@@ -81,12 +81,13 @@ export function MobileNav() {
     }
   };
 
-  if (isKeyboardVisible) return null;
-
   return (
     <nav
       id="mobile-nav"
-      className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-gray-900/95 border-t border-gray-800 sm:hidden"
+      className={cn(
+        "fixed bottom-0 left-0 right-0 z-50 h-16 bg-gray-900/95 border-t border-gray-800 sm:hidden transition-transform duration-300 ease-in-out",
+        isKeyboardVisible ? "translate-y-full opacity-0 pointer-events-none" : "translate-y-0 opacity-100"
+      )}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="flex h-full items-center justify-around px-2 relative">

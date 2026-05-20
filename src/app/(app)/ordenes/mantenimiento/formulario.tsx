@@ -1,13 +1,12 @@
-// VERSIÓN OPTIMIZADA DEL FORMULARIO DE MANTENIMIENTO
-// Implementa useReducer, React.memo, y optimizaciones de rendimiento
-
+// formulario.tsx
 'use client'
 import { useState, useEffect, useCallback, useMemo, useReducer } from 'react'
 import { OrdenMantenimiento, Cliente, Dispositivo } from '@/types/orden'
 import { createPortal } from 'react-dom';
 import {
   ArrowLeft, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench,
-  ClipboardCheck, GaugeCircle, Laptop, ShieldCheck, PenLine, Check, Share2, Sparkles
+  ClipboardCheck, GaugeCircle, Laptop, ShieldCheck, PenLine, Check, Share2, Sparkles,
+  LockIcon
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Haptics, NotificationType } from '@capacitor/haptics'
@@ -490,6 +489,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   const isKeyboardVisible = useKeyboardVisible()
   const { imprimirOrden, compartirOrden } = usePrintService({ negocio })
   const { mutateAsync: crearOrdenMutate } = useCrearOrden()
+  const [hintExpanded, setHintExpanded] = useState(false)
   const [state, dispatch] = usePersistentReducer(
     isOnboarding ? 'draft_onboarding' : 'draft_mantenimiento',
     formReducer,
@@ -501,20 +501,70 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   // EFFECTS
   // ============================================================================
 
-  // Ocultar MobileNav cuando el formulario está abierto
+  // 1 Ocultar elementos globales de forma robusta
   useEffect(() => {
-    const mobileNav = document.getElementById('mobile-nav')
-    if (mobileNav) {
-      mobileNav.style.display = 'none'
-    }
+    // Inyectar estilo para asegurar que el mobile-nav esté oculto siempre que el formulario esté abierto
+    // Esto es más robusto que manipular el DOM directamente porque persiste aunque el nav se desmonte/monte
+    const style = document.createElement('style');
+    style.id = 'hide-global-nav-style';
+    style.innerHTML = `
+      #mobile-nav, #sidebar, #top-bar { display: none !important; }
+      body { overflow: hidden !important; }
+      [data-keyboard-visible="true"] .bottom-nav-container { 
+        display: none !important; 
+        transform: translateY(100%) !important;
+        opacity: 0 !important;
+      }
+    `;
+    document.head.appendChild(style);
 
     return () => {
-      if (mobileNav) {
-        mobileNav.style.display = ''
+      const styleElement = document.getElementById('hide-global-nav-style');
+      if (styleElement) styleElement.remove();
+    };
+  }, []);
+
+  // 2. Auto-scroll al enfocar inputs (Mejora UX Nativa)
+  useEffect(() => {
+    const handleFocus = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true') {
+        setTimeout(() => {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300); // Delay para esperar a que el teclado se despliegue
+      }
+    };
+
+    document.addEventListener('focusin', handleFocus);
+    return () => document.removeEventListener('focusin', handleFocus);
+  }, []);
+
+  // Handler para evitar submit accidental con el teclado (Enter/Buscar/Enviar)
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Si se presiona Enter, evitamos el comportamiento por defecto (submit)
+    // a menos que estuviéramos en un textarea (donde Enter es salto de línea)
+    const isTextArea = (e.target as HTMLElement).tagName === 'TEXTAREA';
+    if (e.key === 'Enter' && !isTextArea) {
+      e.preventDefault();
+      
+      // Si el paso actual es válido, podemos avanzar automáticamente al siguiente
+      if (canProceedToNextStep()) {
+        nextStep();
       }
     }
-  }, [])
+  };
 
+  // Handler para gestos de Swipe (Navegación Táctil)
+  const onDragEnd = (event: any, info: any) => {
+    const threshold = 50; // Píxeles mínimos para considerar el swipe
+    if (info.offset.x < -threshold) {
+      // Swipe a la izquierda -> Siguiente
+      if (canProceedToNextStep()) nextStep();
+    } else if (info.offset.x > threshold) {
+      // Swipe a la derecha -> Anterior
+      prevStep();
+    }
+  };
   // Inyectar datos de prueba para Onboarding
   useEffect(() => {
     if (isOnboarding) {
@@ -609,67 +659,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   }, [fechaGarantiaHasta, state.garantiaTiempoHasta])
 
 
-  // Manejar el botón back del navegador/Android
-  useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      // Ignorar popstate si fue programático (ej. al cerrar un modal interno)
-      if ((window as any).__ignoring_next_popstate__) {
-        (window as any).__ignoring_next_popstate__ = false;
-        return;
-      }
-
-      event.preventDefault()
-
-      const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
-
-      if (currentIndex > 0) {
-        prevStep()
-        window.history.pushState(null, '', window.location.pathname)
-      } else {
-        onClose()
-      }
-    }
-
-    window.history.pushState(null, '', window.location.pathname)
-    window.addEventListener('popstate', handlePopState)
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState)
-    }
-  }, [state.currentStep, onClose])
-
   // ============================================================================
-  // PREVENCIÓN DE BUG DEL BORRADOR RETENIDO
-  // ============================================================================
-  useEffect(() => {
-    if (state.ordenCreada) {
-      // Notificar éxito con vibración si está disponible
-      Haptics.notification({ type: NotificationType.Success }).catch(() => { })
-
-      const timeoutId = setTimeout(() => {
-        localStorage.removeItem(isOnboarding ? 'draft_onboarding' : 'draft_mantenimiento')
-      }, 100)
-      return () => clearTimeout(timeoutId)
-    }
-  }, [state.ordenCreada, isOnboarding])
-
-  // ============================================================================
-  // UTILIDADES MEMOIZADAS
-  // ============================================================================
-
-  // Función de scroll reutilizable
-  const scrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-    setTimeout(() => {
-      const mainContainer = document.querySelector('.min-h-screen')
-      if (mainContainer) {
-        mainContainer.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    }, 50)
-  }, [])
-
-  // ============================================================================
-  // VALIDACIONES OPTIMIZADAS
+  // VALIDACIONES (Definidas antes de los handlers de navegación)
   // ============================================================================
 
   const stepValidations = useMemo<Record<number, () => boolean>>(() => ({
@@ -709,14 +700,33 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
     return false
   }, [state.highestStepCompleted, stepValidations])
 
+  // Función de scroll reutilizable
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setTimeout(() => {
+      const mainContainer = document.querySelector('.min-h-screen')
+      if (mainContainer) {
+        mainContainer.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 50)
+  }, [])
+
+  // ============================================================================
+  // HANDLERS DE NAVEGACIÓN
+  // ============================================================================
+
+  const prevStep = useCallback(() => {
+    const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
+    if (currentIndex > 0) {
+      dispatch({ type: 'SET_CURRENT_STEP', payload: STEPS_CONFIG[currentIndex - 1].key })
+      scrollToTop()
+    }
+  }, [state.currentStep, scrollToTop])
+
   const canProceedToNextStep = useCallback(() => {
     const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
     return stepValidations[currentIndex]()
   }, [state.currentStep, stepValidations])
-
-  // ============================================================================
-  // HANDLERS OPTIMIZADOS
-  // ============================================================================
 
   const nextStep = useCallback(() => {
     const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
@@ -733,13 +743,43 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
     }
   }, [state.currentStep, state.highestStepCompleted, canProceedToNextStep, scrollToTop])
 
-  const prevStep = useCallback(() => {
-    const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
-    if (currentIndex > 0) {
-      dispatch({ type: 'SET_CURRENT_STEP', payload: STEPS_CONFIG[currentIndex - 1].key })
-      scrollToTop()
+  // Manejar el botón back del navegador/Android
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      // 1. Ignorar popstate si fue programático (ej. al cerrar un modal interno con useAndroidBack)
+      // Esta es la solución más robusta para evitar que cerrar un modal haga un "back" en el formulario
+      if ((window as any).__ignoring_next_popstate__) {
+        (window as any).__ignoring_next_popstate__ = false;
+        // Re-inyectamos el estado para que el siguiente back real funcione
+        window.history.pushState(null, '', window.location.pathname);
+        return;
+      }
+
+      // 2. Ignorar si el estado tiene un modalId
+      if (event.state?.modalId) {
+        return;
+      }
+
+      event.preventDefault()
+      const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
+
+      if (currentIndex > 0) {
+        prevStep()
+        // Re-pushear el estado para el siguiente back real
+        window.history.pushState(null, '', window.location.pathname)
+      } else {
+        onClose()
+      }
     }
-  }, [state.currentStep, scrollToTop])
+
+    // Estado inicial limpio
+    window.history.pushState({ isFormBase: true }, '', window.location.pathname)
+    window.addEventListener('popstate', handlePopState)
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [state.currentStep, onClose, prevStep])
 
   // Handler para saltar a un paso específico (solo si es accesible)
   const goToStep = useCallback((stepKey: FormStep) => {
@@ -822,7 +862,23 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
     e.preventDefault();
 
     if (!user?.uid) {
-      alert('Usuario no autenticado');
+      alert('Error: Sesión no válida. Por favor, vuelve a iniciar sesión.');
+      return;
+    }
+
+    // Validación final de seguridad antes de enviar
+    if (!state.clienteSeleccionado || !state.dispositivoSeleccionado) {
+      alert('Error: Datos del cliente o dispositivo incompletos.');
+      return;
+    }
+
+    const todasLasTareas = [
+      ...state.tareasSeleccionadas,
+      ...state.tareasPersonalizadas.filter(t => t.trim())
+    ];
+
+    if (state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && todasLasTareas.length === 0) {
+      alert('Error: Debes agregar al menos una tarea realizada.');
       return;
     }
 
@@ -1164,13 +1220,50 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
     )
   }
 
+  
+
   // ============================================================================
   // RENDER PRINCIPAL
   // ============================================================================
 
   const currentStepIndex = STEPS_CONFIG.findIndex(s => s.key === state.currentStep)
+  const nextStepName = STEPS_CONFIG[currentStepIndex + 1]?.title
 
 
+
+  function getValidationMessage() {
+    const currentIndex = STEPS_CONFIG.findIndex(s => s.key === state.currentStep)
+    
+    switch (state.currentStep) {
+      case 'cliente':
+        return 'Selecciona un cliente para continuar';
+      case 'dispositivo':
+        return 'Selecciona un equipo para continuar';
+      case 'mantenimiento':
+        if (!state.tipoMantenimiento) return 'Selecciona el tipo de trabajo';
+        if (state.tipoMantenimiento === 'diagnostico') {
+          if (!state.observacionesIniciales.trim()) return 'Falta observación inicial';
+          if (!state.pruebasRealizadas.trim()) return 'Falta detallar pruebas';
+          if (!state.diagnosticoFinal.trim()) return 'Falta diagnóstico final';
+        }
+        if (state.tipoMantenimiento === 'instalacion') {
+          if (!state.instalacionConfiguracion && !state.instalacionRecomendaciones) return 'Configura o agrega recomendaciones';
+        }
+        const todasLasTareas = [...state.tareasSeleccionadas, ...state.tareasPersonalizadas.filter(t => t.trim())]
+        if (state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && todasLasTareas.length === 0) {
+          return 'Agrega al menos una actividad';
+        }
+        return 'Completa la información del trabajo';
+      case 'firma':
+        if (state.firmaHabilitada) {
+          if (!state.firmaCliente) return 'Falta la firma del cliente';
+          if (!state.validacionCliente) return 'Acepta los términos para continuar';
+        }
+        return 'Firma requerida';
+      default:
+        return 'Completa los campos requeridos';
+    }
+  }
 
   return (
     <div className="h-[calc(100dvh-5rem)] w-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col overflow-hidden relative">
@@ -1199,7 +1292,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
               </div>
 
               {/* Indicador de Progreso Flotante */}
-              <div className="bg-blue-700/80 backdrop-blur-md px-4 py-2.5 rounded-xl shadow-lg border border-blue-400/20 flex items-center justify-between text-white pointer-events-auto">
+              <div className="bg-blue-700/80 px-4 py-2.5 rounded-xl shadow-lg border border-blue-400/20 flex items-center justify-between text-white pointer-events-auto">
                 <div className="flex items-center space-x-2">
                   <Sparkles className="w-3.5 h-3.5 animate-pulse text-blue-200" />
                   <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-blue-50">
@@ -1220,123 +1313,88 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
         )}
       </AnimatePresence>
 
-      {/* Header */}
+      {/* Header Estilo Nativo */}
       <header className="sticky top-0 z-30 bg-gray-900/95 border-b border-gray-800">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center space-x-3">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <button
             onClick={onClose}
-            className="text-blue-400 hover:text-blue-300 p-2 rounded-lg hover:bg-gray-800 transition-all active:scale-95 touch-manipulation"
-            aria-label="Volver"
+            className="text-gray-400 hover:text-white p-2 -ml-2 rounded-full hover:bg-gray-800 transition-all active:scale-90"
+            aria-label="Cerrar"
           >
-            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+            <ArrowLeft className="w-6 h-6" />
           </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg sm:text-2xl font-bold text-white truncate">
-              Nueva Orden
+          
+          <div className="text-center flex-1 mx-4">
+            <h1 className="text-2xl font-bold text-white tracking-tight">
+              {STEPS_CONFIG[currentStepIndex].title}
             </h1>
-            <p className="text-xs sm:text-sm text-gray-400 mt-0.5 truncate">
-              Paso {currentStepIndex + 1} de {STEPS_CONFIG.length}
-            </p>
+            <div className="flex justify-center items-center gap-1 mt-1">
+              {STEPS_CONFIG.map((_, i) => (
+                <div 
+                  key={i} 
+                  className={`h-1 rounded-full transition-all duration-300 ${
+                    i === currentStepIndex ? 'w-4 bg-blue-500' : 'w-1 bg-gray-700'
+                  }`} 
+                />
+              ))}
+            </div>
           </div>
+
+          <div className="w-10" /> {/* Espaciador para centrar el título */}
         </div>
       </header>
 
-      {/* Stepper Mobile (carrusel horizontal) - SOLO pasos accesibles */}
-      <div className="lg:hidden sticky top-[57px] z-20 bg-gray-900/90 border-b border-gray-800">
-        <div className="overflow-x-auto no-scrollbar">
-          <div className="flex px-4 py-3 gap-4 min-w-max">
-            {STEPS_CONFIG.map((step, index) => {
-              const isCompleted = stepValidations[index]?.() && state.highestStepCompleted > index
-              const isCurrent = state.currentStep === step.key
-              const accessible = isStepAccessible(index)
-
-              return (
-                <button
-                  key={step.key}
-                  onClick={() => goToStep(step.key)}
-                  disabled={!accessible}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-full transition-all text-sm font-medium whitespace-nowrap ${!accessible
-                      ? 'bg-gray-800/50 text-gray-600 border border-gray-800 cursor-not-allowed'
-                      : isCurrent
-                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                        : isCompleted
-                          ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                          : 'bg-gray-800 text-gray-400 border border-gray-700'
-                    }`}
-                >
-                  {isCompleted ? <CheckCircle className="w-4 h-4" /> : step.icon}
-                  <span className="hidden sm:inline">{step.title}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-        {/* Barra de progreso lineal */}
-        <div className="h-1 bg-gray-800 w-full">
-          <div
-            className="h-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-500 ease-out rounded-r-full"
-            style={{ width: `${((state.highestStepCompleted + 1) / STEPS_CONFIG.length) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Stepper Desktop (círculos conectados) */}
-      <div className="hidden lg:block max-w-4xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between">
-          {STEPS_CONFIG.map((step, index) => {
-            const isCompleted = stepValidations[index]?.() && state.highestStepCompleted > index
-            const isCurrent = state.currentStep === step.key
-            const accessible = isStepAccessible(index)
-
-            return (
-              <div key={step.key} className="flex items-center flex-1">
-                <button
-                  onClick={() => goToStep(step.key)}
-                  disabled={!accessible}
-                  className={`flex flex-col items-center cursor-pointer disabled:cursor-not-allowed`}
-                >
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${!accessible
-                        ? 'bg-gray-800/50 border-gray-800 cursor-not-allowed'
-                        : isCompleted
-                          ? 'bg-green-500 border-green-500 scale-105'
-                          : isCurrent
-                            ? 'bg-blue-500 border-blue-500 scale-110 shadow-lg shadow-blue-500/50'
-                            : 'bg-gray-700 border-gray-600'
-                      }`}
-                  >
-                    {isCompleted && accessible ? <CheckCircle className="w-6 h-6 text-white" /> : step.icon}
-                  </div>
-                  <span className={`text-sm mt-2 text-center font-medium ${!accessible
-                      ? 'text-gray-600'
-                      : isCurrent
-                        ? 'text-blue-400'
-                        : isCompleted
-                          ? 'text-green-400'
-                          : 'text-gray-500'
-                    }`}>
-                    {step.title}
-                  </span>
-                  <span className="text-xs text-center text-gray-600">{step.description}</span>
-                </button>
-                {index < STEPS_CONFIG.length - 1 && (
-                  <div className={`flex-1 h-1 mx-3 rounded transition-all ${isCompleted && accessible ? 'bg-green-500' : 'bg-gray-700'
-                    }`} />
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Contenido del paso actual */}
-      <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full pt-4 pb-32">
-        <form id="mantenimiento-form" onSubmit={handleSubmit}>
-          <div className="animate-fadeIn transition-all duration-300 ease-in-out">
-            {renderCurrentStep()}
-          </div>
+      {/* Contenido del paso actual con Swipe Gestures */}
+      <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full pt-4 pb-32">
+        <form 
+          id="mantenimiento-form" 
+          onSubmit={handleSubmit}
+          onKeyDown={handleKeyDown}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={state.currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={onDragEnd}
+              className="animate-fadeIn transition-all duration-300 ease-in-out touch-pan-y"
+            >
+              {renderCurrentStep()}
+            </motion.div>
+          </AnimatePresence>
         </form>
       </main>
+        {isOnboarding && (
+          <motion.div 
+            className="fixed bottom-24 left-4 right-4 z-30"
+            drag="y" dragConstraints={{ top: 0, bottom: 0 }}
+            onDragEnd={(_, info) => { if (info.offset.y > 40) setHintExpanded(false) }}
+          >
+            <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
+              <div className="flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing"
+                  onClick={() => setHintExpanded(v => !v)}>
+                <div className="w-8 h-1 bg-slate-600 rounded-full" />
+              </div>
+              <div className="px-4 pb-3 flex items-start gap-3">
+                <div className="bg-blue-500/20 p-1.5 rounded-lg shrink-0">
+                  {ONBOARDING_HINTS[state.currentStep].icon}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-blue-300">{ONBOARDING_HINTS[state.currentStep].title}</p>
+                  {hintExpanded && (
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                      {ONBOARDING_HINTS[state.currentStep].hint}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
       {/* Barra de navegación inferior flotante */}
       <div 
@@ -1390,15 +1448,16 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
               </button>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={nextStep}
-              disabled={!canProceedToNextStep()}
-              className="flex items-center justify-center h-12 px-6 text-base font-bold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 shadow-lg shadow-blue-500/30 touch-manipulation flex-1 min-w-[140px]"
-            >
-              <span className="hidden sm:inline">Siguiente</span>
-              <span className="sm:hidden">Continuar</span>
-              <ChevronRight className="w-5 h-5 ml-2" />
+            <button onClick={nextStep} disabled={!canProceedToNextStep()}
+              className={`flex items-center justify-center h-12 px-6 rounded-xl font-bold transition-all
+                ${!canProceedToNextStep()
+                  ? 'bg-blue-600/40 text-blue-400 border border-blue-800/50'
+                  : 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
+                }`}>
+              {!canProceedToNextStep() 
+                ? <><LockIcon className="w-4 h-4 mr-2" />{getValidationMessage()}</>
+                : <>{`Ir a ${nextStepName}`}<ChevronRight className="w-5 h-5 ml-2" /></>
+              }
             </button>
           )}
         </div>
@@ -1406,12 +1465,12 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
         {/* Mensaje de validación (solo en móvil) */}
         {!canProceedToNextStep() && state.currentStep !== 'resumen' && (
           <div className="px-4 pb-2 text-center">
-            <p className="text-xs text-amber-400 bg-amber-500/10 rounded-lg py-2 px-3">
+            <p className="text-xs text-blue-400 bg-blue-500/10 rounded-lg py-2 px-3">
               {state.currentStep === 'cliente' && 'Selecciona un cliente para continuar'}
               {state.currentStep === 'dispositivo' && 'Selecciona un dispositivo para continuar'}
               {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'diagnostico' && 'Completa todos los campos del diagnóstico'}
               {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'instalacion' && 'Configura o agrega recomendaciones para continuar'}
-              {state.currentStep === 'mantenimiento' && state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && 'Agrega al menos una tarea para continuar'}
+              {state.currentStep === 'mantenimiento' && state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && 'Agrega al menos una actividad para continuar'}
               {state.currentStep === 'firma' && 'Debe aceptar los términos y firmar para continuar'}
             </p>
           </div>
@@ -1427,7 +1486,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-950/90 backdrop-blur-md p-4"
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-950/90 p-4"
             >
               <motion.div
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}

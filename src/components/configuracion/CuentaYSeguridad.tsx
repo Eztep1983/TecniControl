@@ -17,9 +17,11 @@ import {
   sendPasswordResetEmail,
   deleteUser,
   reauthenticateWithCredential,
+  reauthenticateWithRedirect,
+  getRedirectResult,
   EmailAuthProvider,
   GoogleAuthProvider,
-  signInWithPopup,
+  updatePassword,
 } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
 import { collection, query, where, getDocs } from 'firebase/firestore'
@@ -36,7 +38,7 @@ import {
 import { Capacitor } from '@capacitor/core'
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -202,12 +204,67 @@ export default function CuentaYSeguridad() {
   const [resetStatus, setResetStatus]   = useState<InlineStatus>({ type: null, message: '' })
   const [resetLoading, setResetLoading] = useState(false)
 
+  // Password change (email/password users only)
+  const [showChangePasswordForm, setShowChangePasswordForm] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
+  const [changePasswordLoading, setChangePasswordLoading] = useState(false)
+  const [changePasswordStatus, setChangePasswordStatus] = useState<InlineStatus>({ type: null, message: '' })
+
   // Danger zone accordion
   const [dangerOpen, setDangerOpen] = useState(false)
 
   // Platform detection
   const [isNative, setIsNative] = useState(false)
   useEffect(() => { setIsNative(Capacitor.isNativePlatform()) }, [])
+
+  // ─── Captura resultado del redirect de Google (web/desktop) ──────────────
+  // Cuando el usuario vuelve de la página de Google tras reauthenticateWithRedirect,
+  // getRedirectResult() entrega la credencial y se procede a borrar la cuenta.
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      const intent = sessionStorage.getItem('reauth_intent')
+      if (intent !== 'delete_account') return
+
+      try {
+        setDeleteState(s => ({ ...s, dialogOpen: true, loading: true }))
+        const result = await getRedirectResult(auth)
+
+        if (!result) {
+          // El usuario canceló o volvió sin completar la autenticación
+          setDeleteState(s => ({ ...s, loading: false }))
+          return
+        }
+
+        const oauthCredential = GoogleAuthProvider.credentialFromResult(result)
+        if (!oauthCredential) throw new Error('No se pudo obtener credencial de Google.')
+
+        sessionStorage.removeItem('reauth_intent')
+        await reauthenticateWithCredential(result.user, oauthCredential)
+        await performDeleteUser()
+      } catch (err: any) {
+        sessionStorage.removeItem('reauth_intent')
+        const cancelled =
+          err.code === 'auth/popup-closed-by-user' ||
+          err.code === 'auth/cancelled-popup-request' ||
+          err.message?.toLowerCase().includes('cancel')
+
+        if (!cancelled) {
+          setDeleteState(s => ({
+            ...s,
+            loading: false,
+            error: 'No se pudo verificar con Google. Intenta de nuevo.',
+          }))
+        } else {
+          setDeleteState(s => ({ ...s, loading: false }))
+        }
+      }
+    }
+
+    handleRedirectResult()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Auto-clear export success/info after 8 s
   useEffect(() => {
@@ -227,6 +284,14 @@ export default function CuentaYSeguridad() {
       return () => clearTimeout(t)
     }
   }, [resetStatus.type])
+
+  // Auto-clear change password status after 6 s
+  useEffect(() => {
+    if (changePasswordStatus.type === 'success') {
+      const t = setTimeout(() => setChangePasswordStatus({ type: null, message: '' }), 6000)
+      return () => clearTimeout(t)
+    }
+  }, [changePasswordStatus.type])
 
   // ─── Dialog cleanup ───────────────────────────────────────────────────────
 
@@ -397,6 +462,69 @@ export default function CuentaYSeguridad() {
     }
   }
 
+  // ─── Password change (email users only) ───────────────────────────────────
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!user || !user.email) return
+
+    if (newPassword.length < 6) {
+      setChangePasswordStatus({
+        type: 'error',
+        message: 'La nueva contraseña debe tener al menos 6 caracteres.',
+      })
+      return
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setChangePasswordStatus({
+        type: 'error',
+        message: 'Las contraseñas nuevas no coinciden.',
+      })
+      return
+    }
+
+    try {
+      setChangePasswordLoading(true)
+      setChangePasswordStatus({ type: 'info', message: 'Verificando contraseña actual...' })
+
+      // 1. Reautenticar al usuario
+      const credential = EmailAuthProvider.credential(user.email, currentPassword)
+      await reauthenticateWithCredential(user, credential)
+
+      // 2. Actualizar contraseña
+      setChangePasswordStatus({ type: 'info', message: 'Actualizando contraseña...' })
+      await updatePassword(user, newPassword)
+
+      setChangePasswordStatus({
+        type: 'success',
+        message: 'Contraseña actualizada correctamente.',
+        details: 'Tu contraseña de acceso ha sido cambiada.',
+      })
+
+      // Limpiar campos
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmNewPassword('')
+      setTimeout(() => setShowChangePasswordForm(false), 3000)
+    } catch (err: any) {
+      console.error('Error changing password:', err)
+      let msg = 'No se pudo cambiar la contraseña. Intenta de nuevo.'
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        msg = 'Contraseña actual incorrecta. Verifica tu contraseña.'
+      } else if (err.code === 'auth/weak-password') {
+        msg = 'La nueva contraseña es demasiado débil. Usa al menos 6 caracteres.'
+      } else if (err.code === 'auth/too-many-requests') {
+        msg = 'Demasiados intentos fallidos. Espera unos minutos.'
+      } else if (err.code === 'auth/network-request-failed') {
+        msg = 'Sin conexión. Verifica tu internet.'
+      }
+      setChangePasswordStatus({ type: 'error', message: 'Error al cambiar contraseña', details: msg })
+    } finally {
+      setChangePasswordLoading(false)
+    }
+  }
+
   // ─── Re-auth: email/password ──────────────────────────────────────────────
 
   const reauthWithPassword = async () => {
@@ -424,58 +552,46 @@ export default function CuentaYSeguridad() {
     }
   }
 
-  // ─── Re-auth: Google (native Capacitor or web popup) ─────────────────────
+  // ─── Re-auth: Google (native Capacitor o web redirect) ───────────────────
 
   const reauthWithGoogle = async () => {
     try {
       setReAuthLoading(true)
       setReAuthError('')
 
-      let idToken: string
-
       if (isNative) {
-        // ── Android / iOS via @codetrix-studio/capacitor-google-auth ────────
-        // GoogleAuth.initialize() must be called once at app startup.
-        // See: app.tsx → GoogleAuth.initialize({ clientId, scopes: ['profile','email'] })
-        const googleUser = await GoogleAuth.signIn()
-        idToken = googleUser.authentication.idToken
+        // ── Android / iOS: plugin nativo de Firebase para Capacitor ─────────
+        // Usa el selector de cuentas nativo del SO, sin webview ni popup.
+        // Requiere: npm install @capacitor-firebase/authentication
+        // y configurar el plugin en capacitor.config.ts con el clientId de Android.
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication')
+        const result = await FirebaseAuthentication.signInWithGoogle()
+
+        const credential = GoogleAuthProvider.credential(
+          result.credential?.idToken,
+          result.credential?.accessToken,
+        )
+
+        await reauthenticateWithCredential(user!, credential)
+        await performDeleteUser()
       } else {
-        // ── Web: popup flow ──────────────────────────────────────────────────
+        // ── Web / desktop: redirect a Google, sin popup ──────────────────────
+        // Guardamos la intención antes de salir de la página; el useEffect de
+        // arriba la lee cuando el usuario vuelve y completa la eliminación.
         const provider = new GoogleAuthProvider()
         provider.setCustomParameters({ prompt: 'select_account' })
-        const result = await signInWithPopup(auth, provider)
-        idToken = await result.user.getIdToken()
+        sessionStorage.setItem('reauth_intent', 'delete_account')
+        await reauthenticateWithRedirect(user!, provider)
+        // La página hace redirect → la ejecución no continúa aquí.
       }
-
-      const credential = GoogleAuthProvider.credential(idToken)
-
-      try {
-        await reauthenticateWithCredential(user!, credential)
-      } catch (inner: any) {
-        // Firebase token may be stale even though Google re-auth succeeded.
-        // Retry once — Firebase should have refreshed the session by now.
-        if (
-          inner.code === 'auth/user-token-expired' ||
-          inner.code === 'auth/invalid-credential'
-        ) {
-          await reauthenticateWithCredential(user!, credential)
-        } else {
-          throw inner
-        }
-      }
-
-      await performDeleteUser()
     } catch (err: any) {
-      // Detect user-cancelled flows across platforms
+      // En nativo: detectar cancelación del selector de cuentas
       const cancelled =
         err.code === 'ERR_CANCELED' ||
-        err.code === 'auth/popup-closed-by-user' ||
-        err.code === 'auth/cancelled-popup-request' ||
         err.message?.toLowerCase().includes('cancel') ||
         err.message?.toLowerCase().includes('closed')
 
       if (cancelled) {
-        // Not an error — user simply closed the picker
         setReAuthError('')
         return
       }
@@ -558,16 +674,18 @@ export default function CuentaYSeguridad() {
           </div>
 
           <div className="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent" />
-                {/* cerrar sesion */}
-        <Button
-          variant="outline"
-          onClick={logout}
-          className="border-blue-600/30 text-blue-400 bg-blue-500/10 hover:bg-blue-500/20
-                     hover:text-blue-300 shrink-0"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Cerrar sesión
-        </Button>
+
+          {/* Cerrar sesión */}
+          <Button
+            variant="outline"
+            onClick={logout}
+            className="border-blue-600/30 text-blue-400 bg-blue-500/10 hover:bg-blue-500/20
+                       hover:text-blue-300 shrink-0"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Cerrar sesión
+          </Button>
+
           {/* Password section — adapts to auth provider */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -582,7 +700,7 @@ export default function CuentaYSeguridad() {
                 </p>
               ) : (
                 <p className="text-xs text-gray-500 mt-1">
-                  Te enviaremos un enlace de restablecimiento a tu correo
+                  Cambia tu contraseña directamente o solicita un correo de restablecimiento.
                 </p>
               )}
             </div>
@@ -602,19 +720,111 @@ export default function CuentaYSeguridad() {
                 <ExternalLink className="w-3.5 h-3.5 opacity-60" />
               </a>
             ) : (
-              <Button
-                variant="outline"
-                onClick={handlePasswordReset}
-                disabled={resetLoading}
-                className="border-blue-600/30 text-blue-400 bg-blue-500/10 hover:bg-blue-500/20
-                           hover:text-blue-300 min-w-[200px] shrink-0"
-              >
-                {resetLoading
-                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Enviando correo...</>
-                  : <><KeyRound className="w-4 h-4 mr-2" />Restablecer contraseña</>}
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowChangePasswordForm(v => !v)}
+                  className="border-blue-600/30 text-blue-400 bg-blue-500/10 hover:bg-blue-500/20
+                             hover:text-blue-300 min-w-[150px]"
+                >
+                  <KeyRound className="w-4 h-4 mr-2" />
+                  {showChangePasswordForm ? 'Ocultar formulario' : 'Cambiar contraseña'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handlePasswordReset}
+                  disabled={resetLoading}
+                  className="border-blue-600/30 text-blue-400 bg-blue-500/10 hover:bg-blue-500/20
+                             hover:text-blue-300 min-w-[170px]"
+                >
+                  {resetLoading ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Enviando...</>
+                  ) : (
+                    <><Mail className="w-4 h-4 mr-2" />Restablecer por correo</>
+                  )}
+                </Button>
+              </div>
             )}
           </div>
+
+          {/* Collapsible Direct Password Change Form */}
+          {!isGoogleUser && showChangePasswordForm && (
+            <form onSubmit={handleChangePassword} className="mt-4 p-4 rounded-xl border border-gray-700/50 bg-gray-900/30 space-y-4 animate-in fade-in duration-200">
+              <p className="text-xs font-semibold uppercase text-blue-400 tracking-wider">Cambiar contraseña directamente</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="current-password-field" className="text-gray-300 text-xs">Contraseña actual</Label>
+                  <Input
+                    id="current-password-field"
+                    type="password"
+                    placeholder="••••••••"
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    required
+                    className="bg-gray-800 border-gray-700 text-white focus:border-blue-500 focus:ring-blue-500 h-9 text-sm"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-password-field" className="text-gray-300 text-xs">Nueva contraseña</Label>
+                  <Input
+                    id="new-password-field"
+                    type="password"
+                    placeholder="••••••••"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    required
+                    className="bg-gray-800 border-gray-700 text-white focus:border-blue-500 focus:ring-blue-500 h-9 text-sm"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="confirm-new-password-field" className="text-gray-300 text-xs">Confirmar nueva contraseña</Label>
+                  <Input
+                    id="confirm-new-password-field"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmNewPassword}
+                    onChange={e => setConfirmNewPassword(e.target.value)}
+                    required
+                    className="bg-gray-800 border-gray-700 text-white focus:border-blue-500 focus:ring-blue-500 h-9 text-sm"
+                  />
+                </div>
+              </div>
+
+              {changePasswordStatus.type && <StatusBanner status={changePasswordStatus} />}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setShowChangePasswordForm(false)
+                    setChangePasswordStatus({ type: null, message: '' })
+                    setCurrentPassword('')
+                    setNewPassword('')
+                    setConfirmNewPassword('')
+                  }}
+                  className="text-gray-400 hover:text-white hover:bg-gray-800 h-9 text-sm"
+                  disabled={changePasswordLoading}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={changePasswordLoading || !currentPassword || !newPassword || !confirmNewPassword}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium h-9 text-sm px-4"
+                >
+                  {changePasswordLoading ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Actualizando...</>
+                  ) : (
+                    'Actualizar contraseña'
+                  )}
+                </Button>
+              </div>
+            </form>
+          )}
 
           {resetStatus.type && <StatusBanner status={resetStatus} />}
         </CardContent>

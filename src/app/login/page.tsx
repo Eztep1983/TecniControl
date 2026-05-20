@@ -4,9 +4,25 @@
 
 import { useAuth } from "@/components/auth/AuthProvider"
 import { Button } from "@/components/ui/basic/button"
+import { Input } from "@/components/ui/basic/input"
+import { Label } from "@/components/ui/basic/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/basic/card"
 import { Alert, AlertDescription } from "@/components/ui/basic/alert"
-import { Loader2, Shield, AlertCircle, Moon, Sun } from "lucide-react"
+import {
+  Loader2,
+  Shield,
+  AlertCircle,
+  Moon,
+  Mail,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp
+} from "lucide-react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import logo from "@/public/logo.png"
@@ -31,23 +47,35 @@ function GoogleIcon({ className = "" }: { className?: string }) {
 }
 
 export default function LoginPage() {
-  const { user, signInWithGoogle, loading } = useAuth()
+  const { user, signInWithGoogle, signInWithEmail, signUpWithEmail, sendPasswordReset, loading } = useAuth()
   const router = useRouter()
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
   const [isRedirecting, setIsRedirecting] = useState(false)
 
-  // Inicializar cuando el componente se monte en el cliente
+  // Auth states for Email/Password
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot-password'>('login')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [displayName, setDisplayName] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [isEmailFormExpanded, setIsEmailFormExpanded] = useState(false)
+  const [emailInUse, setEmailInUse] = useState(false)
+
+
+  // Initialize on mount
   useEffect(() => {
     setMounted(true)
 
-    // Detectar preferencia del sistema
+    // Detect dark mode preference
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     setDarkMode(prefersDark)
 
-    // Escuchar cambios en la preferencia del sistema
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     const handleChange = (e: MediaQueryListEvent) => {
       setDarkMode(e.matches)
@@ -57,37 +85,42 @@ export default function LoginPage() {
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
 
-  // Aplicar tema al documento
+  // Apply dark mode class
   useEffect(() => {
     if (mounted) {
       document.documentElement.classList.toggle('dark', darkMode)
     }
   }, [darkMode, mounted])
 
-  // Manejar redirección cuando el usuario está autenticado
+  // Redirect if authenticated
   useEffect(() => {
     if (!loading && user && mounted && !isRedirecting) {
-      console.log(' User authenticated, redirecting to /ordenes')
+      console.log('User authenticated, redirecting to /ordenes')
       setIsRedirecting(true)
       router.push('/ordenes')
     }
   }, [user, loading, mounted, router, isRedirecting])
 
+  // Auto-expand credentials form if there is an email-related error, success, or emailInUse
+  useEffect(() => {
+    if (error || successMessage || emailInUse) {
+      setIsEmailFormExpanded(true)
+    }
+  }, [error, successMessage, emailInUse])
+
   const toggleDarkMode = () => {
     setDarkMode(!darkMode)
   }
 
-  const handleSignIn = async () => {
+  const handleGoogleSignIn = async () => {
     try {
       setIsSigningIn(true)
       setError(null)
-      console.log(' Attempting Google sign in via Popup...')
+      setSuccessMessage(null)
+      console.log('Attempting Google sign in...')
       await signInWithGoogle()
-      // En modo Popup, la promesa se resuelve exitosamente aquí.
-      // Firebase onAuthStateChanged se disparará, y AuthGuard nos redirigirá de inmediato.
     } catch (error: any) {
-      setError(error.message || 'Error al conectar con Google')
-
+      console.error('Google Sign In Error:', error)
       if (error.code === 'auth/popup-closed-by-user' || error.message.includes('cancelado')) {
         setError('El inicio de sesión fue cancelado. Por favor, intenta de nuevo.')
       } else if (error.code === 'auth/network-request-failed') {
@@ -101,18 +134,92 @@ export default function LoginPage() {
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !loading && !isSigningIn) {
-      handleSignIn()
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      setIsSigningIn(true)
+      setError(null)
+      setSuccessMessage(null)
+      await signInWithEmail(email, password)
+    } catch (error: any) {
+      console.error('Error logging in with email:', error)
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+        setError('Correo o contraseña incorrectos. Verifica tus datos.')
+      } else if (error.code === 'auth/invalid-email') {
+        setError('El formato del correo electrónico no es válido.')
+      } else if (error.code === 'auth/too-many-requests') {
+        setError('Demasiados intentos fallidos. Tu cuenta ha sido bloqueada temporalmente. Intenta de nuevo más tarde.')
+      } else if (error.code === 'auth/network-request-failed') {
+        setError('Error de conexión. Verifica tu internet e intenta de nuevo.')
+      } else {
+        setError(error.message || 'Error al iniciar sesión con correo/contraseña.')
+      }
+      setIsSigningIn(false)
     }
   }
 
-  // Evitar parpadeo durante la hidratación
+  const handleEmailRegister = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden.')
+      return
+    }
+    if (password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres.')
+      return
+    }
+    try {
+      setEmailInUse(false)
+      setIsSigningIn(true)
+      setError(null)
+      setSuccessMessage(null)
+      setEmailInUse(false)
+      await signUpWithEmail(email, password, displayName)
+    } catch (error: any) {
+      if (error.code === 'auth/email-already-in-use') {
+        setEmailInUse(true)  
+        setError(null)
+      } else if(error.code === 'auth/invalid-email') {
+        setError('El formato del correo electrónico no es válido.')
+      } else if (error.code === 'auth/weak-password') {
+        setError('La contraseña es demasiado débil. Usa al menos 6 caracteres.')
+      } else if (error.code === 'auth/network-request-failed') {
+        setError('Error de conexión. Verifica tu internet e intenta de nuevo.')
+      } else {
+        setError(error.message || 'Error al registrar la cuenta.')
+      }
+      setIsSigningIn(false)
+    }
+  }
+
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      setIsSigningIn(true)
+      setError(null)
+      setSuccessMessage(null)
+      await sendPasswordReset(email)
+      setSuccessMessage('Se ha enviado un enlace de recuperación a tu correo electrónico. Por favor, revisa tu bandeja de entrada (y la carpeta de correo no deseado/spam).')
+      setIsSigningIn(false)
+    } catch (error: any) {
+      console.error('Error requesting password reset:', error)
+      if (error.code === 'auth/user-not-found') {
+        setError('No existe ninguna cuenta registrada con este correo electrónico.')
+      } else if (error.code === 'auth/invalid-email') {
+        setError('El formato del correo electrónico no es válido.')
+      } else if (error.code === 'auth/network-request-failed') {
+        setError('Error de conexión. Verifica tu internet e intenta de nuevo.')
+      } else {
+        setError(error.message || 'Error al enviar el enlace de recuperación.')
+      }
+      setIsSigningIn(false)
+    }
+  }
+
   if (!mounted) {
     return null
   }
 
-  // Mostrar pantalla de redireccionamiento
   if ((user && !loading) || isRedirecting) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-cyan-500 to-cyan-500 dark:from-cyan-900 dark:to-cyan-950 p-4 transition-colors duration-300">
@@ -133,34 +240,15 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-white to-blue-200 dark:from-gray-900 dark:to-gray-950 p-4 transition-colors duration-300">
-      {/* Toggle de tema - Fixed para mejor accesibilidad */}
-      <button
-        onClick={toggleDarkMode}
-        className="fixed top-6 right-6 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 border border-gray-200 dark:border-gray-700 z-50"
-        aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-      >
-        {darkMode ? (
-          <Sun className="h-5 w-5 text-amber-500" />
-        ) : (
-          <Moon className="h-5 w-5 text-slate-700" />
-        )}
-      </button>
 
-      {/* Indicador de seguridad */}
-      <div className="fixed top-6 left-6 flex items-center gap-2 px-3 py-2 rounded-full bg-white dark:bg-gray-800 shadow-md text-sm text-slate-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 z-50">
-        <Shield className="h-4 w-4 text-green-600 dark:text-green-400" />
-        <span className="font-medium">Conexión segura</span>
-      </div>
-
-      {/* Card principal */}
-      <div className="w-full max-w-md">
+      {/* Main card */}
+      <div className="w-full max-w-md my-8 animate-in fade-in zoom-in-95 duration-300">
         <Card className="shadow-2xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors duration-300">
-          {/* Barra superior decorativa */}
           <div className="h-1.5 w-full bg-blue-500"></div>
 
           {/* Header */}
-          <CardHeader className="text-center px-8 pt-10 pb-6">
-            <div className="flex justify-center items-center gap-3 mb-4">
+          <CardHeader className="text-center px-8 pt-8 pb-4">
+            <div className="flex justify-center items-center gap-3 mb-2">
               <div className="w-12 h-12 overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700">
                 <img
                   src={logo.src}
@@ -177,28 +265,28 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
 
-          {/* Contenido */}
-          <CardContent className="px-8 pb-10 space-y-6">
-            {/* Mensaje de error */}
-            {error && (
-              <Alert variant="destructive" className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
+          {/* Content */}
+          <CardContent className="px-8 pb-8 space-y-6">
+
+            {/* Success Message */}
+            {successMessage && (
+              <Alert className="border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                  <AlertDescription className="text-red-800 dark:text-red-200">
-                    {error}
+                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                  <AlertDescription className="text-green-850 dark:text-green-200">
+                    {successMessage}
                   </AlertDescription>
                 </div>
               </Alert>
             )}
 
-            {/* Botón de Google */}
-            <div onKeyDown={handleKeyPress}>
+            {/* Primary Google Login Option */}
+            <div className="space-y-3">
               <Button
-                onClick={handleSignIn}
+                onClick={handleGoogleSignIn}
                 disabled={loading || isSigningIn}
                 size="lg"
-                variant="outline"
-                className="w-full py-6 text-base font-medium bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 dark:hover:border-gray-500 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                className="w-full py-7 text-base font-bold bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl shadow-md hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all duration-200"
               >
                 {loading || isSigningIn ? (
                   <>
@@ -214,19 +302,305 @@ export default function LoginPage() {
               </Button>
             </div>
 
-            {/* Divisor */}
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-              </div>
-              <div className="relative flex justify-center">
-                <span className="px-4 text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800">
-                  Acceso seguro
+            {/* Collapsible Email/Password Form Section */}
+            <div className="space-y-4 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsEmailFormExpanded(!isEmailFormExpanded)}
+                className="w-full flex items-center justify-between py-3.5 px-4 rounded-xl bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-900/40 dark:hover:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 transition-all duration-200 group"
+              >
+                <span className="text-sm font-semibold text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  O ingresar con correo y contraseña
                 </span>
+                <div className="p-1 rounded-md bg-white dark:bg-slate-800 shadow-sm border border-slate-200/50 dark:border-slate-700/50 group-hover:border-blue-500/30 transition-all">
+                  {isEmailFormExpanded ? (
+                    <ChevronUp className="h-4 w-4 text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                  )}
+                </div>
+              </button>
+
+              <div
+                className={`grid transition-all duration-300 ease-in-out ${
+                  isEmailFormExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0 overflow-hidden'
+                }`}
+              >
+                <div className="overflow-hidden">
+                  <div className="pt-2 pb-1 space-y-5 px-0.5">
+                    {/* Mode selection tabs (only if not in forgot-password mode) */}
+                    {mode !== 'forgot-password' && (
+                      <div className="flex bg-slate-100 dark:bg-gray-900 p-1 rounded-xl gap-1">
+                        <button
+                          type="button"
+                          onClick={() => { setMode('login'); setError(null); setSuccessMessage(null);setEmailInUse(false)}}
+                          className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                            mode === 'login'
+                              ? 'bg-white dark:bg-gray-850 text-blue-600 dark:text-blue-400 shadow-sm'
+                              : 'text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-slate-200'
+                          }`}
+                        >
+                          Iniciar Sesión
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setMode('register'); setError(null); setSuccessMessage(null);setEmailInUse(false)}}
+                          className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                            mode === 'register'
+                              ? 'bg-white dark:bg-gray-850 text-blue-600 dark:text-blue-400 shadow-sm'
+                              : 'text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-slate-200'
+                          }`}
+                        >
+                          Registrarse
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Forms depending on current mode */}
+                    {mode === 'login' && (
+                      <form onSubmit={handleEmailLogin} className="space-y-4">
+                        <div className="space-y-1">
+                          <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">Correo electrónico</Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                            <Input
+                              id="email"
+                              type="email"
+                              placeholder="nombre@ejemplo.com"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              className="pl-10 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-center">
+                            <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-medium">Contraseña</Label>
+                            <button
+                              type="button"
+                              onClick={() => { setMode('forgot-password'); setError(null); setSuccessMessage(null);setEmailInUse(false)}}
+                              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                            >
+                              ¿Olvidaste tu contraseña?
+                            </button>
+                          </div>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                            <Input
+                              id="password"
+                              type={showPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              className="pl-10 pr-10 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500"
+                              required
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+                            >
+                              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        <Button
+                          type="submit"
+                          disabled={loading || isSigningIn}
+                          className="w-full py-6 text-base font-medium bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                        >
+                          {isSigningIn ? (
+                            <>
+                              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                              <span>Iniciando sesión...</span>
+                            </>
+                          ) : (
+                            <span>Ingresar</span>
+                          )}
+                        </Button>
+                      </form>
+                    )}
+
+                    {mode === 'register' && (
+                      <form onSubmit={handleEmailRegister} className="space-y-4">
+                        <div className="space-y-1">
+                          <Label htmlFor="displayName" className="text-slate-700 dark:text-slate-300 font-medium">Nombre completo</Label>
+                          <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                            <Input
+                              id="displayName"
+                              type="text"
+                              placeholder="Juan Pérez"
+                              value={displayName}
+                              onChange={(e) => setDisplayName(e.target.value)}
+                              className="pl-10 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">Correo electrónico</Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                            <Input
+                              id="email"
+                              type="email"
+                              placeholder="nombre@ejemplo.com"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              className="pl-10 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-medium">Contraseña</Label>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                            <Input
+                              id="password"
+                              type={showPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              className="pl-10 pr-10 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500"
+                              required
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+                            >
+                              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label htmlFor="confirmPassword" className="text-slate-700 dark:text-slate-300 font-medium">Confirmar contraseña</Label>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                            <Input
+                              id="confirmPassword"
+                              type={showConfirmPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              className="pl-10 pr-10 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500"
+                              required
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+                            >
+                              {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
+                          </div>
+                        </div>
+                        {/* Error Message */}
+                        {emailInUse && (
+                          <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4">
+                            <div className="flex items-start gap-3">
+                              <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                              <div className="space-y-1.5">
+                                <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                                  Este correo ya tiene una cuenta
+                                </p>
+                                <p className="text-sm text-amber-700 dark:text-amber-300">
+                                  <span className="font-medium">{email}</span> ya está registrado.
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setMode('login')
+                                    setEmailInUse(false)
+                                    setError(null)
+                                  }}
+                                  className="text-sm font-semibold text-amber-700 dark:text-amber-300 underline underline-offset-2 hover:text-amber-900 dark:hover:text-amber-100 transition-colors"
+                                >
+                                  Iniciar sesión con este correo →
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        <Button
+                          type="submit"
+                          disabled={loading || isSigningIn}
+                          className="w-full py-6 text-base font-medium bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                        >
+                          {isSigningIn ? (
+                            <>
+                              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                              <span>Registrando cuenta...</span>
+                            </>
+                          ) : (
+                            <span>Registrarse</span>
+                          )}
+                        </Button>
+                      </form>
+                    )}
+                    {mode === 'forgot-password' && (
+                      <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
+                        <div className="space-y-2">
+                          <p className="text-sm text-slate-600 dark:text-slate-350 leading-relaxed">
+                            Ingresa tu correo electrónico y te enviaremos un enlace de recuperación para restablecer tu contraseña de forma segura.
+                          </p>
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">Correo electrónico</Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                            <Input
+                              id="email"
+                              type="email"
+                              placeholder="nombre@ejemplo.com"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              className="pl-10 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <Button
+                          type="submit"
+                          disabled={loading || isSigningIn}
+                          className="w-full py-6 text-base font-medium bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                        >
+                          {isSigningIn ? (
+                            <>
+                              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                              <span>Enviando enlace...</span>
+                            </>
+                          ) : (
+                            <span>Enviar enlace de recuperación</span>
+                          )}
+                        </Button>
+
+                        <button
+                          type="button"
+                          onClick={() => { setMode('login'); setError(null); setSuccessMessage(null); }}
+                          className="flex items-center justify-center gap-2 w-full py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                        >
+                          <ArrowLeft className="h-4 w-4" />
+                          <span>Volver al inicio de sesión</span>
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Info de privacidad */}
+            {/* Privacy info box */}
             <div className="rounded-xl bg-slate-50 dark:bg-gray-700/50 p-5 border border-slate-200 dark:border-gray-600">
               <div className="flex gap-3">
                 <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
@@ -235,7 +609,7 @@ export default function LoginPage() {
                     Tu privacidad está protegida
                   </p>
                   <p className="text-sm text-slate-600 dark:text-gray-300 leading-relaxed">
-                    Solo utilizamos tu información para autenticarte. Tus datos no se comparten con terceros.
+                    Solo utilizamos tu información para autenticarte de forma segura. Tus datos están completamente resguardados.
                   </p>
                 </div>
               </div>
@@ -256,7 +630,7 @@ export default function LoginPage() {
             </a>
           </p>
           <p className="text-xs text-slate-500 dark:text-gray-500">
-            TecniControl v1.0.0 • {darkMode ? ' Modo oscuro' : ' Modo claro'}
+            TecniControl v1.0.0
           </p>
         </footer>
       </div>

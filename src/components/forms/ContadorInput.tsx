@@ -318,22 +318,6 @@ const ContadorInput = React.memo(function ContadorInput({
               </div>
             )}
           </div>
-
-          {/* Notas */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-500 uppercase px-1">Observaciones (Opcional)</label>
-            <div className="relative">
-              <MessageSquare className="absolute left-4 top-4 w-5 h-5 text-gray-500" />
-              <textarea
-                value={contadorActual.notas || ''}
-                onChange={(e) => handleChange('notas', e.target.value)}
-                placeholder="Anotaciones adicionales sobre el estado del contador..."
-                rows={3}
-                maxLength={500}
-                className="w-full bg-gray-800/50 border-2 border-gray-700 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none resize-none transition-all"
-              />
-            </div>
-          </div>
         </div>
       )}
 

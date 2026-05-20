@@ -47,6 +47,7 @@ const SelectorCantidad = memo(({
       
       <input
         type="number"
+        inputMode="numeric"
         value={cantidad}
         onChange={(e) => {
           const val = parseInt(e.target.value) || 0;

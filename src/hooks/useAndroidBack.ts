@@ -46,6 +46,10 @@ export function useAndroidBack(open: boolean, onClose: () => void) {
       if (pushedRef.current) {
         pushedRef.current = false;
         
+        // Activamos una bandera global para que el formulario sepa que este back 
+        // fue para cerrar un modal y no debe retroceder de paso.
+        (window as any).__ignoring_next_popstate__ = true;
+        
         // Regresamos el historial un paso para mantener el stack limpio
         history.back();
       }

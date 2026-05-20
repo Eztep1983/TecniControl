@@ -67,9 +67,13 @@ export default function DispositivoSelector({
     }, 250)
   }
 
-  const handleModalSuccess = (c: Cliente) => {
+  const handleModalSuccess = (c: Cliente, dispositivoNuevo?: Dispositivo) => {
     setIsModalOpen(false)
     onClienteActualizado?.(c)
+
+    if (dispositivoNuevo) {
+      onSeleccionarDispositivo(dispositivoNuevo)
+    }
   }
 
   /* ── DISPOSITIVO SELECCIONADO ────────────────────────────────────── */

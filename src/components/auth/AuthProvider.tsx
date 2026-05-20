@@ -9,6 +9,10 @@ import {
   signOut,
   GoogleAuthProvider,
   browserPopupRedirectResolver,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  updateProfile,
 } from 'firebase/auth'
 
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'
@@ -62,6 +66,9 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   signInWithGoogle: () => Promise<void>
+  signInWithEmail: (email: string, password: string) => Promise<void>
+  signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<void>
+  sendPasswordReset: (email: string) => Promise<void>
   logout: () => Promise<void>
   refreshSession: () => Promise<void>
 }
@@ -84,6 +91,9 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   signInWithGoogle: async () => {},
+  signInWithEmail: async () => {},
+  signUpWithEmail: async () => {},
+  sendPasswordReset: async () => {},
   logout: async () => {},
   refreshSession: async () => {},
 })
@@ -97,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useIsomorphicLayoutEffect(() => {
     if (getCachedUid() !== null) {
-      logger.log('🔍 Sesión cacheada encontrada, esperando confirmación de Firebase...')
+      logger.log(' Sesión cacheada encontrada, esperando confirmación de Firebase...')
     }
   }, [])
 
@@ -165,7 +175,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const isNative = Capacitor.isNativePlatform()
 
       if (isNative) {
-        logger.log('📱 Capacitor native: usando plugin nativo de Google Sign-In...')
+        logger.log('Capacitor native: usando plugin nativo de Google Sign-In...')
         const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication')
 
         const nativeResult = await FirebaseAuthentication.signInWithGoogle({
@@ -217,6 +227,79 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error
     }
   }, [validateUser, syncUserDocument])
+
+  const signInWithEmail = useCallback(async (email: string, password: string): Promise<void> => {
+    try {
+      setLoading(true)
+      const result = await signInWithEmailAndPassword(auth, email, password)
+
+      const validation = validateUser(result.user)
+      if (!validation.valid) {
+        await signOut(auth)
+        throw new Error(validation.reason)
+      }
+
+      logger.log('✅ Email sign in exitoso:', result.user.uid)
+      setCachedUid(result.user.uid)
+      await syncUserDocument(result.user, true)
+      lastActivityRef.current = Date.now()
+      setLoading(false)
+    } catch (error: any) {
+      logger.error('Error en email sign in:', error)
+      setLoading(false)
+      throw error
+    }
+  }, [validateUser, syncUserDocument])
+
+// components/auth/AuthProvider.tsx
+
+const signUpWithEmail = useCallback(async (email: string, password: string, displayName?: string): Promise<void> => {
+  try {
+    setLoading(true)
+    const result = await createUserWithEmailAndPassword(auth, email, password)
+
+    if (displayName) {
+      await updateProfile(result.user, { displayName })
+    }
+
+    const validation = validateUser(result.user)
+    if (!validation.valid) {
+      await signOut(auth)
+      throw new Error(validation.reason)
+    }
+
+    logger.log(' Email sign up exitoso:', result.user.uid)
+    setCachedUid(result.user.uid)
+    await syncUserDocument(result.user, true)
+    lastActivityRef.current = Date.now()
+    setLoading(false)
+  } catch (error: any) {
+    setLoading(false)
+
+    // Errores de flujo normal esperados por la UI — no loguear como error
+    const silentCodes = [
+      'auth/email-already-in-use',
+      'auth/weak-password',
+      'auth/invalid-email',
+    ]
+
+    if (!silentCodes.includes(error.code)) {
+      logger.error('Error inesperado en email sign up:', error)
+    }
+
+    throw error
+  }
+}, [validateUser, syncUserDocument])
+
+  const sendPasswordReset = useCallback(async (email: string): Promise<void> => {
+    try {
+      await sendPasswordResetEmail(auth, email)
+      logger.log(' Correo de restablecimiento de contraseña enviado a:', email)
+    } catch (error: any) {
+      logger.error('Error al enviar correo de restablecimiento:', error)
+      throw error
+    }
+  }, [])
 
   useEffect(() => {
     logger.log('Setting up auth state listener')
@@ -333,9 +416,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     loading,
     signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
+    sendPasswordReset,
     logout,
     refreshSession,
-  }), [user, loading, signInWithGoogle, logout, refreshSession])
+  }), [user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, sendPasswordReset, logout, refreshSession])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

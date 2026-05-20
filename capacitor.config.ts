@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'TecniControl',
   webDir: 'out',
   server: {
-    url: 'http://192.168.1.10:9002',
+    url: 'http://192.168.20.20:9002',
     cleartext: true,
     androidScheme: 'http',
   },
@@ -16,6 +16,11 @@ const config: CapacitorConfig = {
     FirebaseAuthentication: {
       skipNativeAuth: false,
       providers: ["google.com"],
+    },
+    GoogleAuth: {
+      scopes: ["profile", "email"],
+      clientId: "820146318318-i0r92a8u43998502017o813b6o364o2f.apps.googleusercontent.com",
+      forceCodeForRefreshToken: true,
     },
     SplashScreen: {
       launchShowDuration: 5000, 
