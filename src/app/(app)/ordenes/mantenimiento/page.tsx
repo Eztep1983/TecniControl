@@ -13,7 +13,7 @@ import { useNegocio } from '@/hooks/useNegocio'
 import { useDebounce } from 'use-debounce'
 import { ModalOrden } from '@/components/mantenimiento/ModalOrden'
 import OrdenCard from '@/components/mantenimiento/OrdenCard'
-import { PrintButton, ShareButton, DownloadButton, usePrintService } from '@/components/mantenimiento/PrintService'
+import { PrintButton, ShareButton, usePrintService } from '@/components/mantenimiento/PrintService'
 import { Skeleton } from '@/components/ui/basic/skeleton'
 
 // Componente de chip para filtros activos
@@ -501,7 +501,7 @@ export default function OrdenesMantenimientoPage() {
                 <div className="p-3 space-y-3">
                   {ordenesFiltradas.map((orden) => (
                     <OrdenCard
-                      key={orden.idPersonalizado}
+                      key={orden.id ?? `${orden.userId}_${orden.idPersonalizado}`}
                       orden={orden as OrdenMantenimiento}
                       onView={handleRowClick}
                       onPrint={imprimirOrden}
@@ -538,7 +538,7 @@ export default function OrdenesMantenimientoPage() {
                     <tbody className="bg-gray-800/30 divide-y divide-gray-700/50">
                       {ordenesFiltradas.map((orden) => (
                         <tr
-                          key={orden.idPersonalizado}
+                          key={orden.id ?? `${orden.userId}_${orden.idPersonalizado}`}
                           className="hover:bg-gray-700/50 transition-colors group"
                         >
                           <td className="px-4 sm:px-6 py-4 whitespace-nowrap">

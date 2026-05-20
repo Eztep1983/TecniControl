@@ -140,7 +140,7 @@ export default function FirmaInput({
                   penColor="black"
                   canvasProps={{ 
                     className: 'w-full h-full cursor-crosshair',
-                    style: { display: 'block' }
+                    style: { display: 'block', touchAction: 'none' }
                   }}
                   onEnd={guardarFirma}
                   clearOnResize={false}

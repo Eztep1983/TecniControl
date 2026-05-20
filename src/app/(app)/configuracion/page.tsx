@@ -6,8 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/basic/input";
 import { Button } from "@/components/ui/basic/button";
 import { Label } from "@/components/ui/basic/label";
-import { Switch } from "@/components/ui/basic/switch";
-import { Save, Building, Loader2, Settings, Upload, Check, Mail, Bell, Camera } from 'lucide-react';
+import { Save, Building, Loader2, Settings, Upload, Check, Camera } from 'lucide-react';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -20,12 +19,36 @@ interface NegocioConUsuario extends Negocio {
   userId: string;
 }
 
+type PageStatusType = 'success' | 'error' | 'info' | null
+
+interface PageStatus {
+  type: PageStatusType
+  message: string
+}
+
+function StatusMessage({ status }: { status: PageStatus }) {
+  if (!status.type) return null
+
+  const color = status.type === 'success'
+    ? 'from-emerald-500/10 via-emerald-500/10 to-transparent border-emerald-500/30 text-emerald-200'
+    : status.type === 'error'
+      ? 'from-rose-500/10 via-rose-500/10 to-transparent border-rose-500/30 text-rose-200'
+      : 'from-sky-500/10 via-sky-500/10 to-transparent border-sky-500/30 text-sky-200'
+
+  return (
+    <div className={`mb-6 rounded-3xl border ${color} bg-slate-950/70 p-4 shadow-xl shadow-slate-950/40`}>
+      <p className="text-sm font-medium">{status.message}</p>
+    </div>
+  )
+}
+
 export default function ConfiguracionPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [status, setStatus] = useState<PageStatus>({ type: null, message: '' });
   const [negocio, setNegocio] = useState<NegocioConUsuario>({
     id: '',
     userId: user?.uid || '',
@@ -36,6 +59,12 @@ export default function ConfiguracionPage() {
     nit: '',
     logoUrl: ''
   });
+
+  useEffect(() => {
+    if (!status.type) return
+    const timeout = window.setTimeout(() => setStatus({ type: null, message: '' }), 4200)
+    return () => window.clearTimeout(timeout)
+  }, [status.type]);
 
   // Cargar datos del negocio
   useEffect(() => {
@@ -66,6 +95,7 @@ export default function ConfiguracionPage() {
         }
       } catch (error) {
         console.error('Error cargando negocio:', error);
+        setStatus({ type: 'error', message: 'No se pudieron cargar los datos del negocio.' });
       } finally {
         setLoading(false);
       }
@@ -81,6 +111,7 @@ export default function ConfiguracionPage() {
 
     try {
       setUploading(true);
+      setStatus({ type: 'info', message: 'Subiendo logo...' });
       
       // Redimensionar y convertir a WebP usando Canvas
       const compressedFile = await new Promise<File>((resolve, reject) => {
@@ -136,9 +167,10 @@ export default function ConfiguracionPage() {
       
       // Actualizar estado local
       setNegocio(prev => ({ ...prev, logoUrl: downloadURL }));
+      setStatus({ type: 'success', message: 'Logo actualizado correctamente.' });
     } catch (error) {
       console.error('Error subiendo logo:', error);
-      alert('Hubo un error optimizando o subiendo la imagen. Intenta con otra imagen.');
+      setStatus({ type: 'error', message: 'Hubo un error optimizando o subiendo la imagen.' });
     } finally {
       setUploading(false);
     }
@@ -151,6 +183,7 @@ export default function ConfiguracionPage() {
     try {
       setSaving(true);
       setSaved(false);
+      setStatus({ type: 'info', message: 'Guardando cambios...' });
       const negocioRef = doc(db, 'negocios', user.uid);
       await updateDoc(negocioRef, {
         ...negocio,
@@ -158,10 +191,11 @@ export default function ConfiguracionPage() {
       });
       
       setSaved(true);
+      setStatus({ type: 'success', message: 'Configuración guardada correctamente.' });
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
       console.error('Error guardando cambios:', error);
-      alert('Error al guardar los cambios');
+      setStatus({ type: 'error', message: 'No se pudo guardar la configuración. Intenta nuevamente.' });
     } finally {
       setSaving(false);
     }
@@ -187,44 +221,45 @@ export default function ConfiguracionPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 pb-safe">
-      <div className="max-w-5xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 pb-safe rounded-lg">
+      <div className="max-w-5xl mx-auto rounded-lg">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
-              <Settings className="w-6 h-6 text-blue-400" />
+        <div className="mb-8 rounded-lg">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 bg-slate-900/80 ring-1 ring-inset ring-sky-500/20 rounded-3xl shadow-[0_12px_40px_-24px_rgba(56,189,248,0.9)]">
+              <Settings className="w-6 h-6 text-sky-300" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white font-headline">Configuración</h1>
-              <p className="text-gray-400 text-sm mt-1">Administra la información de tu negocio</p>
+              <h1 className="text-3xl font-semibold text-white">Configuración</h1>
+              <p className="text-slate-400 text-sm mt-1">Administra la información de tu negocio</p>
             </div>
           </div>
+          {status.type && <StatusMessage status={status} />}
         </div>
 
         {/* Tabs */}
         <Tabs defaultValue="negocio" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-[400px] mb-8 bg-gray-800/50 border border-gray-700/50">
-            <TabsTrigger value="negocio" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-400">
+          <TabsList className="grid w-full grid-cols-2 max-w-[520px] mb-8 rounded-full bg-slate-900/90 border border-white/10 p-1 shadow-lg shadow-slate-950/30">
+            <TabsTrigger value="negocio" className="data-[state=active]:bg-sky-500 data-[state=active]:text-slate-950 text-slate-400 rounded-full transition-all duration-200">
               Mi Negocio
             </TabsTrigger>
-            <TabsTrigger value="cuenta" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-400">
+            <TabsTrigger value="cuenta" className="data-[state=active]:bg-sky-500 data-[state=active]:text-slate-950 text-slate-400 rounded-full transition-all duration-200">
               Cuenta y Seguridad
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="negocio" className="space-y-6">
             {/* Información del Negocio */}
-            <Card className="bg-gray-800/50 border-gray-700/50 mb-6 transition-colors hover:border-gray-600/50">
-          <CardHeader className="border-b border-gray-700/50 bg-gradient-to-r from-gray-800/50 to-transparent">
+            <Card className="bg-slate-950/70 border border-white/10 mb-6 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.8)] transition-all hover:border-sky-500/30">
+          <CardHeader className="border-b border-white/10 bg-slate-950/80 rounded-full">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-white flex items-center gap-2 text-xl">
                   <Building className="w-5 h-5 text-blue-400" />
                   Información del Negocio
                 </CardTitle>
-                <CardDescription className="text-gray-400 mt-1">
-                  Datos principales que aparecerán en tus documentos
+                <CardDescription className="text-slate-400 mt-1">
+                  Datos principales que aparecerán en tus ordenes generadas
                 </CardDescription>
               </div>
             </div>
@@ -263,7 +298,7 @@ export default function ConfiguracionPage() {
                 <div className="flex-1 space-y-2">
                   <label 
                     htmlFor="business-logo" 
-                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-gray-700/50 hover:bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-300 transition-colors hover:border-blue-500/50 hover:text-white"
+                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900/80 hover:bg-slate-900 border border-white/10 rounded-2xl text-sm text-slate-200 transition-all duration-200 hover:border-sky-500/50 hover:text-white shadow-sm shadow-slate-950/20"
                   >
                     <Upload className="w-4 h-4" />
                     {uploading ? 'Subiendo...' : negocio.logoUrl ? 'Cambiar Logo' : 'Subir Logo'}
@@ -276,7 +311,7 @@ export default function ConfiguracionPage() {
                     disabled={uploading}
                     className="hidden"
                   />
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-slate-400">
                     Formatos: JPG, PNG, WebP, SVG. Tamaño recomendado: 400x400px
                   </p>
                 </div>
@@ -295,7 +330,7 @@ export default function ConfiguracionPage() {
                   id="business-name" 
                   value={negocio.nombre}
                   onChange={(e) => handleInputChange('nombre', e.target.value)}
-                  className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="bg-slate-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                   placeholder="Ej: TecniControl S.A.S"
                 />
               </div>
@@ -307,7 +342,7 @@ export default function ConfiguracionPage() {
                   id="business-nit" 
                   value={negocio.nit}
                   onChange={(e) => handleInputChange('nit', e.target.value)}
-                  className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="bg-slate-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                   placeholder="123456789-0"
                 />
               </div>
@@ -322,7 +357,7 @@ export default function ConfiguracionPage() {
                   id="business-phone" 
                   value={negocio.telefono}
                   onChange={(e) => handleInputChange('telefono', e.target.value)}
-                  className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="bg-slate-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                   placeholder="+57 300 123 4567"
                 />
               </div>
@@ -335,7 +370,7 @@ export default function ConfiguracionPage() {
                   type="email"
                   value={negocio.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="bg-slate-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                   placeholder="contacto@empresa.com"
                 />
               </div>
@@ -349,7 +384,7 @@ export default function ConfiguracionPage() {
                 id="business-address" 
                 value={negocio.direccion}
                 onChange={(e) => handleInputChange('direccion', e.target.value)}
-                className="bg-gray-700/50 border-gray-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                className="bg-slate-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                 placeholder="Calle 123 #45-67, Ciudad"
               />
             </div>
@@ -366,7 +401,7 @@ export default function ConfiguracionPage() {
                 <Button 
                   onClick={guardarCambios} 
                   disabled={saving}
-                  className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-500/20 px-6 transition-all hover:shadow-blue-500/30"
+                  className="bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-slate-950 shadow-xl shadow-sky-500/20 px-6 transition-all hover:shadow-sky-500/30"
                 >
                   {saving ? (
                     <>

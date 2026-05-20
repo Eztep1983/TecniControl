@@ -490,7 +490,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   const { imprimirOrden, compartirOrden } = usePrintService({ negocio })
   const { mutateAsync: crearOrdenMutate } = useCrearOrden()
   const [hintExpanded, setHintExpanded] = useState(false)
-  const [state, dispatch] = usePersistentReducer(
+  const [state, dispatch, clearPersistence] = usePersistentReducer(
     isOnboarding ? 'draft_onboarding' : 'draft_mantenimiento',
     formReducer,
     initialState,
@@ -968,6 +968,13 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
 
       dispatch({ type: 'SET_ORDEN_CREADA', payload: ordenFinal });
 
+      // Limpiar el borrador persistente y evitar re-escrituras
+      try {
+        clearPersistence()
+      } catch (e) {
+        console.warn('No se pudo limpiar el borrador en localStorage:', e)
+      }
+
       // NOTA: NO llamamos a onSuccess aquí, para que el usuario vea la pantalla de éxito
       // El botón "Volver a la lista" de la pantalla de éxito sí llama a onSuccess y onClose
     } catch (error) {
@@ -1357,7 +1364,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              drag="x"
+              drag={state.currentStep === 'firma' ? false : 'x'}
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.2}
               onDragEnd={onDragEnd}

@@ -15,6 +15,11 @@ import {
   startAfter,
 } from 'firebase/firestore';
 import { Cliente, Orden, Negocio, ContadorU } from '@/types/orden';
+import {
+  sanitizeClientePayload,
+  sanitizeNegocioPayload,
+  sanitizeOrdenPayload,
+} from '@/lib/firestore-sanitizers';
 
 // Cliente helpers
 export const getClientesPorUsuario = async (userId: string): Promise<Cliente[]> => {
@@ -35,13 +40,17 @@ export const getClientesPorUsuario = async (userId: string): Promise<Cliente[]> 
 
 export const crearCliente = async (cliente: Omit<Cliente, 'id'>, userId: string): Promise<string> => {
   try {
-    const clienteConUserId = {
+    const clienteConUserId = sanitizeClientePayload({
       ...cliente,
       userId,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
+      updatedAt: new Date().toISOString(),
+    });
+
+    if (!clienteConUserId.name || !clienteConUserId.userId) {
+      throw new Error('Cliente inválido: nombre y userId son requeridos.');
+    }
+
     const docRef = await addDoc(collection(db, 'clientes'), clienteConUserId);
     return docRef.id;
   } catch (error) {
@@ -53,11 +62,13 @@ export const crearCliente = async (cliente: Omit<Cliente, 'id'>, userId: string)
 export const actualizarCliente = async (clienteId: string, cliente: Partial<Cliente>, userId: string): Promise<void> => {
   try {
     const clienteRef = doc(db, 'clientes', clienteId);
-    await updateDoc(clienteRef, {
+    const clienteActualizado = sanitizeClientePayload({
       ...cliente,
       userId,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     });
+
+    await updateDoc(clienteRef, clienteActualizado);
   } catch (error) {
     console.error('Error actualizando cliente:', error);
     throw error;
@@ -137,12 +148,18 @@ export const mapToOrdenResumen = (orden: any): Partial<Orden> => {
 
 export const crearOrden = async (orden: Omit<Orden, 'id'>, userId: string): Promise<string> => {
   try {
-    const ordenConUserId = {
+    const ordenConUserId = sanitizeOrdenPayload({
       ...orden,
       userId,
-      fechaCreacion: new Date()
-    };
-    
+      fechaCreacion: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    if (!ordenConUserId.userId || !ordenConUserId.tipo || !ordenConUserId.clienteId || !ordenConUserId.dispositivoId) {
+      throw new Error('Orden inválida: faltan campos requeridos.');
+    }
+
     const docRef = await addDoc(collection(db, 'ordenes'), ordenConUserId);
     return docRef.id;
   } catch (error) {
@@ -154,10 +171,12 @@ export const crearOrden = async (orden: Omit<Orden, 'id'>, userId: string): Prom
 export const actualizarOrden = async (ordenId: string, orden: Partial<Orden>, userId: string): Promise<void> => {
   try {
     const ordenRef = doc(db, 'ordenes', ordenId);
-    await updateDoc(ordenRef, {
+    const ordenActualizada = sanitizeOrdenPayload({
       ...orden,
-      userId
+      userId,
     });
+
+    await updateDoc(ordenRef, ordenActualizada);
   } catch (error) {
     console.error('Error actualizando orden:', error);
     throw error;
@@ -187,13 +206,17 @@ export const getNegocioPorUsuario = async (userId: string): Promise<Negocio | nu
 export const crearNegocio = async (negocio: Omit<Negocio, 'id'>, userId: string): Promise<void> => {
   try {
     const negocioRef = doc(db, 'negocios', userId);
-    const negocioConUserId = {
+    const negocioConUserId = sanitizeNegocioPayload({
       ...negocio,
       userId,
       createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
+      updatedAt: new Date(),
+    });
+
+    if (!negocioConUserId.userId || !negocioConUserId.nombre) {
+      throw new Error('Negocio inválido: userId y nombre son requeridos.');
+    }
+
     await setDoc(negocioRef, negocioConUserId);
   } catch (error) {
     console.error('Error creando negocio:', error);
@@ -204,11 +227,13 @@ export const crearNegocio = async (negocio: Omit<Negocio, 'id'>, userId: string)
 export const actualizarNegocio = async (negocio: Partial<Negocio>, userId: string): Promise<void> => {
   try {
     const negocioRef = doc(db, 'negocios', userId);
-    await updateDoc(negocioRef, {
+    const negocioActualizado = sanitizeNegocioPayload({
       ...negocio,
       userId,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
+
+    await updateDoc(negocioRef, negocioActualizado);
   } catch (error) {
     console.error('Error actualizando negocio:', error);
     throw error;
@@ -265,7 +290,13 @@ export const incrementarContador = async (userId: string): Promise<number> => {
       
       return contador.siguiente;
     } else {
-      await inicializarContador(userId);
+      // El primer número debe ser 1, pero el siguiente disponible debe quedar en 2.
+      await setDoc(contadorRef, {
+        userId,
+        siguiente: 2,
+        ultimaOrden: '',
+        fechaActualizacion: new Date()
+      });
       return 1;
     }
   } catch (error) {
@@ -281,6 +312,25 @@ export const generarIdPersonalizado = async (userId: string, prefijo: string = '
     return `${prefijo}-${numero.toString().padStart(4, '0')}`;
   } catch (error) {
     console.error('Error generando ID personalizado:', error);
+    throw error;
+  }
+};
+
+// Generar ID por usuario (ahora todas las órdenes usan 'mantenimiento' y el prefijo 'OSER')
+export const generarIdPorTipo = async (userId: string, _tipoOrden: 'mantenimiento' | 'diagnostico' | 'garantia' | 'entrega' = 'mantenimiento'): Promise<string> => {
+  try {
+    const prefijo = 'OSER';
+
+    // Offline fallback: ID temporal basado en timestamp
+    if (typeof window !== 'undefined' && !window.navigator.onLine) {
+      return `${prefijo}${Date.now()}`;
+    }
+
+    const numero = await incrementarContador(userId);
+    // Mantener padding de 3 para compatibilidad con IDs previos tipo OSER###
+    return `${prefijo}${numero.toString().padStart(3, '0')}`;
+  } catch (error) {
+    console.error('Error generando ID por tipo (user-scoped):', error);
     throw error;
   }
 };

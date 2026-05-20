@@ -1,13 +1,13 @@
 'use client'
 
-import { useReducer, useEffect, Dispatch, Reducer, useState } from 'react'
+import { useReducer, useEffect, Dispatch, Reducer, useState, useRef } from 'react'
 
 export function usePersistentReducer<S, A>(
   key: string,
   reducer: Reducer<S, A>,
   initialState: S,
   onHydrate?: (savedState: S) => S
-): [S, Dispatch<A>] {
+): [S, Dispatch<A>, () => void] {
   const augmentedReducer = (state: S, action: any): S => {
     if (action.type === 'HYDRATE') {
       return action.payload
@@ -17,6 +17,7 @@ export function usePersistentReducer<S, A>(
 
   const [state, dispatch] = useReducer(augmentedReducer, initialState)
   const [isHydrated, setIsHydrated] = useState(false)
+  const skipPersistRef = useRef(false)
 
   // Cargar estado inicial desde localStorage al montar
   useEffect(() => {
@@ -40,12 +41,24 @@ export function usePersistentReducer<S, A>(
   useEffect(() => {
     if (isHydrated) {
       try {
-        localStorage.setItem(key, JSON.stringify(state))
+        if (!skipPersistRef.current) {
+          localStorage.setItem(key, JSON.stringify(state))
+        }
       } catch (error) {
         console.error('Error saving state to localStorage:', error)
       }
     }
   }, [key, state, isHydrated])
 
-  return [state, dispatch as Dispatch<A>]
+  // Expose a helper to clear persistence and prevent future saves
+  const clearPersistence = () => {
+    try {
+      skipPersistRef.current = true
+      localStorage.removeItem(key)
+    } catch (e) {
+      console.error('Error clearing persistence:', e)
+    }
+  }
+
+  return [state, dispatch as Dispatch<A>, clearPersistence]
 }

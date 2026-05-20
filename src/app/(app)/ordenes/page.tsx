@@ -313,7 +313,7 @@ function OrdenesDashboardContent() {
             <div className="grid gap-3">
               {ordenesRecientes.map((orden) => (
                 <OrdenCard
-                  key={orden.idPersonalizado}
+                  key={orden.id ?? `${orden.userId}_${orden.idPersonalizado}`}
                   orden={orden}
                   onView={() => setOrdenSeleccionada(orden)}
                   onPrint={imprimirOrden}

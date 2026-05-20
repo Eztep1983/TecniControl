@@ -33,19 +33,154 @@ service cloud.firestore {
       return request.resource.data.userId == request.auth.uid;
     }
 
+    function isNonEmptyString(field) {
+      return request.resource.data[field] is string
+             && request.resource.data[field].size() > 0;
+    }
+
+    function isOptionalString(field) {
+      return !request.resource.data.keys().hasAny([field])
+             || request.resource.data[field] is string;
+    }
+
+    function isOptionalBool(field) {
+      return !request.resource.data.keys().hasAny([field])
+             || request.resource.data[field] is bool;
+    }
+
+    function isOptionalNumber(field) {
+      return !request.resource.data.keys().hasAny([field])
+             || request.resource.data[field] is number;
+    }
+
+    function isOptionalMap(field) {
+      return !request.resource.data.keys().hasAny([field])
+             || request.resource.data[field] is map;
+    }
+
+    function isOptionalList(field) {
+      return !request.resource.data.keys().hasAny([field])
+             || request.resource.data[field] is list;
+    }
+
+    function isTimestampOrString(field) {
+      return !request.resource.data.keys().hasAny([field])
+             || request.resource.data[field] is timestamp
+             || request.resource.data[field] is string;
+    }
+
+    function validClientePayload() {
+      return request.resource.data.userId == request.auth.uid
+             && request.resource.data.keys().hasOnly([
+                  'userId', 'name', 'cedula', 'email', 'phone',
+                  'address', 'dispositivos', 'createdAt', 'updatedAt'
+                ])
+             && isNonEmptyString('name')
+             && isOptionalString('cedula')
+             && isOptionalString('email')
+             && isOptionalString('phone')
+             && isOptionalString('address')
+             && isOptionalList('dispositivos')
+             && isTimestampOrString('createdAt')
+             && isTimestampOrString('updatedAt');
+    }
+
+    function validNegocioPayload() {
+      return request.resource.data.userId == request.auth.uid
+             && request.resource.data.keys().hasOnly([
+                  'userId', 'nombre', 'direccion', 'telefono',
+                  'email', 'nit', 'logoUrl', 'createdAt', 'updatedAt'
+                ])
+             && request.resource.data.nombre is string
+             && request.resource.data.nombre.size() > 0
+             && request.resource.data.direccion is string
+             && request.resource.data.telefono is string
+             && request.resource.data.email is string
+             && request.resource.data.nit is string
+             && isOptionalString('logoUrl')
+             && isTimestampOrString('createdAt')
+             && isTimestampOrString('updatedAt');
+    }
+
+    function validOrdenPayload() {
+      return request.resource.data.userId == request.auth.uid
+             && request.resource.data.keys().hasOnly([
+                  'userId', 'idPersonalizado', 'tipo', 'clienteId',
+                  'dispositivoId', 'cliente', 'dispositivo', 'fechaCreacion',
+                  'horaCreacion', 'observacionesIniciales', 'pruebasRealizadas',
+                  'posiblesCausas', 'diagnosticoFinal', 'contadorMaquina',
+                  'contador', 'tipoMantenimiento', 'tareasRealizadas',
+                  'piezasUsadas', 'garantiaTiempoDesde', 'garantiaTiempoHasta',
+                  'garantiaDescripcion', 'instalacionRecomendaciones',
+                  'instalacionRecomendacionesDetalle', 'instalacionConfiguracion',
+                  'instalacionConfiguracionTipos', 'firmaCliente',
+                  'nombreFirmante', 'validacionCliente', 'createdAt', 'updatedAt'
+                ])
+             && request.resource.data.tipo == 'mantenimiento'
+             && request.resource.data.clienteId is string
+             && request.resource.data.dispositivoId is string
+             && request.resource.data.horaCreacion is string
+             && request.resource.data.tipoMantenimiento in ['preventivo', 'correctivo', 'diagnostico', 'instalacion']
+             && isOptionalMap('cliente')
+             && isOptionalMap('dispositivo')
+             && isOptionalList('tareasRealizadas')
+             && isOptionalList('piezasUsadas')
+             && isTimestampOrString('fechaCreacion')
+             && isTimestampOrString('garantiaTiempoDesde')
+             && isTimestampOrString('garantiaTiempoHasta')
+             && isOptionalString('observacionesIniciales')
+             && isOptionalString('pruebasRealizadas')
+             && isOptionalString('posiblesCausas')
+             && isOptionalString('diagnosticoFinal')
+             && isOptionalString('garantiaDescripcion')
+             && isOptionalString('instalacionRecomendacionesDetalle')
+             && isOptionalList('instalacionConfiguracionTipos')
+             && isOptionalString('firmaCliente')
+             && isOptionalString('nombreFirmante')
+             && isOptionalBool('instalacionRecomendaciones')
+             && isOptionalBool('instalacionConfiguracion')
+             && isOptionalBool('validacionCliente');
+    }
+
+    function validTareaPayload() {
+      return request.resource.data.keys().hasOnly(['nombre', 'tipo', 'categoria', 'creadoEn', 'actualizadoEn'])
+             && isNonEmptyString('nombre')
+             && request.resource.data.tipo in ['preventivo', 'correctivo', 'ambos']
+             && request.resource.data.categoria is string
+             && request.resource.data.categoria.size() > 0;
+    }
+
+    function validPiezaPayload() {
+      return request.resource.data.keys().hasOnly(['nombre', 'categoria', 'creadoEn', 'actualizadoEn'])
+             && isNonEmptyString('nombre')
+             && request.resource.data.categoria is string
+             && request.resource.data.categoria.size() > 0;
+    }
+
     // ── users ─────────────────────────────────────────────────────────────────
     //  • Creado por AuthProvider al hacer sign-in (campos: uid, email, role, etc.)
     //  • El docId es el UID del usuario; solo él puede leer o escribir su propio doc.
 
     match /users/{userId} {
-      allow read:   if isOwner(userId);
+      allow read: if isOwner(userId);
       allow create: if isOwner(userId)
-                       && request.resource.data.uid == userId;
+                       && request.resource.data.uid == userId
+                       && request.resource.data.keys().hasOnly([
+                            'uid', 'role', 'email', 'displayName', 'photoURL',
+                            'emailVerified', 'lastLogin', 'lastActivity',
+                            'businessId', 'createdAt', 'loginAttempts'
+                         ])
+                       && request.resource.data.email is string
+                       && request.resource.data.emailVerified is bool;
       allow update: if isOwner(userId)
-                       // No se puede cambiar el uid ni el rol desde el cliente
                        && (!request.resource.data.diff(resource.data).affectedKeys()
-                             .hasAny(['uid', 'role']));
-      allow delete: if false; // No se eliminan usuarios desde el cliente
+                             .hasAny(['uid', 'role']))
+                       && request.resource.data.keys().hasOnly([
+                            'uid', 'role', 'email', 'displayName', 'photoURL',
+                            'emailVerified', 'lastLogin', 'lastActivity',
+                            'businessId', 'createdAt', 'loginAttempts'
+                         ]);
+      allow delete: if false;
     }
 
     // ── clientes ──────────────────────────────────────────────────────────────
@@ -57,15 +192,21 @@ service cloud.firestore {
                      && resource.data.userId == request.auth.uid;
 
       allow create: if isAuthenticated()
-                       && incomingUserId()
-                       && request.resource.data.keys().hasAll(['userId', 'name'])
-                       && request.resource.data.name is string
-                       && request.resource.data.name.size() > 0;
+                       && validClientePayload();
 
       allow update: if isAuthenticated()
                        && resource.data.userId == request.auth.uid
-                       // No se puede transferir el cliente a otro usuario
-                       && request.resource.data.userId == resource.data.userId;
+                       && request.resource.data.userId == resource.data.userId
+                       && request.resource.data.keys().hasOnly([
+                            'userId', 'name', 'cedula', 'email', 'phone',
+                            'address', 'dispositivos', 'createdAt', 'updatedAt'
+                          ])
+                       && isOptionalString('cedula')
+                       && isOptionalString('email')
+                       && isOptionalString('phone')
+                       && isOptionalString('address')
+                       && isOptionalList('dispositivos')
+                       && isTimestampOrString('updatedAt');
 
       allow delete: if isAuthenticated()
                        && resource.data.userId == request.auth.uid;
@@ -81,14 +222,25 @@ service cloud.firestore {
                      && resource.data.userId == request.auth.uid;
 
       allow create: if isAuthenticated()
-                       && incomingUserId()
-                       && request.resource.data.keys().hasAll(['userId', 'tipo'])
-                       && request.resource.data.tipo == 'mantenimiento';
+                       && validOrdenPayload();
 
       allow update: if isAuthenticated()
                        && resource.data.userId == request.auth.uid
-                       // No se puede transferir la orden a otro usuario
-                       && request.resource.data.userId == resource.data.userId;
+                       && request.resource.data.userId == resource.data.userId
+                       && request.resource.data.keys().hasOnly([
+                            'userId', 'idPersonalizado', 'tipo', 'clienteId',
+                            'dispositivoId', 'cliente', 'dispositivo', 'fechaCreacion',
+                            'horaCreacion', 'observacionesIniciales', 'pruebasRealizadas',
+                            'posiblesCausas', 'diagnosticoFinal', 'contadorMaquina',
+                            'contador', 'tipoMantenimiento', 'tareasRealizadas',
+                            'piezasUsadas', 'garantiaTiempoDesde', 'garantiaTiempoHasta',
+                            'garantiaDescripcion', 'instalacionRecomendaciones',
+                            'instalacionRecomendacionesDetalle', 'instalacionConfiguracion',
+                            'instalacionConfiguracionTipos', 'firmaCliente',
+                            'nombreFirmante', 'validacionCliente', 'createdAt', 'updatedAt'
+                          ])
+                       && request.resource.data.tipo == 'mantenimiento'
+                       && request.resource.data.tipoMantenimiento in ['preventivo', 'correctivo', 'diagnostico', 'instalacion'];
 
       allow delete: if isAuthenticated()
                        && resource.data.userId == request.auth.uid;
@@ -100,9 +252,10 @@ service cloud.firestore {
 
     match /negocios/{userId} {
       allow read:   if isOwner(userId);
-      allow create: if isOwner(userId) && incomingUserId();
+      allow create: if isOwner(userId) && validNegocioPayload();
       allow update: if isOwner(userId)
-                       && request.resource.data.userId == userId;
+                       && request.resource.data.userId == userId
+                       && validNegocioPayload();
       allow delete: if isOwner(userId);
     }
 
@@ -128,15 +281,24 @@ service cloud.firestore {
       allow create: if isAuthenticated()
                        && (request.auth.uid == contadorId
                              ? incomingUserId()
-                             : contadorId.matches('ordenes(Mantenimiento|Diagnostico|Entrega)'));
+                             : contadorId.matches('ordenes(Mantenimiento|Diagnostico|Entrega)'))
+                       && request.resource.data.keys().hasOnly([
+                            'userId', 'siguiente', 'ultimaOrden',
+                            'fechaActualizacion', 'ultimoNumero'
+                          ]);
 
       // Actualización: igual que create, pero ultimoNumero/siguiente solo sube
       allow update: if isAuthenticated()
                        && (request.auth.uid == contadorId
                              ? (request.resource.data.userId == contadorId
-                                && request.resource.data.siguiente >= resource.data.siguiente)
+                                && request.resource.data.siguiente >= resource.data.siguiente
+                                && request.resource.data.keys().hasOnly([
+                                     'userId', 'siguiente', 'ultimaOrden',
+                                     'fechaActualizacion'
+                                   ]))
                              : (contadorId.matches('ordenes(Mantenimiento|Diagnostico|Entrega)')
-                                && request.resource.data.ultimoNumero >= resource.data.ultimoNumero));
+                                && request.resource.data.ultimoNumero >= resource.data.ultimoNumero
+                                && request.resource.data.keys().hasOnly(['ultimoNumero'])));
 
       allow delete: if false;
     }
@@ -146,37 +308,37 @@ service cloud.firestore {
 
     match /userConfig/{userId} {
       allow read:  if isOwner(userId);
-      allow write: if isOwner(userId);
-
-      // ── subcollección: tareas predefinidas ──────────────────────────────────
-      //  • El tipo debe ser 'preventivo', 'correctivo' o 'ambos'.
+      allow write: if isOwner(userId)
+                       && request.resource.data.keys().hasOnly([
+                            'migradoV2', 'tareasPredefinidas', 'piezasPredefinidas'
+                          ])
+                       && (!request.resource.data.keys().hasAny(['migradoV2'])
+                            || request.resource.data.migradoV2 is bool)
+                       && (!request.resource.data.keys().hasAny(['tareasPredefinidas'])
+                            || request.resource.data.tareasPredefinidas is list)
+                       && (!request.resource.data.keys().hasAny(['piezasPredefinidas'])
+                            || request.resource.data.piezasPredefinidas is list);
 
       match /tareas/{tareaId} {
         allow read: if isOwner(userId);
 
         allow create: if isOwner(userId)
-                         && request.resource.data.keys().hasAll(['nombre', 'tipo', 'categoria'])
-                         && request.resource.data.tipo in ['preventivo', 'correctivo', 'ambos']
-                         && request.resource.data.nombre is string
-                         && request.resource.data.nombre.size() > 0;
+                         && validTareaPayload();
 
         allow update: if isOwner(userId)
-                         && request.resource.data.tipo in ['preventivo', 'correctivo', 'ambos'];
+                         && validTareaPayload();
 
         allow delete: if isOwner(userId);
       }
-
-      // ── subcollección: piezas predefinidas ──────────────────────────────────
 
       match /piezas/{piezaId} {
         allow read: if isOwner(userId);
 
         allow create: if isOwner(userId)
-                         && request.resource.data.keys().hasAll(['nombre', 'categoria'])
-                         && request.resource.data.nombre is string
-                         && request.resource.data.nombre.size() > 0;
+                         && validPiezaPayload();
 
-        allow update: if isOwner(userId);
+        allow update: if isOwner(userId)
+                         && validPiezaPayload();
 
         allow delete: if isOwner(userId);
       }

@@ -20,6 +20,7 @@ import {
   collection, getDocs, writeBatch, serverTimestamp
 } from 'firebase/firestore'
 import { db } from './firebase'
+import { sanitizeTareaPayload, sanitizePiezaPayload } from './firestore-sanitizers'
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -89,10 +90,14 @@ export const crearTarea = async (
   data: Omit<TareaPredefinida, 'id'>
 ): Promise<string> => {
   const id = `t_${Date.now()}`
+  const payload = sanitizeTareaPayload(data)
+
+  if (!payload.nombre || !payload.tipo || !payload.categoria) {
+    throw new Error('Tarea inválida: nombre, tipo y categoría son requeridos.')
+  }
+
   await setDoc(tareaDocRef(uid, id), {
-    nombre: data.nombre,
-    tipo: data.tipo,
-    categoria: data.categoria,
+    ...payload,
     creadoEn: serverTimestamp(),
   })
   return id
@@ -103,10 +108,10 @@ export const actualizarTarea = async (
   tarea: TareaPredefinida
 ): Promise<void> => {
   const { id, ...data } = tarea
+  const payload = sanitizeTareaPayload(data)
+
   await setDoc(tareaDocRef(uid, id), {
-    nombre: data.nombre,
-    tipo: data.tipo,
-    categoria: data.categoria,
+    ...payload,
     actualizadoEn: serverTimestamp(),
   }, { merge: true })
 }
@@ -120,9 +125,14 @@ export const crearPieza = async (
   data: Omit<PiezaPredefinida, 'id'>
 ): Promise<string> => {
   const id = `p_${Date.now()}`
+  const payload = sanitizePiezaPayload(data)
+
+  if (!payload.nombre || !payload.categoria) {
+    throw new Error('Pieza inválida: nombre y categoría son requeridos.')
+  }
+
   await setDoc(piezaDocRef(uid, id), {
-    nombre: data.nombre,
-    categoria: data.categoria,
+    ...payload,
     creadoEn: serverTimestamp(),
   })
   return id
@@ -133,9 +143,10 @@ export const actualizarPieza = async (
   pieza: PiezaPredefinida
 ): Promise<void> => {
   const { id, ...data } = pieza
+  const payload = sanitizePiezaPayload(data)
+
   await setDoc(piezaDocRef(uid, id), {
-    nombre: data.nombre,
-    categoria: data.categoria,
+    ...payload,
     actualizadoEn: serverTimestamp(),
   }, { merge: true })
 }

@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, memo } from 'react'
 import { ClienteViewModal } from '../clientes/ClienteViewModal'
-import { ClienteFormModal } from '../clientes/ClienteFormModal'
+import { ClienteSimpleFormModal } from '../clientes/ClienteSimpleFormModal'
 import { useClienteModal } from '@/hooks/clientes/useClienteModal'
 
 interface ClienteSelectorProps {
@@ -96,7 +96,7 @@ const ClienteSelector = memo(function ClienteSelector({
           onClose={modal.close}
           onEdit={modal.switchToEdit}
         />
-        <ClienteFormModal
+        <ClienteSimpleFormModal
           open={modal.isCreate || modal.isEdit}
           initialData={modal.isEdit ? modal.cliente : null}
           onClose={modal.close}
@@ -183,7 +183,7 @@ const ClienteSelector = memo(function ClienteSelector({
         onClose={modal.close}
         onEdit={modal.switchToEdit}
       />
-      <ClienteFormModal
+      <ClienteSimpleFormModal
         open={modal.isCreate || modal.isEdit}
         initialData={modal.isEdit ? modal.cliente : null}
         onClose={modal.close}

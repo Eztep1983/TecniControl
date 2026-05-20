@@ -533,12 +533,25 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
           recursive: true
         })
 
-        await Share.share({
-          title: `Orden de Mantenimiento #${orden.idPersonalizado}`,
-          text: `Orden de mantenimiento #${orden.idPersonalizado}`,
-          url: result.uri,
-          dialogTitle: 'Compartir Orden'
-        })
+        try {
+          await Share.share({
+            title: `Orden de Mantenimiento #${orden.idPersonalizado}`,
+            text: `Orden de mantenimiento #${orden.idPersonalizado}`,
+            url: result.uri,
+            dialogTitle: 'Compartir Orden'
+          })
+        } catch (shareError: any) {
+          const isCanceled =
+            !shareError ||
+            shareError?.name === 'AbortError' ||
+            shareError?.message?.toLowerCase().includes('canceled') ||
+            shareError?.message?.toLowerCase().includes('cancelado') ||
+            (typeof shareError === 'string' && shareError.toLowerCase().includes('canceled')) ||
+            (typeof shareError === 'object' && Object.keys(shareError).length === 0)
+
+          if (isCanceled) return
+          throw shareError
+        }
       } else {
         const file = new File([blob], filename, { type: 'application/pdf' })
         const textoOrden = `Orden de mantenimiento #${orden.idPersonalizado} - ${orden.dispositivo?.marca || ''} ${orden.dispositivo?.modelo || ''}`

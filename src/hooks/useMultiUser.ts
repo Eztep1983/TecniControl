@@ -6,17 +6,12 @@ import {
   getOrdenesPorUsuario, 
   getOrdenesPaginadas,
   getNegocioPorUsuario,
-  crearNegocio 
+  crearNegocio,
+  crearOrden,
+  generarIdPorTipo,
 } from '@/lib/multiuser-helpers';
 
-import { 
-  obtenerProximoNumeroOrden, 
-  formatearIdOrden, 
-  validarIdOrdenUnico 
-} from '@/lib/firebase-utils';
-import { db } from '@/lib/firebase';
-import { addDoc, collection } from 'firebase/firestore';
-
+// ID generation moved to multiuser-helpers (per-user counters)
 export const useClientesUsuario = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -50,17 +45,8 @@ export const useOrdenesUsuario = () => {
 
   const crearOrdenConsecutiva = async (ordenData: any, userId: string) => {
     try {
-      // Obtener el próximo número consecutivo
-      const proximoNumero = await obtenerProximoNumeroOrden(ordenData.tipo || 'mantenimiento');
-      
-      // Formatear el ID
-      const idPersonalizado = formatearIdOrden(proximoNumero, ordenData.tipo || 'mantenimiento');
-      
-      // Verificar que el ID sea único (por seguridad)
-      const esUnico = await validarIdOrdenUnico(idPersonalizado);
-      if (!esUnico) {
-        throw new Error('El ID generado ya existe');
-      }
+      // Generar ID personalizado por usuario y tipo (usa contador por usuario)
+      const idPersonalizado = await generarIdPorTipo(userId, ordenData.tipo || 'mantenimiento');
 
       // Crear la orden con el ID consecutivo
       const ordenCompleta = {
@@ -73,14 +59,14 @@ export const useOrdenesUsuario = () => {
         updatedAt: new Date()
       };
 
-      // Guardar en Firestore
-      const docRef = await addDoc(collection(db, 'ordenes'), ordenCompleta);
+      // Guardar en Firestore usando helper centralizado
+      const docId = await crearOrden(ordenCompleta, userId);
       
       // Invalidar TODAS las queries que empiecen con ['ordenes', userId]
       // Esto incluye: lista completa, recientes e infinitas.
       queryClient.invalidateQueries({ queryKey: ['ordenes', userId] });
       
-      return { id: docRef.id, idPersonalizado };
+      return { id: docId, idPersonalizado };
     } catch (error) {
       console.error('Error creando orden:', error);
       throw error;
@@ -101,8 +87,7 @@ export const useCrearOrden = () => {
 
   return useMutation({
     mutationFn: async (ordenData: any) => {
-      const proximoNumero = await obtenerProximoNumeroOrden(ordenData.tipo || 'mantenimiento');
-      const idPersonalizado = formatearIdOrden(proximoNumero, ordenData.tipo || 'mantenimiento');
+      const idPersonalizado = await generarIdPorTipo(user!.uid, ordenData.tipo || 'mantenimiento');
       
       const ordenCompleta = {
         ...ordenData,
@@ -114,8 +99,8 @@ export const useCrearOrden = () => {
         updatedAt: new Date()
       };
 
-      const docRef = await addDoc(collection(db, 'ordenes'), ordenCompleta);
-      return { id: docRef.id, ...ordenCompleta };
+      const docId = await crearOrden(ordenCompleta, user!.uid);
+      return { id: docId, ...ordenCompleta };
     },
     onMutate: async (nuevaOrden) => {
       // Cancelar refetches salientes
