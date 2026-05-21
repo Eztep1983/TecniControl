@@ -9,7 +9,6 @@ import {
   LockIcon
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
-import { Haptics, NotificationType } from '@capacitor/haptics'
 import { useAuth } from '@/components/auth/AuthProvider'
 import {
   getClientesPorUsuario,
@@ -39,37 +38,37 @@ const ONBOARDING_HINTS: Record<FormStep, { title: string, hint: React.ReactNode,
   cliente: {
     title: "Identifica al Cliente",
     icon: <Users className="w-5 h-5" />,
-    hint: <span className="text-lg">Aquí seleccionas quién solicita el servicio. En el modo real, podrás buscar por nombre o cédula. Hemos pre-seleccionado un cliente de prueba para ti.</span>
+    hint: <span>Aquí seleccionas quién solicita el servicio. En el modo real, podrás buscar por nombre o cédula. Hemos pre-seleccionado un cliente de prueba para ti.</span>
   },
   dispositivo: {
     title: "Selecciona el Equipo",
     icon: <Laptop className="w-5 h-5" />,
-    hint: <span className="text-lg">Cada cliente puede tener múltiples equipos. Aquí eliges cuál vas a intervenir. Esto mantiene un historial técnico organizado por cada dispositivo.</span>
+    hint: <span>Cada cliente puede tener múltiples equipos. Aquí eliges cuál vas a intervenir. Esto mantiene un historial técnico organizado por cada dispositivo.</span>
   },
   mantenimiento: {
     title: "Detalla el Trabajo",
     icon: <Wrench className="w-5 h-5" />,
-    hint: <span className="text-lg">Indica qué tipo de servicio realizas y qué tareas completaste. También puedes registrar las piezas que usaste para llevar un control de inventario/costos.</span>
+    hint: <span>Indica qué tipo de servicio realizas y qué tareas completaste. También puedes registrar las piezas que usaste para llevar un control de inventario/costos.</span>
   },
   contador: {
     title: "Registro de Uso",
     icon: <GaugeCircle className="w-5 h-5" />,
-    hint: <span className="text-lg">Este paso es opcional. Sirve para anotar unidades, horas de uso o impresiones. Ayuda a predecir cuándo será el próximo mantenimiento.</span>
+    hint: <span>Este paso es opcional. Sirve para anotar unidades, horas de uso o impresiones. Ayuda a predecir cuándo será el próximo mantenimiento.</span>
   },
   garantia: {
     title: "Respaldo del Servicio",
     icon: <ShieldCheck className="w-5 h-5" />,
-    hint: <span className="text-lg">Configura cuánto tiempo de garantía ofreces. El sistema calculará automáticamente la fecha de vencimiento y la incluirá en el PDF profesional.</span>
+    hint: <span>Configura cuánto tiempo de garantía ofreces. El sistema calculará automáticamente la fecha de vencimiento y la incluirá en el PDF profesional.</span>
   },
   firma: {
     title: "Validación Legal",
     icon: <PenLine className="w-5 h-5" />,
-    hint: <span className="text-lg">Tus clientes pueden firmar directamente en tu pantalla. Esto da validez legal al servicio y asegura que el cliente esté conforme con el trabajo.</span>
+    hint: <span>Tus clientes pueden firmar directamente en tu pantalla. Esto da validez legal al servicio y asegura que el cliente esté conforme con el trabajo.</span>
   },
   resumen: {
     title: "Revisión Final",
     icon: <ClipboardCheck className="w-5 h-5" />,
-    hint: <span className="text-lg">Verifica que toda la información sea correcta antes de generar el documento oficial. Una vez guardado, podrás enviarlo por WhatsApp en un segundo.</span>
+    hint: <span>Verifica que toda la información sea correcta antes de generar el documento oficial. Una vez guardado, podrás enviarlo por WhatsApp en un segundo.</span>
   }
 }
 
@@ -1239,7 +1238,6 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
 
 
   function getValidationMessage() {
-    const currentIndex = STEPS_CONFIG.findIndex(s => s.key === state.currentStep)
     
     switch (state.currentStep) {
       case 'cliente':
@@ -1273,7 +1271,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   }
 
   return (
-    <div className="h-[calc(100dvh-5rem)] w-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col overflow-hidden relative">
+    <div className="h-[calc(100dvh-5rem)] w bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col overflow-hidden relative">
       {/* Onboarding Contextual Hint & Progress */}
       <AnimatePresence mode="wait">
         {isOnboarding && (
@@ -1347,12 +1345,14 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
             </div>
           </div>
 
-          <div className="w-10" /> {/* Espaciador para centrar el título */}
+          <div className="w-10 flex items-center justify-end">{/* Espaciador para centrar el título */}
+            <div aria-hidden className="p-2 -ml-2 rounded-full" />
+          </div>
         </div>
       </header>
 
       {/* Contenido del paso actual con Swipe Gestures */}
-      <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full pt-4 pb-32">
+      <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full pt-4 pb-40">
         <form 
           id="mantenimiento-form" 
           onSubmit={handleSubmit}
@@ -1375,38 +1375,12 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
           </AnimatePresence>
         </form>
       </main>
-        {isOnboarding && (
-          <motion.div 
-            className="fixed bottom-24 left-4 right-4 z-30"
-            drag="y" dragConstraints={{ top: 0, bottom: 0 }}
-            onDragEnd={(_, info) => { if (info.offset.y > 40) setHintExpanded(false) }}
-          >
-            <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
-              <div className="flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing"
-                  onClick={() => setHintExpanded(v => !v)}>
-                <div className="w-8 h-1 bg-slate-600 rounded-full" />
-              </div>
-              <div className="px-4 pb-3 flex items-start gap-3">
-                <div className="bg-blue-500/20 p-1.5 rounded-lg shrink-0">
-                  {ONBOARDING_HINTS[state.currentStep].icon}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-blue-300">{ONBOARDING_HINTS[state.currentStep].title}</p>
-                  {hintExpanded && (
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                      {ONBOARDING_HINTS[state.currentStep].hint}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
+        {/* Onboarding slide-up hint handled by the floating contextual card above (AnimatePresence). Removed duplicate block. */}
 
       {/* Barra de navegación inferior flotante */}
       <div 
-        className={`h-24 w-full fixed bottom-0 left-0 right-0 z-30 bg-gray-900/95 border-t border-gray-800 transition-all duration-300 transform ${
-          isKeyboardVisible ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'
+        className={`bottom-nav-container min-h-[96px] h-auto w-full absolute bottom-0 left-0 right-0 z-30 bg-gray-900/95 border-t border-gray-800 transition-all duration-300 transform ${
+          isKeyboardVisible ? 'hidden' : 'translate-y-0 opacity-100'
         }`}
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}
       >
@@ -1436,7 +1410,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
                 type="submit"
                 form="mantenimiento-form"
                 disabled={state.loading}
-                className="flex items-center justify-center h-12 px-6 text-base font-bold text-white bg-gradient-to-r from-blue-500 to-blue-500 rounded-xl hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 shadow-lg shadow-blue-600/30 touch-manipulation"
+                className="flex items-center justify-center h-12 px-6 text-base font-bold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 shadow-lg shadow-blue-600/30 touch-manipulation"
               >
                 {state.loading ? (
                   <>
@@ -1456,14 +1430,14 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
             </div>
           ) : (
             <button onClick={nextStep} disabled={!canProceedToNextStep()}
-              className={`flex items-center justify-center h-12 px-6 rounded-xl font-bold transition-all
+              className={`flex items-center justify-center h-12 min-w-[100px] px-6 rounded-xl text-base font-bold transition-all
                 ${!canProceedToNextStep()
-                  ? 'bg-blue-600/40 text-blue-400 border border-blue-800/50'
+                  ? 'bg-blue-600/40 text-blue-200 border border-blue-800/50'
                   : 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
-                }`}>
+                } touch-manipulation`}>
               {!canProceedToNextStep() 
-                ? <><LockIcon className="w-4 h-4 mr-2" />{getValidationMessage()}</>
-                : <>{`Ir a ${nextStepName}`}<ChevronRight className="w-5 h-5 ml-2" /></>
+                ? <><LockIcon className="w-4 h-4 mr-2" /><span>Siguiente</span></>
+                : <><span>{`Ir a ${nextStepName}`}</span><ChevronRight className="w-5 h-5 ml-2" /></>
               }
             </button>
           )}
@@ -1493,7 +1467,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-950/90 p-4"
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/95 p-4"
             >
               <motion.div
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -1518,7 +1492,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
                   <div className="w-full space-y-3">
                     <button
                       onClick={() => compartirOrden(state.ordenCreada!)}
-                      className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center gap-3 font-bold transition-all active:scale-95 shadow-lg shadow-blue-600/30"
+                      className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center gap-3 font-bold transition-all active:scale-95 shadow-lg shadow-blue-600/30 touch-manipulation"
                     >
                       <Share2 className="w-5 h-5" />
                       Compartir Orden
@@ -1528,7 +1502,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
                         onSuccess();
                         onClose();
                       }}
-                      className="w-full h-12 mt-4 text-gray-400 hover:text-white font-medium transition-colors"
+                      className="w-full h-12 mt-4 text-gray-400 hover:text-white font-medium transition-colors touch-manipulation"
                     >
                       Volver a la lista
                     </button>
