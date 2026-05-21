@@ -219,7 +219,7 @@ export const crearNegocio = async (negocio: Omit<Negocio, 'id'>, userId: string)
 
     await setDoc(negocioRef, negocioConUserId);
   } catch (error) {
-    console.error('Error creando negocio:', error);
+    console.error('Hubo un error creando negocio:', error);
     throw error;
   }
 };
