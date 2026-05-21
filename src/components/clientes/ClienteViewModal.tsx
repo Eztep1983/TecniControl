@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import React, { useState, useCallback, lazy, Suspense } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/basic/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/basic/sheet";
 import {
@@ -14,13 +14,14 @@ import {
   X,
   Cpu,
   History,
+  RefreshCw,
 } from "lucide-react";
 import type { Cliente } from "@/types/orden";
 import { useAndroidBack } from "@/hooks/useAndroidBack";
 import { useMediaQuery } from "@/hooks/clientes/useMediaQuery";
 import { useSwipeToClose } from "@/hooks/clientes/useSwipeToClose";
 import { useHapticFeedback } from "@/hooks/clientes/useHapticFeedback";
-import { ClienteHistorialModal } from "./ClienteHistorialModal";
+const ClienteHistorialModalLazy = lazy(() => import("./ClienteHistorialModal").then(m => ({ default: m.ClienteHistorialModal })));
 
 interface ClienteViewModalProps {
   cliente: Cliente | null;
@@ -36,11 +37,14 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
 
   const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose({
     onClose,
-    enabled: open && isMobile,
+    enabled: open && isMobile && !historialOpen,
     threshold: 80,
   });
 
-  useAndroidBack(open, onClose);
+  useAndroidBack(open, () => {
+    if (historialOpen) setHistorialOpen(false);
+    else onClose();
+  });
 
   const handleEditClick = useCallback(() => {
     haptic.impactLight();
@@ -149,24 +153,6 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
           </div>
         )}
       </section>
-
-      {/* Botones de acción rápidos */}
-      <section className="p-6 grid grid-cols-2 gap-3">
-        <button
-          onClick={handleHistorialClick}
-          className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gray-800 hover:bg-gray-700 border border-gray-700/50 text-xs font-bold text-white transition-all active:scale-95"
-        >
-          <History className="w-4 h-4 text-blue-400" />
-          Ver Historial
-        </button>
-        <button
-          onClick={handleEditClick}
-          className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-xs font-bold text-blue-400 transition-all active:scale-95"
-        >
-          <Edit className="w-4 h-4" />
-          Editar Perfil
-        </button>
-      </section>
     </div>
   );
 
@@ -177,13 +163,25 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
           <User className="w-7 h-7 text-blue-400" />
         </div>
         <div className="min-w-0">
-          <h2 className="text-lg font-bold text-white leading-tight truncate">
-            {cliente.name}
-          </h2>
+          {isMobile ? (
+            <SheetTitle className="text-lg font-bold text-white leading-tight truncate">
+              {cliente.name}
+            </SheetTitle>
+          ) : (
+            <DialogTitle className="text-lg font-bold text-white leading-tight truncate">
+              {cliente.name}
+            </DialogTitle>
+          )}
           <div className="flex items-center gap-1.5 mt-0.5">
             <IdCard className="w-3.5 h-3.5 text-gray-500" />
             <span className="text-xs font-medium text-gray-500 truncate">{cliente.cedula}</span>
           </div>
+          {/* Hidden description for accessibility */}
+          {isMobile ? (
+             <SheetDescription className="sr-only">Detalles del cliente {cliente.name}</SheetDescription>
+          ) : (
+             <DialogDescription className="sr-only">Detalles del cliente {cliente.name}</DialogDescription>
+          )}
         </div>
       </div>
       <button
@@ -196,27 +194,34 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
     </div>
   );
 
-  const sharedModalContent = (
-    <ClienteHistorialModal 
-      open={historialOpen} 
-      clienteId={cliente.id!} 
-      clienteNombre={cliente.name} 
-      onClose={() => setHistorialOpen(false)} 
-    />
-  );
+  const sharedModalContent = historialOpen ? (
+    <Suspense fallback={
+      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/20 backdrop-blur-sm">
+        <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
+      </div>
+    }>
+      <ClienteHistorialModalLazy
+        open={historialOpen}
+        clienteId={cliente.id!}
+        clienteNombre={cliente.name}
+        onClose={() => setHistorialOpen(false)}
+      />
+    </Suspense>
+  ) : null;
 
   if (isMobile) {
     return (
       <>
         <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
           <SheetContent 
-            hideClose 
-            side="bottom" 
-            className="rounded-t-[2.5rem] bg-gray-900 border-t border-gray-800 p-0 max-h-[90vh] flex flex-col overflow-hidden" 
-            onTouchStart={handleTouchStart} 
-            onTouchMove={handleTouchMove} 
-            onTouchEnd={handleTouchEnd}
-          >
+              hideClose 
+              side="bottom" 
+              style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+              className="rounded-t-[2.5rem] bg-gray-900 border-t border-gray-800 p-0 max-h-[90vh] flex flex-col overflow-hidden" 
+              onTouchStart={handleTouchStart} 
+              onTouchMove={handleTouchMove} 
+              onTouchEnd={handleTouchEnd}
+            >
             <div className="w-12 h-1.5 bg-gray-800 rounded-full mx-auto mt-3 mb-1 flex-shrink-0" />
             <SheetHeader className="px-6 py-4 border-b border-gray-800/50 flex-shrink-0 text-left">
               {header}
@@ -236,6 +241,7 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
         <DialogContent 
           hideClose 
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           className="w-[calc(100%-1.5rem)] max-w-lg mx-auto rounded-3xl bg-gray-900 border border-gray-800 p-0 gap-0 overflow-hidden max-h-[85vh] flex flex-col shadow-2xl"
         >
           <DialogHeader className="px-6 py-5 border-b border-gray-800/50 flex-shrink-0 relative">

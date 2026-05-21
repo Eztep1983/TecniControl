@@ -699,12 +699,13 @@ export const ModalOrden = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-[100] sm:p-4 pointer-events-auto"
+      className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-[110] sm:p-4 pointer-events-auto"
       onClick={handleBackdropClick}
-      aria-hidden="true"
+      role="presentation"
     >
       <div
         ref={modalRef}
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)'}}
         className={cn(
           // Base
           "bg-gray-950 w-full flex flex-col overflow-hidden relative",
@@ -719,14 +720,22 @@ export const ModalOrden = ({
           "sm:h-auto sm:max-w-md sm:max-h-[80vh]",
           // lg: un poco más ancha
           "lg:max-w-lg",
-          // Animación
-          "animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-250 ease-out"
+          // Animación (Hardware accelerated)
+          "transform-gpu animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 ease-out"
         )}
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label={`Orden de mantenimiento #${orden.idPersonalizado}`}
+        aria-labelledby="modal-orden-title"
       >
+        {/* Title for screen readers only if not visible */}
+        <h2 id="modal-orden-title" className="sr-only">
+          Orden de mantenimiento {orden.tipoMantenimiento} #{orden.idPersonalizado || orden.id?.slice(-6)}
+        </h2>
+
         {/* Drag handle — solo móvil */}
         <div className="flex justify-center pt-2.5 pb-0 sm:hidden flex-shrink-0">
           <div className="w-8 h-1 rounded-full bg-gray-800" />

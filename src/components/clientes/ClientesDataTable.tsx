@@ -32,43 +32,12 @@ import { useToast } from "@/hooks/use-toast";
 import CountUp from "../ui/CountUp";
 import { useHapticFeedback } from "@/hooks/clientes/useHapticFeedback";
 import { useMediaQuery } from "@/hooks/clientes/useMediaQuery";
-
-// ── CSS de animación (inyectado una sola vez, fuera del ciclo de render) ─────
-const CARD_ANIM_ID = "clientes-card-anim-v2";
-
-if (typeof document !== "undefined" && !document.getElementById(CARD_ANIM_ID)) {
-  const s = document.createElement("style");
-  s.id = CARD_ANIM_ID;
-  s.textContent = `
-    @keyframes cardFadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .cliente-card-enter { animation: cardFadeIn 0.24s ease both; }
-    @keyframes cardFadeOut {
-      from { opacity: 1; transform: scale(1); }
-      to   { opacity: 0; transform: scale(0.96); }
-    }
-    .cliente-card-exit { animation: cardFadeOut 0.2s ease forwards; pointer-events: none; }
-  `;
-  document.head.appendChild(s);
-}
-
-// ── Props del componente principal ──────────────────────────────────────────
-interface ClientesDataTableProps {
-  data: Cliente[];
-  totalGlobal?: number;
-  onDelete: (id: string) => void;
-  onView: (cliente: Cliente) => void;
-  onEdit: (cliente: Cliente) => void;
-  onHistorial: (cliente: Cliente) => void;
-}
+import { cn } from "@/lib/utils";
 
 // ── Tarjeta individual ───────────────────────────────────────────────────────
 interface ClienteCardProps {
   client: Cliente;
   isExiting: boolean;
-  animDelay: number;
   onView: (c: Cliente) => void;
   onEdit: (c: Cliente) => void;
   onDeleteClick: (id: string) => void;
@@ -78,7 +47,6 @@ interface ClienteCardProps {
 const ClienteCard = memo(function ClienteCard({
   client,
   isExiting,
-  animDelay,
   onView,
   onEdit,
   onDeleteClick,
@@ -139,8 +107,8 @@ const ClienteCard = memo(function ClienteCard({
       if (!isMobile || !isSwiping) return;
       const delta = e.touches[0].clientX - startXRef.current;
       if (delta < 0) {
-        e.preventDefault();
-        setSwipeX(Math.max(delta, DELETE_THRESHOLD));
+        // Only allow swiping left
+        setSwipeX(Math.max(delta, DELETE_THRESHOLD * 1.5));
       } else {
         setSwipeX(0);
       }
@@ -174,40 +142,38 @@ const ClienteCard = memo(function ClienteCard({
   }, [isMobile, onTouchStart, onTouchMove, onTouchEnd]);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl group">
+    <div className="relative overflow-hidden rounded-2xl">
       {isMobile && swipeX < 0 && (
         <div
-          className="absolute inset-y-0 right-0 flex items-center justify-end pr-6 bg-red-500 rounded-2xl transition-colors"
+          className="absolute inset-y-0 right-0 flex items-center justify-end pr-6 bg-red-500 rounded-2xl"
           style={{
             width: "100%",
             opacity: swipeProgress,
-            backgroundColor: swipeX < DANGER_ZONE ? "#ef4444" : "#7f1d1d"
+            backgroundColor: swipeX < DANGER_ZONE ? "#ef4444" : "#b91c1c"
           }}
           aria-hidden="true"
         >
           <div className="flex flex-col items-center gap-1">
             <Trash2 
-              className="text-white" 
+              className="text-white w-5 h-5" 
               style={{ 
-                transform: `scale(${0.8 + swipeProgress * 0.4})`,
-                opacity: swipeProgress 
+                transform: `scale(${0.9 + swipeProgress * 0.1})`,
               }} 
             />
-            <span className="text-[10px] font-bold text-white/80 uppercase tracking-tighter">Eliminar</span>
+            <span className="text-[10px] font-bold text-white uppercase tracking-tighter">Eliminar</span>
           </div>
         </div>
       )}
 
       <div
-        className={`cliente-card-enter bg-gray-800/40 rounded-2xl border border-gray-700/50 hover:border-blue-500/30 transition-all duration-300 ${
-          isExiting ? "cliente-card-exit" : ""
-        }`}
+        className={cn(
+          "bg-gray-800/40 rounded-2xl border border-gray-700/50 transition-all duration-200",
+          isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100",
+          !isSwiping && "transition-[transform,opacity,border-color]"
+        )}
         style={{
-          animationDelay: `${animDelay}ms`,
-          transform: isMobile && swipeX !== 0 ? `translateX(${swipeX}px)` : undefined,
-          transition: isSwiping ? "none" : "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s",
-          touchAction: isMobile ? "pan-y" : undefined,
-          willChange: "transform, opacity",
+          transform: isMobile && swipeX !== 0 ? `translate3d(${swipeX}px, 0, 0)` : "translate3d(0, 0, 0)",
+          willChange: isSwiping ? "transform" : "auto",
         }}
         ref={cardRef}
       >
@@ -215,14 +181,14 @@ const ClienteCard = memo(function ClienteCard({
           <div className="flex items-start justify-between gap-4">
             <div 
               onClick={handleView}
-              className="flex-1 min-w-0 cursor-pointer group/info"
+              className="flex-1 min-w-0 cursor-pointer"
             >
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600/20 to-blue-400/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover/info:scale-105 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
                   <User className="w-6 h-6 text-blue-400" aria-hidden="true" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-bold text-white text-base leading-tight truncate group-hover/info:text-blue-400 transition-colors">
+                  <h3 className="font-bold text-white text-base leading-tight truncate">
                     {client.name}
                   </h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
@@ -274,14 +240,14 @@ const ClienteCard = memo(function ClienteCard({
           <div className="flex gap-2 mt-5">
             <button
               onClick={handleHistorial}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gray-700/30 hover:bg-gray-700/50 border border-gray-700/50 text-xs font-bold text-gray-300 hover:text-white transition-all active:scale-[0.97]"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gray-700/30 active:bg-gray-700/50 border border-gray-700/50 text-xs font-bold text-gray-300 transition-all active:scale-[0.97]"
             >
               <History className="w-4 h-4" />
               Historial
             </button>
             <button
               onClick={handleEdit}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-xs font-bold text-blue-400 hover:text-blue-300 transition-all active:scale-[0.97]"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-500/10 active:bg-blue-500/20 border border-blue-500/20 text-xs font-bold text-blue-400 transition-all active:scale-[0.97]"
             >
               <Edit className="w-4 h-4" />
               Editar
@@ -298,6 +264,16 @@ interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPage: (p: number) => void;
+}
+
+// Props for the main ClientesDataTable component
+interface ClientesDataTableProps {
+  data: Cliente[];
+  totalGlobal?: number | null;
+  onDelete: (id: string) => void;
+  onView: (c: Cliente) => void;
+  onEdit: (c: Cliente) => void;
+  onHistorial: (c: Cliente) => void;
 }
 
 const Pagination = memo(function Pagination({
@@ -448,7 +424,7 @@ export function ClientesDataTable({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clienteToDelete, setClienteToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -638,12 +614,11 @@ export function ClientesDataTable({
           role="list"
           aria-label="Lista de clientes"
         >
-          {paginatedClientes.map((client, idx) => (
+          {paginatedClientes.map((client) => (
             <div key={client.id} role="listitem">
               <ClienteCard
                 client={client}
                 isExiting={exitingIds.has(client.id!)}
-                animDelay={idx * 35}
                 onView={onView}
                 onEdit={onEdit}
                 onDeleteClick={handleDeleteClick}
