@@ -29,252 +29,253 @@ const generarContenidoHTML = (
   formatFecha: Function,
   formatGarantiaFecha: Function
 ): string => {
+  const styles = `
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    body { 
+      font-family: 'Inter', Arial, sans-serif; margin: 0; padding: 20px;
+      background-color: #fff; color: #1a1a1a;
+      font-size: 12px; line-height: 1.5;
+    }
+    .header { 
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 25px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px;
+    }
+    .negocio-info { display: flex; align-items: center; gap: 15px; }
+    .negocio-logo { width: 80px; height: 80px; object-fit: contain; border-radius: 8px; }
+    .negocio-details h1 { margin: 0; font-size: 18px; color: #111; font-weight: 700; }
+    .negocio-details p { margin: 2px 0; font-size: 11px; color: #4b5563; }
+    .orden-meta { text-align: right; }
+    .orden-meta h2 { margin: 0; font-size: 16px; color: #2563eb; font-weight: 700; }
+    .orden-meta p { margin: 2px 0; font-size: 11px; color: #4b5563; }
+
+    .section { margin-bottom: 20px; page-break-inside: avoid; }
+    .section-title { 
+      background-color: #f3f4f6; padding: 6px 12px; border-radius: 6px;
+      margin-bottom: 10px; font-size: 13px; font-weight: 700; color: #1f2937;
+      text-transform: uppercase; letter-spacing: 0.05em; border-left: 4px solid #2563eb;
+    }
+    
+    .flex-info { display: flex; gap: 20px; margin-bottom: 20px; }
+    .flex-info > div { flex: 1; }
+    .info-group { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+    .info-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f3f4f6; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-weight: 600; color: #6b7280; font-size: 10px; text-transform: uppercase; }
+    .info-value { color: #111827; font-weight: 500; text-align: right; }
+
+    .data-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-top: 5px; }
+    .data-label { font-weight: 700; font-size: 11px; color: #374151; margin-bottom: 4px; display: block; }
+    .data-content { color: #4b5563; font-size: 11px; white-space: pre-wrap; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; border-radius: 8px; overflow: hidden; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    th { background-color: #f9fafb; font-weight: 700; color: #374151; font-size: 11px; text-transform: uppercase; }
+    td { color: #4b5563; font-size: 11px; }
+
+    .badge { 
+      padding: 4px 10px; border-radius: 9999px; font-size: 10px; font-weight: 700; 
+      text-transform: uppercase; display: inline-block;
+    }
+    .badge-preventivo { background-color: #dcfce7; color: #166534; }
+    .badge-correctivo { background-color: #ffedd5; color: #9a3412; }
+    .badge-diagnostico { background-color: #dbeafe; color: #1e40af; }
+    .badge-instalacion { background-color: #f3e8ff; color: #6b21a8; }
+
+    .signatures { display: flex; gap: 40px; margin-top: 40px; }
+    .signatures > div { flex: 1; }
+    .signature-box { border-top: 1px solid #374151; padding-top: 10px; text-align: center; }
+    .signature-img { max-width: 180px; max-height: 80px; margin-bottom: 5px; object-fit: contain; }
+    .signature-name { font-weight: 700; color: #111827; font-size: 12px; }
+    .signature-role { color: #6b7280; font-size: 10px; text-transform: uppercase; }
+
+    .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #9ca3af; border-top: 1px solid #f3f4f6; padding-top: 15px; }
+
+    @media print {
+      body { padding: 0; margin: 0; }
+      .info-group { border: 1px solid #eee; }
+    }
+  `;
+
+  const htmlContent = `
+    <div class="header">
+      <div class="negocio-info">
+        ${negocio?.logoUrl 
+          ? `<img src="${negocio.logoUrl}" alt="Logo" class="negocio-logo" crossorigin="anonymous">` 
+          : `<div class="negocio-logo" style="background:#f3f4f6; display:flex; align-items:center; justify-content:center; border:1px dashed #ccc;">
+              <span style="color:#999; font-size:10px;">Sin Logo</span>
+             </div>`
+        }
+        <div class="negocio-details">
+          <h1>${negocio?.nombre || 'TecniControl Service'}</h1>
+          ${negocio?.nit ? `<p>NIT: ${negocio.nit}</p>` : ''}
+          ${negocio?.direccion ? `<p>${negocio.direccion}</p>` : ''}
+          ${negocio?.telefono ? `<p>Tel: ${negocio.telefono}</p>` : ''}
+          ${negocio?.email ? `<p>${negocio.email}</p>` : ''}
+        </div>
+      </div>
+      <div class="orden-meta">
+        <h2>ORDEN DE SERVICIO</h2>
+        <p style="font-weight:700; font-size:14px; color:#111;"># ${orden.idPersonalizado}</p>
+        <p>Fecha: ${formatFecha(orden.fechaCreacion)}</p>
+        <p>Hora: ${orden.horaCreacion || '--:--'}</p>
+        <div style="margin-top:5px;">
+          <span class="badge badge-${orden.tipoMantenimiento}">
+            ${orden.tipoMantenimiento}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-info section">
+      <div class="info-group">
+        <div class="section-title" style="border-left-color: #2563eb;">Información del Cliente</div>
+        <div class="info-row"><span class="info-label">Nombre</span><span class="info-value">${orden.cliente?.name || 'N/A'}</span></div>
+        <div class="info-row"><span class="info-label">Teléfono</span><span class="info-value">${orden.cliente?.phone || 'N/A'}</span></div>
+        <div class="info-row"><span class="info-label">Documento</span><span class="info-value">${orden.cliente?.cedula || 'N/A'}</span></div>
+        <div class="info-row"><span class="info-label">Dirección</span><span class="info-value">${orden.cliente?.address || 'N/A'}</span></div>
+      </div>
+
+      <div class="info-group">
+        <div class="section-title" style="border-left-color: #10b981;">Información del Equipo</div>
+        <div class="info-row"><span class="info-label">Tipo</span><span class="info-value">${orden.dispositivo?.tipo || 'N/A'}</span></div>
+        <div class="info-row"><span class="info-label">Marca/Modelo</span><span class="info-value">${orden.dispositivo?.marca || ''} ${orden.dispositivo?.modelo || ''}</span></div>
+        <div class="info-row"><span class="info-label">S/N</span><span class="info-value">${orden.dispositivo?.numeroSerie || 'N/A'}</span></div>
+        ${orden.contador ? `
+          <div class="info-row">
+            <span class="info-label">Contador (${orden.contador.tipo})</span>
+            <span class="info-value">${orden.contador.valor}</span>
+          </div>
+        ` : ''}
+        ${orden.contadorMaquina ? `
+          <div class="info-row">
+            <span class="info-label">Contador de Máquina</span>
+            <span class="info-value">${orden.contadorMaquina.toLocaleString()}</span>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+
+    ${orden.tipoMantenimiento === 'diagnostico' ? `
+      <div class="section">
+        <div class="section-title" style="border-left-color: #f59e0b;">Detalle del Diagnóstico</div>
+        <div class="flex-info">
+          <div class="data-box">
+            <span class="data-label">Observaciones Iniciales</span>
+            <div class="data-content">${orden.observacionesIniciales || 'N/A'}</div>
+          </div>
+          <div class="data-box">
+            <span class="data-label">Pruebas Realizadas</span>
+            <div class="data-content">${orden.pruebasRealizadas || 'N/A'}</div>
+          </div>
+        </div>
+        <div class="data-box" style="margin-top:10px;">
+          <span class="data-label">Diagnóstico Final</span>
+          <div class="data-content" style="font-weight:600; color:#111;">${orden.diagnosticoFinal || 'N/A'}</div>
+        </div>
+      </div>
+    ` : ''}
+
+    ${orden.tipoMantenimiento === 'instalacion' ? `
+      <div class="section">
+        <div class="section-title" style="border-left-color: #8b5cf6;">Detalle de Instalación</div>
+        <div class="data-box">
+          <span class="data-label">Configuraciones Realizadas</span>
+          <div class="data-content">
+            ${orden.instalacionConfiguracion 
+              ? (orden.instalacionConfiguracionTipos?.join(', ') || 'Instalación estándar')
+              : 'No se realizaron configuraciones'
+            }
+          </div>
+        </div>
+        ${orden.instalacionRecomendaciones ? `
+          <div class="data-box" style="margin-top:10px;">
+            <span class="data-label">Recomendaciones del Técnico</span>
+            <div class="data-content">${orden.instalacionRecomendacionesDetalle || 'N/A'}</div>
+          </div>
+        ` : ''}
+      </div>
+    ` : ''}
+
+    ${(orden.tipoMantenimiento === 'preventivo' || orden.tipoMantenimiento === 'correctivo') ? `
+      <div class="section">
+        <div class="section-title">Tareas Realizadas</div>
+        <div class="data-box">
+          <ul style="margin:0; padding-left:15px; font-size:11px; color:#4b5563;">
+            ${orden.tareasRealizadas?.map((t: string) => `<li>${t}</li>`).join('') || '<li>No se registraron tareas</li>'}
+          </ul>
+        </div>
+      </div>
+    ` : ''}
+
+    ${orden.piezasUsadas?.length > 0 ? `
+      <div class="section">
+        <div class="section-title">Repuestos / Materiales</div>
+        <table>
+          <thead><tr><th>Descripción</th><th style="text-align:right">Cantidad</th></tr></thead>
+          <tbody>
+            ${orden.piezasUsadas.map((p: { pieza: string; cantidad: number }) =>
+              `<tr><td>${p.pieza}</td><td style="text-align:right">${p.cantidad}</td></tr>`
+            ).join('')}
+          </tbody>
+        </table>
+      </div>
+    ` : ''}
+
+    <div class="section">
+      <div class="section-title" style="border-left-color: #6b7280;">Garantía y Observaciones</div>
+      <div class="flex-info">
+        <div class="info-group">
+          <div class="info-row"><span class="info-label">Vigencia Desde</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoDesde)}</span></div>
+          <div class="info-row"><span class="info-label">Vigencia Hasta</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoHasta)}</span></div>
+        </div>
+        <div class="data-box" style="margin:0; flex: 1.5;">
+          <span class="data-label">Términos de Garantía</span>
+          <div class="data-content">${orden.garantiaDescripcion || 'Garantía estándar según políticas de la empresa.'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="signatures">
+      <div class="signature-box">
+        ${orden.firmaCliente
+          ? `<img src="${orden.firmaCliente}" alt="Firma Cliente" class="signature-img">`
+          : '<div style="height:80px; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:10px;">Firma No Registrada</div>'
+        }
+        <div class="signature-name">${orden.nombreFirmante || orden.cliente?.name || 'Cliente'}</div>
+        <div class="signature-role">Firma del Cliente</div>
+      </div>
+      <div class="signature-box">
+        <div style="height:80px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:10px;">
+          <div style="border-bottom:1px solid #ccc; width:150px; text-align:center; padding-bottom:5px;">
+            <span style="font-size:12px; font-weight:700; color:#333;">${negocio?.nombre || 'Técnico Autorizado'}</span>
+          </div>
+        </div>
+        <div class="signature-name">Técnico Responsable</div>
+        <div class="signature-role">TecniControl Service</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Documento generado electrónicamente por TecniControl. 
+      Este documento es un comprobante de servicio y no representa una factura legal de venta.
+    </div>
+  `;
+
   return `
     <!DOCTYPE html>
     <html>
     <head>
       <title>Orden de Mantenimiento #${orden.idPersonalizado}</title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        body { 
-          font-family: 'Inter', Arial, sans-serif; margin: 0; padding: 20px;
-          background-color: #fff; color: #1a1a1a;
-          font-size: 12px; line-height: 1.5;
-        }
-        .header { 
-          display: flex; justify-content: space-between; align-items: flex-start;
-          margin-bottom: 25px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px;
-        }
-        .negocio-info { display: flex; align-items: center; gap: 15px; }
-        .negocio-logo { width: 80px; height: 80px; object-fit: contain; border-radius: 8px; }
-        .negocio-details h1 { margin: 0; font-size: 18px; color: #111; font-weight: 700; }
-        .negocio-details p { margin: 2px 0; font-size: 11px; color: #4b5563; }
-        .orden-meta { text-align: right; }
-        .orden-meta h2 { margin: 0; font-size: 16px; color: #2563eb; font-weight: 700; }
-        .orden-meta p { margin: 2px 0; font-size: 11px; color: #4b5563; }
-
-        .section { margin-bottom: 20px; page-break-inside: avoid; }
-        .section-title { 
-          background-color: #f3f4f6; padding: 6px 12px; border-radius: 6px;
-          margin-bottom: 10px; font-size: 13px; font-weight: 700; color: #1f2937;
-          text-transform: uppercase; letter-spacing: 0.05em; border-left: 4px solid #2563eb;
-        }
-        
-        .grid-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .info-group { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
-        .info-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f3f4f6; }
-        .info-row:last-child { border-bottom: none; }
-        .info-label { font-weight: 600; color: #6b7280; font-size: 10px; text-transform: uppercase; }
-        .info-value { color: #111827; font-weight: 500; text-align: right; }
-
-        .data-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-top: 5px; }
-        .data-label { font-weight: 700; font-size: 11px; color: #374151; margin-bottom: 4px; display: block; }
-        .data-content { color: #4b5563; font-size: 11px; white-space: pre-wrap; }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-        th { background-color: #f9fafb; font-weight: 700; color: #374151; font-size: 11px; text-transform: uppercase; }
-        td { color: #4b5563; font-size: 11px; }
-
-        .badge { 
-          padding: 4px 10px; border-radius: 9999px; font-size: 10px; font-weight: 700; 
-          text-transform: uppercase; display: inline-block;
-        }
-        .badge-preventivo { background-color: #dcfce7; color: #166534; }
-        .badge-correctivo { background-color: #ffedd5; color: #9a3412; }
-        .badge-diagnostico { background-color: #dbeafe; color: #1e40af; }
-        .badge-instalacion { background-color: #f3e8ff; color: #6b21a8; }
-
-        .signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; }
-        .signature-box { border-top: 1px solid #374151; padding-top: 10px; text-align: center; }
-        .signature-img { max-width: 180px; max-height: 80px; margin-bottom: 5px; object-fit: contain; }
-        .signature-name { font-weight: 700; color: #111827; font-size: 12px; }
-        .signature-role { color: #6b7280; font-size: 10px; text-transform: uppercase; }
-
-        .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #9ca3af; border-top: 1px solid #f3f4f6; padding-top: 15px; }
-
-        .no-print { display: flex; justify-content: center; gap: 10px; margin-top: 30px; }
-        .btn-print { 
-          background: #2563eb; color: white; border: none; padding: 10px 20px; 
-          border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;
-        }
-
-        @media print {
-          .no-print { display: none !important; }
-          body { padding: 0; margin: 0; }
-          .info-group { border: 1px solid #eee; }
-        }
-      </style>
+      <style>${styles}</style>
     </head>
     <body>
-      <div class="header">
-        <div class="negocio-info">
-          ${negocio?.logoUrl 
-            ? `<img src="${negocio.logoUrl}" alt="Logo" class="negocio-logo" crossorigin="anonymous">` 
-            : `<div class="negocio-logo" style="background:#f3f4f6; display:flex; align-items:center; justify-content:center; border:1px dashed #ccc;">
-                <span style="color:#999; font-size:10px;">Sin Logo</span>
-               </div>`
-          }
-          <div class="negocio-details">
-            <h1>${negocio?.nombre || 'TecniControl Service'}</h1>
-            ${negocio?.nit ? `<p>NIT: ${negocio.nit}</p>` : ''}
-            ${negocio?.direccion ? `<p>${negocio.direccion}</p>` : ''}
-            ${negocio?.telefono ? `<p>Tel: ${negocio.telefono}</p>` : ''}
-            ${negocio?.email ? `<p>${negocio.email}</p>` : ''}
-          </div>
-        </div>
-        <div class="orden-meta">
-          <h2>ORDEN DE SERVICIO</h2>
-          <p style="font-weight:700; font-size:14px; color:#111;"># ${orden.idPersonalizado}</p>
-          <p>Fecha: ${formatFecha(orden.fechaCreacion)}</p>
-          <p>Hora: ${orden.horaCreacion || '--:--'}</p>
-          <div style="margin-top:5px;">
-            <span class="badge badge-${orden.tipoMantenimiento}">
-              ${orden.tipoMantenimiento}
-            </span>
-          </div>
-        </div>
+      <div id="pdf-root">
+        ${htmlContent}
       </div>
-
-      <div class="grid-info section">
-        <div class="info-group">
-          <div class="section-title" style="border-left-color: #2563eb;">Información del Cliente</div>
-          <div class="info-row"><span class="info-label">Nombre</span><span class="info-value">${orden.cliente?.name || 'N/A'}</span></div>
-          <div class="info-row"><span class="info-label">Teléfono</span><span class="info-value">${orden.cliente?.phone || 'N/A'}</span></div>
-          <div class="info-row"><span class="info-label">Documento</span><span class="info-value">${orden.cliente?.cedula || 'N/A'}</span></div>
-          <div class="info-row"><span class="info-label">Dirección</span><span class="info-value">${orden.cliente?.address || 'N/A'}</span></div>
-        </div>
-
-        <div class="info-group">
-          <div class="section-title" style="border-left-color: #10b981;">Información del Equipo</div>
-          <div class="info-row"><span class="info-label">Tipo</span><span class="info-value">${orden.dispositivo?.tipo || 'N/A'}</span></div>
-          <div class="info-row"><span class="info-label">Marca/Modelo</span><span class="info-value">${orden.dispositivo?.marca || ''} ${orden.dispositivo?.modelo || ''}</span></div>
-          <div class="info-row"><span class="info-label">S/N</span><span class="info-value">${orden.dispositivo?.numeroSerie || 'N/A'}</span></div>
-          ${orden.contador ? `
-            <div class="info-row">
-              <span class="info-label">Contador (${orden.contador.tipo})</span>
-              <span class="info-value">${orden.contador.valor}</span>
-            </div>
-          ` : ''}
-          ${orden.contadorMaquina ? `
-            <div class="info-row">
-              <span class="info-label">Contador de Máquina</span>
-              <span class="info-value">${orden.contadorMaquina.toLocaleString()}</span>
-            </div>
-          ` : ''}
-        </div>
-      </div>
-
-      ${orden.tipoMantenimiento === 'diagnostico' ? `
-        <div class="section">
-          <div class="section-title" style="border-left-color: #f59e0b;">Detalle del Diagnóstico</div>
-          <div class="grid-info">
-            <div class="data-box">
-              <span class="data-label">Observaciones Iniciales</span>
-              <div class="data-content">${orden.observacionesIniciales || 'N/A'}</div>
-            </div>
-            <div class="data-box">
-              <span class="data-label">Pruebas Realizadas</span>
-              <div class="data-content">${orden.pruebasRealizadas || 'N/A'}</div>
-            </div>
-          </div>
-          <div class="data-box" style="margin-top:10px;">
-            <span class="data-label">Diagnóstico Final</span>
-            <div class="data-content" style="font-weight:600; color:#111;">${orden.diagnosticoFinal || 'N/A'}</div>
-          </div>
-        </div>
-      ` : ''}
-
-      ${orden.tipoMantenimiento === 'instalacion' ? `
-        <div class="section">
-          <div class="section-title" style="border-left-color: #8b5cf6;">Detalle de Instalación</div>
-          <div class="data-box">
-            <span class="data-label">Configuraciones Realizadas</span>
-            <div class="data-content">
-              ${orden.instalacionConfiguracion 
-                ? (orden.instalacionConfiguracionTipos?.join(', ') || 'Instalación estándar')
-                : 'No se realizaron configuraciones'
-              }
-            </div>
-          </div>
-          ${orden.instalacionRecomendaciones ? `
-            <div class="data-box" style="margin-top:10px;">
-              <span class="data-label">Recomendaciones del Técnico</span>
-              <div class="data-content">${orden.instalacionRecomendacionesDetalle || 'N/A'}</div>
-            </div>
-          ` : ''}
-        </div>
-      ` : ''}
-
-      ${(orden.tipoMantenimiento === 'preventivo' || orden.tipoMantenimiento === 'correctivo') ? `
-        <div class="section">
-          <div class="section-title">Tareas Realizadas</div>
-          <div class="data-box">
-            <ul style="margin:0; padding-left:15px; font-size:11px; color:#4b5563;">
-              ${orden.tareasRealizadas?.map((t: string) => `<li>${t}</li>`).join('') || '<li>No se registraron tareas</li>'}
-            </ul>
-          </div>
-        </div>
-      ` : ''}
-
-      ${orden.piezasUsadas?.length > 0 ? `
-        <div class="section">
-          <div class="section-title">Repuestos / Materiales</div>
-          <table>
-            <thead><tr><th>Descripción</th><th style="text-align:right">Cantidad</th></tr></thead>
-            <tbody>
-              ${orden.piezasUsadas.map((p: { pieza: string; cantidad: number }) =>
-                `<tr><td>${p.pieza}</td><td style="text-align:right">${p.cantidad}</td></tr>`
-              ).join('')}
-            </tbody>
-          </table>
-        </div>
-      ` : ''}
-
-      <div class="section">
-        <div class="section-title" style="border-left-color: #6b7280;">Garantía y Observaciones</div>
-        <div class="grid-info">
-          <div class="info-group">
-            <div class="info-row"><span class="info-label">Vigencia Desde</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoDesde)}</span></div>
-            <div class="info-row"><span class="info-label">Vigencia Hasta</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoHasta)}</span></div>
-          </div>
-          <div class="data-box" style="margin:0;">
-            <span class="data-label">Términos de Garantía</span>
-            <div class="data-content">${orden.garantiaDescripcion || 'Garantía estándar según políticas de la empresa.'}</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="signatures">
-        <div class="signature-box">
-          ${orden.firmaCliente
-            ? `<img src="${orden.firmaCliente}" alt="Firma Cliente" class="signature-img">`
-            : '<div style="height:80px; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:10px;">Firma No Registrada</div>'
-          }
-          <div class="signature-name">${orden.nombreFirmante || orden.cliente?.name || 'Cliente'}</div>
-          <div class="signature-role">Firma del Cliente</div>
-        </div>
-        <div class="signature-box">
-          <div style="height:80px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:10px;">
-            <div style="border-bottom:1px solid #ccc; width:150px; text-align:center; padding-bottom:5px;">
-              <span style="font-size:12px; font-weight:700; color:#333;">${negocio?.nombre || 'Técnico Autorizado'}</span>
-            </div>
-          </div>
-          <div class="signature-name">Técnico Responsable</div>
-          <div class="signature-role">TecniControl Service</div>
-        </div>
-      </div>
-
-      <div class="footer">
-        Documento generado electrónicamente por TecniControl. 
-        Este documento es un comprobante de servicio y no representa una factura legal de venta.
-      </div>
-
-
     </body>
     </html>
-  `
+  `;
 }
 
 // ============================================================================
@@ -344,12 +345,10 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
   /**
    * Genera el PDF como Blob usando html2pdf.js.
    *
-   * Estrategia de reintentos:
-   *   1. Intenta con el logo convertido a base64 (necesario para html2canvas).
-   *   2. Si falla (ej. CORS en Capacitor WebView), reintenta SIN logo.
-   *   3. Si sigue fallando, lanza el error para que el caller lo maneje.
-   *
-   * Compatible con web y WebView de Capacitor Android/iOS.
+   * Estrategia:
+   *   1. Procesa el logo a base64 para evitar problemas de CORS en el canvas.
+   *   2. Genera el HTML completo.
+   *   3. Usa un elemento temporal para asegurar que los estilos se apliquen correctamente.
    */
   const generarPDFBlob = useCallback(async (orden: OrdenMantenimiento): Promise<Blob> => {
     const html2pdf = (await import('html2pdf.js')).default
@@ -357,13 +356,12 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
     const opt = {
       margin: 10,
       filename: `Orden_${orden.idPersonalizado}.pdf`,
-      image: { type: 'jpeg' as const, quality: 0.95 },
+      image: { type: 'jpeg' as const, quality: 0.98 },
       html2canvas: {
         scale: 2,
         useCORS: true,
-        // En WebViews de Capacitor, allowTaint evita que imágenes externas
-        // que no pasan CORS rompan todo el canvas.
-        allowTaint: false,
+        allowTaint: true,
+        letterRendering: true,
         logging: false,
       },
       jsPDF: {
@@ -373,56 +371,56 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
       },
     }
 
-    // ── Intento 1: con logo ──────────────────────────────────────────────────
-    let negocioProcesado = { ...negocio }
-
-    if (negocio?.logoUrl && !negocio.logoUrl.startsWith('data:')) {
-      const base64 = await urlToBase64(negocio.logoUrl)
-      if (base64) {
-        negocioProcesado = { ...negocio, logoUrl: base64 }
+    // Procesa el logo de forma asíncrona
+    let logoBase64: string | null = null
+    if (negocio?.logoUrl) {
+      if (negocio.logoUrl.startsWith('data:')) {
+        logoBase64 = negocio.logoUrl
       } else {
-        // No se pudo convertir el logo — ya lo omitimos en el primer intento
-        // para evitar que html2canvas falle por la imagen externa.
-        console.warn('[generarPDFBlob] Logo no convertible a base64, se omitirá.')
-        negocioProcesado = { ...negocio, logoUrl: null }
+        logoBase64 = await urlToBase64(negocio.logoUrl)
       }
     }
 
-    const buildContainer = (neg: any) => {
-      const contenido = generarContenidoHTML(orden, neg, formatFecha, formatGarantiaFecha)
+    const obtenerPDF = async (conLogo: boolean): Promise<Blob> => {
+      const negProcesado = { ...negocio, logoUrl: conLogo ? logoBase64 : null }
+      const fullHtml = generarContenidoHTML(orden, negProcesado, formatFecha, formatGarantiaFecha)
+      
+      // Creamos un contenedor temporal en el DOM para asegurar que los estilos
+      // sean procesados correctamente por html2canvas.
       const container = document.createElement('div')
-      // Fuera del DOM visible para no afectar layout
       container.style.position = 'absolute'
       container.style.left = '-9999px'
       container.style.top = '-9999px'
-      container.innerHTML = contenido
-      container.querySelectorAll('.no-print').forEach(el => el.remove())
+      container.style.width = '800px' // Ancho fijo para el renderizado
+      
+      // Usamos DOMParser para extraer solo el contenido del body pero manteniendo
+      // los estilos si estuvieran inline. En este caso, inyectamos el HTML completo
+      // pero html2pdf aceptará el elemento.
+      container.innerHTML = fullHtml
       document.body.appendChild(container)
-      return container
+      
+      try {
+        // Buscamos el root del PDF dentro del contenedor
+        const element = (container.querySelector('#pdf-root') as HTMLElement) || container
+        const blob: Blob = await html2pdf().set(opt).from(element).output('blob')
+        document.body.removeChild(container)
+        return blob
+      } catch (err) {
+        if (container.parentNode) document.body.removeChild(container)
+        throw err
+      }
     }
 
-    // Primer intento
-    const container1 = buildContainer(negocioProcesado)
     try {
-      const blob: Blob = await html2pdf().set(opt).from(container1).output('blob')
-      document.body.removeChild(container1)
-      return blob
+      return await obtenerPDF(true)
     } catch (err1) {
-      document.body.removeChild(container1)
       console.warn('[generarPDFBlob] Intento 1 fallido, reintentando sin logo:', err1)
-    }
-
-    // ── Intento 2: sin logo (fallback seguro) ────────────────────────────────
-    const negocioSinLogo = { ...negocio, logoUrl: null }
-    const container2 = buildContainer(negocioSinLogo)
-    try {
-      const blob: Blob = await html2pdf().set(opt).from(container2).output('blob')
-      document.body.removeChild(container2)
-      return blob
-    } catch (err2) {
-      document.body.removeChild(container2)
-      console.error('[generarPDFBlob] Intento 2 (sin logo) también falló:', err2)
-      throw err2
+      try {
+        return await obtenerPDF(false)
+      } catch (err2) {
+        console.error('[generarPDFBlob] Error crítico al generar PDF:', err2)
+        throw err2
+      }
     }
   }, [negocio, formatFecha, formatGarantiaFecha, urlToBase64])
 

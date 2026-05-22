@@ -95,6 +95,7 @@ export interface Negocio {
   email: string;
   nit: string;
   logoUrl?: string;
+  onboardingCompleted?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }

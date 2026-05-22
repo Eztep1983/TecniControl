@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { memo, useState, useMemo, useCallback, useRef } from "react";
+import { memo, useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Button } from "@/components/ui/basic/button";
 import {
   Dialog,
@@ -43,7 +44,7 @@ const MAX_SWIPE = DELETE_THRESHOLD * 1.5;
 interface ClienteCardProps {
   client: Cliente;
   isExiting: boolean;
-  isMobile: boolean;               // ← FIX #1 & #6: recibido del padre
+  isMobile: boolean;
   onView: (c: Cliente) => void;
   onEdit: (c: Cliente) => void;
   onDeleteClick: (id: string) => void;
@@ -59,16 +60,9 @@ const ClienteCard = memo(function ClienteCard({
   onDeleteClick,
   onHistorial,
 }: ClienteCardProps) {
-  // FIX #2: haptic es un singleton de módulo — referencia estable, nunca
-  // invalida callbacks.
-
-  // FIX #3 & #4: Todo el estado de swipe vive en refs.
-  // El DOM se muta directamente con rAF → cero re-renders durante el drag.
   const cardRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
   const swipeRef = useRef({ startX: 0, currentX: 0, swiping: false, raf: 0 });
-
-  // ── Handlers estables (sin deps que cambien) ─────────────────────────────
 
   const handleView = useCallback(() => {
     haptic.selection();
@@ -97,10 +91,6 @@ const ClienteCard = memo(function ClienteCard({
     haptic.impactMedium();
     onDeleteClick(client.id!);
   }, [client.id, onDeleteClick]);
-
-  // FIX #3: Un solo handler registrado en JSX (React synthetic), sin
-  // addEventListener/removeEventListener. Las funciones `move` y `end` se
-  // registran solo durante el gesto activo, evitando re-registros.
 
   const applySwipeTransform = useCallback(() => {
     const s = swipeRef.current;
@@ -134,7 +124,6 @@ const ClienteCard = memo(function ClienteCard({
         const delta = ev.touches[0].clientX - s.startX;
         s.currentX = delta < 0 ? Math.max(delta, MAX_SWIPE) : 0;
 
-        // FIX #4: rAF en lugar de setState → sin re-render por píxel
         cancelAnimationFrame(s.raf);
         s.raf = requestAnimationFrame(applySwipeTransform);
       };
@@ -154,7 +143,6 @@ const ClienteCard = memo(function ClienteCard({
         applySwipeTransform();
       };
 
-      // Registrar solo mientras dure el gesto
       document.addEventListener("touchmove", onMove, { passive: true });
       document.addEventListener("touchend", onEnd, { passive: true });
     },
@@ -163,7 +151,6 @@ const ClienteCard = memo(function ClienteCard({
 
   return (
     <div className="relative overflow-hidden rounded-2xl">
-      {/* Backdrop de delete — oculto por defecto, manejado via ref */}
       {isMobile && (
         <div
           ref={backdropRef}
@@ -275,18 +262,8 @@ const ClienteCard = memo(function ClienteCard({
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
-  isMobile: boolean;                // ← FIX #6: recibido del padre
+  isMobile: boolean;
   onPage: (p: number) => void;
-}
-
-// Props for the main ClientesDataTable component
-interface ClientesDataTableProps {
-  data: Cliente[];
-  totalGlobal?: number | null;
-  onDelete: (id: string) => void;
-  onView: (c: Cliente) => void;
-  onEdit: (c: Cliente) => void;
-  onHistorial: (c: Cliente) => void;
 }
 
 const Pagination = memo(function Pagination({
@@ -295,9 +272,6 @@ const Pagination = memo(function Pagination({
   isMobile,
   onPage,
 }: PaginationProps) {
-  // FIX #6: ni useMediaQuery ni useHapticFeedback aquí — ambos vienen de fuera
-  // o usan el singleton de módulo.
-
   const pages = useMemo(() => {
     const all = Array.from({ length: totalPages }, (_, i) => i + 1);
     const visible = all.filter((p) => {
@@ -422,9 +396,17 @@ const Pagination = memo(function Pagination({
   );
 });
 
+interface ClientesDataTableProps {
+  data: Cliente[];
+  totalGlobal?: number | null;
+  onDelete: (id: string) => void;
+  onView: (c: Cliente) => void;
+  onEdit: (c: Cliente) => void;
+  onHistorial: (c: Cliente) => void;
+}
 
 // ── Componente principal ─────────────────────────────────────────────────────
-export function ClientesDataTable({
+export const ClientesDataTable = memo(function ClientesDataTable({
   data,
   totalGlobal,
   onDelete,
@@ -433,36 +415,54 @@ export function ClientesDataTable({
   onHistorial,
 }: ClientesDataTableProps) {
   const { toast } = useToast();
-
-  // FIX #8: sentinel ref para scrollIntoView — funciona en cualquier layout
   const scrollSentinelRef = useRef<HTMLDivElement>(null);
+  const parentRef = useRef<HTMLDivElement>(null);
 
-  // FIX #1 & #6: una sola instancia de useMediaQuery para todo el árbol
   const isMobile = useMediaQuery("(max-width: 768px)");
   const isMobileSm = useMediaQuery("(max-width: 640px)");
+  
+  const isSm = useMediaQuery("(min-width: 640px)");
+  const isLg = useMediaQuery("(min-width: 1024px)");
+  const isXl = useMediaQuery("(min-width: 1280px)");
+  const columns = isXl ? 4 : isLg ? 3 : isSm ? 2 : 1;
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(20);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clienteToDelete, setClienteToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
+  const [exitingIds, setExitingIds] = useState<Record<string, boolean>>({});
+
+  const handleViewStable = useCallback((c: Cliente) => onView(c), [onView]);
+  const handleEditStable = useCallback((c: Cliente) => onEdit(c), [onEdit]);
+  const handleHistorialStable = useCallback((c: Cliente) => onHistorial(c), [onHistorial]);
 
   const totalPages = Math.max(1, Math.ceil(data.length / itemsPerPage));
-
-  // FIX #5: clampeamos la página directamente, sin useEffect de corrección.
-  // Si data se achica y currentPage queda fuera de rango, lo corregimos
-  // en el propio render para evitar el doble-render del effect.
   const safePage = currentPage > totalPages ? totalPages : currentPage;
-  if (safePage !== currentPage) {
-    // setState sincrónico durante render — React lo batcha con el render actual.
-    setCurrentPage(safePage);
-  }
 
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
+  
   const paginatedClientes = useMemo(() => {
     const start = (safePage - 1) * itemsPerPage;
     return data.slice(start, start + itemsPerPage);
   }, [safePage, data, itemsPerPage]);
+
+  const rows = useMemo(() => {
+    const r = [];
+    for (let i = 0; i < paginatedClientes.length; i += columns) {
+      r.push(paginatedClientes.slice(i, i + columns));
+    }
+    return r;
+  }, [paginatedClientes, columns]);
+
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => (isMobile ? 320 : 280),
+    overscan: 5,
+  });
 
   const handleDeleteClick = useCallback((id: string) => {
     haptic.impactMedium();
@@ -477,17 +477,13 @@ export function ClientesDataTable({
       await deleteDoc(doc(db, "clientes", clienteToDelete));
 
       const idToRemove = clienteToDelete;
-      setExitingIds((prev) => {
-        const next = new Set(prev);
-        next.add(idToRemove);
-        return next;
-      });
+      setExitingIds((prev) => ({ ...prev, [idToRemove]: true }));
 
       setTimeout(() => {
         onDelete(idToRemove);
         setExitingIds((prev) => {
-          const next = new Set(prev);
-          next.delete(idToRemove);
+          const next = { ...prev };
+          delete next[idToRemove];
           return next;
         });
         if (paginatedClientes.length === 1 && currentPage > 1) {
@@ -499,10 +495,7 @@ export function ClientesDataTable({
     } catch (error) {
       toast({
         title: "Error al eliminar",
-        description:
-          error instanceof Error
-            ? error.message
-            : "No se pudo eliminar. Intente nuevamente.",
+        description: error instanceof Error ? error.message : "No se pudo eliminar.",
         variant: "destructive",
       });
     } finally {
@@ -523,16 +516,11 @@ export function ClientesDataTable({
       if (page < 1 || page > totalPages) return;
       haptic.selection();
       setCurrentPage(page);
-
-      // FIX #8: scrollIntoView en un sentinel div en la parte superior
-      // del contenedor. Funciona independientemente del overflow del padre.
       scrollSentinelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     },
     [totalPages]
   );
 
-  // FIX #7: useMemo — el find solo se re-ejecuta cuando cambian data o
-  // clienteToDelete (que es casi nunca).
   const clienteNombreAEliminar = useMemo(
     () => data.find((c) => c.id === clienteToDelete)?.name ?? "este cliente",
     [data, clienteToDelete]
@@ -540,7 +528,6 @@ export function ClientesDataTable({
 
   return (
     <div className="space-y-4 pb-24 sm:pb-8">
-      {/* FIX #8: sentinel invisible para scroll */}
       <div ref={scrollSentinelRef} aria-hidden="true" />
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -634,23 +621,48 @@ export function ClientesDataTable({
 
       {paginatedClientes.length > 0 ? (
         <div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
+          ref={parentRef}
+          className="max-h-[70vh] overflow-y-auto scrollbar-hide px-0.5"
           role="list"
           aria-label="Lista de clientes"
         >
-          {paginatedClientes.map((client) => (
-            <div key={client.id} role="listitem">
-              <ClienteCard
-                client={client}
-                isExiting={exitingIds.has(client.id!)}
-                isMobile={isMobile}
-                onView={onView}
-                onEdit={onEdit}
-                onDeleteClick={handleDeleteClick}
-                onHistorial={onHistorial}
-              />
-            </div>
-          ))}
+          <div
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => (
+              <div
+                key={virtualRow.key}
+                data-index={virtualRow.index}
+                ref={rowVirtualizer.measureElement}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 pb-3"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  transform: `translateY(${virtualRow.start}px)`,
+                }}
+              >
+                {rows[virtualRow.index].map((client) => (
+                  <div key={client.id} role="listitem">
+                    <ClienteCard
+                      client={client}
+                      isExiting={!!exitingIds[client.id!]}
+                      isMobile={isMobile}
+                      onView={handleViewStable}
+                      onEdit={handleEditStable}
+                      onDeleteClick={handleDeleteClick}
+                      onHistorial={handleHistorialStable}
+                    />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <div className="bg-gray-800/30 rounded-2xl border border-gray-700/40 p-12 text-center">
@@ -672,4 +684,4 @@ export function ClientesDataTable({
       )}
     </div>
   );
-}
+});

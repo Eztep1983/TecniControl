@@ -62,22 +62,21 @@ export default function OnboardingSuccess({ onFinish }: OnboardingSuccessProps) 
             <p className="text-gray-400 text-base mb-10 max-w-sm mx-auto">
               Has completado el recorrido inicial. Tu primera orden de prueba ha sido generada con éxito.
             </p>
-
-            <div className="grid grid-cols-1 gap-3 mb-10">
-              <NextStepCard 
-                icon={<UserPlus className="w-5 h-5" />}
-                title="Registra un cliente real"
-                description="Comienza a organizar tu base de datos hoy mismo."
-                onClick={() => handleNextStep('/clientes')}
-              />
               <NextStepCard 
                 icon={<Building2 className="w-5 h-5" />}
                 title="Personaliza tu negocio"
                 description="Agrega tu logo y datos de contacto para los PDFs."
                 onClick={() => handleNextStep('/configuracion')}
               />
+            <div className="grid grid-cols-1 gap-3 mb-10">
+              <br/>
+              <NextStepCard 
+                icon={<UserPlus className="w-5 h-5" />}
+                title="Registra un cliente real"
+                description="Comienza a organizar tu base de datos hoy mismo."
+                onClick={() => handleNextStep('/clientes')}
+              />
             </div>
-
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}

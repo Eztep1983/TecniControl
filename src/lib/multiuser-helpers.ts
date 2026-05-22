@@ -13,7 +13,51 @@ import {
   orderBy,
   limit,
   startAfter,
+  getCountFromServer,
 } from 'firebase/firestore';
+
+// ... (existing imports)
+
+/**
+ * Obtiene estadísticas resumidas sin descargar todos los documentos (Optimización Dashboard)
+ */
+export const getEstadisticasPorUsuario = async (userId: string) => {
+  try {
+    const ordenesRef = collection(db, 'ordenes');
+    const baseQuery = query(ordenesRef, where('userId', '==', userId));
+    
+    const [
+      totalSnap,
+      preventivosSnap,
+      correctivosSnap,
+      diagnosticosSnap,
+      instalacionesSnap
+    ] = await Promise.all([
+      getCountFromServer(baseQuery),
+      getCountFromServer(query(baseQuery, where('tipoMantenimiento', '==', 'preventivo'))),
+      getCountFromServer(query(baseQuery, where('tipoMantenimiento', '==', 'correctivo'))),
+      getCountFromServer(query(baseQuery, where('tipoMantenimiento', '==', 'diagnostico'))),
+      getCountFromServer(query(baseQuery, where('tipoMantenimiento', '==', 'instalacion')))
+    ]);
+
+    return {
+      totalOrdenes: totalSnap.data().count,
+      preventivos: preventivosSnap.data().count,
+      correctivos: correctivosSnap.data().count,
+      diagnosticos: diagnosticosSnap.data().count,
+      instalaciones: instalacionesSnap.data().count,
+    };
+  } catch (error) {
+    console.error('Error obteniendo estadísticas:', error);
+    return {
+      totalOrdenes: 0,
+      preventivos: 0,
+      correctivos: 0,
+      diagnosticos: 0,
+      instalaciones: 0,
+    };
+  }
+};
 import { Cliente, Orden, Negocio, ContadorU } from '@/types/orden';
 import {
   sanitizeClientePayload,
@@ -209,6 +253,7 @@ export const crearNegocio = async (negocio: Omit<Negocio, 'id'>, userId: string)
     const negocioConUserId = sanitizeNegocioPayload({
       ...negocio,
       userId,
+      onboardingCompleted: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -237,6 +282,21 @@ export const actualizarNegocio = async (negocio: Partial<Negocio>, userId: strin
   } catch (error) {
     console.error('Error actualizando negocio:', error);
     throw error;
+  }
+};
+
+/**
+ * Marca el onboarding como completado para el usuario en Firestore
+ */
+export const completarOnboarding = async (userId: string): Promise<void> => {
+  try {
+    const negocioRef = doc(db, 'negocios', userId);
+    await updateDoc(negocioRef, {
+      onboardingCompleted: true,
+      updatedAt: new Date()
+    });
+  } catch (error) {
+    console.error('Error completando onboarding:', error);
   }
 };
 

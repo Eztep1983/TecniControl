@@ -648,16 +648,16 @@ const DetailView = memo(({
         <div className={cn("grid gap-2", onShare ? "grid-cols-2" : "grid-cols-1")}>
           {onShare && (
             <ActionBtn variant="primary" icon={Share2} onClick={handleShare}>
-              Compartir
+              Compartir PDF
             </ActionBtn>
           )}
           <ActionBtn variant="secondary" icon={Eye} onClick={onPreview}>
-            Vista previa
+            Ver en PDF
           </ActionBtn>
         </div>
         {onDownload && (
           <ActionBtn variant="ghost" icon={Download} onClick={handleDownload} className="w-full mt-2 text-xs">
-            Descargar PDF
+            Descargar
           </ActionBtn>
         )}
       </footer>

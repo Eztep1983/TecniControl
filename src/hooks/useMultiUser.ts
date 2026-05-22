@@ -10,6 +10,8 @@ import {
   crearNegocio,
   crearOrden,
   generarIdPorTipo,
+  getEstadisticasPorUsuario,
+  completarOnboarding
 } from '@/lib/multiuser-helpers';
 
 // ID generation moved to multiuser-helpers (per-user counters)
@@ -139,6 +141,21 @@ export const useCrearOrden = () => {
 };
 
 /**
+ * Hook para marcar el onboarding como completado
+ */
+export const useCompletarOnboarding = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => completarOnboarding(user!.uid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['negocio', user?.uid] });
+    },
+  });
+};
+
+/**
  * Hook para obtener datos del negocio del usuario
  */
 export const useNegocioUsuario = () => {
@@ -160,7 +177,8 @@ export const useNegocioUsuario = () => {
           telefono: '',
           email: user.email || '',
           nit: '',
-          logoUrl: ''
+          logoUrl: '',
+          onboardingCompleted: false
         };
         
         await crearNegocio(negocioDefault, user.uid);
@@ -182,28 +200,18 @@ export const useNegocioUsuario = () => {
 export const useEstadisticasUsuario = () => {
   const { user } = useAuth();
 
-  // Reutilizamos las queries existentes (TanStack Query las deduplicará)
-  const { data: clientes = [] } = useQuery({
-    queryKey: ['clientes', user?.uid],
-    queryFn: () => getClientesPorUsuario(user!.uid),
+  const { data: estadisticas = {
+    totalOrdenes: 0,
+    preventivos: 0,
+    correctivos: 0,
+    diagnosticos: 0,
+    instalaciones: 0,
+  }, isLoading: loading } = useQuery({
+    queryKey: ['ordenes', user?.uid, 'stats'],
+    queryFn: () => getEstadisticasPorUsuario(user!.uid),
     enabled: !!user?.uid,
+    staleTime: 1000 * 60 * 5, // 5 minutos de cache para stats
   });
-
-  const { data: ordenes = [], isLoading: loading } = useQuery({
-    queryKey: ['ordenes', user?.uid],
-    queryFn: () => getOrdenesPorUsuario(user!.uid),
-    enabled: !!user?.uid,
-  });
-
-  // Calcular estadísticas de forma reactiva y estable
-  const estadisticas = useMemo(() => ({
-    totalClientes: clientes.length,
-    totalOrdenes: ordenes.length,
-    preventivos: ordenes.filter(o => (o as any).tipoMantenimiento === 'preventivo').length,
-    correctivos: ordenes.filter(o => (o as any).tipoMantenimiento === 'correctivo').length,
-    diagnosticos: ordenes.filter(o => (o as any).tipoMantenimiento === 'diagnostico').length,
-    instalaciones: ordenes.filter(o => (o as any).tipoMantenimiento === 'instalacion').length,
-  }), [clientes, ordenes]);
 
   return { estadisticas, loading };
 };

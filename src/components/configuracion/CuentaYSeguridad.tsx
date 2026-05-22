@@ -959,14 +959,14 @@ export default function CuentaYSeguridad() {
       </Card>
 
       {/* ── Danger zone (accordion) ───────────────────────────────────────── */}
-      <Card className="bg-red-900/10 border-red-500/20">
+      <Card className="bg-gray-900/50 border-gray-500/20">
         <CardHeader
           className="cursor-pointer select-none"
           onClick={() => setDangerOpen(o => !o)}
         >
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-red-400 flex items-center gap-2 text-xl">
+              <CardTitle className="text-gray-400 flex items-center gap-2 text-xl">
                 <AlertTriangle className="w-5 h-5" />
                 Zona de Peligro
               </CardTitle>
@@ -974,7 +974,7 @@ export default function CuentaYSeguridad() {
                 Acciones irreversibles sobre tu cuenta
               </CardDescription>
             </div>
-            <ChevronDown className={`w-5 h-5 text-red-400/70 transition-transform duration-200
+            <ChevronDown className={`w-5 h-5 text-gray-400/70 transition-transform duration-200
                                      ${dangerOpen ? 'rotate-180' : ''}`} />
           </div>
         </CardHeader>
@@ -1021,7 +1021,7 @@ export default function CuentaYSeguridad() {
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="destructive"
-                    className="min-w-[180px] shrink-0"
+                    className="min-w-[180px] shrink-0 rouded-lg border-red-500/30 bg-red-500/10 hover:bg-red-500/20"
                     disabled={deleteState.loading}
                     onClick={() => setDeleteState(s => ({ ...s, dialogOpen: true }))}
                   >
@@ -1032,13 +1032,13 @@ export default function CuentaYSeguridad() {
                 </AlertDialogTrigger>
 
                 <AlertDialogContent className="bg-slate-950/95 border border-white/10 max-w-md w-[calc(100vw-2rem)] rounded-[28px] shadow-[0_24px_80px_-36px_rgba(15,23,42,0.75)]">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-white flex items-center gap-2">
+                  <AlertDialogHeader className="flex flex-col items-center text-center">
+                    <AlertDialogTitle className="text-white flex items-center justify-center gap-2">
                       <ShieldCheck className="w-5 h-5 text-red-400" />
                       Confirma tu identidad
                     </AlertDialogTitle>
                     <AlertDialogDescription asChild>
-                      <div className="space-y-2 text-slate-400 text-sm">
+                      <div className="space-y-2 text-slate-400 text-sm flex flex-col items-center">
                         <p>
                           {isGoogleUser
                             ? 'Para continuar, deberás autenticarte con Google nuevamente.'
@@ -1051,6 +1051,7 @@ export default function CuentaYSeguridad() {
                       </div>
                     </AlertDialogDescription>
                   </AlertDialogHeader>
+
 
                   {/* ── Re-auth body — branches on provider ── */}
                   <div className="py-2 space-y-3">
