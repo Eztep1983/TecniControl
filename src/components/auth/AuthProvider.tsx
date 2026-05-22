@@ -15,9 +15,6 @@ import {
   updateProfile,
 } from 'firebase/auth'
 
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'
-// cada ~55 min sin que lo manejemos manualmente. El listener anterior disparaba
-// getIdToken(true) lo cual causaba setState y re-renders innecesarios.
 import { Capacitor } from '@capacitor/core'
 import { auth, db } from '@/lib/firebase'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
@@ -376,17 +373,6 @@ const signUpWithEmail = useCallback(async (email: string, password: string, disp
     if (now - lastActivityUpdateRef.current > 1000) {
       lastActivityUpdateRef.current = now
       lastActivityRef.current = now
-    }
-  }, [])
-
-    useEffect(() => {
-    // Solo en dispositivo nativo, solo una vez al montar
-    if (Capacitor.isNativePlatform()) {
-      GoogleAuth.initialize({
-        clientId: '820146318318-i0r92a8u43998502017o813b6o364o2f.apps.googleusercontent.com',
-        scopes: ['profile', 'email'],
-        grantOfflineAccess: false,
-      })
     }
   }, [])
 

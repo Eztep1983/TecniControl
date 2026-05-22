@@ -17,11 +17,6 @@ const config: CapacitorConfig = {
       skipNativeAuth: false,
       providers: ["google.com"],
     },
-    GoogleAuth: {
-      scopes: ["profile", "email"],
-      clientId: "820146318318-i0r92a8u43998502017o813b6o364o2f.apps.googleusercontent.com",
-      forceCodeForRefreshToken: true,
-    },
     SplashScreen: {
       launchShowDuration: 5000, 
       launchAutoHide: true,     

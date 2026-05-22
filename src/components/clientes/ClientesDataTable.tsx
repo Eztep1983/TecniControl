@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { memo, useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { memo, useState, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/basic/button";
 import {
   Dialog,
@@ -30,14 +30,20 @@ import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import CountUp from "../ui/CountUp";
-import { useHapticFeedback } from "@/hooks/clientes/useHapticFeedback";
+import { haptic } from "@/hooks/clientes/useHapticFeedback";
 import { useMediaQuery } from "@/hooks/clientes/useMediaQuery";
 import { cn } from "@/lib/utils";
+
+// ── Constantes de swipe ──────────────────────────────────────────────────────
+const DELETE_THRESHOLD = -80;
+const DANGER_ZONE = DELETE_THRESHOLD * 0.6;
+const MAX_SWIPE = DELETE_THRESHOLD * 1.5;
 
 // ── Tarjeta individual ───────────────────────────────────────────────────────
 interface ClienteCardProps {
   client: Cliente;
   isExiting: boolean;
+  isMobile: boolean;               // ← FIX #1 & #6: recibido del padre
   onView: (c: Cliente) => void;
   onEdit: (c: Cliente) => void;
   onDeleteClick: (id: string) => void;
@@ -47,28 +53,27 @@ interface ClienteCardProps {
 const ClienteCard = memo(function ClienteCard({
   client,
   isExiting,
+  isMobile,
   onView,
   onEdit,
   onDeleteClick,
   onHistorial,
 }: ClienteCardProps) {
-  const haptic = useHapticFeedback();
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  // FIX #2: haptic es un singleton de módulo — referencia estable, nunca
+  // invalida callbacks.
 
-  const [swipeX, setSwipeX] = useState(0);
-  const [isSwiping, setIsSwiping] = useState(false);
-  const startXRef = useRef(0);
+  // FIX #3 & #4: Todo el estado de swipe vive en refs.
+  // El DOM se muta directamente con rAF → cero re-renders durante el drag.
   const cardRef = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const swipeRef = useRef({ startX: 0, currentX: 0, swiping: false, raf: 0 });
 
-  const DELETE_THRESHOLD = -80;
-  const DANGER_ZONE = DELETE_THRESHOLD * 0.6; 
-
-  const swipeProgress = Math.min(1, Math.abs(swipeX) / Math.abs(DELETE_THRESHOLD));
+  // ── Handlers estables (sin deps que cambien) ─────────────────────────────
 
   const handleView = useCallback(() => {
     haptic.selection();
     onView(client);
-  }, [client, haptic, onView]);
+  }, [client, onView]);
 
   const handleEdit = useCallback(
     (e: React.MouseEvent) => {
@@ -76,7 +81,7 @@ const ClienteCard = memo(function ClienteCard({
       haptic.impactLight();
       onEdit(client);
     },
-    [client, haptic, onEdit]
+    [client, onEdit]
   );
 
   const handleHistorial = useCallback(
@@ -85,82 +90,92 @@ const ClienteCard = memo(function ClienteCard({
       haptic.selection();
       onHistorial(client);
     },
-    [client, haptic, onHistorial]
+    [client, onHistorial]
   );
 
   const handleDeleteConfirmButton = useCallback(() => {
     haptic.impactMedium();
     onDeleteClick(client.id!);
-  }, [client.id, haptic, onDeleteClick]);
+  }, [client.id, onDeleteClick]);
+
+  // FIX #3: Un solo handler registrado en JSX (React synthetic), sin
+  // addEventListener/removeEventListener. Las funciones `move` y `end` se
+  // registran solo durante el gesto activo, evitando re-registros.
+
+  const applySwipeTransform = useCallback(() => {
+    const s = swipeRef.current;
+    const card = cardRef.current;
+    const backdrop = backdropRef.current;
+    if (!card) return;
+
+    const x = s.currentX;
+    const progress = Math.min(1, Math.abs(x) / Math.abs(DELETE_THRESHOLD));
+
+    card.style.transform = x !== 0
+      ? `translate3d(${x}px, 0, 0)`
+      : "translate3d(0, 0, 0)";
+    card.style.willChange = s.swiping ? "transform" : "auto";
+
+    if (backdrop) {
+      backdrop.style.opacity = x < 0 ? String(progress) : "0";
+      backdrop.style.display = x < 0 ? "flex" : "none";
+      backdrop.style.backgroundColor = x < DANGER_ZONE ? "#ef4444" : "#b91c1c";
+    }
+  }, []);
 
   const onTouchStart = useCallback(
     (e: React.TouchEvent) => {
       if (!isMobile) return;
-      startXRef.current = e.touches[0].clientX;
-      setIsSwiping(true);
+      const s = swipeRef.current;
+      s.startX = e.touches[0].clientX;
+      s.swiping = true;
+
+      const onMove = (ev: TouchEvent) => {
+        const delta = ev.touches[0].clientX - s.startX;
+        s.currentX = delta < 0 ? Math.max(delta, MAX_SWIPE) : 0;
+
+        // FIX #4: rAF en lugar de setState → sin re-render por píxel
+        cancelAnimationFrame(s.raf);
+        s.raf = requestAnimationFrame(applySwipeTransform);
+      };
+
+      const onEnd = () => {
+        document.removeEventListener("touchmove", onMove);
+        document.removeEventListener("touchend", onEnd);
+
+        if (s.currentX <= DELETE_THRESHOLD) {
+          haptic.impactMedium();
+          onDeleteClick(client.id!);
+        }
+
+        s.currentX = 0;
+        s.swiping = false;
+        cancelAnimationFrame(s.raf);
+        applySwipeTransform();
+      };
+
+      // Registrar solo mientras dure el gesto
+      document.addEventListener("touchmove", onMove, { passive: true });
+      document.addEventListener("touchend", onEnd, { passive: true });
     },
-    [isMobile]
+    [isMobile, applySwipeTransform, onDeleteClick, client.id]
   );
-
-  const onTouchMove = useCallback(
-    (e: React.TouchEvent) => {
-      if (!isMobile || !isSwiping) return;
-      const delta = e.touches[0].clientX - startXRef.current;
-      if (delta < 0) {
-        // Only allow swiping left
-        setSwipeX(Math.max(delta, DELETE_THRESHOLD * 1.5));
-      } else {
-        setSwipeX(0);
-      }
-    },
-    [isMobile, isSwiping, DELETE_THRESHOLD]
-  );
-
-  const onTouchEnd = useCallback(() => {
-    if (!isMobile) return;
-    if (swipeX <= DELETE_THRESHOLD) {
-      haptic.impactMedium();
-      onDeleteClick(client.id!);
-    }
-    setSwipeX(0);
-    setIsSwiping(false);
-  }, [isMobile, swipeX, DELETE_THRESHOLD, haptic, onDeleteClick, client.id]);
-
-  useEffect(() => {
-    const el = cardRef.current;
-    if (!el || !isMobile) return;
-
-    el.addEventListener("touchstart", onTouchStart as any, { passive: true });
-    el.addEventListener("touchmove", onTouchMove as any, { passive: false });
-    el.addEventListener("touchend", onTouchEnd as any, { passive: true });
-
-    return () => {
-      el.removeEventListener("touchstart", onTouchStart as any);
-      el.removeEventListener("touchmove", onTouchMove as any);
-      el.removeEventListener("touchend", onTouchEnd as any);
-    };
-  }, [isMobile, onTouchStart, onTouchMove, onTouchEnd]);
 
   return (
     <div className="relative overflow-hidden rounded-2xl">
-      {isMobile && swipeX < 0 && (
+      {/* Backdrop de delete — oculto por defecto, manejado via ref */}
+      {isMobile && (
         <div
-          className="absolute inset-y-0 right-0 flex items-center justify-end pr-6 bg-red-500 rounded-2xl"
-          style={{
-            width: "100%",
-            opacity: swipeProgress,
-            backgroundColor: swipeX < DANGER_ZONE ? "#ef4444" : "#b91c1c"
-          }}
+          ref={backdropRef}
+          className="absolute inset-y-0 right-0 items-center justify-end pr-6 rounded-2xl"
+          style={{ width: "100%", opacity: 0, display: "none" }}
           aria-hidden="true"
         >
           <div className="flex flex-col items-center gap-1">
-            <Trash2 
-              className="text-white w-5 h-5" 
-              style={{ 
-                transform: `scale(${0.9 + swipeProgress * 0.1})`,
-              }} 
-            />
-            <span className="text-[10px] font-bold text-white uppercase tracking-tighter">Eliminar</span>
+            <Trash2 className="text-white w-5 h-5" />
+            <span className="text-[10px] font-bold text-white uppercase tracking-tighter">
+              Eliminar
+            </span>
           </div>
         </div>
       )}
@@ -168,18 +183,15 @@ const ClienteCard = memo(function ClienteCard({
       <div
         className={cn(
           "bg-gray-800/40 rounded-2xl border border-gray-700/50 transition-all duration-200",
-          isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100",
-          !isSwiping && "transition-[transform,opacity,border-color]"
+          isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"
         )}
-        style={{
-          transform: isMobile && swipeX !== 0 ? `translate3d(${swipeX}px, 0, 0)` : "translate3d(0, 0, 0)",
-          willChange: isSwiping ? "transform" : "auto",
-        }}
+        style={{ transform: "translate3d(0, 0, 0)" }}
         ref={cardRef}
+        onTouchStart={onTouchStart}
       >
         <div className="relative p-5">
           <div className="flex items-start justify-between gap-4">
-            <div 
+            <div
               onClick={handleView}
               className="flex-1 min-w-0 cursor-pointer"
             >
@@ -263,6 +275,7 @@ const ClienteCard = memo(function ClienteCard({
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
+  isMobile: boolean;                // ← FIX #6: recibido del padre
   onPage: (p: number) => void;
 }
 
@@ -279,10 +292,11 @@ interface ClientesDataTableProps {
 const Pagination = memo(function Pagination({
   currentPage,
   totalPages,
+  isMobile,
   onPage,
 }: PaginationProps) {
-  const isMobile = useMediaQuery("(max-width: 640px)");
-  const haptic = useHapticFeedback();
+  // FIX #6: ni useMediaQuery ni useHapticFeedback aquí — ambos vienen de fuera
+  // o usan el singleton de módulo.
 
   const pages = useMemo(() => {
     const all = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -306,7 +320,7 @@ const Pagination = memo(function Pagination({
     if (p === currentPage || p < 1 || p > totalPages) return;
     haptic.selection();
     onPage(p);
-  }, [currentPage, totalPages, haptic, onPage]);
+  }, [currentPage, totalPages, onPage]);
 
   if (isMobile) {
     return (
@@ -419,12 +433,16 @@ export function ClientesDataTable({
   onHistorial,
 }: ClientesDataTableProps) {
   const { toast } = useToast();
-  const haptic = useHapticFeedback();
 
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // FIX #8: sentinel ref para scrollIntoView — funciona en cualquier layout
+  const scrollSentinelRef = useRef<HTMLDivElement>(null);
+
+  // FIX #1 & #6: una sola instancia de useMediaQuery para todo el árbol
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobileSm = useMediaQuery("(max-width: 640px)");
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(5);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clienteToDelete, setClienteToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -432,16 +450,14 @@ export function ClientesDataTable({
 
   const totalPages = Math.max(1, Math.ceil(data.length / itemsPerPage));
 
-  const safePage = useMemo(() => {
-    if (currentPage > totalPages) return totalPages;
-    return currentPage;
-  }, [currentPage, totalPages]);
-
-  useEffect(() => {
-    if (currentPage !== safePage) {
-      setCurrentPage(safePage);
-    }
-  }, [currentPage, safePage]);
+  // FIX #5: clampeamos la página directamente, sin useEffect de corrección.
+  // Si data se achica y currentPage queda fuera de rango, lo corregimos
+  // en el propio render para evitar el doble-render del effect.
+  const safePage = currentPage > totalPages ? totalPages : currentPage;
+  if (safePage !== currentPage) {
+    // setState sincrónico durante render — React lo batcha con el render actual.
+    setCurrentPage(safePage);
+  }
 
   const paginatedClientes = useMemo(() => {
     const start = (safePage - 1) * itemsPerPage;
@@ -452,7 +468,7 @@ export function ClientesDataTable({
     haptic.impactMedium();
     setClienteToDelete(id);
     setDeleteDialogOpen(true);
-  }, [haptic]);
+  }, []);
 
   const handleDeleteConfirm = useCallback(async () => {
     if (!clienteToDelete) return;
@@ -500,25 +516,33 @@ export function ClientesDataTable({
     haptic.selection();
     setDeleteDialogOpen(false);
     setClienteToDelete(null);
-  }, [haptic]);
+  }, []);
 
   const goToPage = useCallback(
     (page: number) => {
       if (page < 1 || page > totalPages) return;
       haptic.selection();
       setCurrentPage(page);
-      scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+
+      // FIX #8: scrollIntoView en un sentinel div en la parte superior
+      // del contenedor. Funciona independientemente del overflow del padre.
+      scrollSentinelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     },
-    [haptic, totalPages]
+    [totalPages]
   );
 
+  // FIX #7: useMemo — el find solo se re-ejecuta cuando cambian data o
+  // clienteToDelete (que es casi nunca).
   const clienteNombreAEliminar = useMemo(
     () => data.find((c) => c.id === clienteToDelete)?.name ?? "este cliente",
     [data, clienteToDelete]
   );
 
   return (
-    <div ref={scrollContainerRef} className="space-y-4 pb-24 sm:pb-8">
+    <div className="space-y-4 pb-24 sm:pb-8">
+      {/* FIX #8: sentinel invisible para scroll */}
+      <div ref={scrollSentinelRef} aria-hidden="true" />
+
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="w-[calc(100%-2rem)] max-w-sm mx-auto rounded-2xl bg-gray-800 border-gray-700">
           <DialogHeader>
@@ -619,6 +643,7 @@ export function ClientesDataTable({
               <ClienteCard
                 client={client}
                 isExiting={exitingIds.has(client.id!)}
+                isMobile={isMobile}
                 onView={onView}
                 onEdit={onEdit}
                 onDeleteClick={handleDeleteClick}
@@ -641,6 +666,7 @@ export function ClientesDataTable({
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
+          isMobile={isMobileSm}
           onPage={goToPage}
         />
       )}

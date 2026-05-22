@@ -1,5 +1,6 @@
 // hooks/useMultiUser.ts
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { 
   getClientesPorUsuario, 
@@ -194,15 +195,15 @@ export const useEstadisticasUsuario = () => {
     enabled: !!user?.uid,
   });
 
-  // Calcular estadísticas de forma reactiva
-  const estadisticas = {
+  // Calcular estadísticas de forma reactiva y estable
+  const estadisticas = useMemo(() => ({
     totalClientes: clientes.length,
     totalOrdenes: ordenes.length,
     preventivos: ordenes.filter(o => (o as any).tipoMantenimiento === 'preventivo').length,
     correctivos: ordenes.filter(o => (o as any).tipoMantenimiento === 'correctivo').length,
     diagnosticos: ordenes.filter(o => (o as any).tipoMantenimiento === 'diagnostico').length,
     instalaciones: ordenes.filter(o => (o as any).tipoMantenimiento === 'instalacion').length,
-  };
+  }), [clientes, ordenes]);
 
   return { estadisticas, loading };
 };

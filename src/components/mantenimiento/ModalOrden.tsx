@@ -8,7 +8,7 @@ import {
   Eye, Printer, ChevronLeft, Loader2, Phone, Mail,
   Hash, Calendar, Tag
 } from "lucide-react";
-import { useCallback, memo, useEffect, useRef, useState } from "react";
+import { useCallback, memo, useEffect, useRef, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { useAndroidBack } from "@/hooks/useAndroidBack";
@@ -50,11 +50,10 @@ const formatFecha = (fecha: any): string => {
 };
 
 // ============================================================================
-// PRIMITIVAS UI
+// PRIMITIVAS UI MEMOIZADAS
 // ============================================================================
 
-/** Pill de estado/tag pequeño */
-const Chip = ({
+const Chip = memo(({
   children,
   color = "gray",
   icon: Icon,
@@ -77,10 +76,10 @@ const Chip = ({
       {children}
     </span>
   );
-};
+});
+Chip.displayName = "Chip";
 
-/** Fila de dato: etiqueta + valor */
-const DataRow = ({
+const DataRow = memo(({
   label,
   value,
   icon: Icon,
@@ -101,7 +100,7 @@ const DataRow = ({
     purple:  "text-purple-400",
   };
   return (
-    <div className="flex items-start justify-between gap-4 py-2.5 border-b border-gray-600 last:border-0">
+    <div className="flex items-start justify-between gap-4 py-2.5 border-gray-600 last:border-0">
       <span className="flex items-center gap-1.5 text-xs text-gray-500 shrink-0">
         {Icon && <Icon className="w-3.5 h-3.5" />}
         {label}
@@ -115,10 +114,10 @@ const DataRow = ({
       </span>
     </div>
   );
-};
+});
+DataRow.displayName = "DataRow";
 
-/** Tarjeta de sección con título */
-const Card = ({
+const Card = memo(({
   title,
   icon: Icon,
   iconColor = "text-gray-400",
@@ -140,10 +139,10 @@ const Card = ({
       {children}
     </div>
   </div>
-);
+));
+Card.displayName = "Card";
 
-/** Botón de acción principal */
-const ActionBtn = ({
+const ActionBtn = memo(({
   onClick,
   children,
   variant = "primary",
@@ -179,10 +178,11 @@ const ActionBtn = ({
       {children}
     </button>
   );
-};
+});
+ActionBtn.displayName = "ActionBtn";
 
 // ============================================================================
-// VISTA PREVIA PDF
+// VISTA PREVIA PDF MEMOIZADA
 // ============================================================================
 
 type PreviewState =
@@ -192,7 +192,7 @@ type PreviewState =
   | { status: "ready-native" }
   | { status: "error"; message: string; raw: unknown };
 
-const PDFPreviewView = ({
+const PDFPreviewView = memo(({
   orden,
   onBack,
   onPrint,
@@ -258,6 +258,10 @@ const PDFPreviewView = ({
     return () => { cancelled = true; };
   }, [orden, generarPDFBlob, generarHTML, native]);
 
+  const handleShare = useCallback(() => onShare?.(orden), [onShare, orden]);
+  const handlePrint = useCallback(() => onPrint(orden), [onPrint, orden]);
+  const handleDownload = useCallback(() => onDownload?.(orden), [onDownload, orden]);
+
   const footerActions = (
     <footer className="px-3 pb-3 pt-2 bg-gray-950 border-t border-gray-600 flex-shrink-0 safe-bottom">
       <div className={cn(
@@ -265,21 +269,21 @@ const PDFPreviewView = ({
         onShare && onDownload ? "grid-cols-3" : onShare || onDownload ? "grid-cols-2" : "grid-cols-1"
       )}>
         {onShare && (
-          <ActionBtn variant="primary" icon={Share2} onClick={() => onShare(orden)}>Compartir</ActionBtn>
+          <ActionBtn variant="primary" icon={Share2} onClick={handleShare}>Compartir</ActionBtn>
         )}
-        <ActionBtn variant="secondary" icon={Printer} onClick={() => onPrint(orden)}
+        <ActionBtn variant="secondary" icon={Printer} onClick={handlePrint}
           className={cn(!onShare && !onDownload && "col-span-full")}>
           Imprimir
         </ActionBtn>
         {onDownload && (
-          <ActionBtn variant="ghost" icon={Download} onClick={() => onDownload(orden)}>Guardar</ActionBtn>
+          <ActionBtn variant="ghost" icon={Download} onClick={handleDownload}>Guardar</ActionBtn>
         )}
       </div>
     </footer>
   );
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full transform-gpu">
       {/* Header */}
       <header className="px-3 py-2.5 border-b border-gray-600 flex items-center gap-2.5 flex-shrink-0 bg-gray-950">
         <button
@@ -335,8 +339,8 @@ const PDFPreviewView = ({
               </p>
             </div>
             <div className="flex flex-col w-full max-w-xs gap-2">
-              {onShare && <ActionBtn variant="primary" icon={Share2} onClick={() => onShare(orden)}>Compartir PDF</ActionBtn>}
-              {onDownload && <ActionBtn variant="secondary" icon={Download} onClick={() => onDownload(orden)}>Descargar PDF</ActionBtn>}
+              {onShare && <ActionBtn variant="primary" icon={Share2} onClick={handleShare}>Compartir PDF</ActionBtn>}
+              {onDownload && <ActionBtn variant="secondary" icon={Download} onClick={handleDownload}>Descargar PDF</ActionBtn>}
             </div>
           </div>
         )}
@@ -379,13 +383,14 @@ const PDFPreviewView = ({
       {state.status !== "error" && footerActions}
     </div>
   );
-};
+});
+PDFPreviewView.displayName = "PDFPreviewView";
 
 // ============================================================================
-// VISTA DETALLE — REDISEÑADA
+// VISTA DETALLE MEMOIZADA
 // ============================================================================
 
-const StatusBadge = ({ estado }: { estado?: string }) => {
+const StatusBadge = memo(({ estado }: { estado?: string }) => {
   if (!estado) return null;
   const map: Record<string, { color: "blue" | "emerald" | "amber" | "gray"; label: string }> = {
     pendiente:   { color: "amber",   label: "Pendiente" },
@@ -395,9 +400,10 @@ const StatusBadge = ({ estado }: { estado?: string }) => {
   };
   const s = map[estado.toLowerCase()] ?? { color: "gray", label: estado };
   return <Chip color={s.color}>{s.label}</Chip>;
-};
+});
+StatusBadge.displayName = "StatusBadge";
 
-const DetailView = ({
+const DetailView = memo(({
   orden,
   onClose,
   onPreview,
@@ -410,26 +416,28 @@ const DetailView = ({
   onShare?: (orden: OrdenMantenimiento) => void;
   onDownload?: (orden: OrdenMantenimiento) => void;
 }) => {
-  const deviceName = [orden.dispositivo?.marca, orden.dispositivo?.modelo].filter(Boolean).join(" ");
+  const deviceName = useMemo(() => 
+    [orden.dispositivo?.marca, orden.dispositivo?.modelo].filter(Boolean).join(" "),
+  [orden.dispositivo]);
+
+  const handleShare = useCallback(() => onShare?.(orden), [onShare, orden]);
+  const handleDownload = useCallback(() => onDownload?.(orden), [onDownload, orden]);
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="divide-y divide-gray-600 flex flex-col h-full min-h-0 transform-gpu">
 
       {/* ── Header compacto ── */}
       <header className="px-4 pt-4 pb-3 flex items-start justify-between gap-3 flex-shrink-0">
         <div className="min-w-0 flex-1">
-          {/* Número de orden + estado en la misma línea */}
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
               Orden #{orden.idPersonalizado || orden.id?.slice(-6)}
             </span>
             <StatusBadge estado={(orden as any).estado} />
           </div>
-          {/* Tipo de mantenimiento como título */}
           <h2 className="text-base font-bold text-white leading-tight">
             {orden.tipoMantenimiento}
           </h2>
-          {/* Fecha en la línea del título */}
           <p className="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1">
             <Calendar className="w-3 h-3" />
             {formatFecha(orden.fechaCreacion)}
@@ -445,15 +453,17 @@ const DetailView = ({
         </button>
       </header>
 
-      {/* ── Separador ── */}
       <div className="h-px bg-white/5 mx-4 mb-4" />
 
-      {/* ── Contenido scrolleable ── */}
-      <main className="flex-1 overflow-y-auto overscroll-contain px-4 space-y-3">
-
+      <main 
+        className="flex-1 overflow-y-auto overscroll-contain px-4 space-y-3 custom-scrollbar"
+        style={{ 
+          contain: 'strict',         
+          willChange: 'scroll-position' 
+        }}
+      >
         {/* CLIENTE */}
         <Card title="Cliente" icon={User} iconColor="text-blue-400">
-          {/* Nombre grande + teléfono */}
           <div className="flex items-start justify-between gap-3 mb-3">
             <p className="text-sm font-bold text-white leading-tight">{orden.cliente.name}</p>
             {orden.cliente.phone && (
@@ -479,14 +489,12 @@ const DetailView = ({
 
         {/* DISPOSITIVO */}
         <Card title="Dispositivo" icon={Cpu} iconColor="text-emerald-400">
-          {/* Marca + modelo como nombre del equipo */}
           <p className="text-sm font-bold text-white mb-3 capitalize">{deviceName || "—"}</p>
           <div className="space-y-0">
             <DataRow label="Tipo" value={orden.dispositivo?.tipo} icon={Tag} />
             <DataRow label="Número de serie" value={orden.dispositivo?.numeroSerie || "N/A"} icon={Hash} mono accent="amber" />
           </div>
 
-          {/* Contador */}
           {(orden.contador || orden.contadorMaquina !== undefined) && (
             <div className="mt-3 flex items-center justify-between px-3 py-2 rounded-lg bg-purple-500/5 border border-purple-500/10">
               <span className="text-xs text-gray-500">Contador</span>
@@ -501,7 +509,6 @@ const DetailView = ({
 
         {/* SERVICIO */}
         <Card title="Servicio realizado" icon={Wrench} iconColor="text-orange-400">
-          {/* Tareas */}
           {orden.tareasRealizadas && orden.tareasRealizadas.length > 0 && (
             <div className="mb-3">
               <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">Tareas</p>
@@ -513,7 +520,6 @@ const DetailView = ({
             </div>
           )}
 
-          {/* Repuestos */}
           {orden.piezasUsadas && orden.piezasUsadas.length > 0 && (
             <div>
               <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">Repuestos</p>
@@ -528,14 +534,12 @@ const DetailView = ({
             </div>
           )}
 
-          {/* Si no hay nada */}
           {(!orden.tareasRealizadas || orden.tareasRealizadas.length === 0) &&
            (!orden.piezasUsadas || orden.piezasUsadas.length === 0) && (
             <p className="text-xs text-gray-600">Sin detalle de tareas registrado.</p>
           )}
         </Card>
 
-        {/* DIAGNÓSTICO — solo si hay data */}
         {(orden.observacionesIniciales || orden.pruebasRealizadas || orden.posiblesCausas || orden.diagnosticoFinal) && (
           <Card title="Diagnóstico" icon={AlertCircle} iconColor="text-yellow-400">
             <div className="space-y-2.5">
@@ -560,22 +564,35 @@ const DetailView = ({
         )}
 
         {/* GARANTÍA */}
-        <Card title="Garantía" icon={ShieldCheck} iconColor="text-amber-400">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">Vence</p>
-              <p className="text-sm font-semibold text-white">{formatFecha(orden.garantiaTiempoHasta)}</p>
+        {(orden.garantiaTiempoHasta || orden.garantiaDescripcion) && (
+          <Card title="Garantía" icon={ShieldCheck} iconColor="text-amber-400">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">Vence</p>
+                <p className="text-sm font-semibold text-white">{formatFecha(orden.garantiaTiempoHasta)}</p>
+              </div>
+              {(() => {
+                if (!orden.garantiaTiempoHasta) return null;
+                const now = new Date();
+                const vencimiento = orden.garantiaTiempoHasta?.seconds 
+                  ? new Date(orden.garantiaTiempoHasta.seconds * 1000) 
+                  : new Date(orden.garantiaTiempoHasta);
+                
+                if (isNaN(vencimiento.getTime())) return null;
+                
+                return vencimiento > now 
+                  ? <Chip color="emerald" icon={ShieldCheck}>Activa</Chip>
+                  : <Chip color="red" icon={AlertCircle}>Vencida</Chip>;
+              })()}
             </div>
-            <Chip color="amber" icon={ShieldCheck}>Activa</Chip>
-          </div>
-          {orden.garantiaDescripcion && (
-            <p className="text-xs text-gray-500 mt-2.5 leading-relaxed">
-              {orden.garantiaDescripcion}
-            </p>
-          )}
-        </Card>
+            {orden.garantiaDescripcion && (
+              <p className="text-xs text-gray-500 mt-2.5 leading-relaxed">
+                {orden.garantiaDescripcion}
+              </p>
+            )}
+          </Card>
+        )}
 
-        {/* INSTALACIÓN — solo si hay data */}
         {(orden.instalacionRecomendaciones || (orden.instalacionConfiguracionTipos?.length ?? 0) > 0) && (
           <Card title="Instalación" icon={CheckCircle} iconColor="text-teal-400">
             {orden.instalacionRecomendaciones && (
@@ -596,7 +613,6 @@ const DetailView = ({
           </Card>
         )}
 
-        {/* FIRMA */}
         {orden.firmaCliente && (
           <Card title="Firma del cliente" icon={PenLine} iconColor="text-indigo-400">
             <div className="flex items-center gap-4">
@@ -604,8 +620,11 @@ const DetailView = ({
                 <img
                   src={orden.firmaCliente}
                   alt="Firma"
+                  width={112}
+                  height={64}
+                  loading="lazy"
+                  decoding="async"
                   className="w-28 h-16 object-contain"
-                  style={{ filter: "contrast(1.2)" }}
                 />
               </div>
               <div>
@@ -628,7 +647,7 @@ const DetailView = ({
       <footer className="px-4 pt-2.5 pb-4 bg-gray-950 border-t border-white/5 flex-shrink-0 safe-bottom">
         <div className={cn("grid gap-2", onShare ? "grid-cols-2" : "grid-cols-1")}>
           {onShare && (
-            <ActionBtn variant="primary" icon={Share2} onClick={() => onShare(orden)}>
+            <ActionBtn variant="primary" icon={Share2} onClick={handleShare}>
               Compartir
             </ActionBtn>
           )}
@@ -637,14 +656,15 @@ const DetailView = ({
           </ActionBtn>
         </div>
         {onDownload && (
-          <ActionBtn variant="ghost" icon={Download} onClick={() => onDownload(orden)} className="w-full mt-2 text-xs">
+          <ActionBtn variant="ghost" icon={Download} onClick={handleDownload} className="w-full mt-2 text-xs">
             Descargar PDF
           </ActionBtn>
         )}
       </footer>
     </div>
   );
-};
+});
+DetailView.displayName = "DetailView";
 
 // ============================================================================
 // COMPONENTE PRINCIPAL
@@ -695,6 +715,9 @@ export const ModalOrden = ({
     [onClose]
   );
 
+  const handlePreview = useCallback(() => setView("preview"), []);
+  const handleDetail = useCallback(() => setView("detail"), []);
+
   if (!orden || !mounted) return null;
 
   return createPortal(
@@ -707,21 +730,13 @@ export const ModalOrden = ({
         ref={modalRef}
         style={{ paddingBottom: 'env(safe-area-inset-bottom)'}}
         className={cn(
-          // Base
           "bg-gray-950 w-full flex flex-col overflow-hidden relative",
-          // Bordes y sombra
           "shadow-2xl border-t border-x border-gray-600 sm:border",
-          // Radios
           "rounded-t-2xl sm:rounded-2xl",
-          // ─── Tamaños responsivos ───
-          // Móvil: altura fija del sheet para que h-full funcione en el contenido
           "h-[85dvh] max-h-[85dvh]",
-          // sm: ventana centrada, ancho acotado, altura automática con límite
           "sm:h-auto sm:max-w-md sm:max-h-[80vh]",
-          // lg: un poco más ancha
           "lg:max-w-lg",
-          // Animación (Hardware accelerated)
-          "transform-gpu animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 ease-out"
+          "transform-gpu slide-in-from-bottom-4 sm:zoom-in-95 duration-200 ease-out"
         )}
         onClick={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
@@ -731,12 +746,10 @@ export const ModalOrden = ({
         aria-modal="true"
         aria-labelledby="modal-orden-title"
       >
-        {/* Title for screen readers only if not visible */}
         <h2 id="modal-orden-title" className="sr-only">
           Orden de mantenimiento {orden.tipoMantenimiento} #{orden.idPersonalizado || orden.id?.slice(-6)}
         </h2>
 
-        {/* Drag handle — solo móvil */}
         <div className="flex justify-center pt-2.5 pb-0 sm:hidden flex-shrink-0">
           <div className="w-8 h-1 rounded-full bg-gray-800" />
         </div>
@@ -745,7 +758,7 @@ export const ModalOrden = ({
           <DetailView
             orden={orden}
             onClose={onClose}
-            onPreview={() => setView("preview")}
+            onPreview={handlePreview}
             onShare={onShare}
             onDownload={onDownload}
           />
@@ -753,7 +766,7 @@ export const ModalOrden = ({
         {view === "preview" && (
           <PDFPreviewView
             orden={orden}
-            onBack={() => setView("detail")}
+            onBack={handleDetail}
             onPrint={onPrint}
             onShare={onShare}
             onDownload={onDownload}

@@ -19,7 +19,6 @@ dependencies {
     implementation project(':capacitor-network')
     implementation project(':capacitor-share')
     implementation project(':capacitor-splash-screen')
-    implementation project(':codetrix-studio-capacitor-google-auth')
 
 }
 

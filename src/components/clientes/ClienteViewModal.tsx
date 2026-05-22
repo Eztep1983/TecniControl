@@ -196,7 +196,7 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
 
   const sharedModalContent = historialOpen ? (
     <Suspense fallback={
-      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/20 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/20">
         <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
       </div>
     }>
