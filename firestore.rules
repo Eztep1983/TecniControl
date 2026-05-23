@@ -72,9 +72,10 @@ service cloud.firestore {
     function validClientePayload() {
       return request.resource.data.userId == request.auth.uid
              && request.resource.data.keys().hasOnly([
-                  'userId', 'name', 'cedula', 'email', 'phone',
+                  'id', 'userId', 'name', 'cedula', 'email', 'phone',
                   'address', 'dispositivos', 'createdAt', 'updatedAt'
                 ])
+             && isOptionalString('id')
              && isNonEmptyString('name')
              && isOptionalString('cedula')
              && isOptionalString('email')
@@ -88,16 +89,17 @@ service cloud.firestore {
     function validNegocioPayload() {
       return request.resource.data.userId == request.auth.uid
              && request.resource.data.keys().hasOnly([
-                  'userId', 'nombre', 'direccion', 'telefono',
-                  'email', 'nit', 'logoUrl', 'createdAt', 'updatedAt'
+                  'id', 'userId', 'nombre', 'direccion', 'telefono',
+                  'email', 'nit', 'logoUrl', 'onboardingCompleted', 'createdAt', 'updatedAt'
                 ])
-             && request.resource.data.nombre is string
-             && request.resource.data.nombre.size() > 0
-             && request.resource.data.direccion is string
-             && request.resource.data.telefono is string
-             && request.resource.data.email is string
-             && request.resource.data.nit is string
+             && isOptionalString('id')
+             && isOptionalString('nombre')
+             && isOptionalString('direccion')
+             && isOptionalString('telefono')
+             && isOptionalString('email')
+             && isOptionalString('nit')
              && isOptionalString('logoUrl')
+             && isOptionalBool('onboardingCompleted')
              && isTimestampOrString('createdAt')
              && isTimestampOrString('updatedAt');
     }
@@ -105,7 +107,7 @@ service cloud.firestore {
     function validOrdenPayload() {
       return request.resource.data.userId == request.auth.uid
              && request.resource.data.keys().hasOnly([
-                  'userId', 'idPersonalizado', 'tipo', 'clienteId',
+                  'id', 'userId', 'idPersonalizado', 'tipo', 'clienteId',
                   'dispositivoId', 'cliente', 'dispositivo', 'fechaCreacion',
                   'horaCreacion', 'observacionesIniciales', 'pruebasRealizadas',
                   'posiblesCausas', 'diagnosticoFinal', 'contadorMaquina',
@@ -116,6 +118,7 @@ service cloud.firestore {
                   'instalacionConfiguracionTipos', 'firmaCliente',
                   'nombreFirmante', 'validacionCliente', 'createdAt', 'updatedAt'
                 ])
+             && isOptionalString('id')
              && request.resource.data.tipo == 'mantenimiento'
              && request.resource.data.clienteId is string
              && request.resource.data.dispositivoId is string
@@ -162,24 +165,13 @@ service cloud.firestore {
     //  • El docId es el UID del usuario; solo él puede leer o escribir su propio doc.
 
     match /users/{userId} {
-      allow read: if isOwner(userId);
-      allow create: if isOwner(userId)
-                       && request.resource.data.uid == userId
-                       && request.resource.data.keys().hasOnly([
-                            'uid', 'role', 'email', 'displayName', 'photoURL',
-                            'emailVerified', 'lastLogin', 'lastActivity',
-                            'businessId', 'createdAt', 'loginAttempts'
-                         ])
-                       && request.resource.data.email is string
-                       && request.resource.data.emailVerified is bool;
-      allow update: if isOwner(userId)
-                       && (!request.resource.data.diff(resource.data).affectedKeys()
-                             .hasAny(['uid', 'role']))
-                       && request.resource.data.keys().hasOnly([
-                            'uid', 'role', 'email', 'displayName', 'photoURL',
-                            'emailVerified', 'lastLogin', 'lastActivity',
-                            'businessId', 'createdAt', 'loginAttempts'
-                         ]);
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if false; 
+      allow update: if request.auth != null && request.auth.uid == userId
+                    // Impedir que el usuario cambie su propio rol o UID (usando diff para mayor robustez)
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid'])
+                    // Lógica de Device Binding: Si ya tiene un deviceId, no puede cambiarlo
+                    && (!('deviceId' in resource.data) || request.resource.data.deviceId == resource.data.deviceId);
       allow delete: if false;
     }
 
@@ -198,9 +190,10 @@ service cloud.firestore {
                        && resource.data.userId == request.auth.uid
                        && request.resource.data.userId == resource.data.userId
                        && request.resource.data.keys().hasOnly([
-                            'userId', 'name', 'cedula', 'email', 'phone',
+                            'id', 'userId', 'name', 'cedula', 'email', 'phone',
                             'address', 'dispositivos', 'createdAt', 'updatedAt'
                           ])
+                       && isOptionalString('id')
                        && isOptionalString('cedula')
                        && isOptionalString('email')
                        && isOptionalString('phone')
@@ -228,7 +221,7 @@ service cloud.firestore {
                        && resource.data.userId == request.auth.uid
                        && request.resource.data.userId == resource.data.userId
                        && request.resource.data.keys().hasOnly([
-                            'userId', 'idPersonalizado', 'tipo', 'clienteId',
+                            'id', 'userId', 'idPersonalizado', 'tipo', 'clienteId',
                             'dispositivoId', 'cliente', 'dispositivo', 'fechaCreacion',
                             'horaCreacion', 'observacionesIniciales', 'pruebasRealizadas',
                             'posiblesCausas', 'diagnosticoFinal', 'contadorMaquina',
@@ -239,6 +232,7 @@ service cloud.firestore {
                             'instalacionConfiguracionTipos', 'firmaCliente',
                             'nombreFirmante', 'validacionCliente', 'createdAt', 'updatedAt'
                           ])
+                       && isOptionalString('id')
                        && request.resource.data.tipo == 'mantenimiento'
                        && request.resource.data.tipoMantenimiento in ['preventivo', 'correctivo', 'diagnostico', 'instalacion'];
 

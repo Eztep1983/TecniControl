@@ -15,6 +15,8 @@ import {
   memoryLocalCache,
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { initializeAppCheck, ReCaptchaV3Provider, CustomProvider } from "firebase/app-check";
+import { Capacitor } from "@capacitor/core";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -28,8 +30,56 @@ const firebaseConfig = {
 // Inicializar app una sola vez (compatible con HMR de Next.js)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
+// Inicializar App Check
+if (typeof window !== "undefined") {
+  const initAppCheck = async () => {
+    try {
+      if (Capacitor.isNativePlatform()) {
+        // En plataformas nativas usamos el plugin de Capacitor para App Check
+        const { FirebaseAppCheck } = await import("@capacitor-firebase/app-check");
+
+        // Inicializar el plugin nativo antes de usarlo
+        await FirebaseAppCheck.initialize({
+          debug: process.env.NODE_ENV === 'development',
+        });
+
+        const provider = new CustomProvider({
+          getToken: async () => {
+            const { token } = await FirebaseAppCheck.getToken();
+            return {
+              token,
+              expireTimeMillis: Date.now() + 1000 * 60 * 60, // Aprox 1 hora
+            };
+          },
+        });
+
+        initializeAppCheck(app, {
+          provider,
+          isTokenAutoRefreshEnabled: true,
+        });
+        console.log("App Check initialized with Native Provider");
+      } else {
+        // En web usamos ReCaptcha V3 (necesitas la Site Key de Google)
+        // Solo si tienes la key configurada, de lo contrario fallará silenciosamente o usará debug token
+        const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+        if (siteKey) {
+          initializeAppCheck(app, {
+            provider: new ReCaptchaV3Provider(siteKey),
+            isTokenAutoRefreshEnabled: true,
+          });
+          console.log("App Check initialized with ReCaptchaV3");
+        }
+      }
+    } catch (error) {
+      console.error("App Check initialization failed:", error);
+    }
+  };
+  initAppCheck();
+}
+
 /**
  * Auth — inicialización universal:
+
  *
  * - Servidor (SSR/Node.js): inMemoryPersistence — IndexedDB no existe en Node.
  * - Navegador / Capacitor WebView: IndexedDB → localStorage como fallback.

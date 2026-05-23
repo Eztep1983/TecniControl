@@ -32,6 +32,9 @@ repositories {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation platform(libs.firebase.bom)
+    implementation 'com.google.firebase:firebase-appcheck-playintegrity'
+    implementation 'com.google.firebase:firebase-appcheck-debug'
+    implementation 'com.google.firebase:firebase-common'
     implementation libs.androidx.appcompat
     implementation libs.androidx.coordinatorlayout
     implementation libs.androidx.core.splashscreen

@@ -14,6 +14,7 @@ import { Negocio } from '@/types/orden';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/basic/tabs";
 import CuentaYSeguridad from '@/components/configuracion/CuentaYSeguridad';
+import { useNegocio } from '@/hooks/useNegocio';
 
 interface NegocioConUsuario extends Negocio {
   userId: string;
@@ -44,6 +45,7 @@ function StatusMessage({ status }: { status: PageStatus }) {
 
 export default function ConfiguracionPage() {
   const { user } = useAuth();
+  const { negocio: hookNegocio, loading: hookLoading } = useNegocio();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -66,44 +68,45 @@ export default function ConfiguracionPage() {
     return () => window.clearTimeout(timeout)
   }, [status.type]);
 
-  // Cargar datos del negocio
+  // Inicializar estado local desde el hook
   useEffect(() => {
-    const cargarNegocio = async () => {
-      if (!user?.uid) return;
-      
+    if (hookNegocio) {
+      setNegocio(hookNegocio as NegocioConUsuario);
+      setLoading(false);
+    } else if (!hookLoading) {
+      setLoading(false);
+    }
+  }, [hookNegocio, hookLoading]);
+
+  // Si el negocio no existe en Firestore, crearlo por defecto
+  useEffect(() => {
+    const crearNegocioDefault = async () => {
+      if (!user?.uid || hookLoading || hookNegocio) return;
+
       try {
         setLoading(true);
         const negocioRef = doc(db, 'negocios', user.uid);
-        const negocioDoc = await getDoc(negocioRef);
-        
-        if (negocioDoc.exists()) {
-          setNegocio({ ...negocioDoc.data(), id: negocioDoc.id } as NegocioConUsuario);
-        } else {
-          // Crear negocio por defecto si no existe
-          const negocioDefault: NegocioConUsuario = {
-            id: user.uid,
-            userId: user.uid,
-            nombre: user.displayName || 'Mi Negocio',
-            direccion: '',
-            telefono: '',
-            email: user.email || '',
-            nit: '',
-            logoUrl: ''
-          };
-          await setDoc(negocioRef, negocioDefault);
-          setNegocio(negocioDefault);
-        }
+        const negocioDefault: NegocioConUsuario = {
+          id: user.uid,
+          userId: user.uid,
+          nombre: user.displayName || 'Mi Negocio',
+          direccion: '',
+          telefono: '',
+          email: user.email || '',
+          nit: '',
+          logoUrl: ''
+        };
+        await setDoc(negocioRef, negocioDefault);
+        setNegocio(negocioDefault);
       } catch (error) {
-        console.error('Error cargando negocio:', error);
-        setStatus({ type: 'error', message: 'No se pudieron cargar los datos del negocio.' });
+        console.error('Error creando negocio inicial:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    cargarNegocio();
-  }, [user]);
-
+    crearNegocioDefault();
+  }, [user, hookNegocio, hookLoading]);
   // Manejar subida de logo
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

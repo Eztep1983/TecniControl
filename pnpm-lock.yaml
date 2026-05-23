@@ -14,6 +14,9 @@ importers:
       '@capacitor-community/speech-recognition':
         specifier: ^7.0.1
         version: 7.0.1(@capacitor/core@8.3.3)
+      '@capacitor-firebase/app-check':
+        specifier: ^8.2.0
+        version: 8.2.0(@capacitor/core@8.3.3)(firebase@11.10.0)
       '@capacitor-firebase/authentication':
         specifier: ^7.4.0
         version: 7.5.0(@capacitor/core@8.3.3)(firebase@11.10.0)
@@ -29,6 +32,9 @@ importers:
       '@capacitor/core':
         specifier: ^8.3.1
         version: 8.3.3
+      '@capacitor/device':
+        specifier: ^8.0.2
+        version: 8.0.2(@capacitor/core@8.3.3)
       '@capacitor/filesystem':
         specifier: ^8.1.2
         version: 8.1.2(@capacitor/core@8.3.3)
@@ -252,6 +258,15 @@ packages:
     peerDependencies:
       '@capacitor/core': '>=7.0.0'
 
+  '@capacitor-firebase/app-check@8.2.0':
+    resolution: {integrity: sha512-ht/2daa2dQIadyI3OsLz0+0PlgiyUTuMxavh4KJHNfG+9ejYzhui1ZWr036J9vapqyZV7e06ENxc2+9hxUS1dA==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
+      firebase: ^12.6.0
+    peerDependenciesMeta:
+      firebase:
+        optional: true
+
   '@capacitor-firebase/authentication@7.5.0':
     resolution: {integrity: sha512-xPvKXWZhb0ZP/ysGYADWmFngQK82sPbRsZXE8b9W65MkFdoDc5df5O+gZTjw2wbVRFuUKqn07FHn9guxMg1iQw==}
     peerDependencies:
@@ -288,6 +303,11 @@ packages:
 
   '@capacitor/core@8.3.3':
     resolution: {integrity: sha512-xx1FIriZQ5jwqEkZwmWQHfXNEn5a9ZLOtdFoJXslh0ian6T/EU+QJtRmZw3KRsmcUV6p5ufczBrzF1rVP8Nu3A==}
+
+  '@capacitor/device@8.0.2':
+    resolution: {integrity: sha512-fIqSXnG0s6bz5A/0xFgSXDkbU+Xl65ti80LhucNvLI4kGhJzcNn6SwWVwpXN9SJTOFWXblXknHNppheP8X1frQ==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
 
   '@capacitor/filesystem@8.1.2':
     resolution: {integrity: sha512-doaaMfGoFR2hWU6aV6u83I+5ZsGyJVq+Gz4r9lMpJzUKMm1eMu0hLnFdV1aXZlU9FlK/RndFrVD8oRZfNOqWgQ==}
@@ -3681,6 +3701,12 @@ snapshots:
     dependencies:
       '@capacitor/core': 8.3.3
 
+  '@capacitor-firebase/app-check@8.2.0(@capacitor/core@8.3.3)(firebase@11.10.0)':
+    dependencies:
+      '@capacitor/core': 8.3.3
+    optionalDependencies:
+      firebase: 11.10.0
+
   '@capacitor-firebase/authentication@7.5.0(@capacitor/core@8.3.3)(firebase@11.10.0)':
     dependencies:
       '@capacitor/core': 8.3.3
@@ -3767,6 +3793,10 @@ snapshots:
   '@capacitor/core@8.3.3':
     dependencies:
       tslib: 2.8.1
+
+  '@capacitor/device@8.0.2(@capacitor/core@8.3.3)':
+    dependencies:
+      '@capacitor/core': 8.3.3
 
   '@capacitor/filesystem@8.1.2(@capacitor/core@8.3.3)':
     dependencies:

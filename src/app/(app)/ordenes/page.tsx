@@ -108,7 +108,10 @@ function OrdenesDashboardContent() {
     if (!user?.uid || statsLoading || negocioLoading) return;
 
     // Si ya completó onboarding en Firestore, no mostrar nada
-    if (negocio?.onboardingCompleted) return;
+    if (negocio?.onboardingCompleted) {
+      if (showWelcome) setShowWelcome(false);
+      return;
+    }
 
     // Si tiene órdenes pero no tiene el flag de onboarding, marcarlo como completado
     if (estadisticas.totalOrdenes > 0) {
@@ -246,7 +249,10 @@ function OrdenesDashboardContent() {
         isOnboarding={isOnboardingMode}
         onClose={() => {
           setMostrarFormulario(false);
-          setIsOnboardingMode(false);
+          if (isOnboardingMode) {
+            setIsOnboardingMode(false);
+            markOnboardingCompleted();
+          }
           try {
             if (localStorage.getItem('draft_mantenimiento')) setHayBorrador(true);
           } catch (e) { console.warn(e); }

@@ -8,11 +8,17 @@ project(':capacitor-community-file-opener').projectDir = new File('../node_modul
 include ':capacitor-community-speech-recognition'
 project(':capacitor-community-speech-recognition').projectDir = new File('../node_modules/.pnpm/@capacitor-community+speech_c88689970a03590822a85748e40fd29d/node_modules/@capacitor-community/speech-recognition/android')
 
+include ':capacitor-firebase-app-check'
+project(':capacitor-firebase-app-check').projectDir = new File('../node_modules/.pnpm/@capacitor-firebase+app-che_38af9b8dfdf7bf183c65f4ef21f2ae5b/node_modules/@capacitor-firebase/app-check/android')
+
 include ':capacitor-firebase-authentication'
 project(':capacitor-firebase-authentication').projectDir = new File('../node_modules/.pnpm/@capacitor-firebase+authent_f9e7b11d02e61009b89dfec4ca88a62e/node_modules/@capacitor-firebase/authentication/android')
 
 include ':capacitor-app'
 project(':capacitor-app').projectDir = new File('../node_modules/.pnpm/@capacitor+app@8.1.0_@capacitor+core@8.3.3/node_modules/@capacitor/app/android')
+
+include ':capacitor-device'
+project(':capacitor-device').projectDir = new File('../node_modules/.pnpm/@capacitor+device@8.0.2_@capacitor+core@8.3.3/node_modules/@capacitor/device/android')
 
 include ':capacitor-filesystem'
 project(':capacitor-filesystem').projectDir = new File('../node_modules/.pnpm/@capacitor+filesystem@8.1.2_@capacitor+core@8.3.3/node_modules/@capacitor/filesystem/android')

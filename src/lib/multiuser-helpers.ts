@@ -291,10 +291,11 @@ export const actualizarNegocio = async (negocio: Partial<Negocio>, userId: strin
 export const completarOnboarding = async (userId: string): Promise<void> => {
   try {
     const negocioRef = doc(db, 'negocios', userId);
-    await updateDoc(negocioRef, {
+    await setDoc(negocioRef, {
+      userId,
       onboardingCompleted: true,
       updatedAt: new Date()
-    });
+    }, { merge: true });
   } catch (error) {
     console.error('Error completando onboarding:', error);
   }

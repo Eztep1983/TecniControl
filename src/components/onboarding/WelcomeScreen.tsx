@@ -37,7 +37,7 @@ export default function WelcomeScreen({ onStartOnboarding, onSkip }: WelcomeScre
   if (!mounted) return null;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4 py-6 bg-[#0a0a0b] overflow-y-auto">
+    <div className="flex flex-col items-center justify-center h-screen px-4 py-6 bg-[#0a0a0b] overflow-y-auto">
       <AnimatedContent distance={20} direction="vertical" duration={0.5} className="w-full max-w-lg my-auto relative">
         
         {/* Skip button at top right */}
@@ -80,7 +80,7 @@ export default function WelcomeScreen({ onStartOnboarding, onSkip }: WelcomeScre
             </div>
 
             <p className="text-gray-400 text-lg sm:text-base max-w-sm mx-auto leading-relaxed">
-              Aprende a crear órdenes profesionales y compartirlas con tus clientes rapidamente.
+              Aprenderas a crear órdenes profesionales y compartirlas con tus clientes.
             </p>
           </div>
 

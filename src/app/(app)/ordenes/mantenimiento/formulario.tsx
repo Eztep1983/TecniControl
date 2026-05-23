@@ -10,10 +10,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import {
-  getClientesPorUsuario,
-} from '@/lib/multiuser-helpers'
-import { useCrearOrden } from '@/hooks/useMultiUser'
+import { useCrearOrden, useClientesUsuario } from '@/hooks/useMultiUser'
 import { useNegocio } from '@/hooks/useNegocio'
 import { usePrintService } from '@/components/mantenimiento/PrintService'
 
@@ -91,7 +88,6 @@ export interface FormState {
   highestStepCompleted: number // Nuevo: el paso más alto completado
 
   // Cliente y Dispositivo
-  clientes: Cliente[]
   clienteSeleccionado: Cliente | null
   dispositivoSeleccionado: Dispositivo | null
 
@@ -142,7 +138,6 @@ type FormAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_CURRENT_STEP'; payload: FormStep }
   | { type: 'SET_HIGHEST_STEP_COMPLETED'; payload: number }
-  | { type: 'SET_CLIENTES'; payload: Cliente[] }
   | { type: 'SET_CLIENTE_SELECCIONADO'; payload: Cliente | null }
   | { type: 'SET_DISPOSITIVO_SELECCIONADO'; payload: Dispositivo | null }
   | { type: 'SET_TIPO_MANTENIMIENTO'; payload: FormState['tipoMantenimiento'] }
@@ -182,7 +177,6 @@ const initialState: FormState = {
   currentStep: 'cliente',
   loading: false,
   highestStepCompleted: 0, // Solo el paso 0 (cliente) está inicialmente "permitido"
-  clientes: [],
   clienteSeleccionado: null,
   dispositivoSeleccionado: null,
   tipoMantenimiento: '',
@@ -222,9 +216,6 @@ function formReducer(state: FormState, action: FormAction): FormState {
 
     case 'SET_HIGHEST_STEP_COMPLETED':
       return { ...state, highestStepCompleted: action.payload }
-
-    case 'SET_CLIENTES':
-      return { ...state, clientes: action.payload }
 
     case 'SET_CLIENTE_SELECCIONADO':
       return {
@@ -488,6 +479,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   const isKeyboardVisible = useKeyboardVisible()
   const { imprimirOrden, compartirOrden } = usePrintService({ negocio })
   const { mutateAsync: crearOrdenMutate } = useCrearOrden()
+  const { clientes: hookClientes } = useClientesUsuario()
   const [hintExpanded, setHintExpanded] = useState(false)
   const [state, dispatch, clearPersistence] = usePersistentReducer(
     isOnboarding ? 'draft_onboarding' : 'draft_mantenimiento',
@@ -607,30 +599,6 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
       };
     }
   }, [isOnboarding]);
-
-  // Cargar clientes al montar
-  useEffect(() => {
-    if (!user?.uid) return
-
-    let mounted = true
-
-    const cargarClientes = async () => {
-      try {
-        const clientesData = await getClientesPorUsuario(user.uid)
-        if (mounted) {
-          dispatch({ type: 'SET_CLIENTES', payload: clientesData })
-        }
-      } catch (error) {
-        console.error('Error cargando clientes:', error)
-      }
-    }
-
-    cargarClientes()
-
-    return () => {
-      mounted = false
-    }
-  }, [user?.uid])
 
   // Inicializar fecha de garantía solo si está vacía
   useEffect(() => {
@@ -1150,7 +1118,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
       case 'cliente':
         return (
           <ClienteSelector
-            clientes={state.clientes}
+            clientes={hookClientes}
             clienteSeleccionado={state.clienteSeleccionado}
             onSeleccionarCliente={handleSeleccionarCliente}
             onDesseleccionarCliente={handleDesseleccionarCliente}

@@ -15,6 +15,7 @@ import { MobileNav } from '@/components/shadcnui/mobile-nav'
 import { PageTransition } from '@/components/ui/PageTransition'
 import { NetworkStatusBanner } from '@/components/ui/NetworkStatusBanner'
 import { MobileNavigationProvider } from '@/components/providers/MobileNavigationContext'
+import { SpeechProvider } from '@/components/auth/SpeechProvider'
 import { MobileAppShell } from '@/components/providers/MobileAppShell'
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
@@ -89,12 +90,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <MobileNavigationProvider>
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset className="flex flex-col min-h-screen">
-          <LayoutContent>{children}</LayoutContent>
-        </SidebarInset>
-      </SidebarProvider>
+      <SpeechProvider>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset className="flex flex-col min-h-screen">
+            <LayoutContent>{children}</LayoutContent>
+          </SidebarInset>
+        </SidebarProvider>
+      </SpeechProvider>
     </MobileNavigationProvider>
   )
 }

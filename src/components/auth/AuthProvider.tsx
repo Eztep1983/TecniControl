@@ -16,6 +16,7 @@ import {
 } from 'firebase/auth'
 
 import { Capacitor } from '@capacitor/core'
+import { Device } from '@capacitor/device'
 import { auth, db } from '@/lib/firebase'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 
@@ -62,12 +63,13 @@ const setCachedUid = (uid: string | null) => {
 interface AuthContextType {
   user: User | null
   loading: boolean
+  error: string | null
   signInWithGoogle: () => Promise<void>
   signInWithEmail: (email: string, password: string) => Promise<void>
-  signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<void>
   sendPasswordReset: (email: string) => Promise<void>
   logout: () => Promise<void>
   refreshSession: () => Promise<void>
+  clearError: () => void
 }
 
 interface UserDocument {
@@ -82,17 +84,19 @@ interface UserDocument {
   emailVerified: boolean
   loginAttempts?: number
   lastActivity?: any
+  deviceId?: string
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  error: null,
   signInWithGoogle: async () => {},
   signInWithEmail: async () => {},
-  signUpWithEmail: async () => {},
   sendPasswordReset: async () => {},
   logout: async () => {},
   refreshSession: async () => {},
+  clearError: () => {},
 })
 
 export const useAuth = () => useContext(AuthContext)
@@ -100,7 +104,10 @@ export const useAuth = () => useContext(AuthContext)
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const lastActivityRef = useRef<number>(Date.now())
+
+  const clearError = useCallback(() => setError(null), [])
 
   useIsomorphicLayoutEffect(() => {
     if (getCachedUid() !== null) {
@@ -129,6 +136,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const syncUserDocument = useCallback(async (firebaseUser: User, isNewLogin: boolean): Promise<void> => {
     try {
       const userRef = doc(db, 'users', firebaseUser.uid)
+      
+      // LOG DE DEPURACIÓN EXTENDIDO:
+      console.log('🔍 Verificando autorización...')
+      console.log('📍 Colección: users')
+      console.log('🆔 Document ID (UID) buscado:', firebaseUser.uid)
+      console.log('📧 Email intentando entrar:', firebaseUser.email)
+
+      // Obtener el ID del dispositivo si estamos en una plataforma nativa
+      let currentDeviceId = 'web-browser'
+      if (Capacitor.isNativePlatform()) {
+        const info = await Device.getId()
+        currentDeviceId = info.identifier
+      }
 
       const baseData = {
         email: firebaseUser.email,
@@ -139,28 +159,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         lastActivity: serverTimestamp(),
       }
 
+      let userDoc;
+      try {
+        userDoc = await getDoc(userRef)
+      } catch (firestoreErr: any) {
+        console.error('❌ Error crítico al consultar Firestore:', firestoreErr)
+        if (firestoreErr.code === 'permission-denied') {
+          throw new Error('ERROR_DE_PERMISOS: El usuario no tiene permiso para leer su propio perfil.')
+        }
+        throw firestoreErr
+      }
+      
       if (isNewLogin) {
-        const userDoc = await getDoc(userRef)
         if (!userDoc.exists()) {
-          const newUserData: UserDocument = {
-            uid: firebaseUser.uid,
-            ...baseData,
-            role: 'user',
-            businessId: firebaseUser.uid,
-            createdAt: serverTimestamp(),
-            loginAttempts: 0,
-          }
-          await setDoc(userRef, newUserData)
-          logger.log('New user document created')
+          console.error('🛑 BLOQUEO: El documento users/' + firebaseUser.uid + ' NO existe en Firestore.')
+          throw new Error('ACCOUNT_NOT_AUTHORIZED')
         } else {
-          await setDoc(userRef, baseData, { merge: true })
-          logger.log('User document updated on new login')
+          const userData = userDoc.data() as UserDocument
+          
+          // VERIFICACIÓN DE DEVICE BINDING
+          if (Capacitor.isNativePlatform() && userData.deviceId && userData.deviceId !== currentDeviceId) {
+            logger.warn('Device mismatch detected!', { stored: userData.deviceId, current: currentDeviceId })
+            throw new Error('DEVICE_LOCKED')
+          }
+
+          // Si no tiene deviceId (primera vez en este dispositivo tras ser autorizado), lo vinculamos
+          const updateData: any = { ...baseData }
+          if (!userData.deviceId) {
+            updateData.deviceId = currentDeviceId
+            logger.log('Binding device for newly authorized user:', currentDeviceId)
+          }
+
+          await setDoc(userRef, updateData, { merge: true })
+          logger.log('User document updated on login')
         }
       } else {
         await setDoc(userRef, { lastActivity: serverTimestamp() }, { merge: true })
       }
-    } catch (error) {
-      logger.error('Error syncing user document (non-fatal):', error)
+    } catch (error: any) {
+      logger.error('Error syncing user document:', error)
+      throw error
     }
   }, [])
 
@@ -195,9 +233,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           throw new Error(validation.reason)
         }
 
+        await syncUserDocument(result.user, true)
+        
         logger.log('✅ Google sign in nativo exitoso:', result.user.uid)
         setCachedUid(result.user.uid)
-        syncUserDocument(result.user, true)
         lastActivityRef.current = Date.now()
         setLoading(false)
         return
@@ -214,9 +253,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(validation.reason)
       }
 
+      await syncUserDocument(result.user, true)
+
       logger.log('✅ Google sign in exitoso (popup):', result.user.uid)
       setCachedUid(result.user.uid)
-      syncUserDocument(result.user, true)
       lastActivityRef.current = Date.now()
       setLoading(false)
     } catch (error: any) {
@@ -236,9 +276,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(validation.reason)
       }
 
+      await syncUserDocument(result.user, true)
+
       logger.log('✅ Email sign in exitoso:', result.user.uid)
       setCachedUid(result.user.uid)
-      await syncUserDocument(result.user, true)
       lastActivityRef.current = Date.now()
       setLoading(false)
     } catch (error: any) {
@@ -247,46 +288,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error
     }
   }, [validateUser, syncUserDocument])
-
-// components/auth/AuthProvider.tsx
-
-const signUpWithEmail = useCallback(async (email: string, password: string, displayName?: string): Promise<void> => {
-  try {
-    setLoading(true)
-    const result = await createUserWithEmailAndPassword(auth, email, password)
-
-    if (displayName) {
-      await updateProfile(result.user, { displayName })
-    }
-
-    const validation = validateUser(result.user)
-    if (!validation.valid) {
-      await signOut(auth)
-      throw new Error(validation.reason)
-    }
-
-    logger.log(' Email sign up exitoso:', result.user.uid)
-    setCachedUid(result.user.uid)
-    await syncUserDocument(result.user, true)
-    lastActivityRef.current = Date.now()
-    setLoading(false)
-  } catch (error: any) {
-    setLoading(false)
-
-    // Errores de flujo normal esperados por la UI — no loguear como error
-    const silentCodes = [
-      'auth/email-already-in-use',
-      'auth/weak-password',
-      'auth/invalid-email',
-    ]
-
-    if (!silentCodes.includes(error.code)) {
-      logger.error('Error inesperado en email sign up:', error)
-    }
-
-    throw error
-  }
-}, [validateUser, syncUserDocument])
 
   const sendPasswordReset = useCallback(async (email: string): Promise<void> => {
     try {
@@ -311,17 +312,29 @@ const signUpWithEmail = useCallback(async (email: string, password: string, disp
           setCachedUid(null)
           await signOut(auth)
           setUser(null)
+          setError(validation.reason || 'Acceso denegado')
           setLoading(false)
           return
         }
 
         const isReopen = getCachedUid() === firebaseUser.uid
-        setCachedUid(firebaseUser.uid)
-        setUser(firebaseUser)
-        lastActivityRef.current = Date.now()
-        setLoading(false)
-
-        syncUserDocument(firebaseUser, !isReopen)
+        
+        try {
+          await syncUserDocument(firebaseUser, !isReopen)
+          
+          setCachedUid(firebaseUser.uid)
+          setUser(firebaseUser)
+          lastActivityRef.current = Date.now()
+          setLoading(false)
+          setError(null)
+        } catch (err: any) {
+          logger.error('Error in auth state listener:', err)
+          setCachedUid(null)
+          await signOut(auth)
+          setUser(null)
+          setError(err.message || 'Error de autorización')
+          setLoading(false)
+        }
       } else {
         setCachedUid(null)
         setUser(null)
@@ -343,6 +356,7 @@ const signUpWithEmail = useCallback(async (email: string, password: string, disp
       logger.log('Logging out...')
       setCachedUid(null)
       await signOut(auth)
+      setError(null)
       logger.log('Logout successful')
     } catch (error) {
       logger.error('Error signing out:', error)
@@ -401,13 +415,14 @@ const signUpWithEmail = useCallback(async (email: string, password: string, disp
   const value: AuthContextType = useMemo(() => ({
     user,
     loading,
+    error,
     signInWithGoogle,
     signInWithEmail,
-    signUpWithEmail,
     sendPasswordReset,
     logout,
     refreshSession,
-  }), [user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, sendPasswordReset, logout, refreshSession])
+    clearError,
+  }), [user, loading, error, signInWithGoogle, signInWithEmail, sendPasswordReset, logout, refreshSession, clearError])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

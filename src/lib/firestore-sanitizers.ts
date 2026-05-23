@@ -122,6 +122,7 @@ export const sanitizeNegocioPayload = (input: any): Partial<Negocio> => {
   const logoUrl = cleanString(input.logoUrl)
   if (logoUrl) cleaned.logoUrl = logoUrl
 
+  setIfDefined(cleaned, 'onboardingCompleted', cleanBoolean(input.onboardingCompleted))
   setIfDefined(cleaned, 'createdAt', cleanDate(input.createdAt))
   setIfDefined(cleaned, 'updatedAt', cleanDate(input.updatedAt))
 
