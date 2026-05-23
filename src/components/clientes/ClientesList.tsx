@@ -212,7 +212,7 @@ export function ClientesList() {
       {/* Contenedor principal */}
       <div
         ref={containerRef}
-        className="min-h-screen bg-gray-900 overflow-y-auto"
+        className="bg-gray-900"
       >
         <div className="w-full p-3 sm:p-4 md:p-6 max-w-7xl mx-auto">
           <div className="bg-gray-800/40 rounded-2xl border border-gray-700/50 overflow-hidden">
