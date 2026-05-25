@@ -319,7 +319,7 @@ export default function LoginPage() {
                     </a>
 
                     <a 
-                      href="tel:+573245329444" 
+                      href="tel:+573107981736" 
                       className="flex items-center justify-between p-4 rounded-xl bg-slate-50 hover:bg-green-50 dark:bg-slate-900/50 dark:hover:bg-green-900/20 border border-slate-200 dark:border-slate-800 hover:border-green-300 dark:hover:border-green-800 transition-all group"
                     >
                       <div className="flex items-center gap-3">
@@ -328,7 +328,7 @@ export default function LoginPage() {
                         </div>
                         <div className="text-left">
                           <p className="text-xs text-slate-500 dark:text-slate-500 font-medium">WhatsApp / Teléfono</p>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">+57 324 532 9444</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">+57 310 798 1736</p>
                         </div>
                       </div>
                       <ChevronDown className="h-4 w-4 text-slate-300 group-hover:text-green-500 -rotate-90" />
