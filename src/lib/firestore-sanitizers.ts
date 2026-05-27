@@ -240,9 +240,6 @@ export const sanitizeTareaPayload = (input: any): Partial<TareaPredefinida> => {
   const categoria = cleanString(input.categoria)
   if (categoria) cleaned.categoria = categoria
 
-  const id = cleanString(input.id)
-  if (id) cleaned.id = id
-
   return cleaned
 }
 
@@ -255,9 +252,6 @@ export const sanitizePiezaPayload = (input: any): Partial<PiezaPredefinida> => {
 
   const categoria = cleanString(input.categoria)
   if (categoria) cleaned.categoria = categoria
-
-  const id = cleanString(input.id)
-  if (id) cleaned.id = id
 
   return cleaned
 }

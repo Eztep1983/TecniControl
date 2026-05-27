@@ -155,42 +155,55 @@ const generarContenidoHTML = (
       </div>
     </div>
 
-    ${orden.tipoMantenimiento === 'diagnostico' ? `
+    ${(orden.observacionesIniciales || orden.pruebasRealizadas || orden.posiblesCausas || orden.diagnosticoFinal) ? `
       <div class="section">
-        <div class="section-title" style="border-left-color: #f59e0b;">Detalle del Diagnóstico</div>
+        <div class="section-title" style="border-left-color: #f59e0b;">Detalle del Diagnóstico / Observaciones</div>
         <div class="flex-info">
-          <div class="data-box">
-            <span class="data-label">Observaciones Iniciales</span>
-            <div class="data-content">${orden.observacionesIniciales || 'N/A'}</div>
-          </div>
-          <div class="data-box">
-            <span class="data-label">Pruebas Realizadas</span>
-            <div class="data-content">${orden.pruebasRealizadas || 'N/A'}</div>
-          </div>
+          ${orden.observacionesIniciales ? `
+            <div class="data-box">
+              <span class="data-label">Observaciones Iniciales</span>
+              <div class="data-content">${orden.observacionesIniciales}</div>
+            </div>
+          ` : ''}
+          ${orden.pruebasRealizadas ? `
+            <div class="data-box">
+              <span class="data-label">Pruebas Realizadas</span>
+              <div class="data-content">${orden.pruebasRealizadas}</div>
+            </div>
+          ` : ''}
         </div>
-        <div class="data-box" style="margin-top:10px;">
-          <span class="data-label">Diagnóstico Final</span>
-          <div class="data-content" style="font-weight:600; color:#111;">${orden.diagnosticoFinal || 'N/A'}</div>
+        <div class="flex-info" style="margin-top:10px;">
+          ${orden.posiblesCausas ? `
+            <div class="data-box">
+              <span class="data-label">Posibles Causas</span>
+              <div class="data-content">${orden.posiblesCausas}</div>
+            </div>
+          ` : ''}
+          ${orden.diagnosticoFinal ? `
+            <div class="data-box">
+              <span class="data-label">Diagnóstico Final</span>
+              <div class="data-content" style="font-weight:600; color:#111;">${orden.diagnosticoFinal}</div>
+            </div>
+          ` : ''}
         </div>
       </div>
     ` : ''}
 
-    ${orden.tipoMantenimiento === 'instalacion' ? `
+    ${(orden.tipoMantenimiento === 'instalacion' || orden.instalacionRecomendaciones || (orden.instalacionConfiguracionTipos?.length ?? 0) > 0) ? `
       <div class="section">
         <div class="section-title" style="border-left-color: #8b5cf6;">Detalle de Instalación</div>
-        <div class="data-box">
-          <span class="data-label">Configuraciones Realizadas</span>
-          <div class="data-content">
-            ${orden.instalacionConfiguracion 
-              ? (orden.instalacionConfiguracionTipos?.join(', ') || 'Instalación estándar')
-              : 'No se realizaron configuraciones'
-            }
+        ${(orden.instalacionConfiguracion || (orden.instalacionConfiguracionTipos?.length ?? 0) > 0) ? `
+          <div class="data-box">
+            <span class="data-label">Configuraciones Realizadas</span>
+            <div class="data-content">
+              ${orden.instalacionConfiguracionTipos?.join(', ') || 'Instalación estándar'}
+            </div>
           </div>
-        </div>
-        ${orden.instalacionRecomendaciones ? `
+        ` : ''}
+        ${(orden.instalacionRecomendaciones || orden.instalacionRecomendacionesDetalle) ? `
           <div class="data-box" style="margin-top:10px;">
             <span class="data-label">Recomendaciones del Técnico</span>
-            <div class="data-content">${orden.instalacionRecomendacionesDetalle || 'N/A'}</div>
+            <div class="data-content">${orden.instalacionRecomendacionesDetalle || 'Se brindaron recomendaciones de uso al cliente.'}</div>
           </div>
         ` : ''}
       </div>
@@ -685,7 +698,7 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
 interface PrintButtonProps {
   orden: OrdenMantenimiento
   onPrint: (orden: OrdenMantenimiento) => void
-  variant?: 'table' | 'card'
+  variant?: 'table' | 'card' | 'icon'
 }
 
 export const PrintButton: React.FC<PrintButtonProps> = ({ orden, onPrint, variant = 'table' }) => {
@@ -693,6 +706,14 @@ export const PrintButton: React.FC<PrintButtonProps> = ({ orden, onPrint, varian
     e.preventDefault()
     e.stopPropagation()
     onPrint(orden)
+  }
+
+  if (variant === 'icon') {
+    return (
+      <button onClick={handleClick} className="p-1.5 rounded-lg hover:bg-green-500/30 text-green-400 hover:text-white" aria-label="Imprimir orden">
+        <Printer className="w-4 h-4" />
+      </button>
+    )
   }
 
   if (variant === 'card') {
@@ -721,7 +742,7 @@ export const PrintButton: React.FC<PrintButtonProps> = ({ orden, onPrint, varian
 interface ShareButtonProps {
   orden: OrdenMantenimiento
   onShare: (orden: OrdenMantenimiento) => void
-  variant?: 'table' | 'card'
+  variant?: 'table' | 'card' | 'icon'
 }
 
 export const ShareButton: React.FC<ShareButtonProps> = ({ orden, onShare, variant = 'table' }) => {
@@ -729,6 +750,14 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ orden, onShare, varian
     e.preventDefault()
     e.stopPropagation()
     onShare(orden)
+  }
+
+  if (variant === 'icon') {
+    return (
+      <button onClick={handleClick} className="p-1.5 rounded-lg hover:bg-blue-500/30 text-blue-400 hover:text-white" aria-label="Compartir orden">
+        <Share2 className="w-4 h-4" />
+      </button>
+    )
   }
 
   if (variant === 'card') {
@@ -757,7 +786,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ orden, onShare, varian
 interface DownloadButtonProps {
   orden: OrdenMantenimiento
   onDownload: (orden: OrdenMantenimiento) => void
-  variant?: 'table' | 'card'
+  variant?: 'table' | 'card' | 'icon'
 }
 
 export const DownloadButton: React.FC<DownloadButtonProps> = ({ orden, onDownload, variant = 'table' }) => {
@@ -765,6 +794,14 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({ orden, onDownloa
     e.preventDefault()
     e.stopPropagation()
     onDownload(orden)
+  }
+
+  if (variant === 'icon') {
+    return (
+      <button onClick={handleClick} className="p-1.5 rounded-lg hover:bg-purple-500/30 text-purple-400 hover:text-white" aria-label="Descargar PDF">
+        <Download className="w-4 h-4" />
+      </button>
+    )
   }
 
   if (variant === 'card') {

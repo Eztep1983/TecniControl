@@ -495,13 +495,19 @@ const DetailView = memo(({
             <DataRow label="Número de serie" value={orden.dispositivo?.numeroSerie || "N/A"} icon={Hash} mono accent="amber" />
           </div>
 
-          {(orden.contador || orden.contadorMaquina !== undefined) && (
+          {orden.contador && (
             <div className="mt-3 flex items-center justify-between px-3 py-2 rounded-lg bg-purple-500/5 border border-purple-500/10">
-              <span className="text-xs text-gray-500">Contador</span>
+              <span className="text-xs text-gray-500">Contador ({orden.contador.tipo})</span>
               <span className="text-xs font-semibold text-purple-300">
-                {orden.contador
-                  ? `${orden.contador.valor} ${orden.contador.unidadPersonalizada || orden.contador.tipo}`
-                  : orden.contadorMaquina}
+                {orden.contador.valor} {orden.contador.unidadPersonalizada || ''}
+              </span>
+            </div>
+          )}
+          {orden.contadorMaquina !== undefined && (
+            <div className="mt-2 flex items-center justify-between px-3 py-2 rounded-lg bg-blue-500/5 border border-blue-500/10">
+              <span className="text-xs text-gray-500">Contador de Máquina</span>
+              <span className="text-xs font-semibold text-blue-300">
+                {orden.contadorMaquina.toLocaleString()}
               </span>
             </div>
           )}

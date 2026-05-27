@@ -20,50 +20,87 @@ export default function FirmaInput({
   setValidacionCliente,
 }: FirmaInputProps) {
   const sigCanvas = useRef<SignatureCanvas>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isEmpty, setIsEmpty] = useState(true)
 
   // Función para restaurar la firma en el canvas
   const restoreSignature = useCallback(() => {
-    if (firmaCliente && sigCanvas.current && sigCanvas.current.isEmpty()) {
+    if (firmaCliente && sigCanvas.current) {
       try {
         sigCanvas.current.fromDataURL(firmaCliente)
+        setIsEmpty(false)
       } catch (e) {
         console.error('Error restaurando firma:', e)
       }
     }
   }, [firmaCliente])
 
-  // Efecto para restaurar la firma cuando el canvas está listo o cambia la firma
+  // Manejar el redimensionamiento del canvas para que coincida con su contenedor
   useEffect(() => {
-    if (firmaHabilitada) {
-      // Pequeño delay para asegurar que el canvas está montado y tiene dimensiones
-      const timer = setTimeout(restoreSignature, 50)
-      return () => clearTimeout(timer)
-    }
-  }, [firmaHabilitada, restoreSignature])
+    if (!firmaHabilitada || !containerRef.current || !sigCanvas.current) return
 
-  // Manejar redimensionamiento
-  useEffect(() => {
-    const handleResize = () => {
-      if (firmaHabilitada) {
-        restoreSignature()
+    const resizeCanvas = () => {
+      const canvas = sigCanvas.current?.getCanvas()
+      const container = containerRef.current
+      if (canvas && container) {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1)
+        
+        // Guardar la firma actual antes de redimensionar (puntos vectoriales para mejor fidelidad)
+        const currentData = sigCanvas.current?.toData() || []
+        
+        // Ajustar dimensiones internas del canvas con el ratio de densidad de píxeles
+        canvas.width = container.offsetWidth * ratio
+        canvas.height = container.offsetHeight * ratio
+        
+        // Escalar el contexto para que las coordenadas de dibujo coincidan con CSS
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+          ctx.setTransform(1, 0, 0, 1, 0, 0) // Reset transform before scaling
+          ctx.scale(ratio, ratio)
+        }
+        
+        // Limpiar y restaurar
+        sigCanvas.current?.clear()
+        if (currentData.length > 0) {
+          sigCanvas.current?.fromData(currentData)
+        } else if (firmaCliente) {
+          restoreSignature()
+        }
       }
     }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [firmaHabilitada, restoreSignature])
+
+    const observer = new ResizeObserver(() => {
+      resizeCanvas()
+    })
+
+    observer.observe(containerRef.current)
+    
+    // Ejecución inicial con un pequeño delay para asegurar el montaje
+    const timer = setTimeout(resizeCanvas, 150)
+
+    return () => {
+      observer.disconnect()
+      clearTimeout(timer)
+    }
+  }, [firmaHabilitada, firmaCliente, restoreSignature])
 
   const limpiarFirma = useCallback(() => {
     sigCanvas.current?.clear()
     setFirmaCliente(null)
+    setIsEmpty(true)
   }, [setFirmaCliente])
 
   const guardarFirma = useCallback(() => {
     if (sigCanvas.current) {
       if (sigCanvas.current.isEmpty()) {
         setFirmaCliente(null)
+        setIsEmpty(true)
       } else {
-        const dataUrl = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png')
+        // Usar toDataURL del componente (canvas completo) para evitar el efecto de "encogimiento"
+        // al restaurar una firma recortada en un canvas de distinto tamaño.
+        const dataUrl = sigCanvas.current.getCanvas().toDataURL('image/png')
         setFirmaCliente(dataUrl)
+        setIsEmpty(false)
       }
     }
   }, [setFirmaCliente])
@@ -134,18 +171,25 @@ export default function FirmaInput({
                 </button>
               </div>
               
-              <div className="border-2 border-dashed border-gray-600/50 rounded-xl bg-white overflow-hidden relative shadow-inner touch-none" style={{ height: 200 }}>
+              <div 
+                ref={containerRef}
+                className="border-2 border-dashed border-gray-600/50 rounded-xl bg-white overflow-hidden relative shadow-inner touch-none" 
+                style={{ height: 200 }}
+              >
                 <SignatureCanvas
                   ref={sigCanvas}
                   penColor="black"
+                  minWidth={1.5}
+                  maxWidth={4.5}
                   canvasProps={{ 
-                    className: 'w-full h-full cursor-crosshair',
-                    style: { display: 'block', touchAction: 'none' }
+                    className: 'cursor-crosshair',
+                    style: { display: 'block', touchAction: 'none', width: '100%', height: '100%' }
                   }}
+                  onBegin={() => setIsEmpty(false)}
                   onEnd={guardarFirma}
                   clearOnResize={false}
                 />
-                {!firmaCliente && (
+                {(isEmpty && !firmaCliente) && (
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center text-gray-400">
                     <span className="text-sm font-medium bg-white/80 px-3 py-1 rounded-full">Firme aquí</span>
                   </div>

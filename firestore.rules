@@ -149,15 +149,17 @@ service cloud.firestore {
       return request.resource.data.keys().hasOnly(['nombre', 'tipo', 'categoria', 'creadoEn', 'actualizadoEn'])
              && isNonEmptyString('nombre')
              && request.resource.data.tipo in ['preventivo', 'correctivo', 'ambos']
-             && request.resource.data.categoria is string
-             && request.resource.data.categoria.size() > 0;
+             && isNonEmptyString('categoria')
+             && isTimestampOrString('creadoEn')
+             && isTimestampOrString('actualizadoEn');
     }
 
     function validPiezaPayload() {
       return request.resource.data.keys().hasOnly(['nombre', 'categoria', 'creadoEn', 'actualizadoEn'])
              && isNonEmptyString('nombre')
-             && request.resource.data.categoria is string
-             && request.resource.data.categoria.size() > 0;
+             && isNonEmptyString('categoria')
+             && isTimestampOrString('creadoEn')
+             && isTimestampOrString('actualizadoEn');
     }
 
     // ── users ─────────────────────────────────────────────────────────────────

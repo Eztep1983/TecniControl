@@ -31,8 +31,11 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 // Inicializar App Check
+let appCheckInitialized = false;
 if (typeof window !== "undefined") {
   const initAppCheck = async () => {
+    if (appCheckInitialized) return;
+    appCheckInitialized = true;
     try {
       if (Capacitor.isNativePlatform()) {
         // En plataformas nativas usamos el plugin de Capacitor para App Check

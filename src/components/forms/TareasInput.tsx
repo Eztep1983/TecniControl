@@ -115,25 +115,29 @@ export default function TareasInput({
       return
     }
 
-    // Auto-guardado en background como predefinida
-    if (user?.uid) {
-      const nuevaTareaPredefinida: TareaPredefinida = {
-        id: Date.now().toString(),
-        nombre: nuevoValor,
-        tipo: (tipoMantenimiento === 'preventivo' || tipoMantenimiento === 'correctivo') ? tipoMantenimiento : 'preventivo',
-        categoria: 'General'
-      }
-      obtenerTareasPredefinidas(user.uid).then(todas => {
-        const todasSanitizadas = (todas || []).filter(Boolean);
-        const tareasActualizadas = [...todasSanitizadas, nuevaTareaPredefinida];
-        crearTarea(user.uid, nuevaTareaPredefinida).catch(err => {
-          console.error("Error guardando nueva tarea predefinida", err);
-        });
-      });
-      setTareasPredefinidas(prev => [...prev, nuevaTareaPredefinida]);
+    const tempId = Date.now().toString()
+    const nuevaTareaPredefinida: TareaPredefinida = {
+      id: tempId,
+      nombre: nuevoValor,
+      tipo: (tipoMantenimiento === 'preventivo' || tipoMantenimiento === 'correctivo') ? tipoMantenimiento : 'preventivo',
+      categoria: 'General'
     }
 
+    // Guardar en Firestore en segundo plano
+    if (user?.uid) {
+      crearTarea(user.uid, {
+        nombre: nuevaTareaPredefinida.nombre,
+        tipo: nuevaTareaPredefinida.tipo,
+        categoria: nuevaTareaPredefinida.categoria
+      }).catch(err => {
+        console.error("Error guardando nueva tarea predefinida", err);
+      });
+    }
+
+    // Actualizar estado local
+    setTareasPredefinidas(prev => [...prev, nuevaTareaPredefinida]);
     onAgregarTareaPersonalizada(nuevoValor)
+    
     success()
     setQuery('')
     setIsOpen(false)

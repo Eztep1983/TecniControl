@@ -68,45 +68,62 @@ export default function ConfiguracionPage() {
     return () => window.clearTimeout(timeout)
   }, [status.type]);
 
-  // Inicializar estado local desde el hook
+  // Inicializar y crear negocio si no existe
   useEffect(() => {
-    if (hookNegocio) {
-      setNegocio(hookNegocio as NegocioConUsuario);
-      setLoading(false);
-    } else if (!hookLoading) {
-      setLoading(false);
-    }
-  }, [hookNegocio, hookLoading]);
+    if (hookLoading || !user?.uid) return;
 
-  // Si el negocio no existe en Firestore, crearlo por defecto
-  useEffect(() => {
-    const crearNegocioDefault = async () => {
-      if (!user?.uid || hookLoading || hookNegocio) return;
+    let isSubscribed = true;
 
+    const inicializarNegocio = async () => {
+      // Si ya tenemos datos del negocio desde el hook, los usamos
+      if (hookNegocio) {
+        if (isSubscribed) {
+          setNegocio(hookNegocio as NegocioConUsuario);
+          setLoading(false);
+        }
+        return;
+      }
+
+      // Si no hay negocio, intentamos verificar si realmente no existe antes de crear
       try {
-        setLoading(true);
         const negocioRef = doc(db, 'negocios', user.uid);
-        const negocioDefault: NegocioConUsuario = {
-          id: user.uid,
-          userId: user.uid,
-          nombre: user.displayName || 'Mi Negocio',
-          direccion: '',
-          telefono: '',
-          email: user.email || '',
-          nit: '',
-          logoUrl: ''
-        };
-        await setDoc(negocioRef, negocioDefault);
-        setNegocio(negocioDefault);
+        const negocioDoc = await getDoc(negocioRef);
+        
+        if (!isSubscribed) return;
+
+        if (negocioDoc.exists()) {
+          setNegocio({ id: negocioDoc.id, ...negocioDoc.data() } as NegocioConUsuario);
+        } else {
+          // El negocio no existe en Firestore, crearlo por defecto
+          const negocioDefault: NegocioConUsuario = {
+            id: user.uid,
+            userId: user.uid,
+            nombre: user.displayName || 'Mi Negocio',
+            direccion: '',
+            telefono: '',
+            email: user.email || '',
+            nit: '',
+            logoUrl: ''
+          };
+          await setDoc(negocioRef, negocioDefault);
+          setNegocio(negocioDefault);
+        }
       } catch (error) {
-        console.error('Error creando negocio inicial:', error);
+        console.error('Error inicializando negocio:', error);
+        if (isSubscribed) {
+          setStatus({ type: 'error', message: 'No se pudo cargar o inicializar la configuración.' });
+        }
       } finally {
-        setLoading(false);
+        if (isSubscribed) {
+          setLoading(false);
+        }
       }
     };
 
-    crearNegocioDefault();
-  }, [user, hookNegocio, hookLoading]);
+    inicializarNegocio();
+    return () => { isSubscribed = false; };
+  }, [hookNegocio, hookLoading, user]);
+
   // Manejar subida de logo
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

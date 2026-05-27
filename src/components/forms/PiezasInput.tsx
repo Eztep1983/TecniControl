@@ -173,25 +173,29 @@ export default memo(function PiezasInput({
   }, [setPiezasUsadas, selection])
 
   const handleAgregarPersonalizada = useCallback((nombre: string) => {
-    if (user?.uid) {
-      const nuevaPiezaPredefinida: PiezaPredefinida = {
-        id: Date.now().toString(),
-        nombre: nombre,
-        categoria: 'General'
-      }
-      obtenerPiezasPredefinidas(user.uid).then(todas => {
-        const todasSanitizadas = (todas || []).filter(Boolean);
-        const piezasActualizadas = [...todasSanitizadas, nuevaPiezaPredefinida];
-        crearPieza(user.uid, nuevaPiezaPredefinida).catch(err => {
-          console.error("Error guardando nueva pieza predefinida", err);
-        });
-      });
-      setPiezasPredefinidas(prev => [...prev, nuevaPiezaPredefinida]);
+    const tempId = Date.now().toString()
+    const nuevaPiezaPredefinida: PiezaPredefinida = {
+      id: tempId,
+      nombre: nombre,
+      categoria: 'General'
     }
 
+    // Guardar en Firestore en segundo plano (sin bloquear UI)
+    if (user?.uid) {
+      crearPieza(user.uid, {
+        nombre: nuevaPiezaPredefinida.nombre,
+        categoria: nuevaPiezaPredefinida.categoria
+      }).catch(err => {
+        console.error("Error guardando nueva pieza predefinida", err);
+      });
+    }
+
+    // Actualizar estado local inmediatamente
+    setPiezasPredefinidas(prev => [...prev, nuevaPiezaPredefinida]);
     setPiezasUsadas(prev => [...prev, {
       pieza: nombre, cantidad: 1, tipo: 'personalizada'
     }])
+    
     success()
     setQuery(''); setIsOpen(false); setPaginaActual(1); inputRef.current?.blur()
   }, [setPiezasUsadas, user?.uid, success])

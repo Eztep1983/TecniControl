@@ -1420,7 +1420,12 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
               {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'diagnostico' && 'Completa todos los campos del diagnóstico'}
               {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'instalacion' && 'Configura o agrega recomendaciones para continuar'}
               {state.currentStep === 'mantenimiento' && state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && 'Agrega al menos una actividad para continuar'}
-              {state.currentStep === 'firma' && 'Debe aceptar los términos y firmar para continuar'}
+              {state.currentStep === 'firma' && (
+                !state.firmaHabilitada ? 'Firma opcional desactivada' :
+                !state.firmaCliente ? 'Falta la firma del cliente' :
+                !state.validacionCliente ? 'Debe aceptar los términos para continuar' :
+                'Firma y términos completados'
+              )}
             </p>
           </div>
         )}

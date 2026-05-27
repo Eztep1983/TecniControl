@@ -242,6 +242,7 @@ export default function CuentaYSeguridad() {
   // Cuando el usuario vuelve de la página de Google tras reauthenticateWithRedirect,
   // getRedirectResult() entrega la credencial y se procede a borrar la cuenta.
   useEffect(() => {
+    let active = true;
     const handleRedirectResult = async () => {
       const intent = sessionStorage.getItem('reauth_intent')
       if (intent !== 'delete_account') return
@@ -249,6 +250,11 @@ export default function CuentaYSeguridad() {
       try {
         setDeleteState(s => ({ ...s, dialogOpen: true, loading: true }))
         const result = await getRedirectResult(auth)
+
+        if (!active) return;
+        
+        // Siempre limpiar la intención una vez que hemos procesado (o intentado) el resultado
+        sessionStorage.removeItem('reauth_intent')
 
         if (!result) {
           // El usuario canceló o volvió sin completar la autenticación
@@ -259,10 +265,10 @@ export default function CuentaYSeguridad() {
         const oauthCredential = GoogleAuthProvider.credentialFromResult(result)
         if (!oauthCredential) throw new Error('No se pudo obtener credencial de Google.')
 
-        sessionStorage.removeItem('reauth_intent')
         await reauthenticateWithCredential(result.user, oauthCredential)
         await performDeleteUser()
       } catch (err: any) {
+        if (!active) return;
         sessionStorage.removeItem('reauth_intent')
         const cancelled =
           err.code === 'auth/popup-closed-by-user' ||
@@ -282,6 +288,7 @@ export default function CuentaYSeguridad() {
     }
 
     handleRedirectResult()
+    return () => { active = false; }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

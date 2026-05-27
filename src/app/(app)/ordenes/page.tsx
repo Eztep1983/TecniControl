@@ -1,23 +1,20 @@
 'use client'
-import { useState, useEffect, useMemo, useCallback, Suspense, memo } from 'react'
+import { useState, useEffect, useCallback, Suspense, memo } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
   Shield,
   Wrench,
   Plus,
-  Clock,
-  Loader2,
   ArrowRight,
   ClipboardList,
-  Stethoscope
+  Stethoscope,
 } from 'lucide-react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { 
   useOrdenesRecientes, 
   useEstadisticasUsuario, 
-  usePrefetchData,
-  useCompletarOnboarding 
+  usePrefetchData
 } from '@/hooks/useMultiUser'
 import { useNegocio } from '@/hooks/useNegocio'
 import { OrdenMantenimiento } from '@/types/orden'
@@ -27,20 +24,33 @@ import FormularioMantenimiento from '@/app/(app)/ordenes/mantenimiento/formulari
 import ModalOrden from '@/components/mantenimiento/ModalOrden'
 import OrdenCard from '@/components/mantenimiento/OrdenCard'
 import { usePrintService } from '@/components/mantenimiento/PrintService'
-import AnimatedContent from '@/components/ui/AnimatedContent'
 import WelcomeScreen from '@/components/onboarding/WelcomeScreen'
 import OnboardingSuccess from '@/components/onboarding/OnboardingSuccess'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
+
+// Hooks
+import { useDashboardGreeting } from '@/hooks/ordenes/useDashboardGreeting'
+import { useDraftBanner } from '@/hooks/ordenes/useDraftBanner'
+import { useOnboardingFlow } from '@/hooks/ordenes/useOnboardingFlow'
 
 export default function OrdenesDashboardPage() {
   return (
-    <Suspense fallback={
-      <div className="flex flex-1 items-center justify-center p-4">
-        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-      </div>
-    }>
+    <Suspense fallback={<DashboardSkeleton />}>
       <OrdenesDashboardContent />
     </Suspense>
+  )
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="p-4 space-y-6">
+      <Skeleton className="h-24 w-full rounded-2xl" />
+      <Skeleton className="h-16 w-full rounded-2xl" />
+      <div className="grid grid-cols-2 gap-4">
+        {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-28 w-full rounded-2xl" />)}
+      </div>
+    </div>
   )
 }
 
@@ -53,15 +63,14 @@ const TIPO_COLORS: Record<string, string> = {
 
 const getTipoColor = (tipo: string) => TIPO_COLORS[tipo] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
 
-// Memoized Stat Card for better performance
 const StatCard = memo(({ icon: Icon, value, label, colorClass = "border-gray-700/50" }: any) => (
   <div className={cn(
     "snap-start shrink-0 w-32 bg-gray-800/40 border rounded-2xl p-4 flex flex-col items-center justify-center transition-transform active:scale-95",
     colorClass
-  )}>
-    <Icon className="w-6 h-6 text-gray-400 mb-2" />
-    <span className="text-2xl font-bold text-white">{value}</span>
-    <span className="text-xs text-gray-400 mt-1">{label}</span>
+  )} role="listitem">
+    <Icon className="w-5 h-5 text-gray-400 mb-1.5" />
+    <span className="text-xl font-bold text-white">{value}</span>
+    <span className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">{label}</span>
   </div>
 ));
 StatCard.displayName = 'StatCard';
@@ -76,26 +85,25 @@ function OrdenesDashboardContent() {
   const { negocio, loading: negocioLoading } = useNegocio()
   const { imprimirOrden, compartirOrden, descargarPDF, formatFecha, generarPDFBlob, generarHTML } = usePrintService({ negocio })
   const { prefetchOrdenes, prefetchClientes } = usePrefetchData()
-  const { mutate: markOnboardingCompleted } = useCompletarOnboarding()
 
-  const [mostrarFormulario, setMostrarFormulario] = useState(false)
-  const [hayBorrador, setHayBorrador] = useState(false)
+  // Custom Hooks
+  const greetingData = useDashboardGreeting(negocio, user)
+  const { hayBorrador, descartarBorrador, syncDraft } = useDraftBanner()
+  const onboarding = useOnboardingFlow(user, statsLoading, negocioLoading, negocio, estadisticas.totalOrdenes)
+
+  const [view, setView] = useState<'dashboard' | 'welcome' | 'success' | 'form'>('dashboard')
   const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenMantenimiento | null>(null)
-  
-  // Onboarding state
-  const [showWelcome, setShowWelcome] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
-  const [isOnboardingMode, setIsOnboardingMode] = useState(false)
+
+  useEffect(() => {
+    if (onboarding.showWelcome) setView('welcome')
+    else if (onboarding.showSuccess) setView('success')
+    else setView('dashboard')
+  }, [onboarding.showWelcome, onboarding.showSuccess])
 
   const refrescarDatos = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid] })
   }, [queryClient, user?.uid])
 
-  const handleViewOrden = useCallback((orden: OrdenMantenimiento) => {
-    setOrdenSeleccionada(orden)
-  }, [])
-
-  // 0. Prefetching logic
   useEffect(() => {
     if (user?.uid) {
       prefetchOrdenes();
@@ -103,111 +111,26 @@ function OrdenesDashboardContent() {
     }
   }, [user?.uid, prefetchOrdenes, prefetchClientes]);
 
-  // 1. Onboarding logic (Account-level persistence)
-  useEffect(() => {
-    if (!user?.uid || statsLoading || negocioLoading) return;
-
-    // Si ya completó onboarding en Firestore, no mostrar nada
-    if (negocio?.onboardingCompleted) {
-      if (showWelcome) setShowWelcome(false);
-      return;
-    }
-
-    // Si tiene órdenes pero no tiene el flag de onboarding, marcarlo como completado
-    if (estadisticas.totalOrdenes > 0) {
-      markOnboardingCompleted();
-      return;
-    }
-
-    // Si no tiene órdenes y no ha completado el onboarding, mostrar bienvenida
-    setShowWelcome(true);
-  }, [user?.uid, statsLoading, negocioLoading, negocio?.onboardingCompleted, estadisticas.totalOrdenes, markOnboardingCompleted]);
-
-  // Greeting Context Logic
-  const greetingData = useMemo(() => {
-    const now = new Date();
-    const hour = now.getHours();
-    const name = negocio?.nombre?.split(' ')[0] || user?.displayName?.split(' ')[0] || 'Técnico';
-
-    let greeting = "Buenos días";
-    if (hour >= 12 && hour < 18) greeting = "Buenas tardes";
-    else if (hour >= 18) greeting = "Buenas noches";
-
-    const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-    const monthNames = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-    const dateStr = `${dayNames[now.getDay()]} · ${now.getDate()} de ${monthNames[now.getMonth()]}`;
-
-    const today = new Date().setHours(0, 0, 0, 0);
-    const ordenesHoy = ordenesRecientes.filter(o => {
-      const d = o.fechaCreacion?.toDate ? o.fechaCreacion.toDate() : new Date(o.fechaCreacion);
-      return d.setHours(0, 0, 0, 0) === today;
-    }).length;
-
-    let activity = "Hoy sin actividad registrada";
-    let motivational = "¿Listo para empezar?";
-
-    if (ordenesHoy > 0) {
-      activity = `${ordenesHoy} ${ordenesHoy === 1 ? 'orden creada' : 'órdenes creadas'} hoy`;
-      motivational = "Buen día de trabajo";
-    } else if (now.getDay() === 1) {
-      motivational = "Nueva semana, nuevo arranque";
-    } else if (now.getDay() === 5 && hour > 15) {
-      motivational = "¡Casi fin de semana!";
-    }
-
-    return { title: `${greeting}, ${name}`, subtitle: dateStr, activity, motivational };
-  }, [negocio?.nombre, user?.displayName, ordenesRecientes]);
-
-  // 2. Draft & Event logic
-  useEffect(() => {
-    try {
-      if (localStorage.getItem('draft_mantenimiento')) {
-        setHayBorrador(true)
-      }
-    } catch (error) {
-      console.warn('LocalStorage error checking draft:', error);
-    }
-
-    const handleOpenForm = () => setMostrarFormulario(true);
-    window.addEventListener('open-nueva-orden', handleOpenForm);
-
-    return () => {
-      window.removeEventListener('open-nueva-orden', handleOpenForm);
-    };
-  }, []);
-
-  // 3. Query params logic
   useEffect(() => {
     if (searchParams.get('nueva') === 'true') {
-      setMostrarFormulario(true);
+      setView('form');
       router.replace('/ordenes', { scroll: false });
     }
   }, [searchParams, router]);
 
-  // Loading state simplified
-  const isInitialLoading = authLoading || (ordenesLoading && user?.uid && ordenesRecientes.length === 0);
+  const handleOpenForm = useCallback(() => setView('form'), [])
+  useEffect(() => {
+    window.addEventListener('open-nueva-orden', handleOpenForm);
+    return () => window.removeEventListener('open-nueva-orden', handleOpenForm);
+  }, [handleOpenForm]);
 
-  if (isInitialLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-4">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 text-blue-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-400 text-sm">
-            {authLoading ? 'Verificando autenticación...' : 'Cargando dashboard...'}
-          </p>
-        </div>
-      </div>
-    )
-  }
+  if (authLoading || (ordenesLoading && user?.uid && ordenesRecientes.length === 0)) return <DashboardSkeleton />;
 
-  // Not authenticated
   if (!user) {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
         <div className="text-center bg-gray-800/50 rounded-xl p-8 max-w-md">
-          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-8 h-8 text-red-400" />
-          </div>
+          <Shield className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">Acceso Restringido</h2>
           <p className="text-gray-400">Debes iniciar sesión para acceder a esta página.</p>
         </div>
@@ -215,207 +138,111 @@ function OrdenesDashboardContent() {
     )
   }
 
-  if (showWelcome) {
-    return (
-      <WelcomeScreen 
-        onStartOnboarding={() => {
-          setShowWelcome(false);
-          setIsOnboardingMode(true);
-          setMostrarFormulario(true);
-        }} 
-        onSkip={() => {
-          setShowWelcome(false);
-          markOnboardingCompleted();
-        }}
-      />
-    );
-  }
+  if (view === 'welcome') return (
+    <WelcomeScreen 
+      onStartOnboarding={() => { onboarding.startOnboarding(); setView('form'); }} 
+      onSkip={() => { onboarding.skipOnboarding(); setView('dashboard'); }}
+    />
+  );
 
-  if (showSuccess) {
-    return (
-      <OnboardingSuccess 
-        onFinish={() => {
-          setShowSuccess(false);
-          markOnboardingCompleted();
-          refrescarDatos();
-        }} 
-      />
-    );
-  }
+  if (view === 'success') return (
+    <OnboardingSuccess onFinish={() => { onboarding.closeSuccess(); setView('dashboard'); refrescarDatos(); }} />
+  );
 
-  if (mostrarFormulario) {
-    return (
-      <FormularioMantenimiento
-        isOnboarding={isOnboardingMode}
-        onClose={() => {
-          setMostrarFormulario(false);
-          if (isOnboardingMode) {
-            setIsOnboardingMode(false);
-            markOnboardingCompleted();
-          }
-          try {
-            if (localStorage.getItem('draft_mantenimiento')) setHayBorrador(true);
-          } catch (e) { console.warn(e); }
-        }}
-        onSuccess={() => {
-          setMostrarFormulario(false);
-          setHayBorrador(false);
-          
-          if (isOnboardingMode) {
-            setIsOnboardingMode(false);
-            setShowSuccess(true);
-          } else {
+  if (view === 'form') return (
+    <FormularioMantenimiento
+      isOnboarding={onboarding.isOnboardingMode}
+      onClose={() => {
+        onboarding.setIsOnboardingMode(false);
+        setView('dashboard');
+        syncDraft(); // Sincronizar estado del borrador al cerrar
+      }}
+      onSuccess={() => {
+        if (onboarding.isOnboardingMode) {
+            onboarding.finishOnboarding();
+            setView('success');
+        } else {
+            setView('dashboard');
             refrescarDatos();
-          }
-        }}
-      />
-    );
-  }
+            syncDraft(); // Limpiar estado del borrador tras éxito
+        }
+      }}
+    />
+  );
 
   return (
-    <div className="bg-transparent min-h-screen">
-      {/* Header Profile/Title - Optimized for mobile with logo integration */}
+    <div className="bg-transparent min-h-screen pb-safe">
       <div className="bg-gray-900 border-b border-gray-800 pt-safe">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6">
-          <div className="flex items-center gap-4">
-            {negocio?.logoUrl ? (
-              <img 
-                src={negocio.logoUrl} 
-                alt={negocio.nombre} 
-                className="w-14 h-14 sm:w-16 sm:h-16 object-contain rounded-2xl bg-gray-800 p-1.5 border border-gray-700 shadow-inner shrink-0"
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3">
+             <img 
+                src={negocio?.logoUrl || user.photoURL || '/logo.png'} 
+                alt="Logo"
+                onError={(e) => (e.currentTarget.src = '/logo.png')}
+                className="w-12 h-12 object-cover rounded-xl bg-gray-800 border border-gray-700 shrink-0"
               />
-            ) : (
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shrink-0">
-                 {user.photoURL ? (
-                  <img
-                    src={user.photoURL} 
-                    className="w-full h-full object-cover rounded-2xl"
-                  />
-                ) : (
-                  <span className="text-lg font-bold text-white">{user.displayName?.charAt(0)}</span>
-                )}
-              </div>
-            )}
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-3xl font-bold text-white mb-0.5 sm:mb-1 truncate">
-                {greetingData.title}
-              </h1>
-              <div className="flex flex-col gap-0.5 sm:gap-1">
-                <p className="text-xs sm:text-base text-gray-400 flex items-center gap-1.5 sm:gap-2">
-                  <span className="shrink-0">{greetingData.subtitle}</span>
-                  <span className="w-1 h-1 bg-gray-600 rounded-full shrink-0" />
-                  <span className="text-blue-400 font-medium truncate">{greetingData.activity}</span>
-                </p>
-                <p className="text-[10px] sm:text-xs text-gray-500 italic truncate">
-                  {greetingData.motivational}
-                </p>
-              </div>
+              <h1 className="text-lg font-bold text-white truncate">{greetingData.title}</h1>
+              <p className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">{greetingData.subtitle}</p>
+              <p className="text-[10px] text-blue-400 font-medium mt-0.5">{greetingData.motivational}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-8">
-
-        {/* Quick Actions / Main FAB-like Button */}
+      <div className="max-w-7xl mx-auto px-4 py-5 space-y-6">
         <button
-          onClick={() => setMostrarFormulario(true)}
-          className="w-full bg-blue-600 active:bg-blue-700 active:scale-[0.98] text-white p-4 rounded-2xl flex items-center justify-center space-x-3 transition-all shadow-lg shadow-blue-500/10 group touch-manipulation"
+          onClick={() => setView('form')}
+          aria-label="Emitir nueva orden de mantenimiento"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl flex items-center justify-center space-x-2 transition-all active:scale-95"
         >
-          <div className="bg-white/20 p-2 rounded-full">
-            <Plus className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-lg font-bold">Emitir Nueva Orden</span>
+          <Plus className="w-5 h-5" />
+          <span className="font-bold">Nueva Orden</span>
         </button>
 
-        {/* Borrador Activo Banner */}
         {hayBorrador && (
-          <div className="bg-blue-500/10 border border-blue-500/20 px-4 py-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2">
-            <span className="text-sm text-blue-400 font-medium">Tienes una orden en pausa.</span>
-            <div className="flex w-full sm:w-auto gap-2">
-              <button
-                onClick={() => {
-                  try {
-                    localStorage.removeItem('draft_mantenimiento');
-                    setHayBorrador(false);
-                  } catch (e) { console.warn(e); }
-                }}
-                className="flex-1 sm:flex-none border border-blue-600/30 text-blue-600 hover:bg-blue-500/10 px-3 py-1.5 rounded-lg text-sm transition-colors"
-              >
-                Descartar
-              </button>
-              <button
-                onClick={() => setMostrarFormulario(true)}
-                className="flex-1 sm:flex-none bg-blue-500 text-gray-900 px-4 py-1.5 rounded-lg text-sm font-bold shadow-md shadow-blue-500/20"
-              >
-                Reanudar
-              </button>
+          <div className="bg-blue-500/10 border border-blue-500/20 px-4 py-3 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-300">
+            <span className="text-xs text-blue-400">Orden en pausa detectada.</span>
+            <div className="flex gap-2">
+              <button onClick={descartarBorrador} className="text-blue-600/70 px-2 py-1 text-xs hover:text-blue-600">Descartar</button>
+              <button onClick={() => setView('form')} className="bg-blue-500 text-gray-900 px-3 py-1 rounded-lg text-xs font-bold">Reanudar</button>
             </div>
           </div>
         )}
 
-        {/* Estadísticas Scroll Horizontal */}
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider ml-1">
-            Resumen de Actividad
-          </h2>
-          <div className="flex overflow-x-auto gap-3 pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] -mx-4 px-4 sm:mx-0 sm:px-0">
-            <StatCard icon={ClipboardList} value={estadisticas.totalOrdenes} label="Total" colorClass="border-gray-700/50" />
-            <StatCard icon={Shield} value={estadisticas.preventivos} label="Preventivos" colorClass="border-green-500/20" />
-            <StatCard icon={Wrench} value={estadisticas.correctivos} label="Correctivos" colorClass="border-orange-500/20" />
-            <StatCard icon={Stethoscope} value={estadisticas.diagnosticos} label="Diagnósticos" colorClass="border-blue-500/20" />
-            <StatCard icon={Wrench} value={estadisticas.instalaciones} label="Instalaciones" colorClass="border-purple-500/20" />
+          <h2 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Resumen</h2>
+          <div className="relative">
+            <div className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 [mask-image:linear-gradient(to_right,black_90%,transparent)]" role="list" aria-label="Estadísticas de actividad">
+                <StatCard icon={ClipboardList} value={estadisticas.totalOrdenes} label="Total" />
+                <StatCard icon={Shield} value={estadisticas.preventivos} label="Preventivos" colorClass="border-green-500/20" />
+                <StatCard icon={Wrench} value={estadisticas.correctivos} label="Correctivos" colorClass="border-orange-500/20" />
+                <StatCard icon={Stethoscope} value={estadisticas.diagnosticos} label="Diagnósticos" colorClass="border-blue-500/20" />
+                <StatCard icon={Wrench} value={estadisticas.instalaciones} label="Instalaciones" colorClass="border-purple-500/20" />
+            </div>
           </div>
         </div>
 
-        {/* Actividad Reciente */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between ml-1">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-              Órdenes Recientes
-            </h2>
-          </div>
-
+        <div className="space-y-3">
+          <h2 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Recientes</h2>
           {ordenesRecientes.length > 0 ? (
             <div className="grid gap-3">
-              {ordenesRecientes.map((orden: OrdenMantenimiento) => (
-                <OrdenCard
-                  key={orden.id || `${orden.userId}_${orden.idPersonalizado}`}
-                  orden={orden}
-                  onView={handleViewOrden}
-                  onPrint={imprimirOrden}
-                  onShare={compartirOrden}
-                  onDownload={descargarPDF}
-                  getTipoColor={getTipoColor}
-                  formatFecha={formatFecha}
-                />
+              {ordenesRecientes.map((o) => (
+                <OrdenCard key={o.id} orden={o} onView={setOrdenSeleccionada} onPrint={imprimirOrden} onShare={compartirOrden} onDownload={descargarPDF} getTipoColor={getTipoColor} formatFecha={formatFecha} />
               ))}
             </div>
           ) : (
-            <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6 text-center">
-              <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Clock className="w-6 h-6 text-blue-400" />
-              </div>
-              <p className="text-sm text-gray-400">
-                Aún no tienes órdenes registradas
-              </p>
-            </div>
+            <p className="text-center text-xs text-gray-500 py-4">No hay órdenes recientes</p>
           )}
 
-          {estadisticas.totalOrdenes > 3 && (
-            <Link
-              href="/ordenes/mantenimiento"
-              className="flex items-center justify-center w-full py-4 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors bg-gray-800/30 hover:bg-gray-800/50 rounded-xl border border-gray-700/50"
-            >
-              Ver historial completo
-              <ArrowRight className="w-4 h-4 ml-2" />
+          {estadisticas.totalOrdenes >= 3 && (
+            <Link href="/ordenes/mantenimiento" className="flex items-center justify-center w-full py-3 text-sm text-blue-400 bg-gray-800/30 rounded-xl border border-gray-700/50 hover:bg-gray-800/50">
+              Ver todo el historial <ArrowRight className="w-3.5 h-3.5 ml-2" />
             </Link>
           )}
         </div>
-
       </div>
 
-      {/* Modal View Orden */}
       {ordenSeleccionada && (
           <ModalOrden
             orden={ordenSeleccionada}
