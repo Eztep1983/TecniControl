@@ -70,6 +70,7 @@ export interface OrdenMantenimiento {
   garantiaTiempoDesde: Date | any;
   garantiaTiempoHasta: Date | any;
   garantiaDescripcion: string;
+  garantiaHabilitada?: boolean;
   
   // Campos de Instalación
   instalacionRecomendaciones?: boolean;

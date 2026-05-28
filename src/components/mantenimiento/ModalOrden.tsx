@@ -570,34 +570,43 @@ const DetailView = memo(({
         )}
 
         {/* GARANTÍA */}
-        {(orden.garantiaTiempoHasta || orden.garantiaDescripcion) && (
+        {(orden.garantiaHabilitada !== false && (orden.garantiaTiempoHasta || orden.garantiaDescripcion)) || (orden.garantiaHabilitada === false) ? (
           <Card title="Garantía" icon={ShieldCheck} iconColor="text-amber-400">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">Vence</p>
-                <p className="text-sm font-semibold text-white">{formatFecha(orden.garantiaTiempoHasta)}</p>
+            {orden.garantiaHabilitada === false ? (
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-gray-400">No aplica</p>
+                <Chip color="gray" icon={ShieldCheck}>Desactivada</Chip>
               </div>
-              {(() => {
-                if (!orden.garantiaTiempoHasta) return null;
-                const now = new Date();
-                const vencimiento = orden.garantiaTiempoHasta?.seconds 
-                  ? new Date(orden.garantiaTiempoHasta.seconds * 1000) 
-                  : new Date(orden.garantiaTiempoHasta);
-                
-                if (isNaN(vencimiento.getTime())) return null;
-                
-                return vencimiento > now 
-                  ? <Chip color="emerald" icon={ShieldCheck}>Activa</Chip>
-                  : <Chip color="red" icon={AlertCircle}>Vencida</Chip>;
-              })()}
-            </div>
-            {orden.garantiaDescripcion && (
-              <p className="text-xs text-gray-500 mt-2.5 leading-relaxed">
-                {orden.garantiaDescripcion}
-              </p>
+            ) : (
+              <>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">Vence</p>
+                    <p className="text-sm font-semibold text-white">{formatFecha(orden.garantiaTiempoHasta)}</p>
+                  </div>
+                  {(() => {
+                    if (!orden.garantiaTiempoHasta) return null;
+                    const now = new Date();
+                    const vencimiento = orden.garantiaTiempoHasta?.seconds 
+                      ? new Date(orden.garantiaTiempoHasta.seconds * 1000) 
+                      : new Date(orden.garantiaTiempoHasta);
+                    
+                    if (isNaN(vencimiento.getTime())) return null;
+                    
+                    return vencimiento > now 
+                      ? <Chip color="emerald" icon={ShieldCheck}>Activa</Chip>
+                      : <Chip color="red" icon={AlertCircle}>Vencida</Chip>;
+                  })()}
+                </div>
+                {orden.garantiaDescripcion && (
+                  <p className="text-xs text-gray-500 mt-2.5 leading-relaxed">
+                    {orden.garantiaDescripcion}
+                  </p>
+                )}
+              </>
             )}
           </Card>
-        )}
+        ) : null}
 
         {(orden.instalacionRecomendaciones || (orden.instalacionConfiguracionTipos?.length ?? 0) > 0) && (
           <Card title="Instalación" icon={CheckCircle} iconColor="text-teal-400">

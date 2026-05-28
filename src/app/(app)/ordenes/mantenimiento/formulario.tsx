@@ -908,15 +908,23 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
         nuevaOrden.instalacionConfiguracionTipos = state.instalacionConfiguracionTipos;
       }
 
-      if (state.garantiaTiempoDesde) nuevaOrden.garantiaTiempoDesde = new Date(state.garantiaTiempoDesde);
-      if (state.garantiaTiempoHasta) nuevaOrden.garantiaTiempoHasta = new Date(state.garantiaTiempoHasta);
-      if (state.garantiaDescripcion.trim()) nuevaOrden.garantiaDescripcion = state.garantiaDescripcion.trim();
+      // Manejo de garantía condicional
+      nuevaOrden.garantiaHabilitada = state.garantiaHabilitada;
+      if (state.garantiaHabilitada) {
+        if (state.garantiaTiempoDesde) nuevaOrden.garantiaTiempoDesde = new Date(state.garantiaTiempoDesde);
+        if (state.garantiaTiempoHasta) nuevaOrden.garantiaTiempoHasta = new Date(state.garantiaTiempoHasta);
+        if (state.garantiaDescripcion.trim()) nuevaOrden.garantiaDescripcion = state.garantiaDescripcion.trim();
+      } else {
+        nuevaOrden.garantiaDescripcion = 'No aplica';
+        // Aseguramos que no se envíen fechas si está desactivada
+        nuevaOrden.garantiaTiempoDesde = null;
+        nuevaOrden.garantiaTiempoHasta = null;
+      }
 
       // Manejo de firma opcional
       nuevaOrden.firmaCliente = state.firmaHabilitada ? state.firmaCliente : null;
       nuevaOrden.nombreFirmante = state.firmaHabilitada ? (state.clienteSeleccionado?.name || 'Cliente') : null;
       nuevaOrden.validacionCliente = state.firmaHabilitada ? state.validacionCliente : false;
-      nuevaOrden.garantiaHabilitada = state.garantiaHabilitada;
 
       // Limpiar undefineds
       Object.keys(nuevaOrden).forEach(key => {

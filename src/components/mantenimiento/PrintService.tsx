@@ -237,14 +237,21 @@ const generarContenidoHTML = (
     <div class="section">
       <div class="section-title" style="border-left-color: #6b7280;">Garantía y Observaciones</div>
       <div class="flex-info">
-        <div class="info-group">
-          <div class="info-row"><span class="info-label">Vigencia Desde</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoDesde)}</span></div>
-          <div class="info-row"><span class="info-label">Vigencia Hasta</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoHasta)}</span></div>
-        </div>
-        <div class="data-box" style="margin:0; flex: 1.5;">
-          <span class="data-label">Términos de Garantía</span>
-          <div class="data-content">${orden.garantiaDescripcion || 'Garantía estándar según políticas de la empresa.'}</div>
-        </div>
+        ${orden.garantiaHabilitada === false ? `
+          <div class="data-box" style="margin:0; flex: 1; display: flex; align-items: center; justify-content: space-between;">
+            <span class="data-label" style="margin-bottom:0;">Garantía del Servicio:</span>
+            <span class="info-value" style="color: #6b7280;">No aplica</span>
+          </div>
+        ` : `
+          <div class="info-group">
+            <div class="info-row"><span class="info-label">Vigencia Desde</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoDesde)}</span></div>
+            <div class="info-row"><span class="info-label">Vigencia Hasta</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoHasta)}</span></div>
+          </div>
+          <div class="data-box" style="margin:0; flex: 1.5;">
+            <span class="data-label">Términos de Garantía</span>
+            <div class="data-content">${orden.garantiaDescripcion || 'Garantía estándar según políticas de la empresa.'}</div>
+          </div>
+        `}
       </div>
     </div>
 
@@ -710,8 +717,8 @@ export const PrintButton: React.FC<PrintButtonProps> = ({ orden, onPrint, varian
 
   if (variant === 'icon') {
     return (
-      <button onClick={handleClick} className="p-1.5 rounded-lg hover:bg-green-500/30 text-green-400 hover:text-white" aria-label="Imprimir orden">
-        <Printer className="w-4 h-4" />
+      <button onClick={handleClick} className="p-2 rounded-lg hover:bg-green-500/10 text-green-400 transition-colors" aria-label="Imprimir orden">
+        <Printer className="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
     )
   }
@@ -754,8 +761,8 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ orden, onShare, varian
 
   if (variant === 'icon') {
     return (
-      <button onClick={handleClick} className="p-1.5 rounded-lg hover:bg-blue-500/30 text-blue-400 hover:text-white" aria-label="Compartir orden">
-        <Share2 className="w-4 h-4" />
+      <button onClick={handleClick} className="p-2 rounded-lg hover:bg-blue-500/10 text-blue-400 transition-colors" aria-label="Compartir orden">
+        <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
     )
   }
@@ -798,8 +805,8 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({ orden, onDownloa
 
   if (variant === 'icon') {
     return (
-      <button onClick={handleClick} className="p-1.5 rounded-lg hover:bg-purple-500/30 text-purple-400 hover:text-white" aria-label="Descargar PDF">
-        <Download className="w-4 h-4" />
+      <button onClick={handleClick} className="p-2 rounded-lg hover:bg-purple-500/10 text-purple-400 transition-colors" aria-label="Descargar PDF">
+        <Download className="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
     )
   }

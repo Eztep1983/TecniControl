@@ -232,7 +232,7 @@ export default function ResumenMantenimiento({
         )}
 
         {/* Garantía */}
-        {(state.garantiaDescripcion || state.mesesGarantia > 0) && (
+        {state.garantiaHabilitada ? (
           <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
             <div className="flex items-center gap-2 mb-3">
               <Shield className="w-5 h-5 text-red-300" />
@@ -252,6 +252,14 @@ export default function ResumenMantenimiento({
                 <p className="text-sm text-gray-400">Duración: {state.mesesGarantia} {state.mesesGarantia === 1 ? 'mes' : 'meses'}</p>
               </div>
             )}
+          </div>
+        ) : (
+          <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
+            <div className="flex items-center gap-2 mb-3">
+              <Shield className="w-5 h-5 text-gray-400" />
+              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Garantía</h3>
+            </div>
+            <p className="text-base text-gray-400">No aplica</p>
           </div>
         )}
 
