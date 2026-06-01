@@ -1351,7 +1351,6 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
           </AnimatePresence>
         </form>
       </main>
-        {/* Onboarding slide-up hint handled by the floating contextual card above (AnimatePresence). Removed duplicate block. */}
 
       {/* Barra de navegación inferior flotante */}
       <div 

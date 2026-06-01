@@ -1,8 +1,8 @@
 'use client'
 import React, { memo, useCallback } from 'react'
 import { OrdenMantenimiento } from '@/types/orden'
-import { Eye, FileText, Share2 } from 'lucide-react'
-import { PrintButton, ShareButton, DownloadButton } from './PrintService'
+import { Eye } from 'lucide-react'
+import { ShareButton, DownloadButton } from './PrintService'
 import { cn } from '@/lib/utils'
 
 interface OrdenCardProps {
@@ -13,6 +13,36 @@ interface OrdenCardProps {
   onDownload: (orden: OrdenMantenimiento) => void | Promise<void>
   getTipoColor: (tipo: string) => string
   formatFecha: (fecha: any) => string
+  searchTerm?: string
+}
+
+const Highlight = ({ text, term }: { text: string; term: string }) => {
+  if (!term?.trim()) return <>{text}</>
+  
+  const normalize = (str: string) =>
+    str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+
+  const tokens = normalize(term).split(/\s+/).filter(Boolean)
+  if (tokens.length === 0) return <>{text}</>
+
+  const pattern = new RegExp(`(${tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi')
+  const parts = text.split(pattern)
+
+  return (
+    <>
+      {parts.map((part, i) => 
+        tokens.some(token => normalize(part) === token) ? (
+          <span key={i} className="bg-blue-500/30 text-blue-200 rounded-sm px-0.5">{part}</span>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  )
 }
 
 const OrdenCard = memo(({
@@ -22,7 +52,8 @@ const OrdenCard = memo(({
   onShare,
   onDownload,
   getTipoColor,
-  formatFecha
+  formatFecha,
+  searchTerm = ''
 }: OrdenCardProps) => {
   const handleCardClick = useCallback(() => onView(orden), [onView, orden])
   const handleViewClick = useCallback((e: React.MouseEvent) => { e.stopPropagation(); onView(orden) }, [onView, orden])
@@ -42,11 +73,13 @@ const OrdenCard = memo(({
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start mb-2 sm:mb-3 gap-2">
           <div className="flex-1 min-w-0">
-            <h3 className="text-white font-bold truncate text-base sm:text-lg leading-tight">{orden.cliente?.name || 'Sin cliente'}</h3>
+            <h3 className="text-white font-bold truncate text-base sm:text-lg leading-tight">
+              <Highlight text={orden.cliente?.name || 'Sin cliente'} term={searchTerm} />
+            </h3>
             <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider font-bold mt-1">ID: {orden.idPersonalizado}</p>
           </div>
           <span className={cn(
-            "inline-flex shrink-0 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold rounded-md border capitalize whitespace-nowrap",
+            "inline-flex shrink-0 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold rounded-md border capitalize uppercase whitespace-nowrap",
             getTipoColor(orden.tipoMantenimiento)
           )}>
             {orden.tipoMantenimiento}
@@ -61,10 +94,12 @@ const OrdenCard = memo(({
             </span>
           )}
           {orden.cliente?.phone && <span className="text-gray-700 hidden sm:inline">•</span>}
-          <span className="truncate font-medium text-gray-100">{orden.dispositivo?.marca} {orden.dispositivo?.modelo}</span>
+          <span className="truncate font-medium text-gray-100">
+            <Highlight text={`${orden.dispositivo?.marca || ''} ${orden.dispositivo?.modelo || ''}`} term={searchTerm} />
+          </span>
         </div>
 
-        <div className="text-[11px] sm:text-sm text-gray-500 truncate border-t border-gray-700/50 pt-2 sm:pt-3 italic block w-full overflow-hidden whitespace-nowrap">
+        <div className="text-[11px] text-sm text-gray-500 truncate border-t border-gray-700/50 pt-2 sm:pt-3 italic block w-full overflow-hidden whitespace-nowrap">
           {truncateWords(
             orden.tareasRealizadas?.length > 0 
               ? orden.tareasRealizadas.join(', ')

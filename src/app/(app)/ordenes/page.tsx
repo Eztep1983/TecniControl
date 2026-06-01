@@ -33,26 +33,16 @@ import { cn } from '@/lib/utils'
 import { useDashboardGreeting } from '@/hooks/ordenes/useDashboardGreeting'
 import { useDraftBanner } from '@/hooks/ordenes/useDraftBanner'
 import { useOnboardingFlow } from '@/hooks/ordenes/useOnboardingFlow'
+import { useMobileNavigation } from '@/components/providers/MobileNavigationContext'
 
 export default function OrdenesDashboardPage() {
   return (
-    <Suspense fallback={<DashboardSkeleton />}>
+    <Suspense fallback={null}>
       <OrdenesDashboardContent />
     </Suspense>
   )
 }
 
-function DashboardSkeleton() {
-  return (
-    <div className="p-4 space-y-6">
-      <Skeleton className="h-24 w-full rounded-2xl" />
-      <Skeleton className="h-16 w-full rounded-2xl" />
-      <div className="grid grid-cols-2 gap-4">
-        {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-28 w-full rounded-2xl" />)}
-      </div>
-    </div>
-  )
-}
 
 const TIPO_COLORS: Record<string, string> = {
   preventivo: 'bg-green-500/20 text-green-400 border-green-500/30',
@@ -85,6 +75,7 @@ function OrdenesDashboardContent() {
   const { negocio, loading: negocioLoading } = useNegocio()
   const { imprimirOrden, compartirOrden, descargarPDF, formatFecha, generarPDFBlob, generarHTML } = usePrintService({ negocio })
   const { prefetchOrdenes, prefetchClientes } = usePrefetchData()
+  const { pendingAction, consumePendingAction } = useMobileNavigation()
 
   // Custom Hooks
   const greetingData = useDashboardGreeting(negocio, user)
@@ -118,13 +109,12 @@ function OrdenesDashboardContent() {
     }
   }, [searchParams, router]);
 
-  const handleOpenForm = useCallback(() => setView('form'), [])
   useEffect(() => {
-    window.addEventListener('open-nueva-orden', handleOpenForm);
-    return () => window.removeEventListener('open-nueva-orden', handleOpenForm);
-  }, [handleOpenForm]);
-
-  if (authLoading || (ordenesLoading && user?.uid && ordenesRecientes.length === 0)) return <DashboardSkeleton />;
+    if (pendingAction === 'open-nueva-orden') {
+      setView('form');
+      consumePendingAction();
+    }
+  }, [pendingAction, consumePendingAction]);
 
   if (!user) {
     return (

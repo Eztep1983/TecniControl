@@ -88,17 +88,17 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       <div
         ref={modalRef}
         style={{
-          // Levantamos el modal sutilmente si el teclado está abierto (UX optimizado para Android/iOS)
+          // Levantamos el modal si el teclado está abierto (UX optimizado para Android/iOS)
+          // Usamos una traslación más agresiva pero limitada para asegurar visibilidad
           transform: isVisible 
-            ? `translateY(min(0px, calc(-${keyboardOffset}px / 2.2))) scale(1)` 
-            : 'translateY(30px) scale(0.95)',
+            ? `translateY(calc(-${keyboardOffset}px * 0.45)) scale(1)` 
+            : 'translateY(100px) scale(0.9)',
           opacity: isVisible ? 1 : 0,
-          transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          maxHeight: 'calc(100dvh - 32px)',
-          paddingBottom: keyboardOffset > 0 ? '8px' : '0px',
+          transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          maxHeight: keyboardOffset > 0 ? `calc(100dvh - ${keyboardOffset}px - 20px)` : '85dvh',
         }}
         className="
-          relative bg-slate-900 w-full max-w-sm rounded-[2.5rem]
+          relative bg-slate-900 w-full max-w-[min(400px,95vw)] rounded-[2.5rem]
           shadow-2xl border border-slate-700/60 flex flex-col overflow-hidden
           ring-1 ring-white/10
         "
@@ -109,6 +109,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
           <h3 className="text-xl font-bold text-white tracking-tight">{title}</h3>
           <button
             onClick={onClose}
+            type="button"
             className="
               w-10 h-10 flex items-center justify-center rounded-2xl
               bg-slate-800 text-slate-400 hover:text-white
@@ -123,7 +124,10 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         {/* Área de Contenido Scrolleable */}
         <div
           className="p-6 overflow-y-auto overscroll-contain flex-1 custom-scrollbar"
-          style={{ WebkitOverflowScrolling: 'touch' }}
+          style={{ 
+            WebkitOverflowScrolling: 'touch',
+            paddingBottom: keyboardOffset > 0 ? '2rem' : '1.5rem' 
+          }}
         >
           {children}
         </div>

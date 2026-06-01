@@ -2,7 +2,7 @@
 
 import { OrdenMantenimiento } from "@/types/orden";
 import {
-  X, Clock, Wrench, AlertCircle,
+  X, Wrench, AlertCircle,
   Share2, CheckCircle, Download,
   User, Cpu, FileText, ShieldCheck, MapPin, PenLine,
   Eye, Printer, ChevronLeft, Loader2, Phone, Mail,
@@ -63,16 +63,19 @@ const Chip = memo(({
   icon?: React.ElementType;
 }) => {
   const colors = {
-    gray:    "bg-gray-800 text-gray-400",
-    blue:    "bg-blue-500/10 text-blue-400 border border-blue-500/20",
-    amber:   "bg-amber-500/10 text-amber-400 border border-amber-500/20",
-    emerald: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
-    purple:  "bg-purple-500/10 text-purple-400 border border-purple-500/20",
-    red:     "bg-red-500/10 text-red-400 border border-red-500/20",
+    gray:    "bg-gray-800/50 text-gray-400 border-gray-700/50",
+    blue:    "bg-blue-500/20 text-blue-300 border-blue-500/30",
+    amber:   "bg-amber-500/20 text-amber-300 border-amber-500/30",
+    emerald: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+    purple:  "bg-purple-500/20 text-purple-300 border-purple-500/30",
+    red:     "bg-red-500/20 text-red-300 border-red-500/30",
   };
   return (
-    <span className={cn("inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold", colors[color])}>
-      {Icon && <Icon className="w-3 h-3" />}
+    <span className={cn(
+      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border", 
+      colors[color]
+    )}>
+      {Icon && <Icon className="w-3.5 h-3.5" />}
       {children}
     </span>
   );
@@ -100,14 +103,14 @@ const DataRow = memo(({
     purple:  "text-purple-400",
   };
   return (
-    <div className="flex items-start justify-between gap-4 py-2.5 border-gray-600 last:border-0">
-      <span className="flex items-center gap-1.5 text-xs text-gray-500 shrink-0">
+    <div className="flex items-center justify-between gap-4 py-2.5 border-b border-white/5 last:border-0">
+      <span className="flex items-center gap-1.5 text-xs text-gray-500 font-medium shrink-0">
         {Icon && <Icon className="w-3.5 h-3.5" />}
         {label}
       </span>
       <span className={cn(
-        "text-xs text-right leading-relaxed max-w-[55%]",
-        mono ? "font-mono" : "font-medium",
+        "text-sm text-right leading-tight max-w-[60%]",
+        mono ? "font-mono" : "font-semibold",
         accent ? accentColors[accent] : "text-gray-200"
       )}>
         {value}
@@ -130,12 +133,12 @@ const Card = memo(({
   children: React.ReactNode;
   className?: string;
 }) => (
-  <div className={cn("rounded-xl border border-gray-600 bg-gray-900/60 overflow-hidden", className)}>
-    <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-600">
-      <Icon className={cn("w-3.5 h-3.5 shrink-0", iconColor)} />
-      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{title}</span>
+  <div className={cn("rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden", className)}>
+    <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-white/[0.03]">
+      <Icon className={cn("w-4 h-4 shrink-0", iconColor)} />
+      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{title}</span>
     </div>
-    <div className="px-4 py-3">
+    <div className="px-4 py-4">
       {children}
     </div>
   </div>
@@ -158,18 +161,18 @@ const ActionBtn = memo(({
   disabled?: boolean;
 }) => {
   const variants = {
-    primary:   "bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white shadow-lg shadow-blue-900/25",
-    secondary: "bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-gray-200 border border-gray-600",
-    ghost:     "bg-transparent hover:bg-gray-800 active:bg-gray-900 text-gray-400 border border-gray-600",
+    primary:   "bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white shadow-lg shadow-blue-900/20",
+    secondary: "bg-white/5 hover:bg-white/10 active:bg-white/15 text-gray-200 border border-white/10",
+    ghost:     "bg-transparent hover:bg-white/5 active:bg-white/10 text-gray-400 border border-white/5",
   };
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold",
+        "flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold uppercase tracking-wide",
         "transition-all duration-150 active:scale-[0.97] select-none touch-manipulation",
-        "disabled:opacity-40 disabled:pointer-events-none min-h-[44px]",
+        "disabled:opacity-40 disabled:pointer-events-none min-h-[48px]",
         variants[variant],
         className
       )}
@@ -210,6 +213,7 @@ const PDFPreviewView = memo(({
   generarHTML?: (orden: OrdenMantenimiento) => Promise<string>;
 }) => {
   const [state, setState] = useState<PreviewState>({ status: "loading", attempt: 1 });
+  const [attemptCount, setAttemptCount] = useState(1);
   const urlRef = useRef<string | null>(null);
   const native = isNativePlatform();
 
@@ -225,7 +229,7 @@ const PDFPreviewView = memo(({
   useEffect(() => {
     let cancelled = false;
     const generate = async () => {
-      setState({ status: "loading", attempt: 1 });
+      setState({ status: "loading", attempt: attemptCount });
       if (urlRef.current) {
         URL.revokeObjectURL(urlRef.current);
         urlRef.current = null;
@@ -256,14 +260,15 @@ const PDFPreviewView = memo(({
     };
     generate();
     return () => { cancelled = true; };
-  }, [orden, generarPDFBlob, generarHTML, native]);
+  }, [orden, generarPDFBlob, generarHTML, native, attemptCount]);
 
   const handleShare = useCallback(() => onShare?.(orden), [onShare, orden]);
   const handlePrint = useCallback(() => onPrint(orden), [onPrint, orden]);
   const handleDownload = useCallback(() => onDownload?.(orden), [onDownload, orden]);
+  const handleRetry = useCallback(() => setAttemptCount(prev => prev + 1), []);
 
   const footerActions = (
-    <footer className="px-3 pb-3 pt-2 bg-gray-950 border-t border-gray-600 flex-shrink-0 safe-bottom">
+    <footer className="px-5 pb-8 pt-3 bg-gray-950/80 border-t border-white/5 flex-shrink-0">
       <div className={cn(
         "grid gap-2",
         onShare && onDownload ? "grid-cols-3" : onShare || onDownload ? "grid-cols-2" : "grid-cols-1"
@@ -285,22 +290,22 @@ const PDFPreviewView = memo(({
   return (
     <div className="flex flex-col h-full transform-gpu">
       {/* Header */}
-      <header className="px-3 py-2.5 border-b border-gray-600 flex items-center gap-2.5 flex-shrink-0 bg-gray-950">
+      <header className="px-5 py-3 border-b border-white/5 flex items-center gap-3 flex-shrink-0 bg-gray-950/80">
         <button
           onClick={onBack}
-          className="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 active:bg-gray-900 flex items-center justify-center transition-colors touch-manipulation"
+          className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 active:bg-white/15 flex items-center justify-center transition-all touch-manipulation shadow-sm"
           aria-label="Volver"
         >
-          <ChevronLeft className="w-4 h-4 text-gray-300" />
+          <ChevronLeft className="w-5 h-5 text-gray-300" />
         </button>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-white leading-none">Vista Previa</p>
-          <p className="text-[11px] text-gray-500 mt-0.5">Orden #{orden.idPersonalizado || orden.id?.slice(-6)}</p>
+          <p className="text-sm font-bold text-white uppercase tracking-wider leading-none">Vista Previa</p>
+          <p className="text-xs font-medium text-gray-500 mt-1">Orden #{orden.idPersonalizado || orden.id?.slice(-6)}</p>
         </div>
-        {state.status === "loading" && <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />}
+        {state.status === "loading" && <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />}
         {(state.status === "ready-web" || state.status === "ready-html" || state.status === "ready-native") && (
-          <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+          <span className="text-xs text-emerald-400 font-bold uppercase tracking-tight flex items-center gap-1.5 bg-emerald-500/10 px-2 py-1 rounded-md">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             Listo
           </span>
         )}
@@ -309,65 +314,73 @@ const PDFPreviewView = memo(({
       {/* Área central */}
       <div className="flex-1 overflow-hidden bg-gray-950 relative">
         {state.status === "loading" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-5">
             <div className="relative">
-              <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center">
-                <FileText className="w-7 h-7 text-blue-400/60" />
+              <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                <FileText className="w-8 h-8 text-blue-400/80" />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gray-950 flex items-center justify-center">
-                <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin" />
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gray-950 flex items-center justify-center shadow-lg">
+                <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
               </div>
             </div>
-            <div className="text-center">
-              <p className="text-sm font-semibold text-gray-200">Generando documento…</p>
-              <p className="text-xs text-gray-600 mt-1">
-                {state.attempt > 1 ? "Reintentando…" : "Un momento"}
+            <div className="text-center px-6">
+              <p className="text-base font-bold text-gray-100">Generando documento…</p>
+              <p className="text-xs font-medium text-gray-500 mt-1.5 uppercase tracking-widest">
+                {attemptCount > 1 ? `Reintentando (${attemptCount})…` : "Un momento por favor"}
               </p>
             </div>
           </div>
         )}
 
         {state.status === "error" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6">
-            <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/15 flex items-center justify-center">
-              <AlertCircle className="w-7 h-7 text-red-400" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 px-8 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+              <AlertCircle className="w-9 h-9 text-red-400" />
             </div>
-            <div className="text-center">
-              <p className="text-sm font-bold text-gray-200">No se pudo generar la vista previa</p>
-              <p className="text-xs text-gray-500 mt-1.5 leading-relaxed max-w-[240px] mx-auto">
-                {state.message.length < 120 ? state.message : "Usa los botones para compartir o guardar directamente."}
+            <div>
+              <p className="text-lg font-bold text-gray-100">Error al generar PDF</p>
+              <p className="text-sm text-gray-500 mt-2 leading-relaxed max-w-[280px] mx-auto">
+                {state.message}
               </p>
             </div>
-            <div className="flex flex-col w-full max-w-xs gap-2">
-              {onShare && <ActionBtn variant="primary" icon={Share2} onClick={handleShare}>Compartir PDF</ActionBtn>}
-              {onDownload && <ActionBtn variant="secondary" icon={Download} onClick={handleDownload}>Descargar PDF</ActionBtn>}
+            <div className="flex flex-col w-full max-w-xs gap-3">
+              <ActionBtn variant="secondary" icon={Loader2} onClick={handleRetry}>
+                Reintentar
+              </ActionBtn>
+              <div className="grid grid-cols-2 gap-2">
+                {onShare && <ActionBtn variant="primary" icon={Share2} onClick={handleShare} className="text-[10px] px-2">Compartir</ActionBtn>}
+                {onDownload && <ActionBtn variant="ghost" icon={Download} onClick={handleDownload} className="text-[10px] px-2 text-gray-300">Descargar</ActionBtn>}
+              </div>
             </div>
           </div>
         )}
 
         {state.status === "ready-native" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 overflow-y-auto py-6">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center">
-              <CheckCircle className="w-7 h-7 text-emerald-400" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 px-6 overflow-y-auto py-8">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-inner">
+              <CheckCircle className="w-9 h-9 text-emerald-400" />
             </div>
             <div className="text-center">
-              <p className="text-base font-bold text-white">PDF generado</p>
-              <p className="text-xs text-gray-400 mt-1.5 max-w-[240px] mx-auto">
-                Usa los botones para compartir, descargar o imprimir.
+              <p className="text-xl font-bold text-white tracking-tight">PDF Generado</p>
+              <p className="text-sm text-gray-400 mt-2 max-w-[260px] mx-auto leading-relaxed">
+                El documento está listo. Utiliza las opciones de la barra inferior para proceder.
               </p>
             </div>
-            <div className="w-full max-w-xs divide-y divide-gray-600 rounded-xl border border-gray-600 bg-gray-900/60 overflow-hidden">
-              {[
-                { label: "Orden", value: "#" + (orden.idPersonalizado || orden.id?.slice(-6)) },
-                { label: "Cliente", value: orden.cliente?.name || "—" },
-                { label: "Equipo", value: [orden.dispositivo?.marca, orden.dispositivo?.modelo].filter(Boolean).join(" ") || "—" },
-                { label: "Tipo", value: orden.tipoMantenimiento || "—" },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex justify-between items-center px-4 py-2.5">
-                  <span className="text-xs text-gray-500">{label}</span>
-                  <span className="text-xs text-gray-200 font-medium">{value}</span>
-                </div>
-              ))}
+            <div className="w-full max-w-xs space-y-2">
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Resumen del servicio</p>
+              <div className="divide-y divide-white/5 rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden shadow-sm">
+                {[
+                  { label: "Orden", value: "#" + (orden.idPersonalizado || orden.id?.slice(-6)) },
+                  { label: "Cliente", value: orden.cliente?.name || "—" },
+                  { label: "Equipo", value: [orden.dispositivo?.marca, orden.dispositivo?.modelo].filter(Boolean).join(" ") || "—" },
+                  { label: "Tipo", value: orden.tipoMantenimiento || "—" },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex justify-between items-center px-4 py-3">
+                    <span className="text-xs font-medium text-gray-500">{label}</span>
+                    <span className="text-xs font-bold text-gray-200">{value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -424,55 +437,53 @@ const DetailView = memo(({
   const handleDownload = useCallback(() => onDownload?.(orden), [onDownload, orden]);
 
   return (
-    <div className="divide-y divide-gray-600 flex flex-col h-full min-h-0 transform-gpu">
+    <div className="flex flex-col h-full min-h-0 transform-gpu">
 
-      {/* ── Header compacto ── */}
-      <header className="px-4 pt-4 pb-3 flex items-start justify-between gap-3 flex-shrink-0">
+      {/* ── Header con jerarquía clara ── */}
+      <header className="px-5 pt-5 pb-4 flex items-start justify-between gap-4 flex-shrink-0 bg-gray-950/50">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
-              Orden #{orden.idPersonalizado || orden.id?.slice(-6)}
-            </span>
+          <div className="flex items-center gap-3 mb-1.5 flex-wrap">
+            <h2 className="text-xl font-black text-white leading-none tracking-tight uppercase">
+              {orden.tipoMantenimiento}
+            </h2>
             <StatusBadge estado={(orden as any).estado} />
           </div>
-          <h2 className="text-base font-bold text-white leading-tight">
-            {orden.tipoMantenimiento}
-          </h2>
-          <p className="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1">
-            <Calendar className="w-3 h-3" />
-            {formatFecha(orden.fechaCreacion)}
-            {orden.horaCreacion && ` · ${orden.horaCreacion}`}
-          </p>
+          <div className="flex items-center gap-3 text-xs font-bold text-gray-500 uppercase tracking-widest">
+            <span>Orden #{orden.idPersonalizado || orden.id?.slice(-6)}</span>
+            <span className="w-1 h-1 rounded-full bg-gray-700" />
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5" />
+              {formatFecha(orden.fechaCreacion)}
+              {orden.horaCreacion && ` · ${orden.horaCreacion}`}
+            </span>
+          </div>
         </div>
         <button
           onClick={onClose}
-          className="w-8 h-8 rounded-lg bg-gray-800/80 hover:bg-gray-700 flex items-center justify-center transition-colors touch-manipulation shrink-0"
+          className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 active:bg-white/15 flex items-center justify-center transition-all touch-manipulation shrink-0 shadow-sm"
           aria-label="Cerrar"
         >
-          <X className="w-4 h-4 text-gray-400" />
+          <X className="w-5 h-5 text-gray-400" />
         </button>
       </header>
 
-      <div className="h-px bg-white/5 mx-4 mb-4" />
+      <div className="h-px bg-white/5 mx-5 mb-4" />
 
       <main 
-        className="flex-1 overflow-y-auto overscroll-contain px-4 space-y-3 custom-scrollbar"
-        style={{ 
-          contain: 'strict',         
-          willChange: 'scroll-position' 
-        }}
+        className="flex-1 overflow-y-auto overscroll-contain px-5 space-y-4 custom-scrollbar"
+        style={{ willChange: 'scroll-position' }}
       >
         {/* CLIENTE */}
         <Card title="Cliente" icon={User} iconColor="text-blue-400">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <p className="text-sm font-bold text-white leading-tight">{orden.cliente.name}</p>
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <p className="text-base font-bold text-white leading-tight">{orden.cliente.name}</p>
             {orden.cliente.phone && (
               <a
                 href={`tel:${orden.cliente.phone}`}
-                className="flex items-center gap-1 text-[11px] text-blue-400 font-medium bg-blue-500/10 px-2 py-1 rounded-full shrink-0"
+                className="flex items-center gap-1.5 text-xs text-blue-400 font-bold uppercase tracking-wider bg-blue-500/10 px-3 py-1.5 rounded-full shrink-0 border border-blue-500/20 active:scale-95 transition-transform"
               >
-                <Phone className="w-3 h-3" />
-                {orden.cliente.phone}
+                <Phone className="w-3.5 h-3.5" />
+                Llamar
               </a>
             )}
           </div>
@@ -489,24 +500,24 @@ const DetailView = memo(({
 
         {/* DISPOSITIVO */}
         <Card title="Dispositivo" icon={Cpu} iconColor="text-emerald-400">
-          <p className="text-sm font-bold text-white mb-3 capitalize">{deviceName || "—"}</p>
+          <p className="text-base font-bold text-white mb-4 capitalize">{deviceName || "Equipo no especificado"}</p>
           <div className="space-y-0">
-            <DataRow label="Tipo" value={orden.dispositivo?.tipo} icon={Tag} />
+            <DataRow label="Tipo de equipo" value={orden.dispositivo?.tipo} icon={Tag} />
             <DataRow label="Número de serie" value={orden.dispositivo?.numeroSerie || "N/A"} icon={Hash} mono accent="amber" />
           </div>
 
           {orden.contador && (
-            <div className="mt-3 flex items-center justify-between px-3 py-2 rounded-lg bg-purple-500/5 border border-purple-500/10">
-              <span className="text-xs text-gray-500">Contador ({orden.contador.tipo})</span>
-              <span className="text-xs font-semibold text-purple-300">
-                {orden.contador.valor} {orden.contador.unidadPersonalizada || ''}
+            <div className="mt-4 flex items-center justify-between px-4 py-3 rounded-xl bg-purple-500/5 border border-purple-500/10 shadow-inner">
+              <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">Contador ({orden.contador.tipo})</span>
+              <span className="text-sm font-black text-purple-300">
+                {orden.contador.valor} <span className="text-[10px] font-bold opacity-70 uppercase">{orden.contador.unidadPersonalizada || ''}</span>
               </span>
             </div>
           )}
           {orden.contadorMaquina !== undefined && (
-            <div className="mt-2 flex items-center justify-between px-3 py-2 rounded-lg bg-blue-500/5 border border-blue-500/10">
-              <span className="text-xs text-gray-500">Contador de Máquina</span>
-              <span className="text-xs font-semibold text-blue-300">
+            <div className="mt-2 flex items-center justify-between px-4 py-3 rounded-xl bg-blue-500/5 border border-blue-500/10 shadow-inner">
+              <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">Contador de Máquina</span>
+              <span className="text-sm font-black text-blue-300">
                 {orden.contadorMaquina.toLocaleString()}
               </span>
             </div>
@@ -516,9 +527,9 @@ const DetailView = memo(({
         {/* SERVICIO */}
         <Card title="Servicio realizado" icon={Wrench} iconColor="text-orange-400">
           {orden.tareasRealizadas && orden.tareasRealizadas.length > 0 && (
-            <div className="mb-3">
-              <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">Tareas</p>
-              <div className="flex flex-wrap gap-1.5">
+            <div className="mb-5">
+              <p className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-3">Tareas ejecutadas</p>
+              <div className="flex flex-wrap gap-2">
                 {orden.tareasRealizadas.map((t, i) => (
                   <Chip key={i} color="gray">{t}</Chip>
                 ))}
@@ -528,12 +539,12 @@ const DetailView = memo(({
 
           {orden.piezasUsadas && orden.piezasUsadas.length > 0 && (
             <div>
-              <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">Repuestos</p>
-              <div className="space-y-1">
+              <p className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-3">Repuestos instalados</p>
+              <div className="space-y-2">
                 {orden.piezasUsadas.map((p, i) => (
-                  <div key={i} className="flex items-center justify-between py-1.5 border-b border-gray-600 last:border-0">
-                    <span className="text-xs text-gray-300">{p.pieza}</span>
-                    <span className="text-[11px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full">×{p.cantidad}</span>
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                    <span className="text-sm text-gray-300 font-medium">{p.pieza}</span>
+                    <span className="text-xs font-black text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-lg border border-blue-500/20">×{p.cantidad}</span>
                   </div>
                 ))}
               </div>
@@ -542,27 +553,29 @@ const DetailView = memo(({
 
           {(!orden.tareasRealizadas || orden.tareasRealizadas.length === 0) &&
            (!orden.piezasUsadas || orden.piezasUsadas.length === 0) && (
-            <p className="text-xs text-gray-600">Sin detalle de tareas registrado.</p>
+            <div className="py-4 text-center rounded-xl bg-white/[0.02] border border-dashed border-white/5">
+              <p className="text-xs text-gray-500 font-medium italic">Sin detalle de tareas registrado.</p>
+            </div>
           )}
         </Card>
 
         {(orden.observacionesIniciales || orden.pruebasRealizadas || orden.posiblesCausas || orden.diagnosticoFinal) && (
-          <Card title="Diagnóstico" icon={AlertCircle} iconColor="text-yellow-400">
-            <div className="space-y-2.5">
+          <Card title="Diagnóstico técnico" icon={AlertCircle} iconColor="text-yellow-400">
+            <div className="space-y-4">
               {[
                 { label: "Estado inicial",     value: orden.observacionesIniciales },
                 { label: "Pruebas realizadas", value: orden.pruebasRealizadas },
                 { label: "Posibles causas",    value: orden.posiblesCausas },
               ].filter(i => i.value).map(({ label, value }) => (
                 <div key={label}>
-                  <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">{label}</p>
-                  <p className="text-xs text-gray-300 leading-relaxed">{value}</p>
+                  <p className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-1.5">{label}</p>
+                  <p className="text-sm text-gray-300 leading-relaxed font-medium">{value}</p>
                 </div>
               ))}
               {orden.diagnosticoFinal && (
-                <div className="bg-blue-500/5 border border-blue-500/15 rounded-lg px-3 py-2.5">
-                  <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-1">Diagnóstico final</p>
-                  <p className="text-xs text-blue-200 leading-relaxed">{orden.diagnosticoFinal}</p>
+                <div className="bg-blue-500/5 border border-blue-500/15 rounded-2xl px-4 py-3.5 shadow-inner">
+                  <p className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1.5">Diagnóstico final</p>
+                  <p className="text-sm text-blue-200 leading-relaxed font-bold">{orden.diagnosticoFinal}</p>
                 </div>
               )}
             </div>
@@ -573,16 +586,16 @@ const DetailView = memo(({
         {(orden.garantiaHabilitada !== false && (orden.garantiaTiempoHasta || orden.garantiaDescripcion)) || (orden.garantiaHabilitada === false) ? (
           <Card title="Garantía" icon={ShieldCheck} iconColor="text-amber-400">
             {orden.garantiaHabilitada === false ? (
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-gray-400">No aplica</p>
-                <Chip color="gray" icon={ShieldCheck}>Desactivada</Chip>
+              <div className="flex items-center justify-between py-1">
+                <p className="text-sm font-bold text-gray-500 italic">No aplica garantía</p>
+                <Chip color="gray" icon={X}>Desactivada</Chip>
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-4 py-1">
                   <div>
-                    <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">Vence</p>
-                    <p className="text-sm font-semibold text-white">{formatFecha(orden.garantiaTiempoHasta)}</p>
+                    <p className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-1">Vencimiento</p>
+                    <p className="text-base font-black text-white">{formatFecha(orden.garantiaTiempoHasta)}</p>
                   </div>
                   {(() => {
                     if (!orden.garantiaTiempoHasta) return null;
@@ -594,14 +607,16 @@ const DetailView = memo(({
                     if (isNaN(vencimiento.getTime())) return null;
                     
                     return vencimiento > now 
-                      ? <Chip color="emerald" icon={ShieldCheck}>Activa</Chip>
-                      : <Chip color="red" icon={AlertCircle}>Vencida</Chip>;
+                      ? <Chip color="emerald" icon={ShieldCheck}>Vigente</Chip>
+                      : <Chip color="red" icon={AlertCircle}>Expirada</Chip>;
                   })()}
                 </div>
                 {orden.garantiaDescripcion && (
-                  <p className="text-xs text-gray-500 mt-2.5 leading-relaxed">
-                    {orden.garantiaDescripcion}
-                  </p>
+                  <div className="mt-4 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                    <p className="text-xs text-gray-400 leading-relaxed font-medium">
+                      {orden.garantiaDescripcion}
+                    </p>
+                  </div>
                 )}
               </>
             )}
@@ -611,15 +626,15 @@ const DetailView = memo(({
         {(orden.instalacionRecomendaciones || (orden.instalacionConfiguracionTipos?.length ?? 0) > 0) && (
           <Card title="Instalación" icon={CheckCircle} iconColor="text-teal-400">
             {orden.instalacionRecomendaciones && (
-              <div className="mb-2.5">
-                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">Recomendaciones</p>
-                <p className="text-xs text-gray-300 leading-relaxed">
-                  {orden.instalacionRecomendacionesDetalle || "Se brindaron recomendaciones de uso al cliente."}
+              <div className="mb-4">
+                <p className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-2">Recomendaciones de uso</p>
+                <p className="text-sm text-gray-300 leading-relaxed font-medium">
+                  {orden.instalacionRecomendacionesDetalle || "Se brindaron recomendaciones técnicas al cliente."}
                 </p>
               </div>
             )}
             {orden.instalacionConfiguracionTipos && orden.instalacionConfiguracionTipos.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2 mt-2">
                 {orden.instalacionConfiguracionTipos.map((tipo, i) => (
                   <Chip key={i} color="gray">{tipo}</Chip>
                 ))}
@@ -629,9 +644,9 @@ const DetailView = memo(({
         )}
 
         {orden.firmaCliente && (
-          <Card title="Firma del cliente" icon={PenLine} iconColor="text-indigo-400">
-            <div className="flex items-center gap-4">
-              <div className="bg-white rounded-xl p-2 flex-shrink-0 shadow-sm">
+          <Card title="Conformidad del cliente" icon={PenLine} iconColor="text-indigo-400">
+            <div className="flex items-center gap-6">
+              <div className="bg-white rounded-2xl p-3 flex-shrink-0 shadow-xl border border-white/10">
                 <img
                   src={orden.firmaCliente}
                   alt="Firma"
@@ -642,39 +657,40 @@ const DetailView = memo(({
                   className="w-28 h-16 object-contain"
                 />
               </div>
-              <div>
-                <p className="text-sm font-bold text-white leading-tight">
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Firmante</p>
+                <p className="text-base font-black text-white leading-tight truncate">
                   {orden.nombreFirmante || orden.cliente.name}
                 </p>
-                <div className="flex items-center gap-1 mt-1.5 text-emerald-400">
-                  <CheckCircle className="w-3 h-3" />
-                  <span className="text-[10px] font-semibold">Validado digitalmente</span>
+                <div className="flex items-center gap-1.5 mt-2.5 text-emerald-400">
+                  <CheckCircle className="w-4 h-4" />
+                  <span className="text-xs font-bold uppercase tracking-tight">Validada</span>
                 </div>
               </div>
             </div>
           </Card>
         )}
 
-        <div className="h-2" />
+        <div className="h-4" />
       </main>
 
-      {/* ── Footer de acciones ── */}
-      <footer className="px-4 pt-2.5 pb-4 bg-gray-950 border-t border-white/5 flex-shrink-0 safe-bottom">
-        <div className={cn("grid gap-2", onShare ? "grid-cols-2" : "grid-cols-1")}>
+      {/* ── Footer con acciones prioritarias ── */}
+      <footer className="px-5 pt-3 pb-8 bg-gray-950/80 border-t border-white/5 flex-shrink-0">
+        <div className="grid grid-cols-2 gap-3">
           {onShare && (
             <ActionBtn variant="primary" icon={Share2} onClick={handleShare}>
-              Compartir PDF
+              Compartir
             </ActionBtn>
           )}
-          <ActionBtn variant="secondary" icon={Eye} onClick={onPreview}>
-            Ver en PDF
+          <ActionBtn variant="secondary" icon={Eye} onClick={onPreview} className={cn(!onShare && "col-span-full")}>
+            Ver PDF
           </ActionBtn>
+          {onDownload && (
+            <ActionBtn variant="ghost" icon={Download} onClick={handleDownload} className="col-span-full mt-1 border-dashed text-gray-400 hover:text-gray-200">
+              Descargar Documento
+            </ActionBtn>
+          )}
         </div>
-        {onDownload && (
-          <ActionBtn variant="ghost" icon={Download} onClick={handleDownload} className="w-full mt-2 text-xs">
-            Descargar
-          </ActionBtn>
-        )}
       </footer>
     </div>
   );
@@ -737,7 +753,7 @@ export const ModalOrden = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-[110] sm:p-4 pointer-events-auto"
+      className="fixed inset-0 bg-black/70 flex items-end sm:items-center justify-center z-[110] sm:p-6 pointer-events-auto"
       onClick={handleBackdropClick}
       role="presentation"
     >
@@ -746,12 +762,12 @@ export const ModalOrden = ({
         style={{ paddingBottom: 'env(safe-area-inset-bottom)'}}
         className={cn(
           "bg-gray-950 w-full flex flex-col overflow-hidden relative",
-          "shadow-2xl border-t border-x border-gray-600 sm:border",
-          "rounded-t-2xl sm:rounded-2xl",
-          "h-[85dvh] max-h-[85dvh]",
-          "sm:h-auto sm:max-w-md sm:max-h-[80vh]",
+          "shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] border-t border-x border-white/10 sm:border",
+          "rounded-t-[2.5rem] sm:rounded-[2.5rem]",
+          "h-[92dvh] max-h-[92dvh]",
+          "sm:h-auto sm:max-w-md sm:max-h-[85vh]",
           "lg:max-w-lg",
-          "transform-gpu slide-in-from-bottom-4 sm:zoom-in-95 duration-200 ease-out"
+          "transform-gpu slide-in-from-bottom-8 sm:zoom-in-95 duration-300 ease-out"
         )}
         onClick={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
@@ -765,8 +781,9 @@ export const ModalOrden = ({
           Orden de mantenimiento {orden.tipoMantenimiento} #{orden.idPersonalizado || orden.id?.slice(-6)}
         </h2>
 
-        <div className="flex justify-center pt-2.5 pb-0 sm:hidden flex-shrink-0">
-          <div className="w-8 h-1 rounded-full bg-gray-800" />
+        {/* Drag Handle - Visible on all devices when in sheet mode */}
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="w-12 h-1.5 rounded-full bg-white/10" />
         </div>
 
         {view === "detail" && (

@@ -31,13 +31,15 @@ export const getEstadisticasPorUsuario = async (userId: string) => {
       preventivosSnap,
       correctivosSnap,
       diagnosticosSnap,
-      instalacionesSnap
+      instalacionesSnap,
+      garantiasSnap
     ] = await Promise.all([
       getCountFromServer(baseQuery),
       getCountFromServer(query(baseQuery, where('tipoMantenimiento', '==', 'preventivo'))),
       getCountFromServer(query(baseQuery, where('tipoMantenimiento', '==', 'correctivo'))),
       getCountFromServer(query(baseQuery, where('tipoMantenimiento', '==', 'diagnostico'))),
-      getCountFromServer(query(baseQuery, where('tipoMantenimiento', '==', 'instalacion')))
+      getCountFromServer(query(baseQuery, where('tipoMantenimiento', '==', 'instalacion'))),
+      getCountFromServer(query(baseQuery, where('tipoMantenimiento', '==', 'garantia')))
     ]);
 
     return {
@@ -46,6 +48,7 @@ export const getEstadisticasPorUsuario = async (userId: string) => {
       correctivos: correctivosSnap.data().count,
       diagnosticos: diagnosticosSnap.data().count,
       instalaciones: instalacionesSnap.data().count,
+      garantias: garantiasSnap.data().count,
     };
   } catch (error) {
     console.error('Error obteniendo estadísticas:', error);
@@ -55,6 +58,7 @@ export const getEstadisticasPorUsuario = async (userId: string) => {
       correctivos: 0,
       diagnosticos: 0,
       instalaciones: 0,
+      garantias: 0,
     };
   }
 };

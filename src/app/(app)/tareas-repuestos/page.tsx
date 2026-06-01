@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import { useState, useMemo, useCallback, useEffect, memo } from 'react'
 import { useTareasYPiezas } from '@/hooks/useTareasYPiezas'
 import type { TareaPredefinida, PiezaPredefinida } from '@/lib/configuracion-helpers'
 import { useAuth } from '@/components/auth/AuthProvider'
 import {
   ListChecks, Package, Plus, Trash2, Edit3,
   X, Search, AlertCircle, CheckCircle,
-  Wrench, RotateCw, WifiOff, Loader2, CloudOff,
+  WifiOff, Loader2, CloudOff,
   RefreshCw
 } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
@@ -72,7 +72,7 @@ const Toast = ({ toast, onClose }: { toast: ToastData; onClose: () => void }) =>
   }, [onClose])
 
   const styles = {
-    success: 'bg-emerald-600/95 border-emerald-500/50',
+    success: 'bg-blue-600/95 border-blue-500/50',
     error:   'bg-red-600/95 border-red-500/50',
     info:    'bg-blue-600/95 border-blue-500/50',
   }
@@ -136,6 +136,7 @@ const SearchInput = ({
     {value && (
       <button
         onClick={() => onChange('')}
+        type="button"
         className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-white active:text-white touch-manipulation"
         aria-label="Limpiar"
       >
@@ -167,11 +168,136 @@ const StatChip = ({
   </div>
 )
 
+// ─── Componente: Item de Tarea (memoizado) ────────────────────────────────
+
+const TareaItem = memo(({ 
+  tarea, 
+  onEdit, 
+  onDelete 
+}: { 
+  tarea: TareaPredefinida; 
+  onEdit: (t: TareaPredefinida) => void; 
+  onDelete: (id: string) => void 
+}) => (
+  <div
+    className="
+      bg-slate-800/70 rounded-xl px-4 py-3.5
+      border border-slate-700/40
+      flex items-start gap-3
+      transition-colors hover:bg-slate-800
+    "
+  >
+    <div className="flex-1 min-w-0">
+      <p className="text-white font-medium text-sm leading-snug truncate">
+        {tarea.nombre}
+      </p>
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        <TipoChip tipo={tarea.tipo} />
+        <span className="text-xs px-2 py-0.5 bg-slate-700/70 text-slate-400 rounded-full border border-slate-600/40">
+          {tarea.categoria}
+        </span>
+      </div>
+    </div>
+
+    <div className="flex gap-1.5 shrink-0">
+      <button
+        onClick={() => onEdit(tarea)}
+        type="button"
+        className="
+          w-8 h-8 flex items-center justify-center
+          rounded-lg bg-blue-500/10 text-blue-400
+          active:bg-blue-500/20
+          touch-manipulation transition-all
+        "
+        aria-label="Editar tarea"
+      >
+        <Edit3 className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => onDelete(tarea.id)}
+        type="button"
+        className="
+          w-8 h-8 flex items-center justify-center
+          rounded-lg bg-red-500/10 text-red-400
+          active:bg-red-500/20
+          touch-manipulation transition-all
+        "
+        aria-label="Eliminar tarea"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+))
+
+TareaItem.displayName = 'TareaItem'
+
+// ─── Componente: Item de Pieza (memoizado) ────────────────────────────────
+
+const PiezaItem = memo(({ 
+  pieza, 
+  onEdit, 
+  onDelete 
+}: { 
+  pieza: PiezaPredefinida; 
+  onEdit: (p: PiezaPredefinida) => void; 
+  onDelete: (id: string) => void 
+}) => (
+  <div
+    className="
+      bg-slate-800/70 rounded-xl px-4 py-3.5
+      border border-slate-700/40
+      flex items-start gap-3
+      transition-colors hover:bg-slate-800
+    "
+  >
+    <div className="flex-1 min-w-0">
+      <p className="text-white font-medium text-sm leading-snug truncate">
+        {pieza.nombre}
+      </p>
+      <span className="text-xs text-slate-400 mt-1 inline-block">
+        {pieza.categoria}
+      </span>
+    </div>
+
+    <div className="flex gap-1.5 shrink-0">
+      <button
+        onClick={() => onEdit(pieza)}
+        type="button"
+        className="
+          w-8 h-8 flex items-center justify-center
+          rounded-lg bg-blue-500/10 text-blue-400
+          active:bg-blue-500/20
+          touch-manipulation transition-all
+        "
+        aria-label="Editar repuesto"
+      >
+        <Edit3 className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => onDelete(pieza.id)}
+        type="button"
+        className="
+          w-8 h-8 flex items-center justify-center
+          rounded-lg bg-red-500/10 text-red-400
+          active:bg-red-500/20
+          touch-manipulation transition-all
+        "
+        aria-label="Eliminar repuesto"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+))
+
+PiezaItem.displayName = 'PiezaItem'
+
 // ─── Componente: Chip de tipo (conservado) ─────────────────────────────────
 
 const TipoChip = ({ tipo }: { tipo: TareaPredefinida['tipo'] }) => {
   const styles = {
-    preventivo: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+    preventivo: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
     correctivo: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
     ambos:      'bg-purple-500/15 text-purple-300 border-purple-500/30',
   }
@@ -264,9 +390,9 @@ const NetworkIndicator = ({
   return null
 }
 
-// ─── Formulario de Tarea (conservado) ──────────────────────────────────────
+// ─── Formulario de Tarea (memoizado) ──────────────────────────────────────
 
-const FormularioTarea = ({
+const FormularioTarea = memo(({
   form,
   onChange,
   onSubmit,
@@ -281,84 +407,107 @@ const FormularioTarea = ({
   submitLabel: string
   accentClass: string
 }) => (
-  <div className="space-y-4">
-    <div>
-      <label className="block text-sm font-medium text-slate-300 mb-1.5">Nombre *</label>
-      <input
-        type="text"
-        value={form.nombre}
-        onChange={e => onChange({ ...form, nombre: e.target.value })}
-        placeholder="Ej: Cambio de aceite"
-        autoFocus
-        className="
-          w-full min-h-[48px] px-4 py-3
-          bg-slate-800 border border-slate-700 rounded-xl
-          text-white placeholder-slate-500 text-sm
-          focus:outline-none focus:ring-2 focus:ring-blue-500/40
-          transition-all
-        "
-      />
+  <div className="flex flex-col gap-5">
+    <div className="space-y-4">
+      <div className="group">
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">
+          Nombre de la tarea *
+        </label>
+        <input
+          type="text"
+          value={form.nombre}
+          onChange={e => onChange({ ...form, nombre: e.target.value })}
+          placeholder="Ej: Cambio de aceite"
+          className="
+            w-full min-h-[52px] px-4
+            bg-slate-800/50 border border-slate-700/50 rounded-2xl
+            text-white placeholder-slate-600 text-sm
+            focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/50
+            transition-all
+          "
+        />
+      </div>
+
+      <div className="group">
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">
+          Tipo de servicio
+        </label>
+        <div className="relative">
+          <select
+            value={form.tipo}
+            onChange={e => onChange({ ...form, tipo: e.target.value as TareaPredefinida['tipo'] })}
+            className="
+              w-full min-h-[52px] px-4 pr-10
+              bg-slate-800/50 border border-slate-700/50 rounded-2xl
+              text-white text-sm appearance-none
+              focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/50
+              transition-all
+            "
+          >
+            <option value="preventivo">Preventivo</option>
+            <option value="correctivo">Correctivo</option>
+            <option value="ambos">Ambos</option>
+          </select>
+          <RefreshCw className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+        </div>
+      </div>
+
+      <div className="group">
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">
+          Categoría
+        </label>
+        <input
+          type="text"
+          value={form.categoria}
+          onChange={e => onChange({ ...form, categoria: e.target.value })}
+          placeholder="Ej: Motor, Software, Hardware…"
+          className="
+            w-full min-h-[52px] px-4
+            bg-slate-800/50 border border-slate-700/50 rounded-2xl
+            text-white placeholder-slate-600 text-sm
+            focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/50
+            transition-all
+          "
+        />
+      </div>
     </div>
-    <div>
-      <label className="block text-sm font-medium text-slate-300 mb-1.5">Tipo</label>
-      <select
-        value={form.tipo}
-        onChange={e => onChange({ ...form, tipo: e.target.value as TareaPredefinida['tipo'] })}
-        className="
-          w-full min-h-[48px] px-4 py-3
-          bg-slate-800 border border-slate-700 rounded-xl
-          text-white text-sm
-          focus:outline-none focus:ring-2 focus:ring-blue-500/40
-          transition-all appearance-none
-        "
+
+    <div className="flex flex-col gap-3 pt-2">
+      <button
+        onClick={onSubmit}
+        type="button"
+        className={`
+          w-full min-h-[54px] rounded-2xl font-bold text-sm
+          shadow-lg shadow-blue-500/10 active:scale-[0.98] 
+          touch-manipulation transition-all flex items-center justify-center gap-2
+          ${accentClass}
+        `}
       >
-        <option value="preventivo">Preventivo</option>
-        <option value="correctivo">Correctivo</option>
-        <option value="ambos">Ambos</option>
-      </select>
-    </div>
-    <div>
-      <label className="block text-sm font-medium text-slate-300 mb-1.5">Categoría</label>
-      <input
-        type="text"
-        value={form.categoria}
-        onChange={e => onChange({ ...form, categoria: e.target.value })}
-        placeholder="Ej: Motor, Software, Hardware…"
-        className="
-          w-full min-h-[48px] px-4 py-3
-          bg-slate-800 border border-slate-700 rounded-xl
-          text-white placeholder-slate-500 text-sm
-          focus:outline-none focus:ring-2 focus:ring-blue-500/40
-          transition-all
-        "
-      />
-    </div>
-    <div className="flex gap-3 pt-1">
+        <CheckCircle className="w-4 h-4" />
+        {submitLabel}
+      </button>
+      
       {onCancel && (
         <button
           onClick={onCancel}
+          type="button"
           className="
-            flex-1 min-h-[48px] py-3 rounded-xl font-medium text-sm
-            bg-slate-700/80 text-slate-300
-            active:bg-slate-700 touch-manipulation transition-all
+            w-full min-h-[54px] rounded-2xl font-bold text-sm
+            text-slate-400 active:bg-slate-800 touch-manipulation transition-all
           "
         >
           Cancelar
         </button>
       )}
-      <button
-        onClick={onSubmit}
-        className={`flex-1 min-h-[48px] py-3 rounded-xl font-medium text-sm active:scale-[0.98] touch-manipulation transition-all ${accentClass}`}
-      >
-        {submitLabel}
-      </button>
     </div>
   </div>
-)
+))
 
-// ─── Formulario de Pieza (conservado) ──────────────────────────────────────
+FormularioTarea.displayName = 'FormularioTarea'
 
-const FormularioPieza = ({
+// ─── Formulario de Pieza (memoizado) ──────────────────────────────────────
+
+const FormularioPieza = memo(({
   form,
   onChange,
   onSubmit,
@@ -373,62 +522,79 @@ const FormularioPieza = ({
   submitLabel: string
   accentClass: string
 }) => (
-  <div className="space-y-4">
-    <div>
-      <label className="block text-sm font-medium text-slate-300 mb-1.5">Nombre *</label>
-      <input
-        type="text"
-        value={form.nombre}
-        onChange={e => onChange({ ...form, nombre: e.target.value })}
-        placeholder="Ej: Filtro de aceite"
-        autoFocus
-        className="
-          w-full min-h-[48px] px-4 py-3
-          bg-slate-800 border border-slate-700 rounded-xl
-          text-white placeholder-slate-500 text-sm
-          focus:outline-none focus:ring-2 focus:ring-purple-500/40
-          transition-all
-        "
-      />
+  <div className="flex flex-col gap-5">
+    <div className="space-y-4">
+      <div className="group">
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">
+          Nombre del repuesto *
+        </label>
+        <input
+          type="text"
+          value={form.nombre}
+          onChange={e => onChange({ ...form, nombre: e.target.value })}
+          placeholder="Ej: Filtro de aceite"
+          className="
+            w-full min-h-[52px] px-4
+            bg-slate-800/50 border border-slate-700/50 rounded-2xl
+            text-white placeholder-slate-600 text-sm
+            focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500/50
+            transition-all
+          "
+        />
+      </div>
+
+      <div className="group">
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">
+          Categoría
+        </label>
+        <input
+          type="text"
+          value={form.categoria}
+          onChange={e => onChange({ ...form, categoria: e.target.value })}
+          placeholder="Ej: Filtros, Eléctrico…"
+          className="
+            w-full min-h-[52px] px-4
+            bg-slate-800/50 border border-slate-700/50 rounded-2xl
+            text-white placeholder-slate-600 text-sm
+            focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500/50
+            transition-all
+          "
+        />
+      </div>
     </div>
-    <div>
-      <label className="block text-sm font-medium text-slate-300 mb-1.5">Categoría</label>
-      <input
-        type="text"
-        value={form.categoria}
-        onChange={e => onChange({ ...form, categoria: e.target.value })}
-        placeholder="Ej: Filtros, Eléctrico…"
-        className="
-          w-full min-h-[48px] px-4 py-3
-          bg-slate-800 border border-slate-700 rounded-xl
-          text-white placeholder-slate-500 text-sm
-          focus:outline-none focus:ring-2 focus:ring-purple-500/40
-          transition-all
-        "
-      />
-    </div>
-    <div className="flex gap-3 pt-1">
+
+    <div className="flex flex-col gap-3 pt-2">
+      <button
+        onClick={onSubmit}
+        type="button"
+        className={`
+          w-full min-h-[54px] rounded-2xl font-bold text-sm
+          shadow-lg shadow-purple-500/10 active:scale-[0.98] 
+          touch-manipulation transition-all flex items-center justify-center gap-2
+          ${accentClass}
+        `}
+      >
+        <CheckCircle className="w-4 h-4" />
+        {submitLabel}
+      </button>
+      
       {onCancel && (
         <button
           onClick={onCancel}
+          type="button"
           className="
-            flex-1 min-h-[48px] py-3 rounded-xl font-medium text-sm
-            bg-slate-700/80 text-slate-300
-            active:bg-slate-700 touch-manipulation transition-all
+            w-full min-h-[54px] rounded-2xl font-bold text-sm
+            text-slate-400 active:bg-slate-800 touch-manipulation transition-all
           "
         >
           Cancelar
         </button>
       )}
-      <button
-        onClick={onSubmit}
-        className={`flex-1 min-h-[48px] py-3 rounded-xl font-medium text-sm active:scale-[0.98] touch-manipulation transition-all ${accentClass}`}
-      >
-        {submitLabel}
-      </button>
     </div>
   </div>
-)
+))
+
+FormularioPieza.displayName = 'FormularioPieza'
 
 // ─── PÁGINA PRINCIPAL (REFACTORIZADA VISUALMENTE) ─────────────────────────
 
@@ -649,6 +815,7 @@ export default function TareasRepuestosPage() {
                 <button
                   key={key}
                   onClick={() => { haptic('light'); setTab(key) }}
+                  type="button"
                   aria-pressed={tab === key}
                   className={`
                     flex-1 flex items-center justify-center gap-2
@@ -675,6 +842,7 @@ export default function TareasRepuestosPage() {
                   </h2>
                   <button
                     onClick={() => { haptic('light'); setModalTarea(true) }}
+                    type="button"
                     className="
                       flex items-center gap-1.5 pl-3 pr-4 min-h-[36px]
                       bg-blue-500/15 text-blue-300 border border-blue-500/30 rounded-xl
@@ -704,57 +872,14 @@ export default function TareasRepuestosPage() {
                       />
                     ) : (
                       <>
-                        {/* LISTA CON TARJETAS Y BOTONES INLINE */}
+                        {/* LISTA CON COMPONENTES MEMOIZADOS */}
                         {visibleTareas.map(tarea => (
-                          <div
-                            key={tarea.id}
-                            className="
-                              bg-slate-800/70 rounded-xl px-4 py-3.5
-                              border border-slate-700/40
-                              flex items-start gap-3
-                              transition-colors hover:bg-slate-800
-                            "
-                          >
-                            <div className="flex-1 min-w-0">
-                              <p className="text-white font-medium text-sm leading-snug truncate">
-                                {tarea.nombre}
-                              </p>
-                              <div className="flex flex-wrap gap-1.5 mt-2">
-                                <TipoChip tipo={tarea.tipo} />
-                                <span className="text-xs px-2 py-0.5 bg-slate-700/70 text-slate-400 rounded-full border border-slate-600/40">
-                                  {tarea.categoria}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Botones de acción inline */}
-                            <div className="flex gap-1.5 shrink-0">
-                              <button
-                                onClick={() => { haptic('light'); setEditTarea(tarea) }}
-                                className="
-                                  w-8 h-8 flex items-center justify-center
-                                  rounded-lg bg-blue-500/10 text-blue-400
-                                  active:bg-blue-500/20
-                                  touch-manipulation transition-all
-                                "
-                                aria-label="Editar tarea"
-                              >
-                                <Edit3 className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleEliminarTarea(tarea.id)}
-                                className="
-                                  w-8 h-8 flex items-center justify-center
-                                  rounded-lg bg-red-500/10 text-red-400
-                                  active:bg-red-500/20
-                                  touch-manipulation transition-all
-                                "
-                                aria-label="Eliminar tarea"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
+                          <TareaItem 
+                            key={tarea.id} 
+                            tarea={tarea} 
+                            onEdit={setEditTarea} 
+                            onDelete={handleEliminarTarea} 
+                          />
                         ))}
 
                         {/* Paginación: botón "Mostrar más" */}
@@ -764,12 +889,13 @@ export default function TareasRepuestosPage() {
                               haptic('light')
                               setPageTareas(p => p + 1)
                             }}
+                            type="button"
                             className="
                               w-full min-h-[48px] mt-2
                               flex items-center justify-center gap-1.5
                               text-sm font-medium text-blue-300
                               bg-blue-500/10 border border-blue-500/20
-                              rounded-xl active:bg-blue-500/20
+                              rounded-xl active:bg-blue-500/20 active:scale-[0.98]
                               touch-manipulation transition-all
                             "
                           >
@@ -825,51 +951,12 @@ export default function TareasRepuestosPage() {
                     ) : (
                       <>
                         {visiblePiezas.map(pieza => (
-                          <div
-                            key={pieza.id}
-                            className="
-                              bg-slate-800/70 rounded-xl px-4 py-3.5
-                              border border-slate-700/40
-                              flex items-start gap-3
-                              transition-colors hover:bg-slate-800
-                            "
-                          >
-                            <div className="flex-1 min-w-0">
-                              <p className="text-white font-medium text-sm leading-snug truncate">
-                                {pieza.nombre}
-                              </p>
-                              <span className="text-xs text-slate-400 mt-1 inline-block">
-                                {pieza.categoria}
-                              </span>
-                            </div>
-
-                            <div className="flex gap-1.5 shrink-0">
-                              <button
-                                onClick={() => { haptic('light'); setEditPieza(pieza) }}
-                                className="
-                                  w-8 h-8 flex items-center justify-center
-                                  rounded-lg bg-blue-500/10 text-blue-400
-                                  active:bg-blue-500/20
-                                  touch-manipulation transition-all
-                                "
-                                aria-label="Editar repuesto"
-                              >
-                                <Edit3 className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleEliminarPieza(pieza.id)}
-                                className="
-                                  w-8 h-8 flex items-center justify-center
-                                  rounded-lg bg-red-500/10 text-red-400
-                                  active:bg-red-500/20
-                                  touch-manipulation transition-all
-                                "
-                                aria-label="Eliminar repuesto"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
+                          <PiezaItem 
+                            key={pieza.id} 
+                            pieza={pieza} 
+                            onEdit={setEditPieza} 
+                            onDelete={handleEliminarPieza} 
+                          />
                         ))}
 
                         {hasMorePiezas && (
@@ -878,12 +965,13 @@ export default function TareasRepuestosPage() {
                               haptic('light')
                               setPagePiezas(p => p + 1)
                             }}
+                            type="button"
                             className="
                               w-full min-h-[48px] mt-2
                               flex items-center justify-center gap-1.5
                               text-sm font-medium text-purple-300
                               bg-purple-500/10 border border-purple-500/20
-                              rounded-xl active:bg-purple-500/20
+                              rounded-xl active:bg-purple-500/20 active:scale-[0.98]
                               touch-manipulation transition-all
                             "
                           >
@@ -942,7 +1030,7 @@ export default function TareasRepuestosPage() {
             onSubmit={handleActualizarTarea}
             onCancel={() => setEditTarea(null)}
             submitLabel="Guardar cambios"
-            accentClass="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+            accentClass="bg-blue-500/20 text-blue-300 border border-blue-500/30"
           />
         )}
       </Modal>
@@ -959,7 +1047,7 @@ export default function TareasRepuestosPage() {
             onSubmit={handleActualizarPieza}
             onCancel={() => setEditPieza(null)}
             submitLabel="Guardar cambios"
-            accentClass="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+            accentClass="bg-blue-500/20 text-blue-300 border border-blue-500/30"
           />
         )}
       </Modal>

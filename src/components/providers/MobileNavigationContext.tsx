@@ -32,6 +32,8 @@ export type AppView =
   | "tareas-repuestos"
   | "configuracion";
 
+export type PendingAction = "open-nueva-orden" | null;
+
 // Mapeo pathname → AppView
 const PATHNAME_TO_VIEW: Record<string, AppView> = {
   "/ordenes": "ordenes",
@@ -81,6 +83,12 @@ interface MobileNavigationContextValue {
   slideDirection: number;
   /** true cuando la app corre en modo mobile (< sm breakpoint) */
   isMobileNav: boolean;
+  /** Acción pendiente por ejecutar al montar una vista */
+  pendingAction: PendingAction;
+  /** Disparar la apertura de nueva orden */
+  triggerNuevaOrden: () => void;
+  /** Consumir la acción pendiente */
+  consumePendingAction: () => void;
 }
 
 const MobileNavigationContext = createContext<MobileNavigationContextValue>({
@@ -88,6 +96,9 @@ const MobileNavigationContext = createContext<MobileNavigationContextValue>({
   navigateTo: () => {},
   slideDirection: 0,
   isMobileNav: false,
+  pendingAction: null,
+  triggerNuevaOrden: () => {},
+  consumePendingAction: () => {},
 });
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
@@ -103,6 +114,7 @@ export function MobileNavigationProvider({
     pathnameToView(pathname)
   );
   const [slideDirection, setSlideDirection] = useState(0);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const prevViewRef = useRef<AppView>(activeView);
 
   // Detectar si estamos en mobile
@@ -172,9 +184,25 @@ export function MobileNavigationProvider({
     return () => window.removeEventListener("popstate", handlePopState);
   }, [isMobileNav, activeView]);
 
+  const triggerNuevaOrden = useCallback(() => {
+    setPendingAction("open-nueva-orden");
+  }, []);
+
+  const consumePendingAction = useCallback(() => {
+    setPendingAction(null);
+  }, []);
+
   return (
     <MobileNavigationContext.Provider
-      value={{ activeView, navigateTo, slideDirection, isMobileNav }}
+      value={{
+        activeView,
+        navigateTo,
+        slideDirection,
+        isMobileNav,
+        pendingAction,
+        triggerNuevaOrden,
+        consumePendingAction,
+      }}
     >
       {children}
     </MobileNavigationContext.Provider>

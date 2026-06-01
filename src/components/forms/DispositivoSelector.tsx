@@ -149,8 +149,8 @@ export default function DispositivoSelector({
             <AlertCircle className="w-8 h-8 text-gray-500" />
           </div>
           <p className="text-gray-300 font-semibold">Sin dispositivos registrados</p>
-          <p className="text-sm text-gray-500 mt-1 mb-5">
-            Agrega el dispositivo de {cliente.name?.split(' ')[0] || 'este cliente'} para continuar
+            <p className="text-sm text-gray-500 mt-1 mb-5">
+              Agrega el dispositivo de <span className="text-white">{cliente.name?.split(' ')[0] || 'este cliente'}</span> para continuar
           </p>
           <button
             type="button"

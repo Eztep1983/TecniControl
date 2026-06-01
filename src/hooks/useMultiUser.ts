@@ -206,6 +206,7 @@ export const useEstadisticasUsuario = () => {
     correctivos: 0,
     diagnosticos: 0,
     instalaciones: 0,
+    garantias: 0,
   }, isLoading: loading } = useQuery({
     queryKey: ['ordenes', user?.uid, 'stats'],
     queryFn: () => getEstadisticasPorUsuario(user!.uid),

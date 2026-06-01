@@ -136,13 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const syncUserDocument = useCallback(async (firebaseUser: User, isNewLogin: boolean): Promise<void> => {
     try {
       const userRef = doc(db, 'users', firebaseUser.uid)
-      
-      // LOG DE DEPURACIÓN EXTENDIDO:
-      console.log('🔍 Verificando autorización...')
-      console.log('📍 Colección: users')
-      console.log('🆔 Document ID (UID) buscado:', firebaseUser.uid)
-      console.log('📧 Email intentando entrar:', firebaseUser.email)
-
+    
       // Obtener el ID del dispositivo si estamos en una plataforma nativa
       let currentDeviceId = 'web-browser'
       if (Capacitor.isNativePlatform()) {
@@ -172,7 +166,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (isNewLogin) {
         if (!userDoc.exists()) {
-          console.error('🛑 BLOQUEO: El documento users/' + firebaseUser.uid + ' NO existe en Firestore.')
+          console.error(' BLOQUEO: El documento users/' + firebaseUser.uid + ' NO existe en Firestore.')
           throw new Error('ACCOUNT_NOT_AUTHORIZED')
         } else {
           const userData = userDoc.data() as UserDocument
