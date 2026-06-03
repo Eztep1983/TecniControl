@@ -7,6 +7,7 @@ import { runTransaction, doc, addDoc, collection } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { deserializeOrdenPayload, serializeOrden } from '@/lib/orden-serializer'
 import { sanitizeOrdenPayload } from '@/lib/firestore-sanitizers'
+import { encryptData, decryptData } from '@/lib/encryption-utils'
 import type { PendingOrderQueueItem, SerializableOrdenPayload, TempOrderId } from '@/types/orden'
 import type { OrdenMantenimiento } from '@/types/orden'
 
@@ -19,19 +20,30 @@ const INTER_ORDER_DELAY_MS = 300  // Pausa entre órdenes para no saturar Firest
 
 // ─── Helpers de persistencia ──────────────────────────────────────────────────
 
-function readQueue(): PendingOrderQueueItem[] {
+function readQueue(userId?: string): PendingOrderQueueItem[] {
   if (typeof window === 'undefined') return []
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    const rawData = localStorage.getItem(STORAGE_KEY)
+    if (!rawData) return []
+
+    // Intentar descifrar. Si falla (datos antiguos o sin cifrar), intentar parsear normal
+    const decrypted = decryptData(rawData, userId)
+    if (decrypted && Array.isArray(decrypted)) {
+      return decrypted
+    }
+
+    // Fallback para compatibilidad con datos no cifrados (migración)
+    return JSON.parse(rawData)
   } catch {
     return []
   }
 }
 
-function writeQueue(queue: PendingOrderQueueItem[]): void {
+function writeQueue(queue: PendingOrderQueueItem[], userId?: string): void {
   if (typeof window === 'undefined') return
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(queue))
+    const encrypted = encryptData(queue, userId)
+    localStorage.setItem(STORAGE_KEY, encrypted)
   } catch (e) {
     console.warn('[OfflineOrderQueue] No se pudo persistir la cola:', e)
   }
@@ -98,7 +110,7 @@ export function useOfflineOrderQueue() {
   const { connected } = useNetworkStatus()
   const { user } = useAuth()
   const queryClient = useQueryClient()
-  const [pendingCount, setPendingCount] = useState<number>(() => readQueue().length)
+  const [pendingCount, setPendingCount] = useState<number>(0)
   const [isFlushing, setIsFlushing] = useState(false)
   const [lastSyncResult, setLastSyncResult] = useState<{
     synced: number
@@ -106,6 +118,13 @@ export function useOfflineOrderQueue() {
     timestamp: number
   } | null>(null)
   const isFlushingRef = useRef(false)
+
+  // Actualizar el contador cuando el usuario esté disponible o cambie
+  useEffect(() => {
+    if (user?.uid) {
+      setPendingCount(readQueue(user.uid).length)
+    }
+  }, [user?.uid])
 
   /**
    * Genera un ID temporal único para mostrar al técnico mientras está offline.
@@ -123,7 +142,7 @@ export function useOfflineOrderQueue() {
   const enqueueOrder = useCallback(
     (ordenData: Omit<OrdenMantenimiento, 'id' | 'idPersonalizado'>, userId: string): TempOrderId => {
       const tempId = generateTempId()
-      const queue = readQueue()
+      const queue = readQueue(userId)
 
       const item: PendingOrderQueueItem = {
         queueId: `oq_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -136,7 +155,7 @@ export function useOfflineOrderQueue() {
       }
 
       queue.push(item)
-      writeQueue(queue)
+      writeQueue(queue, userId)
       setPendingCount(queue.length)
 
       console.info(`[OfflineOrderQueue] Orden encolada con ID temporal: ${tempId}`)
@@ -152,8 +171,8 @@ export function useOfflineOrderQueue() {
    */
   const flush = useCallback(
     async (onComplete?: (result: { synced: number; failed: number }) => void): Promise<void> => {
-      if (isFlushingRef.current) return
-      const queue = readQueue()
+      if (isFlushingRef.current || !user?.uid) return
+      const queue = readQueue(user.uid)
       if (queue.length === 0) return
 
       isFlushingRef.current = true
@@ -196,13 +215,13 @@ export function useOfflineOrderQueue() {
         }
       }
 
-      writeQueue(failed)
+      writeQueue(failed, user.uid)
       setPendingCount(failed.length)
       isFlushingRef.current = false
       setIsFlushing(false)
 
       // Invalidar todas las queries de órdenes para sincronizar UI
-      if (user?.uid && syncedCount > 0) {
+      if (syncedCount > 0) {
         queryClient.invalidateQueries({ queryKey: ['ordenes', user.uid] })
         queryClient.invalidateQueries({ queryKey: ['ordenes', user.uid, 'stats'] })
       }

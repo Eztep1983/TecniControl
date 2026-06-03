@@ -326,7 +326,8 @@ export function ClienteHistorialModal({
   const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose({
     onClose,
     enabled: open && isMobile && !selectedOrden,
-    threshold: 80,
+    threshold: 100,
+    scrollRef: scrollRef as any,
   });
 
   useAndroidBack(open, () => {

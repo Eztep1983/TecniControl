@@ -1,5 +1,6 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import SignatureCanvas from 'react-signature-canvas'
+import { obfuscateSignature, deobfuscateSignature } from '@/lib/signature-utils'
 
 export interface SignatureState {
   habilitada: boolean
@@ -19,7 +20,10 @@ export function useSignatureCanvas(
   const restoreSignature = useCallback(() => {
     if (firma && sigCanvas.current) {
       try {
-        sigCanvas.current.fromDataURL(firma)
+        const clearFirma = deobfuscateSignature(firma)
+        if (clearFirma) {
+          sigCanvas.current.fromDataURL(clearFirma)
+        }
       } catch (e) {
         console.error('Error restaurando firma:', e)
       }
@@ -76,8 +80,11 @@ export function useSignatureCanvas(
       if (sigCanvas.current.isEmpty()) {
         setFirma(null)
       } else {
-        const dataUrl = sigCanvas.current.getCanvas().toDataURL('image/png')
-        setFirma(dataUrl)
+        // Usamos image/webp con calidad reducida (0.3) para máxima compresión
+        // y aplicamos ofuscación antes de guardar
+        const dataUrl = sigCanvas.current.getCanvas().toDataURL('image/webp', 0.3)
+        const obfuscated = obfuscateSignature(dataUrl)
+        setFirma(obfuscated)
       }
     }
   }, [sigCanvas, setFirma])

@@ -25,54 +25,22 @@ import { usePathname } from "next/navigation";
 
 // ─── Tipos de vista ───────────────────────────────────────────────────────────
 
-export type AppView =
-  | "ordenes"
-  | "ordenes/mantenimiento"
-  | "clientes"
-  | "tareas-repuestos"
-  | "configuracion";
+export type { AppView } from "@/lib/navigation-config";
+export { TAB_ORDER } from "@/lib/navigation-config";
+
+import { 
+  AppView,
+  getRouteByPath,
+  getPathByView,
+  TAB_ORDER
+} from "@/lib/navigation-config";
 
 export type PendingAction = "open-nueva-orden" | null;
 
-// Mapeo pathname → AppView
-const PATHNAME_TO_VIEW: Record<string, AppView> = {
-  "/ordenes": "ordenes",
-  "/ordenes/mantenimiento": "ordenes/mantenimiento",
-  "/clientes": "clientes",
-  "/tareas-repuestos": "tareas-repuestos",
-  "/configuracion": "configuracion",
-};
-
-// Mapeo AppView → pathname canónico
-export const VIEW_TO_PATHNAME: Record<AppView, string> = {
-  ordenes: "/ordenes",
-  "ordenes/mantenimiento": "/ordenes/mantenimiento",
-  clientes: "/clientes",
-  "tareas-repuestos": "/tareas-repuestos",
-  configuracion: "/configuracion",
-};
-
-// Orden de tabs para animaciones (de izquierda a derecha)
-export const TAB_ORDER: AppView[] = [
-  "ordenes",
-  "clientes",
-  "tareas-repuestos",
-  "configuracion",
-];
-
+// Reemplazar pathnameToView
 function pathnameToView(pathname: string): AppView {
-  // Coincidencia exacta primero
-  if (PATHNAME_TO_VIEW[pathname]) return PATHNAME_TO_VIEW[pathname];
-  // Coincidencia por prefijo (subrutas)
-  if (pathname.startsWith("/ordenes/mantenimiento"))
-    return "ordenes/mantenimiento";
-  if (pathname.startsWith("/ordenes")) return "ordenes";
-  if (pathname.startsWith("/clientes")) return "clientes";
-  if (pathname.startsWith("/tareas-repuestos")) return "tareas-repuestos";
-  if (pathname.startsWith("/configuracion")) return "configuracion";
-  return "ordenes";
+  return getRouteByPath(pathname)?.view || "ordenes";
 }
-
 // ─── Contexto ─────────────────────────────────────────────────────────────────
 
 interface MobileNavigationContextValue {
@@ -158,7 +126,7 @@ export function MobileNavigationProvider({
 
       // Sincronizar URL sin reload (solo en mobile)
       if (isMobileNav) {
-        const url = VIEW_TO_PATHNAME[view];
+        const url = getPathByView(view);
         window.history.pushState({ mobileNav: true, view }, "", url);
       }
     },

@@ -19,6 +19,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNetworkStatus } from './useNetworkStatus'
 import { useAuth } from '@/components/auth/AuthProvider'
 import * as helpers from '@/lib/configuracion-helpers'
+import { encryptData, decryptData } from '@/lib/encryption-utils'
 import type { TareaPredefinida, PiezaPredefinida } from '@/lib/configuracion-helpers'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -44,17 +45,27 @@ const RETRY_DELAY_MS = 1000
 
 // ─── Helpers de persistencia ──────────────────────────────────────────────────
 
-function readQueue(): QueueOperation[] {
+function readQueue(userId?: string): QueueOperation[] {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    const rawData = localStorage.getItem(STORAGE_KEY)
+    if (!rawData) return []
+
+    const decrypted = decryptData(rawData, userId)
+    if (decrypted && Array.isArray(decrypted)) {
+      return decrypted
+    }
+
+    // Fallback para datos antiguos sin cifrar
+    return JSON.parse(rawData)
   } catch {
     return []
   }
 }
 
-function writeQueue(queue: QueueOperation[]): void {
+function writeQueue(queue: QueueOperation[], userId?: string): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(queue))
+    const encrypted = encryptData(queue, userId)
+    localStorage.setItem(STORAGE_KEY, encrypted)
   } catch (e) {
     console.warn('[OfflineQueue] No se pudo persistir la cola:', e)
   }
@@ -89,14 +100,21 @@ async function executeOperation(op: QueueOperation): Promise<void> {
 export function useOfflineQueue() {
   const { connected } = useNetworkStatus()
   const { user } = useAuth()
-  const [pendingCount, setPendingCount] = useState<number>(() => readQueue().length)
+  const [pendingCount, setPendingCount] = useState<number>(0)
   const [isFlushing, setIsFlushing] = useState(false)
   const isFlushingRef = useRef(false) // para evitar flushes concurrentes
+
+  // Actualizar contador cuando el usuario esté disponible
+  useEffect(() => {
+    if (user?.uid) {
+      setPendingCount(readQueue(user.uid).length)
+    }
+  }, [user?.uid])
 
   // Encolar una operación cuando estamos offline
   const enqueue = useCallback(
     (op: Omit<QueueOperation, 'id' | 'timestamp' | 'retries'>) => {
-      const queue = readQueue()
+      const queue = readQueue(op.userId)
       const item: QueueOperation = {
         ...op,
         id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -104,7 +122,7 @@ export function useOfflineQueue() {
         retries: 0,
       }
       queue.push(item)
-      writeQueue(queue)
+      writeQueue(queue, op.userId)
       setPendingCount(queue.length)
     },
     []
@@ -113,8 +131,8 @@ export function useOfflineQueue() {
   // Procesar toda la cola cuando hay conexión
   const flush = useCallback(
     async (onComplete?: () => void): Promise<void> => {
-      if (isFlushingRef.current) return
-      const queue = readQueue()
+      if (isFlushingRef.current || !user?.uid) return
+      const queue = readQueue(user.uid)
       if (queue.length === 0) return
 
       isFlushingRef.current = true
@@ -137,14 +155,14 @@ export function useOfflineQueue() {
         }
       }
 
-      writeQueue(failed)
+      writeQueue(failed, user.uid)
       setPendingCount(failed.length)
       isFlushingRef.current = false
       setIsFlushing(false)
 
       if (onComplete) onComplete()
     },
-    []
+    [user?.uid]
   )
 
   // Auto-flush al recuperar conexión

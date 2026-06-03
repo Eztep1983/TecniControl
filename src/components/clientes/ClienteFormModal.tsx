@@ -70,14 +70,19 @@ const formSchema = z.object({
   name: z.string().min(2, { message: "Mínimo 2 caracteres" }),
   cedula: z
     .string()
-    .min(4, { message: "Mínimo 4 caracteres" })
-    .regex(/^[0-9A-Za-z-]+$/, { message: "Solo números, letras y guiones" }),
+    .optional()
+    .or(z.literal(""))
+    .refine(
+      (val) => !val || (val.length >= 4 && /^[0-9A-Za-z-]+$/.test(val)),
+      { message: "Mínimo 4 caracteres (letras, números y guiones)" }
+    ),
   email: z.string().email({ message: "Email inválido" }).optional().or(z.literal("")),
   phone: z.string().optional().or(z.literal("")).refine(val => !val || val.length >= 8, { message: "Teléfono muy corto" }),
   address: z.string().optional(),
   dispositivos: z
     .array(dispositivoSchema)
-    .min(1, { message: "Agrega al menos un dispositivo" }),
+    .optional()
+    .default([{ ...DISPOSITIVO_VACIO }]),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -281,7 +286,7 @@ const Step1Content = memo(function Step1Content({
         name="cedula"
         render={({ field }) => (
           <FormItem className="space-y-1.5">
-            <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Cédula o NIT *</FormLabel>
+            <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Cédula o NIT <span className="text-gray-600 font-normal">(opcional)</span></FormLabel>
             <FormControl>
               <Input
                 placeholder="Ej: 1234567890"

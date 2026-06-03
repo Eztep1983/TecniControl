@@ -12,6 +12,7 @@ import { useCallback, memo, useEffect, useRef, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { useAndroidBack } from "@/hooks/useAndroidBack";
+import { deobfuscateSignature } from "@/lib/signature-utils";
 
 // ============================================================================
 // TIPOS
@@ -488,7 +489,6 @@ const DetailView = memo(({
             )}
           </div>
           <div className="space-y-0">
-            <DataRow label="Cédula / ID" value={orden.cliente.cedula} icon={Hash} mono />
             {orden.cliente.email && (
               <DataRow label="Email" value={orden.cliente.email} icon={Mail} />
             )}
@@ -648,7 +648,7 @@ const DetailView = memo(({
             <div className="flex items-center gap-6">
               <div className="bg-white rounded-2xl p-3 flex-shrink-0 shadow-xl border border-white/10">
                 <img
-                  src={orden.firmaCliente}
+                  src={deobfuscateSignature(orden.firmaCliente) || ''}
                   alt="Firma"
                   width={112}
                   height={64}

@@ -34,11 +34,13 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
   const isMobile = useMediaQuery("(max-width: 768px)");
   const haptic = useHapticFeedback();
   const [historialOpen, setHistorialOpen] = useState(false);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose({
     onClose,
     enabled: open && isMobile && !historialOpen,
-    threshold: 80,
+    threshold: 100,
+    scrollRef: scrollRef as any,
   });
 
   useAndroidBack(open, () => {
@@ -226,7 +228,7 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
             <SheetHeader className="px-6 py-4 border-b border-gray-800/50 flex-shrink-0 text-left">
               {header}
             </SheetHeader>
-            <div className="overflow-y-auto flex-1 custom-scrollbar">
+            <div ref={scrollRef} className="overflow-y-auto flex-1 custom-scrollbar">
               {modalBody}
             </div>
           </SheetContent>

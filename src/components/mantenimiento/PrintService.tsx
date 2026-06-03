@@ -2,6 +2,7 @@
 import React, { useCallback } from 'react'
 import { OrdenMantenimiento } from '@/types/orden'
 import { Printer, Share2, Download } from 'lucide-react'
+import { deobfuscateSignature } from '@/lib/signature-utils'
 
 interface PrintServiceProps {
   negocio: any
@@ -17,6 +18,21 @@ const isCapacitor = (): boolean =>
 const isNativePlatform = (): boolean => {
   const cap = (window as any).Capacitor
   return isCapacitor() && cap?.getPlatform?.() !== 'web'
+}
+
+// ============================================================================
+// HELPERS DE SEGURIDAD
+// ============================================================================
+
+const escapeHTML = (str: string | number | undefined | null): string => {
+  if (str === undefined || str === null) return ''
+  const s = String(str)
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
 }
 
 // ============================================================================
@@ -83,8 +99,10 @@ const generarContenidoHTML = (
 
     .signatures { display: flex; gap: 40px; margin-top: 40px; }
     .signatures > div { flex: 1; }
-    .signature-box { border-top: 1px solid #374151; padding-top: 10px; text-align: center; }
-    .signature-img { max-width: 180px; max-height: 80px; margin-bottom: 5px; object-fit: contain; }
+    .signature-box { text-align: center; }
+    .signature-area { height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; }
+    .signature-line { border-top: 1px solid #374151; width: 180px; margin: 0 auto 5px auto; }
+    .signature-img { max-width: 180px; max-height: 80px; object-fit: contain; }
     .signature-name { font-weight: 700; color: #111827; font-size: 12px; }
     .signature-role { color: #6b7280; font-size: 10px; text-transform: uppercase; }
 
@@ -106,21 +124,21 @@ const generarContenidoHTML = (
              </div>`
         }
         <div class="negocio-details">
-          <h1>${negocio?.nombre || 'TecniControl Service'}</h1>
-          ${negocio?.nit ? `<p>NIT: ${negocio.nit}</p>` : ''}
-          ${negocio?.direccion ? `<p>${negocio.direccion}</p>` : ''}
-          ${negocio?.telefono ? `<p>Tel: ${negocio.telefono}</p>` : ''}
-          ${negocio?.email ? `<p>${negocio.email}</p>` : ''}
+          <h1>${escapeHTML(negocio?.nombre) || 'TecniControl Service'}</h1>
+          ${negocio?.nit ? `<p>NIT: ${escapeHTML(negocio.nit)}</p>` : ''}
+          ${negocio?.direccion ? `<p>${escapeHTML(negocio.direccion)}</p>` : ''}
+          ${negocio?.telefono ? `<p>Tel: ${escapeHTML(negocio.telefono)}</p>` : ''}
+          ${negocio?.email ? `<p>${escapeHTML(negocio.email)}</p>` : ''}
         </div>
       </div>
       <div class="orden-meta">
         <h2>ORDEN DE SERVICIO</h2>
-        <p style="font-weight:700; font-size:14px; color:#111;"># ${orden.idPersonalizado}</p>
-        <p>Fecha: ${formatFecha(orden.fechaCreacion)}</p>
-        <p>Hora: ${orden.horaCreacion || '--:--'}</p>
+        <p style="font-weight:700; font-size:14px; color:#111;"># ${escapeHTML(orden.idPersonalizado)}</p>
+        <p>Fecha: ${escapeHTML(formatFecha(orden.fechaCreacion))}</p>
+        <p>Hora: ${escapeHTML(orden.horaCreacion) || '--:--'}</p>
         <div style="margin-top:5px;">
-          <span class="badge badge-${orden.tipoMantenimiento}">
-            ${orden.tipoMantenimiento}
+          <span class="badge badge-${escapeHTML(orden.tipoMantenimiento)}">
+            ${escapeHTML(orden.tipoMantenimiento)}
           </span>
         </div>
       </div>
@@ -129,27 +147,27 @@ const generarContenidoHTML = (
     <div class="flex-info section">
       <div class="info-group">
         <div class="section-title" style="border-left-color: #2563eb;">Información del Cliente</div>
-        <div class="info-row"><span class="info-label">Nombre</span><span class="info-value">${orden.cliente?.name || 'N/A'}</span></div>
-        <div class="info-row"><span class="info-label">Teléfono</span><span class="info-value">${orden.cliente?.phone || 'N/A'}</span></div>
-        <div class="info-row"><span class="info-label">Documento</span><span class="info-value">${orden.cliente?.cedula || 'N/A'}</span></div>
-        <div class="info-row"><span class="info-label">Dirección</span><span class="info-value">${orden.cliente?.address || 'N/A'}</span></div>
+        <div class="info-row"><span class="info-label">Nombre</span><span class="info-value">${escapeHTML(orden.cliente?.name) || 'N/A'}</span></div>
+        <div class="info-row"><span class="info-label">Teléfono</span><span class="info-value">${escapeHTML(orden.cliente?.phone) || 'N/A'}</span></div>
+        <div class="info-row"><span class="info-label">Documento</span><span class="info-value">${escapeHTML(orden.cliente?.cedula) || 'N/A'}</span></div>
+        <div class="info-row"><span class="info-label">Dirección</span><span class="info-value">${escapeHTML(orden.cliente?.address) || 'N/A'}</span></div>
       </div>
 
       <div class="info-group">
         <div class="section-title" style="border-left-color: #10b981;">Información del Equipo</div>
-        <div class="info-row"><span class="info-label">Tipo</span><span class="info-value">${orden.dispositivo?.tipo || 'N/A'}</span></div>
-        <div class="info-row"><span class="info-label">Marca/Modelo</span><span class="info-value">${orden.dispositivo?.marca || ''} ${orden.dispositivo?.modelo || ''}</span></div>
-        <div class="info-row"><span class="info-label">S/N</span><span class="info-value">${orden.dispositivo?.numeroSerie || 'N/A'}</span></div>
+        <div class="info-row"><span class="info-label">Tipo</span><span class="info-value">${escapeHTML(orden.dispositivo?.tipo) || 'N/A'}</span></div>
+        <div class="info-row"><span class="info-label">Marca/Modelo</span><span class="info-value">${escapeHTML(orden.dispositivo?.marca)} ${escapeHTML(orden.dispositivo?.modelo)}</span></div>
+        <div class="info-row"><span class="info-label">S/N</span><span class="info-value">${escapeHTML(orden.dispositivo?.numeroSerie) || 'N/A'}</span></div>
         ${orden.contador ? `
           <div class="info-row">
-            <span class="info-label">Contador (${orden.contador.tipo})</span>
-            <span class="info-value">${orden.contador.valor}</span>
+            <span class="info-label">Contador (${escapeHTML(orden.contador.tipo)})</span>
+            <span class="info-value">${escapeHTML(orden.contador.valor)}</span>
           </div>
         ` : ''}
         ${orden.contadorMaquina ? `
           <div class="info-row">
             <span class="info-label">Contador de Máquina</span>
-            <span class="info-value">${orden.contadorMaquina.toLocaleString()}</span>
+            <span class="info-value">${escapeHTML(orden.contadorMaquina.toLocaleString())}</span>
           </div>
         ` : ''}
       </div>
@@ -162,13 +180,13 @@ const generarContenidoHTML = (
           ${orden.observacionesIniciales ? `
             <div class="data-box">
               <span class="data-label">Observaciones Iniciales</span>
-              <div class="data-content">${orden.observacionesIniciales}</div>
+              <div class="data-content">${escapeHTML(orden.observacionesIniciales)}</div>
             </div>
           ` : ''}
           ${orden.pruebasRealizadas ? `
             <div class="data-box">
               <span class="data-label">Pruebas Realizadas</span>
-              <div class="data-content">${orden.pruebasRealizadas}</div>
+              <div class="data-content">${escapeHTML(orden.pruebasRealizadas)}</div>
             </div>
           ` : ''}
         </div>
@@ -176,13 +194,13 @@ const generarContenidoHTML = (
           ${orden.posiblesCausas ? `
             <div class="data-box">
               <span class="data-label">Posibles Causas</span>
-              <div class="data-content">${orden.posiblesCausas}</div>
+              <div class="data-content">${escapeHTML(orden.posiblesCausas)}</div>
             </div>
           ` : ''}
           ${orden.diagnosticoFinal ? `
             <div class="data-box">
               <span class="data-label">Diagnóstico Final</span>
-              <div class="data-content" style="font-weight:600; color:#111;">${orden.diagnosticoFinal}</div>
+              <div class="data-content" style="font-weight:600; color:#111;">${escapeHTML(orden.diagnosticoFinal)}</div>
             </div>
           ` : ''}
         </div>
@@ -196,14 +214,14 @@ const generarContenidoHTML = (
           <div class="data-box">
             <span class="data-label">Configuraciones Realizadas</span>
             <div class="data-content">
-              ${orden.instalacionConfiguracionTipos?.join(', ') || 'Instalación estándar'}
+              ${orden.instalacionConfiguracionTipos?.map(t => escapeHTML(t)).join(', ') || 'Instalación estándar'}
             </div>
           </div>
         ` : ''}
         ${(orden.instalacionRecomendaciones || orden.instalacionRecomendacionesDetalle) ? `
           <div class="data-box" style="margin-top:10px;">
             <span class="data-label">Recomendaciones del Técnico</span>
-            <div class="data-content">${orden.instalacionRecomendacionesDetalle || 'Se brindaron recomendaciones de uso al cliente.'}</div>
+            <div class="data-content">${escapeHTML(orden.instalacionRecomendacionesDetalle) || 'Se brindaron recomendaciones de uso al cliente.'}</div>
           </div>
         ` : ''}
       </div>
@@ -214,7 +232,7 @@ const generarContenidoHTML = (
         <div class="section-title">Tareas Realizadas</div>
         <div class="data-box">
           <ul style="margin:0; padding-left:15px; font-size:11px; color:#4b5563;">
-            ${orden.tareasRealizadas?.map((t: string) => `<li>${t}</li>`).join('') || '<li>No se registraron tareas</li>'}
+            ${orden.tareasRealizadas?.map((t: string) => `<li>${escapeHTML(t)}</li>`).join('') || '<li>No se registraron tareas</li>'}
           </ul>
         </div>
       </div>
@@ -227,7 +245,7 @@ const generarContenidoHTML = (
           <thead><tr><th>Descripción</th><th style="text-align:right">Cantidad</th></tr></thead>
           <tbody>
             ${orden.piezasUsadas.map((p: { pieza: string; cantidad: number }) =>
-              `<tr><td>${p.pieza}</td><td style="text-align:right">${p.cantidad}</td></tr>`
+              `<tr><td>${escapeHTML(p.pieza)}</td><td style="text-align:right">${escapeHTML(p.cantidad)}</td></tr>`
             ).join('')}
           </tbody>
         </table>
@@ -244,12 +262,12 @@ const generarContenidoHTML = (
           </div>
         ` : `
           <div class="info-group">
-            <div class="info-row"><span class="info-label">Vigencia Desde</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoDesde)}</span></div>
-            <div class="info-row"><span class="info-label">Vigencia Hasta</span><span class="info-value">${formatGarantiaFecha(orden.garantiaTiempoHasta)}</span></div>
+            <div class="info-row"><span class="info-label">Vigencia Desde</span><span class="info-value">${escapeHTML(formatGarantiaFecha(orden.garantiaTiempoDesde))}</span></div>
+            <div class="info-row"><span class="info-label">Vigencia Hasta</span><span class="info-value">${escapeHTML(formatGarantiaFecha(orden.garantiaTiempoHasta))}</span></div>
           </div>
           <div class="data-box" style="margin:0; flex: 1.5;">
             <span class="data-label">Términos de Garantía</span>
-            <div class="data-content">${orden.garantiaDescripcion || 'Garantía estándar según políticas de la empresa.'}</div>
+            <div class="data-content">${escapeHTML(orden.garantiaDescripcion) || 'Garantía estándar según políticas de la empresa.'}</div>
           </div>
         `}
       </div>
@@ -257,20 +275,22 @@ const generarContenidoHTML = (
 
     <div class="signatures">
       <div class="signature-box">
-        ${orden.firmaCliente
-          ? `<img src="${orden.firmaCliente}" alt="Firma Cliente" class="signature-img">`
-          : '<div style="height:80px; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:10px;">Firma No Registrada</div>'
-        }
-        <div class="signature-name">${orden.nombreFirmante || orden.cliente?.name || 'Cliente'}</div>
-        <div class="signature-role">NIT: ${orden.cliente?.cedula || 'Identificación no disponible'}</div>
+        <div class="signature-area">
+          ${orden.firmaCliente
+            ? `<img src="${deobfuscateSignature(orden.firmaCliente)}" alt="Firma Cliente" class="signature-img">`
+            : '<div style="color:#9ca3af; font-size:10px;">Firma No Registrada</div>'
+          }
+        </div>
+        <div class="signature-line"></div>
+        <div class="signature-name">${escapeHTML(orden.nombreFirmante || orden.cliente?.name) || 'Cliente'}</div>
+        ${orden.firmaCliente ? `<div class="signature-role">NIT: ${escapeHTML(orden.cliente?.cedula) || 'Identificación no disponible'}</div>` : ''}
         <div class="signature-role">Firma del Cliente</div>
       </div>
       <div class="signature-box">
-        <div style="height:80px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:10px;">
-          <div style="border-bottom:1px solid #ccc; width:150px; text-align:center; padding-bottom:5px;">
-            <span style="font-size:12px; font-weight:700; color:#333;">${negocio?.nombre || 'Técnico Autorizado'}</span>
-          </div>
+        <div class="signature-area" style="align-items: flex-end; padding-bottom: 5px;">
+          <span style="font-size:12px; font-weight:700; color:#333;">${escapeHTML(negocio?.nombre) || 'Técnico Autorizado'}</span>
         </div>
+        <div class="signature-line"></div>
         <div class="signature-name">Técnico Responsable</div>
         <div class="signature-role">TecniControl Service</div>
       </div>
@@ -286,7 +306,7 @@ const generarContenidoHTML = (
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Orden de Mantenimiento #${orden.idPersonalizado}</title>
+      <title>Orden de Mantenimiento #${escapeHTML(orden.idPersonalizado)}</title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <style>${styles}</style>
     </head>
@@ -364,6 +384,15 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
   }, [])
 
   /**
+   * Resuelve el logo del negocio a base64 si es necesario.
+   */
+  const resolverLogo = useCallback(async (): Promise<string | null> => {
+    if (!negocio?.logoUrl) return null
+    if (negocio.logoUrl.startsWith('data:')) return negocio.logoUrl
+    return await urlToBase64(negocio.logoUrl)
+  }, [negocio?.logoUrl, urlToBase64])
+
+  /**
    * Genera el PDF como Blob usando html2pdf.js.
    *
    * Estrategia:
@@ -392,15 +421,8 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
       },
     }
 
-    // Procesa el logo de forma asíncrona
-    let logoBase64: string | null = null
-    if (negocio?.logoUrl) {
-      if (negocio.logoUrl.startsWith('data:')) {
-        logoBase64 = negocio.logoUrl
-      } else {
-        logoBase64 = await urlToBase64(negocio.logoUrl)
-      }
-    }
+    // Procesa el logo
+    const logoBase64 = await resolverLogo()
 
     const obtenerPDF = async (conLogo: boolean): Promise<Blob> => {
       const negProcesado = { ...negocio, logoUrl: conLogo ? logoBase64 : null }
@@ -443,7 +465,7 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
         throw err2
       }
     }
-  }, [negocio, formatFecha, formatGarantiaFecha, urlToBase64])
+  }, [negocio, formatFecha, formatGarantiaFecha, resolverLogo])
 
   /**
    * Convierte un Blob a string base64 puro (sin el prefijo data:...).
@@ -466,18 +488,10 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
    * Genera el HTML string de la orden.
    */
   const generarHTML = useCallback(async (orden: OrdenMantenimiento): Promise<string> => {
-    let negocioProcesado = { ...negocio }
-
-    if (negocio?.logoUrl && !negocio.logoUrl.startsWith('data:')) {
-      const base64 = await urlToBase64(negocio.logoUrl)
-      if (base64) {
-        negocioProcesado = { ...negocio, logoUrl: base64 }
-      } else {
-        negocioProcesado = { ...negocio, logoUrl: null }
-      }
-    }
+    const logoBase64 = await resolverLogo()
+    const negocioProcesado = { ...negocio, logoUrl: logoBase64 }
     return generarContenidoHTML(orden, negocioProcesado, formatFecha, formatGarantiaFecha)
-  }, [negocio, formatFecha, formatGarantiaFecha, urlToBase64])
+  }, [negocio, formatFecha, formatGarantiaFecha, resolverLogo])
 
   /**
    * Descarga / guarda el PDF.
@@ -625,22 +639,8 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
     if (isNativePlatform()) {
       await compartirOrden(orden)
     } else {
-      let negocioProcesado = negocio
-      if (negocio?.logoUrl && !negocio.logoUrl.startsWith('data:')) {
-        try {
-          const res = await fetch(negocio.logoUrl, { mode: 'cors' })
-          const blob = await res.blob()
-          const base64Url = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader()
-            reader.onloadend = () => resolve(reader.result as string)
-            reader.onerror = reject
-            reader.readAsDataURL(blob)
-          })
-          negocioProcesado = { ...negocio, logoUrl: base64Url }
-        } catch (err) {
-          console.warn('Error al convertir logo a base64 para imprimir', err)
-        }
-      }
+      const logoBase64 = await resolverLogo()
+      const negocioProcesado = { ...negocio, logoUrl: logoBase64 }
 
       const contenido = generarContenidoHTML(orden, negocioProcesado, formatFecha, formatGarantiaFecha)
       const ventana = window.open('', '_blank', 'width=800,height=600')
@@ -686,7 +686,7 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
 
       ventana.onload = waitImages
     }
-  }, [negocio, formatFecha, formatGarantiaFecha, compartirOrden])
+  }, [negocio, formatFecha, formatGarantiaFecha, compartirOrden, resolverLogo])
 
   return {
     imprimirOrden,

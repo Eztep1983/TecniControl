@@ -1,6 +1,7 @@
 import { FormState } from '@/app/(app)/ordenes/mantenimiento/formulario'
 import { CheckCircle, User, Smartphone, Wrench, Settings, Shield, PenTool, Package, Clock, Printer } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { deobfuscateSignature } from '@/lib/signature-utils'
 
 interface ResumenMantenimientoProps {
   state: FormState
@@ -274,7 +275,7 @@ export default function ResumenMantenimiento({
             <div className="space-y-4">
               <div className="bg-white rounded-xl p-3 w-full">
                 <img 
-                  src={state.firmaCliente} 
+                  src={deobfuscateSignature(state.firmaCliente) || ''} 
                   alt="Firma del cliente" 
                   className="w-full h-auto max-h-32 object-contain mx-auto"
                   loading="lazy"
