@@ -14,6 +14,7 @@ import {
   limit,
   startAfter,
   getCountFromServer,
+  runTransaction,
 } from 'firebase/firestore';
 
 // ... (existing imports)
@@ -342,30 +343,33 @@ export const inicializarContador = async (userId: string): Promise<void> => {
 export const incrementarContador = async (userId: string): Promise<number> => {
   try {
     const contadorRef = doc(db, 'contadores', userId);
-    const contadorDoc = await getDoc(contadorRef);
-    
-    if (contadorDoc.exists()) {
-      const contador = contadorDoc.data() as ContadorU;
-      const nuevoNumero = contador.siguiente + 1;
-      
-      await updateDoc(contadorRef, {
-        siguiente: nuevoNumero,
-        fechaActualizacion: new Date()
-      });
-      
-      return contador.siguiente;
-    } else {
-      // El primer número debe ser 1, pero el siguiente disponible debe quedar en 2.
-      await setDoc(contadorRef, {
-        userId,
-        siguiente: 2,
-        ultimaOrden: '',
-        fechaActualizacion: new Date()
-      });
-      return 1;
-    }
+    let resultado: number = -1;
+
+    await runTransaction(db, async (transaction) => {
+      const snap = await transaction.get(contadorRef);
+
+      if (!snap.exists()) {
+        resultado = 1;
+        transaction.set(contadorRef, {
+          userId,
+          siguiente: 2,
+          ultimaOrden: '',
+          fechaActualizacion: new Date()
+        });
+      } else {
+        const data = snap.data() as ContadorU;
+        resultado = data.siguiente;
+        transaction.update(contadorRef, {
+          siguiente: resultado + 1,
+          fechaActualizacion: new Date()
+        });
+      }
+    });
+
+    if (resultado === -1) throw new Error('Transacción de contador fallida');
+    return resultado;
   } catch (error) {
-    console.error('Error incrementando contador:', error);
+    console.error('Error incrementando contador (atómico):', error);
     throw error;
   }
 };

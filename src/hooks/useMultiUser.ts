@@ -82,7 +82,8 @@ export const useOrdenesUsuario = () => {
 };
 
 /**
- * Hook para crear órdenes con actualizaciones optimistas (Fase 4)
+ * Hook para crear órdenes en Firestore (solo flujo online).
+ * El manejo offline se realiza directamente en el formulario antes de llamar a esta mutación.
  */
 export const useCrearOrden = () => {
   const { user } = useAuth();
@@ -90,51 +91,41 @@ export const useCrearOrden = () => {
 
   return useMutation({
     mutationFn: async (ordenData: any) => {
-      const idPersonalizado = await generarIdPorTipo(user!.uid, ordenData.tipo || 'mantenimiento');
-      
-      const ordenCompleta = {
+      const userId = user!.uid;
+      const ordenBase = {
         ...ordenData,
-        idPersonalizado,
-        userId: user!.uid,
+        userId,
         clienteId: ordenData.cliente?.id || ordenData.clienteId,
         dispositivoId: ordenData.dispositivo?.id || ordenData.dispositivoId,
+        tipo: 'mantenimiento' as const,
+        fechaCreacion: new Date(),
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
-      const docId = await crearOrden(ordenCompleta, user!.uid);
-      return { id: docId, ...ordenCompleta };
+      // Solo se llama cuando hay conexión real (el formulario ya bifurcó offline/online)
+      const idPersonalizado = await generarIdPorTipo(userId, ordenData.tipo || 'mantenimiento');
+      const ordenCompleta = { ...ordenBase, idPersonalizado };
+      const docId = await crearOrden(ordenCompleta, userId);
+      return { id: docId, idPersonalizado, isOffline: false, ...ordenCompleta };
     },
-    onMutate: async (nuevaOrden) => {
-      // Cancelar refetches salientes
+
+    onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ['ordenes', user?.uid] });
-
-      // Snapshot del valor previo
       const previousRecent = queryClient.getQueryData(['ordenes', user?.uid, 'recientes', 3]);
-      
-      // Actualización optimista del Dashboard
-      if (previousRecent) {
-        queryClient.setQueryData(['ordenes', user?.uid, 'recientes', 3], (old: any) => {
-          const tempOrden = { 
-            ...nuevaOrden, 
-            id: 'temp-' + Date.now(), 
-            idPersonalizado: '...', 
-            fechaCreacion: new Date() 
-          };
-          return [tempOrden, ...(old || [])].slice(0, 3);
-        });
-      }
-
       return { previousRecent };
     },
-    onError: (err, nuevaOrden, context) => {
-      // Revertir si hay error
+
+    onError: (_err, _nuevaOrden, context) => {
       if (context?.previousRecent) {
-        queryClient.setQueryData(['ordenes', user?.uid, 'recientes', 3], context.previousRecent);
+        queryClient.setQueryData(
+          ['ordenes', user?.uid, 'recientes', 3],
+          context.previousRecent
+        );
       }
     },
-    onSettled: () => {
-      // Invalidar para sincronizar con el servidor
+
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid] });
     },
   });

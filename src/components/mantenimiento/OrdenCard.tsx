@@ -1,7 +1,7 @@
 'use client'
 import React, { memo, useCallback } from 'react'
 import { OrdenMantenimiento } from '@/types/orden'
-import { Eye } from 'lucide-react'
+import { Eye, CloudOff } from 'lucide-react'
 import { ShareButton, DownloadButton } from './PrintService'
 import { cn } from '@/lib/utils'
 
@@ -76,7 +76,17 @@ const OrdenCard = memo(({
             <h3 className="text-white font-bold truncate text-base sm:text-lg leading-tight">
               <Highlight text={orden.cliente?.name || 'Sin cliente'} term={searchTerm} />
             </h3>
-            <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider font-bold mt-1">ID: {orden.idPersonalizado}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider font-bold">ID: {orden.idPersonalizado}</p>
+              {orden.idPersonalizado?.startsWith('OSER-TEMP-') && (
+                <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase 
+                               bg-amber-500/20 text-amber-400 border border-amber-500/30 
+                               px-1.5 py-0.5 rounded-md">
+                  <CloudOff className="w-2.5 h-2.5" />
+                  Pendiente
+                </span>
+              )}
+            </div>
           </div>
           <span className={cn(
             "inline-flex shrink-0 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold rounded-md border capitalize uppercase whitespace-nowrap",

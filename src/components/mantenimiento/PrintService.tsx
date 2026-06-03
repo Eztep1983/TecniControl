@@ -262,6 +262,7 @@ const generarContenidoHTML = (
           : '<div style="height:80px; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:10px;">Firma No Registrada</div>'
         }
         <div class="signature-name">${orden.nombreFirmante || orden.cliente?.name || 'Cliente'}</div>
+        <div class="signature-role">NIT: ${orden.cliente?.cedula || 'Identificación no disponible'}</div>
         <div class="signature-role">Firma del Cliente</div>
       </div>
       <div class="signature-box">

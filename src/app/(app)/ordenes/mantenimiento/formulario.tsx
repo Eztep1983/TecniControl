@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import {
   ArrowLeft, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench,
   ClipboardCheck, GaugeCircle, Laptop, ShieldCheck, PenLine, Check, Share2, Sparkles,
-  LockIcon
+  LockIcon, CloudOff
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -24,6 +24,7 @@ import FirmaInput from '@/components/forms/FirmaInput'
 import ResumenMantenimiento from '@/components/forms/ResumenMantenimiento'
 import { usePersistentReducer } from '@/hooks/usePersistentReducer'
 import { useKeyboardVisible } from '@/hooks/useKeyboardVisible'
+import { useOfflineOrderQueue } from '@/hooks/useOfflineOrderQueue'
 
 interface FormularioMantenimientoProps {
   onClose: () => void
@@ -479,13 +480,16 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   const isKeyboardVisible = useKeyboardVisible()
   const { imprimirOrden, compartirOrden } = usePrintService({ negocio })
   const { mutateAsync: crearOrdenMutate } = useCrearOrden()
+  const { enqueueOrder } = useOfflineOrderQueue()
   const { clientes: hookClientes } = useClientesUsuario()
   const [hintExpanded, setHintExpanded] = useState(false)
+  // ordenCreada es estado LOCAL (no persistente) para que clearPersistence() no lo borre
+  const [ordenCreada, setOrdenCreada] = useState<OrdenMantenimiento | null>(null)
   const [state, dispatch, clearPersistence] = usePersistentReducer(
     isOnboarding ? 'draft_onboarding' : 'draft_mantenimiento',
     formReducer,
     initialState,
-    useCallback((savedState: FormState) => ({ ...savedState, loading: false }), [])
+    useCallback((savedState: FormState) => ({ ...savedState, loading: false, ordenCreada: undefined }), [])
   )
 
   // ============================================================================
@@ -889,7 +893,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
         tipoMantenimiento: state.tipoMantenimiento,
         tareasRealizadas: todasLasTareas,
         piezasUsadas: piezasUsadasFiltradas,
-        userId: user.uid,
+        userId: user!.uid,
       };
 
       if (contadorParaGuardar) nuevaOrden.contador = contadorParaGuardar;
@@ -908,7 +912,6 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
         nuevaOrden.instalacionConfiguracionTipos = state.instalacionConfiguracionTipos;
       }
 
-      // Manejo de garantía condicional
       nuevaOrden.garantiaHabilitada = state.garantiaHabilitada;
       if (state.garantiaHabilitada) {
         if (state.garantiaTiempoDesde) nuevaOrden.garantiaTiempoDesde = new Date(state.garantiaTiempoDesde);
@@ -916,42 +919,61 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
         if (state.garantiaDescripcion.trim()) nuevaOrden.garantiaDescripcion = state.garantiaDescripcion.trim();
       } else {
         nuevaOrden.garantiaDescripcion = 'No aplica';
-        // Aseguramos que no se envíen fechas si está desactivada
         nuevaOrden.garantiaTiempoDesde = null;
         nuevaOrden.garantiaTiempoHasta = null;
       }
 
-      // Manejo de firma opcional
       nuevaOrden.firmaCliente = state.firmaHabilitada ? state.firmaCliente : null;
       nuevaOrden.nombreFirmante = state.firmaHabilitada ? (state.clienteSeleccionado?.name || 'Cliente') : null;
       nuevaOrden.validacionCliente = state.firmaHabilitada ? state.validacionCliente : false;
 
-      // Limpiar undefineds
       Object.keys(nuevaOrden).forEach(key => {
         if (nuevaOrden[key] === undefined) delete nuevaOrden[key];
       });
 
-      // Ejecutar la mutación (ya genera el ID y guarda)
-      const resultado = await crearOrdenMutate(nuevaOrden);
-
-      // Usamos el objeto que devuelve la mutación como orden creada
-      // Si por algún motivo no viene, construimos uno mínimo
-      const ordenFinal = resultado ?? {
-        ...nuevaOrden,
-        idPersonalizado: 'generada', // se mostrará hasta que se refresque
-      };
-
-      dispatch({ type: 'SET_ORDEN_CREADA', payload: ordenFinal });
-
-      // Limpiar el borrador persistente y evitar re-escrituras
+      // ── Verificar conectividad REAL antes de intentar Firestore ──────────────
+      // navigator.onLine es poco confiable en Android (siempre true con WiFi sin internet).
+      // Usamos Capacitor Network.getStatus() que consulta el hardware real.
+      let isReallyOnline = navigator.onLine;
       try {
-        clearPersistence()
-      } catch (e) {
-        console.warn('No se pudo limpiar el borrador en localStorage:', e)
+        const { Network } = await import('@capacitor/network');
+        const netStatus = await Network.getStatus();
+        isReallyOnline = netStatus.connected;
+      } catch {
+        // Plugin no disponible (web/emulador), usar navigator.onLine
       }
 
-      // NOTA: NO llamamos a onSuccess aquí, para que el usuario vea la pantalla de éxito
-      // El botón "Volver a la lista" de la pantalla de éxito sí llama a onSuccess y onClose
+      if (!isReallyOnline) {
+        // ── RUTA OFFLINE: encolar directamente, sin tocar Firestore ─────────────
+        // Esto evita que runTransaction cuelgue indefinidamente en Android.
+        const ordenBase = {
+          ...nuevaOrden,
+          userId: user!.uid,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        const tempId = enqueueOrder(ordenBase, user!.uid);
+        const ordenOffline = { ...ordenBase, id: tempId, idPersonalizado: tempId, isOffline: true };
+
+        clearPersistence();
+        setOrdenCreada(ordenOffline as any);
+      } else {
+        // ── RUTA ONLINE: dejar que crearOrdenMutate maneje Firestore ───────────
+        const resultado = await crearOrdenMutate(nuevaOrden);
+
+        const ordenFinal = resultado ?? {
+          ...nuevaOrden,
+          idPersonalizado: 'OSER-TEMP-' + Date.now(),
+          isOffline: true,
+        };
+        if (!ordenFinal.idPersonalizado) {
+          ordenFinal.idPersonalizado = ordenFinal.id || ('OSER-TEMP-' + Date.now());
+        }
+
+        clearPersistence();
+        setOrdenCreada(ordenFinal as OrdenMantenimiento);
+      }
+
     } catch (error) {
       console.error('Error creando orden:', error);
       alert('Error al crear la orden: ' + (error instanceof Error ? error.message : 'Error desconocido'));
@@ -1171,12 +1193,19 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
       case 'firma':
         return (
           <FirmaInput
-            firmaHabilitada={state.firmaHabilitada}
-            onToggleFirma={() => dispatch({ type: 'TOGGLE_FIRMA_HABILITADA' })}
-            firmaCliente={state.firmaCliente || ''}
-            setFirmaCliente={(firma) => dispatch({ type: 'SET_FIRMA_CLIENTE', payload: firma })}
-            validacionCliente={state.validacionCliente}
-            setValidacionCliente={(valida) => dispatch({ type: 'SET_VALIDACION_CLIENTE', payload: valida })}
+            signatureState={{
+              habilitada: state.firmaHabilitada,
+              firma: state.firmaCliente,
+              validada: state.validacionCliente
+            }}
+            onChange={(newState) => {
+              // Si el estado de habilitada cambió, aseguramos que se sincronice con el dispatch
+              if (newState.habilitada !== state.firmaHabilitada) {
+                dispatch({ type: 'TOGGLE_FIRMA_HABILITADA' })
+              }
+              dispatch({ type: 'SET_FIRMA_CLIENTE', payload: newState.firma })
+              dispatch({ type: 'SET_VALIDACION_CLIENTE', payload: newState.validada })
+            }}
           />
         )
 
@@ -1438,9 +1467,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
         )}
       </div>
 
-      {/* Pantalla de Éxito Premium */}
-      {/* Pantalla de Éxito Premium - Renderizada en portal para evitar problemas de containing block */}
-      {state.ordenCreada &&
+      {/* Pantalla de Éxito Premium - usa estado LOCAL para no depender del reducer persistente */}
+      {ordenCreada &&
         createPortal(
           <AnimatePresence>
             <motion.div
@@ -1465,13 +1493,23 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
                   </motion.div>
 
                   <h2 className="text-2xl font-bold text-white mb-2">¡Orden Generada!</h2>
-                  <p className="text-gray-400 mb-6">
-                    La orden <span className="text-blue-400 font-mono">#{state.ordenCreada.idPersonalizado}</span> ha sido registrada correctamente.
+                  <p className="text-gray-400 mb-4">
+                    La orden <span className="text-blue-400 font-mono">#{ordenCreada.idPersonalizado}</span> ha sido registrada correctamente.
                   </p>
+
+                  {(ordenCreada as any).isOffline && (
+                    <div className="bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs py-2 px-3 rounded-lg mb-6 flex flex-col items-center justify-center gap-1 w-full">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <CloudOff className="w-3.5 h-3.5" />
+                        <span>Guardada Localmente</span>
+                      </div>
+                      <span className="text-[10px] text-amber-500/80">Se sincronizará al tener conexión.</span>
+                    </div>
+                  )}
 
                   <div className="w-full space-y-3">
                     <button
-                      onClick={() => compartirOrden(state.ordenCreada!)}
+                      onClick={() => compartirOrden(ordenCreada)}
                       className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center gap-3 font-bold transition-all active:scale-95 shadow-lg shadow-blue-600/30 touch-manipulation"
                     >
                       <Share2 className="w-5 h-5" />

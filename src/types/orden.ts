@@ -102,3 +102,62 @@ export interface Negocio {
 }
 
 export type Orden = OrdenMantenimiento;
+
+/** ID temporal generado localmente cuando no hay conexión */
+export type TempOrderId = `OSER-TEMP-${number}`
+
+/** Estado de sincronización de una orden en cola offline */
+export type OrderSyncStatus = 'pending' | 'syncing' | 'failed' | 'synced'
+
+/** Payload de orden serializable para localStorage (sin objetos Date nativos) */
+export interface SerializableOrdenPayload {
+  // Todos los campos de OrdenMantenimiento pero con fechas como strings ISO
+  tipo: 'mantenimiento'
+  userId: string
+  clienteId: string
+  dispositivoId: string
+  cliente: Cliente
+  dispositivo: Dispositivo
+  tipoMantenimiento: OrdenMantenimiento['tipoMantenimiento']
+  tareasRealizadas: string[]
+  piezasUsadas: Array<{pieza: string; cantidad: number}>
+  // Campos opcionales
+  observacionesIniciales?: string
+  pruebasRealizadas?: string
+  posiblesCausas?: string
+  diagnosticoFinal?: string
+  contadorMaquina?: number
+  contador?: {
+    tipo: string
+    valor: number
+    unidadPersonalizada?: string
+    fechaRegistro?: string  // ISO string
+    notas?: string
+  }
+  garantiaHabilitada?: boolean
+  garantiaTiempoDesde?: string  // ISO string
+  garantiaTiempoHasta?: string  // ISO string
+  garantiaDescripcion?: string
+  instalacionRecomendaciones?: boolean
+  instalacionRecomendacionesDetalle?: string
+  instalacionConfiguracion?: boolean
+  instalacionConfiguracionTipos?: string[]
+  firmaCliente?: string
+  nombreFirmante?: string
+  validacionCliente?: boolean
+  horaCreacion: string
+  fechaCreacion: string  // ISO string
+  createdAt: string      // ISO string
+  updatedAt: string      // ISO string
+}
+
+/** Entrada de la cola offline de órdenes */
+export interface PendingOrderQueueItem {
+  queueId: string
+  tempId: TempOrderId
+  userId: string
+  payload: SerializableOrdenPayload
+  enqueuedAt: number
+  retries: number
+  status: 'pending' | 'syncing' | 'failed'
+}
