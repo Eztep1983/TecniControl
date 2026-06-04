@@ -24,6 +24,14 @@ import {
   SelectValue,
 } from "@/components/ui/basic/select";
 import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+  DrawerClose,
+} from "@/components/ui/drawer";
+import {
   User,
   Monitor,
   Loader2,
@@ -33,18 +41,30 @@ import {
   Plus,
   X,
   AlertCircle,
-  Wifi,
   WifiOff,
 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  useFormContext,
+  useWatch,
+  type Control,
+} from "react-hook-form";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { useEffect, useState, useCallback, useRef, memo } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  memo,
+} from "react";
 import type { Cliente } from "@/types/orden";
 import { crearCliente, actualizarCliente } from "@/lib/multiuser-helpers";
 import { useAndroidBack } from "@/hooks/useAndroidBack";
+import { motion, AnimatePresence } from "motion/react";
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 const TIPO_OPTIONS = [
@@ -56,38 +76,52 @@ const TIPO_OPTIONS = [
   "otro",
 ] as const;
 
-const DISPOSITIVO_VACIO = { tipo: "", marca: "", modelo: "", numeroSerie: "" } as const;
+const DISPOSITIVO_VACIO = {
+  tipo: "",
+  marca: "",
+  modelo: "",
+  numeroSerie: "",
+} as const;
 
-// ── Validación ────────────────────────────────────────────────────────────────
+// ── Schema ────────────────────────────────────────────────────────────────────
 const dispositivoSchema = z.object({
-  tipo: z.string().min(1, { message: "Requerido" }),
-  marca: z.string().min(1, { message: "Requerido" }),
+  id: z.string().optional(),
+  tipo: z.string().min(1, "Requerido"),
+  marca: z.string().min(1, "Requerido"),
   modelo: z.string().optional().or(z.literal("")),
   numeroSerie: z.string().optional().or(z.literal("")),
 });
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: "Mínimo 2 caracteres" }),
+  name: z.string().min(2, "El nombre es obligatorio"),
   cedula: z
     .string()
     .optional()
     .or(z.literal(""))
     .refine(
       (val) => !val || (val.length >= 4 && /^[0-9A-Za-z-]+$/.test(val)),
-      { message: "Mínimo 4 caracteres (letras, números y guiones)" }
+      "Mínimo 4 caracteres (letras, números y guiones)"
     ),
-  email: z.string().email({ message: "Email inválido" }).optional().or(z.literal("")),
-  phone: z.string().optional().or(z.literal("")).refine(val => !val || val.length >= 8, { message: "Teléfono muy corto" }),
-  address: z.string().optional(),
+  email: z
+    .string()
+    .email("Email inválido")
+    .optional()
+    .or(z.literal("")),
+  phone: z
+    .string()
+    .optional()
+    .or(z.literal(""))
+    .refine((val) => !val || val.length >= 7, "Teléfono muy corto"),
+  address: z.string().optional().or(z.literal("")),
   dispositivos: z
     .array(dispositivoSchema)
-    .optional()
+    .min(1, "Agrega al menos un dispositivo")
     .default([{ ...DISPOSITIVO_VACIO }]),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-// ── Props ────────────────────────────────────────────────────────────────────
+// ── Props ─────────────────────────────────────────────────────────────────────
 interface ClienteFormModalProps {
   open: boolean;
   initialData?: Cliente | null;
@@ -96,10 +130,10 @@ interface ClienteFormModalProps {
 }
 
 // ── Error clasificado ─────────────────────────────────────────────────────────
-type SubmitErrorKind = "network" | "conflict" | "unknown";
+type ErrorKind = "network" | "conflict" | "unknown";
 
 interface SubmitError {
-  kind: SubmitErrorKind;
+  kind: ErrorKind;
   message: string;
   retryable: boolean;
 }
@@ -114,7 +148,11 @@ function classifyError(err: unknown): SubmitError {
   }
   if (err instanceof Error) {
     const msg = err.message.toLowerCase();
-    if (msg.includes("cedula") || msg.includes("duplicate") || msg.includes("already")) {
+    if (
+      msg.includes("cedula") ||
+      msg.includes("duplicate") ||
+      msg.includes("already")
+    ) {
       return {
         kind: "conflict",
         message: "Ya existe un cliente con esa cédula/NIT.",
@@ -123,10 +161,14 @@ function classifyError(err: unknown): SubmitError {
     }
     return { kind: "unknown", message: err.message, retryable: true };
   }
-  return { kind: "unknown", message: "Error inesperado. Intenta nuevamente.", retryable: true };
+  return {
+    kind: "unknown",
+    message: "Error inesperado. Intenta nuevamente.",
+    retryable: true,
+  };
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Defaults ──────────────────────────────────────────────────────────────────
 function buildDefaults(data?: Cliente | null): FormValues {
   if (data) {
     return {
@@ -135,15 +177,15 @@ function buildDefaults(data?: Cliente | null): FormValues {
       email: data.email ?? "",
       phone: data.phone ?? "",
       address: data.address ?? "",
-      dispositivos:
-        data.dispositivos?.length
-          ? data.dispositivos.map((d) => ({
-              tipo: d.tipo ?? "",
-              marca: d.marca ?? "",
-              modelo: d.modelo ?? "",
-              numeroSerie: d.numeroSerie ?? "",
-            }))
-          : [{ ...DISPOSITIVO_VACIO }],
+      dispositivos: data.dispositivos?.length
+        ? data.dispositivos.map((d) => ({
+            id: d.id,
+            tipo: d.tipo ?? "",
+            marca: d.marca ?? "",
+            modelo: d.modelo ?? "",
+            numeroSerie: d.numeroSerie ?? "",
+          }))
+        : [{ ...DISPOSITIVO_VACIO }],
     };
   }
   return {
@@ -156,29 +198,21 @@ function buildDefaults(data?: Cliente | null): FormValues {
   };
 }
 
-// ── Barra de progreso animada ─────────────────────────────────────────────────
-const ProgressBar = memo(function ProgressBar({ step }: { step: number }) {
-  return (
-    <div className="relative h-0.5 bg-gray-700/60 rounded-full overflow-hidden">
-      <div
-        className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-500 ease-out"
-        style={{ width: step === 1 ? "50%" : "100%" }}
-      />
-    </div>
-  );
-});
-
-// ── Indicador de pasos ────────────────────────────────────────────────────────
+// ── StepIndicator ─────────────────────────────────────────────────────────────
 const StepIndicator = memo(function StepIndicator({ step }: { step: number }) {
   const steps = [
-    { n: 1, label: "Información", icon: <User className="w-3 h-3" /> },
-    { n: 2, label: "Dispositivos", icon: <Monitor className="w-3 h-3" /> },
+    { n: 1, label: "Información", Icon: User },
+    { n: 2, label: "Dispositivos", Icon: Monitor },
   ];
 
   return (
-    <div className="space-y-2.5">
+    <div
+      className="space-y-2.5"
+      role="navigation"
+      aria-label={`Paso ${step} de 2`}
+    >
       <div className="flex items-center gap-2">
-        {steps.map(({ n, label, icon }, idx) => (
+        {steps.map(({ n, label, Icon }, idx) => (
           <div key={n} className="flex items-center gap-2">
             <div
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-300 ${
@@ -189,26 +223,42 @@ const StepIndicator = memo(function StepIndicator({ step }: { step: number }) {
                   : "bg-gray-800/60 text-gray-600 border border-gray-700/30"
               }`}
             >
-              {step > n ? <CheckCircle2 className="w-3 h-3" /> : icon}
-              <span className="hidden xs:inline">{label}</span>
+              {step > n ? (
+                <CheckCircle2 className="w-3 h-3" />
+              ) : (
+                <Icon className="w-3 h-3" />
+              )}
+              <span>{label}</span>
             </div>
             {idx === 0 && (
               <ChevronRight className="w-3 h-3 text-gray-600 flex-shrink-0" />
             )}
           </div>
         ))}
-
-        {/* Conteo paso */}
         <span className="ml-auto text-[10px] text-gray-600 tabular-nums">
-          {step} / 2
+          {step}/2
         </span>
       </div>
-      <ProgressBar step={step} />
+
+      {/* Barra de progreso */}
+      <div
+        className="h-0.5 bg-gray-700/60 rounded-full overflow-hidden"
+        role="progressbar"
+        aria-valuenow={step}
+        aria-valuemin={1}
+        aria-valuemax={2}
+        aria-label={`Progreso: paso ${step} de 2`}
+      >
+        <div
+          className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-500 ease-out"
+          style={{ width: step === 1 ? "50%" : "100%" }}
+        />
+      </div>
     </div>
   );
 });
 
-// ── Banner de error persistente ───────────────────────────────────────────────
+// ── ErrorBanner ───────────────────────────────────────────────────────────────
 const ErrorBanner = memo(function ErrorBanner({
   error,
   onRetry,
@@ -219,8 +269,12 @@ const ErrorBanner = memo(function ErrorBanner({
   onDismiss: () => void;
 }) {
   return (
-    <div className="mx-4 mt-3 rounded-xl border border-red-500/20 bg-red-500/5 p-3 flex items-start gap-3 animate-in fade-in slide-in-from-top-1 duration-200">
-      <div className="flex-shrink-0">
+    <div
+      role="alert"
+      aria-live="assertive"
+      className="mx-4 mt-3 rounded-xl border border-red-500/20 bg-red-500/5 p-3 flex items-start gap-3"
+    >
+      <div className="flex-shrink-0 mt-0.5">
         {error.kind === "network" ? (
           <WifiOff className="w-4 h-4 text-red-400" />
         ) : (
@@ -228,22 +282,26 @@ const ErrorBanner = memo(function ErrorBanner({
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-red-300/90 leading-relaxed font-medium">{error.message}</p>
+        <p className="text-xs text-red-300/90 leading-relaxed font-medium">
+          {error.message}
+        </p>
+        {/* FIX: área táctil mínima de 44px en el botón de retry */}
         {error.retryable && onRetry && (
           <button
             type="button"
             onClick={onRetry}
-            className="mt-2 text-[11px] font-bold text-red-400 hover:text-red-300 uppercase tracking-wider transition-colors"
+            className="mt-1 h-11 px-1 -ml-1 flex items-center text-[11px] font-bold text-red-400 hover:text-red-300 uppercase tracking-wider transition-colors"
           >
             Reintentar
           </button>
         )}
       </div>
+      {/* FIX: área táctil mínima de 44px en el botón de cerrar */}
       <button
         type="button"
         onClick={onDismiss}
-        className="flex-shrink-0 w-8 h-8 -mt-1 -mr-1 flex items-center justify-center text-gray-500 hover:text-gray-300 transition-colors"
         aria-label="Cerrar error"
+        className="w-11 h-11 -mt-1 -mr-1 flex items-center justify-center text-gray-500 hover:text-gray-300 transition-colors"
       >
         <X className="w-4 h-4" />
       </button>
@@ -251,215 +309,111 @@ const ErrorBanner = memo(function ErrorBanner({
   );
 });
 
-// ── Step 1 Component ────────────────────────────────────────────────────────
-const Step1Content = memo(function Step1Content({ 
-  control, 
-  isLoading 
-}: { 
-  control: any; 
-  isLoading: boolean 
-}) {
-  return (
-    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <FormField
-        control={control}
-        name="name"
-        render={({ field }) => (
-          <FormItem className="space-y-1.5">
-            <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Nombre completo *</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="Ej: Juan Pérez"
-                {...field}
-                disabled={isLoading}
-                autoComplete="name"
-                className="bg-gray-800/40 border-gray-700/50 text-white placeholder:text-gray-600 h-11 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/10 transition-all text-base"
-              />
-            </FormControl>
-            <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="cedula"
-        render={({ field }) => (
-          <FormItem className="space-y-1.5">
-            <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Cédula o NIT <span className="text-gray-600 font-normal">(opcional)</span></FormLabel>
-            <FormControl>
-              <Input
-                placeholder="Ej: 1234567890"
-                {...field}
-                disabled={isLoading}
-                inputMode="numeric"
-                className="bg-gray-800/40 border-gray-700/50 text-white placeholder:text-gray-600 h-11 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/10 transition-all text-base"
-              />
-            </FormControl>
-            <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
-          </FormItem>
-        )}
-      />
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormField
-          control={control}
-          name="email"
-          render={({ field }) => (
-            <FormItem className="space-y-1.5">
-              <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Email <span className="text-gray-600 font-normal">(opcional)</span></FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  placeholder="correo@ejemplo.com"
-                  {...field}
-                  disabled={isLoading}
-                  autoComplete="email"
-                  inputMode="email"
-                  className="bg-gray-800/40 border-gray-700/50 text-white placeholder:text-gray-600 h-11 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/10 transition-all text-base"
-                />
-              </FormControl>
-              <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem className="space-y-1.5">
-              <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">Teléfono <span className="text-gray-600 font-normal">(opcional)</span></FormLabel>
-              <FormControl>
-                <Input
-                  type="tel"
-                  placeholder="3001234567"
-                  {...field}
-                  disabled={isLoading}
-                  autoComplete="tel"
-                  inputMode="tel"
-                  className="bg-gray-800/40 border-gray-700/50 text-white placeholder:text-gray-600 h-11 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/10 transition-all text-base"
-                />
-              </FormControl>
-              <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
-            </FormItem>
-          )}
-        />
-      </div>
-
-      <FormField
-        control={control}
-        name="address"
-        render={({ field }) => (
-          <FormItem className="space-y-1.5">
-            <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">
-              Dirección <span className="text-gray-600 font-normal">(opcional)</span>
-            </FormLabel>
-            <FormControl>
-              <Input
-                placeholder="Calle 123 #45-67"
-                {...field}
-                disabled={isLoading}
-                autoComplete="street-address"
-                className="bg-gray-800/40 border-gray-700/50 text-white placeholder:text-gray-600 h-11 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/10 transition-all text-base"
-              />
-            </FormControl>
-            <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
-          </FormItem>
-        )}
-      />
-    </div>
-  );
-});
-
-// ── Step 2 Component ────────────────────────────────────────────────────────
-const Step2Content = memo(function Step2Content({
-  control,
-  isLoading,
-  fields,
-  addDispositivo,
-  removeDispositivo,
-  errors
+// ── InputField — componente atómico con useFormContext ────────────────────────
+// Evita pasar `control` por props en cada campo del paso 1
+const InputField = memo(function InputField({
+  name,
+  label,
+  placeholder,
+  type = "text",
+  inputMode,
+  autoComplete,
+  disabled,
 }: {
-  control: any;
-  isLoading: boolean;
-  fields: any[];
-  addDispositivo: () => void;
-  removeDispositivo: (idx: number) => void;
-  errors: any;
+  name: "name" | "cedula" | "email" | "phone" | "address";
+  label: string;
+  placeholder?: string;
+  type?: React.HTMLInputTypeAttribute;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+  autoComplete?: string;
+  disabled?: boolean;
 }) {
+  const { control } = useFormContext<FormValues>();
   return (
-    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="flex items-center justify-between px-1">
-        <div className="flex flex-col">
-          <h4 className="text-sm font-semibold text-white">Dispositivos vinculados</h4>
-          <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">
-            {fields.length} {fields.length === 1 ? "unidad" : "unidades"} registrada(s)
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={addDispositivo}
-          disabled={isLoading}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 active:scale-95 disabled:opacity-40 border border-blue-500/20 text-blue-400 text-xs font-bold transition-all shadow-sm shadow-blue-500/5"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Añadir
-        </button>
-      </div>
-
-      {errors.dispositivos?.root && (
-        <div className="bg-red-500/10 border border-red-500/20 p-2.5 rounded-xl flex items-center gap-2 text-red-400 animate-in fade-in zoom-in-95 duration-200">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          <p className="text-[11px] font-bold">{errors.dispositivos.root.message}</p>
-        </div>
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem className="space-y-1.5">
+          <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-gray-500 ml-1">
+            {label}
+          </FormLabel>
+          <FormControl>
+            <Input
+              type={type}
+              inputMode={inputMode}
+              placeholder={placeholder}
+              autoComplete={autoComplete}
+              disabled={disabled}
+              {...field}
+              value={(field.value as string) ?? ""}
+              className="bg-gray-800/40 border-gray-700/50 text-white placeholder:text-gray-600 h-11 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/10 transition-all text-base"
+            />
+          </FormControl>
+          <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
+        </FormItem>
       )}
-
-      <div className="space-y-3 pb-2">
-        {fields.map((field, idx) => (
-          <DispositivoCard
-            key={field.id}
-            idx={idx}
-            fieldId={field.id}
-            control={control}
-            isLoading={isLoading}
-            canRemove={fields.length > 1}
-            onRemove={removeDispositivo}
-          />
-        ))}
-      </div>
-    </div>
+    />
   );
 });
 
-// ── Campo de dispositivo memoizado ────────────────────────────────────────────
-// Evita que todos los dispositivos se re-rendericen cuando uno cambia
+// ── DispositivoCard ───────────────────────────────────────────────────────────
 const DispositivoCard = memo(function DispositivoCard({
   idx,
-  fieldId,
   control,
-  isLoading,
   canRemove,
   onRemove,
+  isLoading,
 }: {
   idx: number;
-  fieldId: string;
-  control: any;
-  isLoading: boolean;
+  control: Control<FormValues>;
   canRemove: boolean;
   onRemove: (idx: number) => void;
+  isLoading: boolean;
 }) {
+  const { setValue } = useFormContext<FormValues>();
+  
+  const tipoActual = useWatch({
+    control,
+    name: `dispositivos.${idx}.tipo`,
+  });
+
+  const [modoCustom, setModoCustom] = useState(false);
+
+  // Sincronizar el modo de entrada con el valor real del campo
+  useEffect(() => {
+    const esRealmenteCustom = !!tipoActual && !TIPO_OPTIONS.filter(t => t !== 'otro').includes(tipoActual as any);
+    if (esRealmenteCustom && !modoCustom) {
+      setModoCustom(true);
+    }
+  }, [tipoActual, modoCustom]);
+
+  const handleTipoChange = useCallback((val: string) => {
+    if (val === "otro") {
+      setModoCustom(true);
+      setValue(`dispositivos.${idx}.tipo`, "", { shouldDirty: true });
+    } else {
+      setValue(`dispositivos.${idx}.tipo`, val, { shouldDirty: true, shouldValidate: true });
+    }
+  }, [idx, setValue]);
+
+  const volverALista = useCallback(() => {
+    setModoCustom(false);
+    setValue(`dispositivos.${idx}.tipo`, "", { shouldDirty: true });
+  }, [idx, setValue]);
+
   return (
-    <div className="bg-gray-800/40 rounded-2xl border border-gray-700/40 p-4 space-y-4 transition-all duration-200 group active:border-gray-600/60 shadow-sm">
-      {/* Cabecera */}
+    <div className="bg-gray-800/40 rounded-2xl border border-gray-700/40 p-4 space-y-3.5 motion-safe:animate-in motion-safe:fade-in duration-200">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-400/5 border border-blue-500/20 flex items-center justify-center shadow-inner">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
             <Monitor className="w-4 h-4 text-blue-400" />
           </div>
           <div>
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Registrado como</span>
-            <span className="text-xs font-bold text-white tracking-wide">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">
+              Equipo
+            </span>
+            <span className="text-xs font-bold text-white">
               Dispositivo {idx + 1}
             </span>
           </div>
@@ -468,94 +422,129 @@ const DispositivoCard = memo(function DispositivoCard({
           <button
             type="button"
             onClick={() => onRemove(idx)}
-            className="w-8 h-8 rounded-xl bg-red-500/5 hover:bg-red-500/15 border border-red-500/10 flex items-center justify-center transition-all active:scale-90 group/btn"
+            disabled={isLoading}
             aria-label={`Eliminar dispositivo ${idx + 1}`}
+            className="w-11 h-11 rounded-xl bg-red-500/5 hover:bg-red-500/15 border border-red-500/10 flex items-center justify-center transition-colors disabled:opacity-40 active:scale-90"
           >
-            <X className="w-4 h-4 text-red-400 group-hover/btn:scale-110 transition-transform" />
+            <X className="w-4 h-4 text-red-400" />
           </button>
         )}
       </div>
 
-      <div className="space-y-3.5 pt-1">
-        {/* Tipo */}
+      <FormField
+        control={control}
+        name={`dispositivos.${idx}.tipo`}
+        render={({ field }) => (
+          <FormItem className="space-y-1.5">
+            <div className="flex items-center justify-between ml-1 mr-1">
+              <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                Tipo *
+              </FormLabel>
+              {modoCustom && (
+                <button
+                  type="button"
+                  onClick={volverALista}
+                  className="h-11 px-1 text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  ← Ver lista
+                </button>
+              )}
+            </div>
+            
+            <FormControl>
+              {modoCustom ? (
+                <Input
+                  {...field}
+                  autoFocus
+                  placeholder="Ej: laminadora, encuadernadora…"
+                  disabled={isLoading}
+                  className="bg-gray-900/40 border-gray-700/60 text-white placeholder:text-gray-600 h-11 text-base rounded-xl focus:ring-blue-500/10"
+                />
+              ) : (
+                <Drawer>
+                  <DrawerTrigger asChild>
+                    <button
+                      type="button"
+                      disabled={isLoading}
+                      className="w-full bg-gray-900/40 border border-gray-700/60 text-white h-11 rounded-xl px-3 flex items-center justify-between focus:ring-2 focus:ring-blue-500/10 transition-all active:scale-[0.98]"
+                    >
+                      <span className={!field.value ? "text-gray-500" : ""}>
+                        {field.value
+                          ? TIPO_OPTIONS.find((t) => t === field.value)
+                            ? field.value.charAt(0).toUpperCase() + field.value.slice(1)
+                            : field.value
+                          : "Seleccionar tipo…"}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-gray-500 rotate-90" />
+                    </button>
+                  </DrawerTrigger>
+                  <DrawerContent className="bg-gray-950 border-gray-800 pb-8 z-[100]">
+                    <div className="max-w-md mx-auto w-full">
+                      <DrawerHeader className="border-b border-gray-800 mb-2">
+                        <DrawerTitle className="text-white text-center">Tipo de Dispositivo</DrawerTitle>
+                      </DrawerHeader>
+                      <div className="p-4 grid gap-2">
+                        {TIPO_OPTIONS.map((t) => (
+                          <DrawerClose key={t} asChild>
+                            <button
+                              type="button"
+                              onClick={() => handleTipoChange(t)}
+                              className="w-full flex items-center justify-between p-4 rounded-2xl bg-gray-800 hover:bg-blue-600 text-white transition-all active:scale-95"
+                            >
+                              <span className="capitalize font-semibold text-base">
+                                {t === "otro" ? "Otro tipo (manual)" : t}
+                              </span>
+                              {field.value === t && <CheckCircle2 className="w-5 h-5 text-blue-400" />}
+                            </button>
+                          </DrawerClose>
+                        ))}
+                      </div>
+                    </div>
+                  </DrawerContent>
+                </Drawer>
+              )}
+            </FormControl>
+            <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
+          </FormItem>
+        )}
+      />
+
+      {/* Marca + Modelo */}
+      <div className="grid grid-cols-2 gap-3">
         <FormField
           control={control}
-          name={`dispositivos.${idx}.tipo`}
-          render={({ field: f }) => (
+          name={`dispositivos.${idx}.marca`}
+          render={({ field }) => (
             <FormItem className="space-y-1.5">
-              <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">Tipo *</FormLabel>
-              <Select value={f.value} onValueChange={f.onChange} disabled={isLoading}>
-                <FormControl>
-                  <SelectTrigger className="bg-gray-900/40 border-gray-700/60 text-white h-11 text-base rounded-xl transition-all hover:border-gray-600/60 focus:ring-blue-500/10">
-                    <SelectValue placeholder="Seleccionar tipo de equipo…" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className="bg-gray-800 text-white border-gray-700 rounded-xl overflow-hidden shadow-2xl">
-                  {TIPO_OPTIONS.map((t) => (
-                    <SelectItem key={t} value={t} className="capitalize py-3 text-sm focus:bg-blue-500/10 focus:text-blue-400">
-                      {t.charAt(0).toUpperCase() + t.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">
+                Marca *
+              </FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="HP, Canon…"
+                  disabled={isLoading}
+                  className="bg-gray-900/40 border-gray-700/60 text-white placeholder:text-gray-600 h-11 text-base rounded-xl focus:ring-blue-500/10"
+                />
+              </FormControl>
               <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
             </FormItem>
           )}
         />
-
-        {/* Marca + Modelo */}
-        <div className="grid grid-cols-2 gap-3">
-          <FormField
-            control={control}
-            name={`dispositivos.${idx}.marca`}
-            render={({ field: f }) => (
-              <FormItem className="space-y-1.5">
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">Marca *</FormLabel>
-                <FormControl>
-                  <Input
-                    {...f}
-                    placeholder="HP, Canon…"
-                    disabled={isLoading}
-                    className="bg-gray-900/40 border-gray-700/60 text-white placeholder:text-gray-600 h-11 text-base rounded-xl transition-all focus:ring-blue-500/10"
-                  />
-                </FormControl>
-                <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name={`dispositivos.${idx}.modelo`}
-            render={({ field: f }) => (
-              <FormItem className="space-y-1.5">
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">Modelo</FormLabel>
-                <FormControl>
-                  <Input
-                    {...f}
-                    placeholder="LX-3200…"
-                    disabled={isLoading}
-                    className="bg-gray-900/40 border-gray-700/60 text-white placeholder:text-gray-600 h-11 text-base rounded-xl transition-all focus:ring-blue-500/10"
-                  />
-                </FormControl>
-                <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Serie */}
         <FormField
           control={control}
-          name={`dispositivos.${idx}.numeroSerie`}
-          render={({ field: f }) => (
+          name={`dispositivos.${idx}.modelo`}
+          render={({ field }) => (
             <FormItem className="space-y-1.5">
-              <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">Número de serie</FormLabel>
+              <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">
+                Modelo
+              </FormLabel>
               <FormControl>
                 <Input
-                  {...f}
-                  placeholder="ABC123XYZ"
+                  {...field}
+                  placeholder="LX-3200…"
                   disabled={isLoading}
-                  className="bg-gray-900/40 border-gray-700/60 text-white placeholder:text-gray-600 h-11 text-base rounded-xl font-mono tracking-wider transition-all focus:ring-blue-500/10 uppercase"
+                  className="bg-gray-900/40 border-gray-700/60 text-white placeholder:text-gray-600 h-11 text-base rounded-xl focus:ring-blue-500/10"
                 />
               </FormControl>
               <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
@@ -563,6 +552,31 @@ const DispositivoCard = memo(function DispositivoCard({
           )}
         />
       </div>
+
+      {/* Número de serie */}
+      <FormField
+        control={control}
+        name={`dispositivos.${idx}.numeroSerie`}
+        render={({ field }) => (
+          <FormItem className="space-y-1.5">
+            <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-500 ml-1">
+              N° Serie{" "}
+              <span className="text-gray-600 font-normal normal-case">
+                (opcional)
+              </span>
+            </FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                placeholder="ABC123XYZ"
+                disabled={isLoading}
+                className="bg-gray-900/40 border-gray-700/60 text-white placeholder:text-gray-600 h-11 text-base rounded-xl font-mono tracking-wider focus:ring-blue-500/10 uppercase"
+              />
+            </FormControl>
+            <FormMessage className="text-[10px] ml-1 font-medium text-red-400/90" />
+          </FormItem>
+        )}
+      />
     </div>
   );
 });
@@ -578,14 +592,17 @@ export const ClienteFormModal = memo(function ClienteFormModal({
   const { user } = useAuth();
   const isEditing = !!initialData?.id;
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // Controla la dirección de la animación de slide
+  const slideDir = useRef<1 | -1>(1);
+
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState<SubmitError | null>(null);
+  // Guarda los últimos datos válidos para poder reintentar sin re-validar
+  const lastDataRef = useRef<FormValues | null>(null);
 
-  // Ref para el último submit (para poder reintentarlo)
-  const lastSubmitDataRef = useRef<FormValues | null>(null);
-
-  // ── Hook de Android back — siempre primero, antes de cualquier return ──────
+  // Hook de Android back — siempre antes de cualquier return condicional
   useAndroidBack(open, onClose);
 
   const form = useForm<FormValues>({
@@ -599,20 +616,40 @@ export const ClienteFormModal = memo(function ClienteFormModal({
     name: "dispositivos",
   });
 
-  // ── Reset al abrir / cambiar cliente ──────────────────────────────────────
+  // ── Reset al abrir o cambiar de cliente ───────────────────────────────────
   useEffect(() => {
     if (open) {
       form.reset(buildDefaults(initialData));
       setStep(1);
       setSubmitError(null);
-      lastSubmitDataRef.current = null;
+      lastDataRef.current = null;
     }
   }, [open, initialData, form]);
 
-  // ── Limpiar error al cambiar de paso ─────────────────────────────────────
+  // ── Limpia el error al cambiar de paso ────────────────────────────────────
   useEffect(() => {
     setSubmitError(null);
   }, [step]);
+
+  // ── Navegación ────────────────────────────────────────────────────────────
+  const scrollToTop = useCallback(() => {
+    scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const goToStep2 = useCallback(async () => {
+    // FIX: incluir "address" en la validación antes de avanzar
+    const ok = await form.trigger(["name", "cedula", "email", "phone", "address"]);
+    if (!ok) return;
+    slideDir.current = 1;
+    setStep(2);
+    scrollToTop();
+  }, [form, scrollToTop]);
+
+  const goToStep1 = useCallback(() => {
+    slideDir.current = -1;
+    setStep(1);
+    scrollToTop();
+  }, [scrollToTop]);
 
   // ── Dispositivos ──────────────────────────────────────────────────────────
   const addDispositivo = useCallback(() => {
@@ -622,7 +659,11 @@ export const ClienteFormModal = memo(function ClienteFormModal({
   const removeDispositivo = useCallback(
     (idx: number) => {
       if (fields.length <= 1) {
-        toast({ title: "Debe haber al menos un dispositivo", variant: "destructive" });
+        toast({
+          title: "Mínimo un dispositivo",
+          description: "Debe existir al menos un equipo registrado.",
+          variant: "destructive",
+        });
         return;
       }
       remove(idx);
@@ -630,44 +671,41 @@ export const ClienteFormModal = memo(function ClienteFormModal({
     [fields.length, remove, toast]
   );
 
-  // ── Navegación entre pasos ────────────────────────────────────────────────
-  const goToStep2 = useCallback(async () => {
-    const ok = await form.trigger(["name", "cedula", "email", "phone"]);
-    if (ok) setStep(2);
-  }, [form]);
-
-  const goToStep1 = useCallback(() => setStep(1), []);
-
-  // ── Submit central — separado del handler para poder reintentarlo ─────────
+  // ── Submit ────────────────────────────────────────────────────────────────
   const executeSubmit = useCallback(
     async (data: FormValues) => {
       if (!user?.uid) return;
 
       setIsLoading(true);
       setSubmitError(null);
-      lastSubmitDataRef.current = data;
+      lastDataRef.current = data;
 
       try {
-        const dispositivosConId = data.dispositivos.map((d, i) => ({
-          id: initialData?.dispositivos?.[i]?.id ?? `${Date.now()}-${i}`,
-          tipo: d.tipo,
-          marca: d.marca,
-          modelo: d.modelo,
-          numeroSerie: d.numeroSerie,
-        }));
+        const dispositivos = data.dispositivos
+          .filter((d) => d.tipo || d.marca)
+          .map((d, i) => ({
+            // FIX: crypto.randomUUID() evita colisión de IDs en el mismo loop
+            id: d.id ?? initialData?.dispositivos?.[i]?.id ?? crypto.randomUUID(),
+            tipo: d.tipo ?? "",
+            marca: d.marca ?? "",
+            modelo: d.modelo ?? "",
+            numeroSerie: d.numeroSerie ?? "",
+          }));
 
-        const payload: Omit<Cliente, "id"> & { updatedAt: string; userId: string } = {
+        const payload: Omit<Cliente, "id"> & {
+          updatedAt: string;
+          userId: string;
+        } = {
           name: data.name,
-          cedula: data.cedula,
-          email: data.email,
-          phone: data.phone,
-          dispositivos: dispositivosConId,
+          cedula: data.cedula ?? "",
+          email: data.email ?? "",
+          phone: data.phone ?? "",
+          // FIX: siempre enviar address (incluso vacío) para poder borrarlo al editar
+          address: data.address?.trim() ?? "",
+          dispositivos,
           updatedAt: new Date().toISOString(),
           userId: user.uid,
         };
-        if (data.address?.trim()) {
-          (payload as any).address = data.address.trim();
-        }
 
         if (isEditing && initialData?.id) {
           await actualizarCliente(initialData.id, payload, user.uid);
@@ -675,7 +713,11 @@ export const ClienteFormModal = memo(function ClienteFormModal({
             title: "✓ Cliente actualizado",
             description: `${data.name} actualizado correctamente.`,
           });
-          onSuccess({ ...initialData, ...payload, id: initialData.id } as Cliente);
+          onSuccess({
+            ...initialData,
+            ...payload,
+            id: initialData.id,
+          } as Cliente);
         } else {
           const newId = await crearCliente(
             { ...payload, createdAt: new Date().toISOString() },
@@ -692,8 +734,7 @@ export const ClienteFormModal = memo(function ClienteFormModal({
       } catch (err) {
         const classified = classifyError(err);
         setSubmitError(classified);
-
-        // Solo hacer toast para errores de red (más urgentes); el banner cubre el resto
+        // Toast solo para errores de red (el banner cubre el resto)
         if (classified.kind === "network") {
           toast({
             title: "Sin conexión",
@@ -708,11 +749,9 @@ export const ClienteFormModal = memo(function ClienteFormModal({
     [user, initialData, isEditing, onClose, onSuccess, toast]
   );
 
-  // Retry: re-ejecuta con los últimos datos válidos
+  // Reintento sin re-validar: usa los últimos datos guardados
   const handleRetry = useCallback(() => {
-    if (lastSubmitDataRef.current) {
-      executeSubmit(lastSubmitDataRef.current);
-    }
+    if (lastDataRef.current) executeSubmit(lastDataRef.current);
   }, [executeSubmit]);
 
   const dismissError = useCallback(() => setSubmitError(null), []);
@@ -720,28 +759,38 @@ export const ClienteFormModal = memo(function ClienteFormModal({
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="w-[calc(100%-1.5rem)] max-w-lg mx-auto rounded-2xl bg-gray-900 border border-gray-700/60 p-0 gap-0 overflow-hidden max-h-[92dvh] flex flex-col [&>button:last-child]:hidden">
-
-        {/* ── Header ──────────────────────────────────────────────────── */}
+      <DialogContent
+        className={[
+          "w-[calc(100%-1.5rem)] max-w-lg mx-auto",
+          "rounded-2xl bg-gray-900 border border-gray-700/60",
+          "p-0 gap-0 overflow-hidden",
+          // dvh es más fiable que vh en Capacitor/WebView
+          "max-h-[92dvh] flex flex-col",
+          // Oculta solo el botón de cierre nativo de Radix (último hijo del DialogContent)
+          "[&>button:last-child]:hidden",
+        ].join(" ")}
+      >
+        {/* ── Header ────────────────────────────────────────────────────── */}
         <DialogHeader className="px-5 pt-5 pb-4 border-b border-gray-700/50 flex-shrink-0">
           <div className="flex items-center justify-between gap-3 mb-3">
             <DialogTitle className="text-base font-semibold text-white">
               {isEditing ? "Editar cliente" : "Nuevo cliente"}
             </DialogTitle>
+            {/* FIX: botón de cerrar con área táctil de 44px */}
             <button
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-40 flex items-center justify-center transition-colors"
-              aria-label="Cerrar"
+              aria-label="Cerrar modal"
+              className="w-11 h-11 rounded-xl bg-gray-800 hover:bg-gray-700 disabled:opacity-40 flex items-center justify-center transition-colors"
             >
-              <X className="w-4 h-4 text-gray-400" />
+              <X className="w-5 h-5 text-gray-400" />
             </button>
           </div>
           <StepIndicator step={step} />
         </DialogHeader>
 
-        {/* ── Banner de error (fuera del scroll para que siempre sea visible) ── */}
+        {/* ── Banner de error — fuera del scroll para que siempre sea visible */}
         {submitError && (
           <ErrorBanner
             error={submitError}
@@ -750,41 +799,129 @@ export const ClienteFormModal = memo(function ClienteFormModal({
           />
         )}
 
-        {/* ── Form ────────────────────────────────────────────────────── */}
+        {/* ── Formulario ────────────────────────────────────────────────── */}
         <Form {...form}>
           <form
             onSubmit={(e) => e.preventDefault()}
             className="flex flex-col flex-1 overflow-hidden"
           >
-            {/* Scroll area */}
-            <div className="overflow-y-auto flex-1 px-4 py-4 custom-scrollbar">
-              {/* Contenido dinámico según el paso */}
-              {step === 1 ? (
-                <Step1Content 
-                  control={form.control} 
-                  isLoading={isLoading} 
-                />
-              ) : (
-                <Step2Content 
-                  control={form.control}
-                  isLoading={isLoading}
-                  fields={fields}
-                  addDispositivo={addDispositivo}
-                  removeDispositivo={removeDispositivo}
-                  errors={form.formState.errors}
-                />
-              )}
+            {/* Área scrolleable */}
+            <div
+              ref={scrollRef}
+              className="overflow-y-auto flex-1 px-4 py-4"
+              // Scroll nativo fluido en iOS WebView
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={step}
+                  // La dirección del slide sigue la dirección de navegación
+                  initial={{ opacity: 0, x: slideDir.current * 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: slideDir.current * -20 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                >
+                  {step === 1 ? (
+                    /* ── Paso 1: Información del cliente ── */
+                    <div className="space-y-4">
+                      <InputField
+                        name="name"
+                        label="Nombre completo *"
+                        placeholder="Ej: Juan Pérez"
+                        autoComplete="name"
+                        disabled={isLoading}
+                      />
+                      <InputField
+                        name="cedula"
+                        label="Cédula o NIT (opcional)"
+                        placeholder="Ej: 1234567890"
+                        // FIX: text en lugar de numeric porque acepta letras y guiones
+                        inputMode="text"
+                        disabled={isLoading}
+                      />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <InputField
+                          name="email"
+                          label="Email (opcional)"
+                          placeholder="correo@ejemplo.com"
+                          type="email"
+                          inputMode="email"
+                          autoComplete="email"
+                          disabled={isLoading}
+                        />
+                        <InputField
+                          name="phone"
+                          label="Teléfono (opcional)"
+                          placeholder="3001234567"
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          disabled={isLoading}
+                        />
+                      </div>
+                      <InputField
+                        name="address"
+                        label="Dirección (opcional)"
+                        placeholder="Calle 123 #45-67"
+                        autoComplete="street-address"
+                        disabled={isLoading}
+                      />
+                    </div>
+                  ) : (
+                    /* ── Paso 2: Dispositivos ── */
+                    <div className="space-y-4 pb-2">
+                      <div className="flex items-center justify-between px-1">
+                        <div>
+                          <h4 className="text-sm font-semibold text-white">
+                            Equipos vinculados
+                          </h4>
+                          <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">
+                            {fields.length}{" "}
+                            {fields.length === 1 ? "unidad" : "unidades"}
+                          </p>
+                        </div>
+                        {/* FIX: botón de añadir con área táctil de 44px */}
+                        <button
+                          type="button"
+                          onClick={addDispositivo}
+                          disabled={isLoading}
+                          aria-label="Añadir dispositivo"
+                          className="w-11 h-11 flex items-center justify-center rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 transition-colors disabled:opacity-40 active:scale-95"
+                        >
+                          <Plus className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      {fields.map((field, idx) => (
+                        <DispositivoCard
+                          key={field.id}
+                          idx={idx}
+                          control={form.control}
+                          canRemove={fields.length > 1}
+                          onRemove={removeDispositivo}
+                          isLoading={isLoading}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
 
-            {/* ── Footer ──────────────────────────────────────────────── */}
-            <div className="px-5 py-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900/80 backdrop-blur-sm flex gap-2">
+            {/* ── Footer ────────────────────────────────────────────────── */}
+            {/*
+             * FIX: pb-[calc(1rem+env(safe-area-inset-bottom))] asegura que los botones
+             * no queden tapados por el home indicator de iOS ni por la barra de navegación
+             * de Android en Capacitor.
+             */}
+            <div className="px-5 pt-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900/80 backdrop-blur-sm flex gap-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
               {step === 1 ? (
                 <>
                   <button
                     type="button"
                     onClick={onClose}
                     disabled={isLoading}
-                    className="flex-1 h-11 rounded-xl bg-gray-800 hover:bg-gray-700 disabled:opacity-40 text-gray-300 text-sm font-medium transition-colors"
+                    className="flex-1 h-12 rounded-xl bg-gray-800 hover:bg-gray-700 disabled:opacity-40 text-gray-300 text-sm font-medium transition-colors active:scale-[0.98]"
                   >
                     Cancelar
                   </button>
@@ -792,7 +929,7 @@ export const ClienteFormModal = memo(function ClienteFormModal({
                     type="button"
                     onClick={goToStep2}
                     disabled={isLoading}
-                    className="flex-1 h-11 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 disabled:opacity-40 border border-blue-500/25 text-blue-400 text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+                    className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-40 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
                   >
                     Siguiente
                     <ChevronRight className="w-4 h-4" />
@@ -804,16 +941,18 @@ export const ClienteFormModal = memo(function ClienteFormModal({
                     type="button"
                     onClick={goToStep1}
                     disabled={isLoading}
-                    className="flex-1 h-11 rounded-xl bg-gray-800 hover:bg-gray-700 disabled:opacity-40 text-gray-300 text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+                    className="flex-1 h-12 rounded-xl bg-gray-800 hover:bg-gray-700 disabled:opacity-40 text-gray-300 text-sm font-medium flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Atrás
                   </button>
                   <button
                     type="button"
-                    disabled={isLoading}
                     onClick={() => form.handleSubmit(executeSubmit)()}
-                    className="flex-1 h-11 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/25 text-blue-400 text-sm font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading}
+                    // FIX: aria-busy para lectores de pantalla y asistentes de Android
+                    aria-busy={isLoading}
+                    className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
                   >
                     {isLoading ? (
                       <>
@@ -834,5 +973,5 @@ export const ClienteFormModal = memo(function ClienteFormModal({
         </Form>
       </DialogContent>
     </Dialog>
-  )
-})
+  );
+});
