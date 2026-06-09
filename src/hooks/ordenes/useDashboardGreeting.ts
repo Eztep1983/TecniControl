@@ -13,10 +13,11 @@ function getGreeting(hour: number): string {
   return GREETINGS.find(g => hour < g.maxHour)?.text ?? "Buenas noches";
 }
 
-function getMotivational(day: number, hour: number): string {
+function getMotivational(day: number, hour: number, totalOrdenes?: number): string {
   if (day === 1) return "Nueva semana, nuevo arranque";
   if (day === 5 && hour >= 15) return "¡Casi fin de semana!";
   if (day === 0 || day === 6) return "Descansando o trabajando, tú decides";
+  if (totalOrdenes === 0) return "Hoy es buen día para crear tu primera orden";
   return "¿Listo para empezar?";
 }
 
@@ -44,7 +45,11 @@ interface User {
   displayName?: string | null;
 }
 
-export function useDashboardGreeting(negocio?: Negocio | null, user?: User | null): DashboardGreeting {
+export function useDashboardGreeting(
+  negocio?: Negocio | null,
+  user?: User | null,
+  totalOrdenes?: number,
+): DashboardGreeting {
   return useMemo(() => {
     const now = new Date();
     const hour = now.getHours();
@@ -54,7 +59,7 @@ export function useDashboardGreeting(negocio?: Negocio | null, user?: User | nul
     return {
       title: `${getGreeting(hour)}, ${name}`,
       subtitle: getDateString(now),
-      motivational: getMotivational(day, hour),
+      motivational: getMotivational(day, hour, totalOrdenes),
     };
-  }, [negocio?.nombre, user?.displayName]);
+  }, [negocio?.nombre, user?.displayName, totalOrdenes]);
 }

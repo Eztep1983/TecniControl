@@ -152,7 +152,7 @@ const StatCard = memo(
       className={cn(
         'snap-start shrink-0 w-32 bg-gray-800/40 border rounded-2xl p-4',
         'flex flex-col items-center justify-center',
-        'transition-all duration-150 active:scale-95 hover:bg-gray-800/60 cursor-default',
+        'transition-colors duration-150 cursor-default',
         colorClass
       )}
       role="listitem"
@@ -169,15 +169,24 @@ StatCard.displayName = 'StatCard'
 
 // ─── EmptyOrdenes ────────────────────────────────────────────────────────────
 
-const EmptyOrdenes = memo(() => (
-  <div className="flex flex-col items-center justify-center py-10 px-6 text-center rounded-xl border border-dashed border-gray-700/60 bg-gray-800/20">
-    <div className="w-12 h-12 rounded-xl bg-gray-800/60 border border-gray-700/50 flex items-center justify-center mb-3">
-      <FileX className="w-6 h-6 text-gray-600" aria-hidden="true" />
+const EmptyOrdenes = memo(
+  ({ onCreate }: { onCreate: () => void }) => (
+    <div className="flex flex-col items-center justify-center py-10 px-6 text-center rounded-xl border border-dashed border-gray-700/60 bg-gray-800/20">
+      <div className="w-12 h-12 rounded-xl bg-gray-800/60 border border-gray-700/50 flex items-center justify-center mb-3">
+        <FileX className="w-6 h-6 text-gray-600" aria-hidden="true" />
+      </div>
+      <p className="text-sm font-medium text-gray-400">Sin órdenes recientes</p>
+      <p className="text-xs text-gray-600 mt-1">Las órdenes que crees aparecerán aquí.</p>
+      <button
+        type="button"
+        onClick={onCreate}
+        className="mt-4 inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white transition-all hover:bg-blue-500 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400"
+      >
+        Crear nueva orden
+      </button>
     </div>
-    <p className="text-sm font-medium text-gray-400">Sin órdenes recientes</p>
-    <p className="text-xs text-gray-600 mt-1">Las órdenes que crees aparecerán aquí.</p>
-  </div>
-))
+  )
+)
 EmptyOrdenes.displayName = 'EmptyOrdenes'
 
 // ─── DraftBanner ─────────────────────────────────────────────────────────────
@@ -197,17 +206,19 @@ const DraftBanner = memo(
     >
       <FileEdit className="w-4 h-4 text-blue-400 shrink-0" aria-hidden="true" />
       <span className="text-xs text-blue-300 flex-1">Orden en pausa detectada</span>
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 w-full">
         <button
+          type="button"
           onClick={onDiscard}
-          className="text-blue-500/60 px-2 py-1 text-xs hover:text-blue-400 transition-colors rounded"
+          className="text-blue-500/80 bg-white/5 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
           aria-label="Descartar orden en pausa"
         >
           Descartar
         </button>
         <button
+          type="button"
           onClick={onResume}
-          className="bg-blue-500 text-gray-900 px-3 py-1 rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-blue-400"
+          className="bg-blue-500 text-gray-900 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
           aria-label="Reanudar orden en pausa"
         >
           Reanudar
@@ -246,7 +257,7 @@ function OrdenesDashboardContent() {
   const { prefetchOrdenes, prefetchClientes } = usePrefetchData()
   const { pendingAction, consumePendingAction } = useMobileNavigation()
 
-  const greetingData = useDashboardGreeting(negocio, user)
+  const greetingData = useDashboardGreeting(negocio, user, estadisticas.totalOrdenes)
   const { hayBorrador, descartarBorrador, syncDraft } = useDraftBanner()
   const onboarding = useOnboardingFlow(
     user,
@@ -257,7 +268,20 @@ function OrdenesDashboardContent() {
   )
 
   const [view, setView] = useState<'dashboard' | 'welcome' | 'success' | 'form'>('dashboard')
+  const [isCreating, setIsCreating] = useState(false)
   const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenMantenimiento | null>(null)
+  const isDashboardLoading = ordenesLoading || statsLoading || negocioLoading
+
+  const handleCreateNuevaOrden = () => {
+    setIsCreating(true)
+    setView('form')
+  }
+
+  useEffect(() => {
+    if (view !== 'form') {
+      setIsCreating(false)
+    }
+  }, [view])
 
   // Only switch to onboarding views — never overwrite 'form' view
   useEffect(() => {
@@ -387,7 +411,7 @@ function OrdenesDashboardContent() {
   return (
     <div className="bg-transparent min-h-screen pb-safe">
       {/* Header */}
-      <div className="bg-gray-900 border-b border-gray-800 pt-safe">
+      <div className="sticky top-0 z-40 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 pt-safe">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             {/* FIX: BusinessAvatar with infinite-loop-safe error handling */}
@@ -415,12 +439,20 @@ function OrdenesDashboardContent() {
       <div className="max-w-7xl mx-auto px-4 py-5 space-y-6">
         {/* Nueva Orden CTA */}
         <button
-          onClick={() => setView('form')}
+          type="button"
+          onClick={handleCreateNuevaOrden}
+          disabled={isCreating}
           aria-label="Emitir nueva orden de mantenimiento"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 font-bold shadow-lg shadow-blue-900/20"
+          aria-busy={isCreating}
+          className={cn(
+            "w-full bg-blue-600 text-white rounded-xl flex items-center justify-center gap-2 transition-all font-bold shadow-lg shadow-blue-900/20",
+            "py-3 px-4",
+            "disabled:cursor-not-allowed disabled:opacity-70",
+            isCreating ? 'opacity-80' : 'hover:bg-blue-700 active:scale-95'
+          )}
         >
           <Plus className="w-5 h-5" aria-hidden="true" />
-          Nueva Orden
+          {isCreating ? 'Creando...' : 'Nueva Orden'}
         </button>
 
         <OfflineSyncBanner />
@@ -442,15 +474,22 @@ function OrdenesDashboardContent() {
             Resumen
           </h2>
 
-          {statsLoading ? (
-            <div className="flex gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="snap-start shrink-0 w-32 h-24 rounded-2xl" />
-              ))}
+          {isDashboardLoading ? (
+            <div className="space-y-6">
+              <div className="flex gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0" role="status" aria-label="Cargando estadísticas y recientes">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="snap-start shrink-0 w-32 h-24 rounded-2xl" />
+                ))}
+              </div>
+              <div className="grid gap-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-24 w-full rounded-xl" />
+                ))}
+              </div>
             </div>
           ) : (
             <div
-              className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 [mask-image:linear-gradient(to_right,black_90%,transparent)] scrollbar-none"
+              className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 [mask-image:linear-gradient(to_right,black_96%,transparent)] scrollbar-none"
               role="list"
               aria-label="Estadísticas de actividad"
             >
@@ -492,13 +531,7 @@ function OrdenesDashboardContent() {
             Recientes
           </h2>
 
-          {ordenesLoading ? (
-            <div className="grid gap-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-24 w-full rounded-xl" />
-              ))}
-            </div>
-          ) : ordenesRecientes.length > 0 ? (
+          {ordenesRecientes.length > 0 ? (
             <div className="grid gap-3">
               {ordenesRecientes.map((o) => (
                 <OrdenCard
@@ -514,10 +547,10 @@ function OrdenesDashboardContent() {
               ))}
             </div>
           ) : (
-            <EmptyOrdenes />
+            <EmptyOrdenes onCreate={handleCreateNuevaOrden} />
           )}
 
-          {estadisticas.totalOrdenes >= 3 && (
+          {estadisticas.totalOrdenes > 0 && (
             <Link
               href="/ordenes/mantenimiento"
               className="mt-3 flex items-center justify-center w-full py-3 text-sm text-blue-400 bg-gray-800/30 rounded-xl border border-gray-700/50 hover:bg-gray-800/50 transition-colors"

@@ -2,12 +2,10 @@
 "use client"
 
 import React, { useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import icono from "@/public/icono.png"
 import { SidebarProvider, SidebarInset, SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/shadcnui/app-sidebar"
-import { UserProfile } from '@/components/auth/UserProfile'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { Separator } from "@/components/ui/separator"
 import Link from 'next/link'
