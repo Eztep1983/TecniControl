@@ -376,7 +376,7 @@
     const mostrarCargando = authLoading || (!!user && ordenesLoadingInicial)
 
     return (
-      <div className={vista === 'formulario' ? '' : 'min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-3 sm:p-4 lg:p-8'}>
+      <div className={vista === 'formulario' ? '' : 'min-h-screen bg-gray-900 p-3 sm:p-4 lg:p-8'}>
         <div className={vista === 'formulario' ? '' : 'max-w-7xl mx-auto'}>
           {vista === 'formulario' ? (
             <FormularioMantenimiento

@@ -256,7 +256,7 @@ export default memo(function PiezasInput({
 
         {/* Dropdown Lista */}
         {isOpen && (!loading) && (opcionesDisponibles.length > 0 || mostrarAgregar) && (
-          <div className="absolute z-50 w-full mt-2 bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="absolute z-50 w-full mt-2 bg-gray-900/95 border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="max-h-[300px] overflow-y-auto overscroll-contain">
               {mostrarAgregar && (
                 <button

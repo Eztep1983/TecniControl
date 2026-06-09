@@ -21,7 +21,7 @@ export default function Section({
   children 
 }: SectionProps) {
   return (
-    <div className="bg-gray-800/70 backdrop-blur-sm rounded-xl border border-gray-700/50 p-6 shadow-lg">
+    <div className="bg-gray-800/70 rounded-xl border border-gray-700/50 p-6 shadow-lg">
       {onToggle ? (
         // Si hay función onToggle, mostrar botón interactivo
         <button 

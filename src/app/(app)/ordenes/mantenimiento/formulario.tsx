@@ -1276,7 +1276,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   }
 
   return (
-    <div className="h-[calc(100dvh-5rem)] w bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col overflow-hidden relative">
+    <div className="h-[calc(100dvh-5rem)] w bg-gray-900 flex flex-col overflow-hidden relative">
       {/* Onboarding Contextual Hint & Progress */}
       <AnimatePresence mode="wait">
         {isOnboarding && (

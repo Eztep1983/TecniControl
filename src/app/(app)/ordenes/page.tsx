@@ -411,7 +411,7 @@ function OrdenesDashboardContent() {
   return (
     <div className="bg-transparent min-h-screen pb-safe">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 pt-safe">
+      <div className="sticky top-0 z-40 bg-gray-900/95 border-b border-gray-800 pt-safe">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             {/* FIX: BusinessAvatar with infinite-loop-safe error handling */}

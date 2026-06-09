@@ -914,7 +914,7 @@ export const ClienteFormModal = memo(function ClienteFormModal({
              * no queden tapados por el home indicator de iOS ni por la barra de navegación
              * de Android en Capacitor.
              */}
-            <div className="px-5 pt-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900/80 backdrop-blur-sm flex gap-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            <div className="px-5 pt-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900/80 flex gap-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
               {step === 1 ? (
                 <>
                   <button

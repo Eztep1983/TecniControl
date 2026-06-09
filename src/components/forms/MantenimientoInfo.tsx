@@ -514,7 +514,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                     repeatType: "reverse"
                   }}
                 >
-                  <ArrowUpIcon className="w-12 h-12 mx-auto mb-3 opacity-30 bg-blue-700/50 rounded-xl" />
+                  <ArrowUpIcon className="w-12 h-12 mx-auto mb-3 opacity-30 rounded-xl" />
                 </motion.div>
                 Selecciona un tipo de trabajo arriba para comenzar
               </motion.div>
