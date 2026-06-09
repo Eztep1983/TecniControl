@@ -54,7 +54,6 @@ export default function LoginPage() {
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [deviceLocked, setDeviceLocked] = useState(false)
-  const [notAuthorized, setNotAuthorized] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
@@ -72,9 +71,8 @@ export default function LoginPage() {
   const resetLoginState = useCallback(() => {
     setError(null)
     setDeviceLocked(false)
-    setNotAuthorized(false)
     setSuccessMessage(null)
-    setIsSigningIn(false)
+    setIsSigningIn(false) 
     clearError()
   }, [clearError])
 
@@ -84,9 +82,6 @@ export default function LoginPage() {
       if (authError.includes('DEVICE_LOCKED')) {
         setDeviceLocked(true)
         setError('Esta cuenta ya está registrada en otro dispositivo.')
-      } else if (authError.includes('ACCOUNT_NOT_AUTHORIZED')) {
-        setNotAuthorized(true)
-        setError('Esta cuenta no está autorizada para usar la aplicación.')
       } else {
         setError(authError)
       }
@@ -129,10 +124,10 @@ export default function LoginPage() {
 
   // Auto-expand credentials form if there is an error or success
   useEffect(() => {
-    if (error && !deviceLocked && !notAuthorized || successMessage) {
+    if ((error && !deviceLocked) || successMessage) {
       setIsEmailFormExpanded(true)
     }
-  }, [error, successMessage, deviceLocked, notAuthorized])
+  }, [error, successMessage, deviceLocked])
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode)
@@ -144,7 +139,6 @@ export default function LoginPage() {
       clearError()
       setError(null)
       setDeviceLocked(false)
-      setNotAuthorized(false)
       setSuccessMessage(null)
       console.log('Attempting Google sign in...')
       await signInWithGoogle()
@@ -154,13 +148,9 @@ export default function LoginPage() {
       if (msg.includes('DEVICE_LOCKED')) {
         setDeviceLocked(true)
         setError('Esta cuenta ya está registrada en otro dispositivo.')
-      } else if (msg.includes('ACCOUNT_NOT_AUTHORIZED')) {
-        setNotAuthorized(true)
-        setError('Esta cuenta no está autorizada para usar la aplicación.')
       } else {
         setError(error.message || 'Error al iniciar sesión con Google.')
       }
-      setIsSigningIn(false)
     }
   }
 
@@ -171,7 +161,6 @@ export default function LoginPage() {
       clearError()
       setError(null)
       setDeviceLocked(false)
-      setNotAuthorized(false)
       setSuccessMessage(null)
       await signInWithEmail(email, password)
     } catch (error: any) {
@@ -180,9 +169,6 @@ export default function LoginPage() {
       if (msg.includes('DEVICE_LOCKED')) {
         setDeviceLocked(true)
         setError('Esta cuenta ya está registrada en otro dispositivo.')
-      } else if (msg.includes('ACCOUNT_NOT_AUTHORIZED')) {
-        setNotAuthorized(true)
-        setError('Esta cuenta no está autorizada para usar la aplicación.')
       } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
         setError('Correo o contraseña incorrectos. Verifica tus datos.')
       } else if (error.code === 'auth/invalid-email') {
@@ -205,7 +191,6 @@ export default function LoginPage() {
       clearError()
       setError(null)
       setDeviceLocked(false)
-      setNotAuthorized(false)
       setSuccessMessage(null)
       await sendPasswordReset(email)
       setSuccessMessage('Se ha enviado un enlace de recuperación a tu correo electrónico. Por favor, revisa tu bandeja de entrada.')
@@ -270,7 +255,7 @@ export default function LoginPage() {
           <CardContent className="px-8 pb-8 space-y-6">
 
             {/* Error Message (Standard) */}
-            {error && !deviceLocked && !notAuthorized && (
+            {error && !deviceLocked && (
               <Alert variant="destructive" className="border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
@@ -282,11 +267,11 @@ export default function LoginPage() {
             )}
 
             {/* Restricted Access View */}
-            {(deviceLocked || notAuthorized) ? (
+            {deviceLocked ? (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="text-center space-y-2">
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 mb-2">
-                    {deviceLocked ? <Lock className="h-8 w-8" /> : <Shield className="h-8 w-8" />}
+                    <Lock className="h-8 w-8" />
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                     Acceso Restringido
@@ -294,46 +279,6 @@ export default function LoginPage() {
                   <p className="text-slate-600 dark:text-slate-400">
                     {error}
                   </p>
-                </div>
-
-                <div className="space-y-3">
-                  <p className="text-xs font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest text-center">
-                    Contacte a Soporte para Habilitación
-                  </p>
-                  
-                  <div className="grid grid-cols-1 gap-3">
-                    <a 
-                      href="mailto:extep1983@gmail.com" 
-                      className="flex items-center justify-between p-4 rounded-xl bg-slate-50 hover:bg-blue-50 dark:bg-slate-900/50 dark:hover:bg-blue-900/20 border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-800 transition-all group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm text-blue-600 dark:text-blue-400">
-                          <Mail className="h-5 w-5" />
-                        </div>
-                        <div className="text-left">
-                          <p className="text-xs text-slate-500 dark:text-slate-500 font-medium">Correo electrónico</p>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">extep1983@gmail.com</p>
-                        </div>
-                      </div>
-                      <ChevronDown className="h-4 w-4 text-slate-300 group-hover:text-blue-500 -rotate-90" />
-                    </a>
-
-                    <a 
-                      href="tel:+573107981736" 
-                      className="flex items-center justify-between p-4 rounded-xl bg-slate-50 hover:bg-green-50 dark:bg-slate-900/50 dark:hover:bg-green-900/20 border border-slate-200 dark:border-slate-800 hover:border-green-300 dark:hover:border-green-800 transition-all group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm text-green-600 dark:text-green-400">
-                          <Phone className="h-5 w-5" />
-                        </div>
-                        <div className="text-left">
-                          <p className="text-xs text-slate-500 dark:text-slate-500 font-medium">WhatsApp / Teléfono</p>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">+57 310 798 1736</p>
-                        </div>
-                      </div>
-                      <ChevronDown className="h-4 w-4 text-slate-300 group-hover:text-green-500 -rotate-90" />
-                    </a>
-                  </div>
                 </div>
 
                 <Button

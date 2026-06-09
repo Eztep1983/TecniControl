@@ -164,29 +164,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw firestoreErr
       }
       
-      if (isNewLogin) {
-        if (!userDoc.exists()) {
-          console.error(' BLOQUEO: El documento users/' + firebaseUser.uid + ' NO existe en Firestore.')
-          throw new Error('ACCOUNT_NOT_AUTHORIZED')
-        } else {
-          const userData = userDoc.data() as UserDocument
-          
-          // VERIFICACIÓN DE DEVICE BINDING
-          if (Capacitor.isNativePlatform() && userData.deviceId && userData.deviceId !== currentDeviceId) {
-            logger.warn('Device mismatch detected!', { stored: userData.deviceId, current: currentDeviceId })
-            throw new Error('DEVICE_LOCKED')
-          }
+      if (!userDoc.exists()) {
+        logger.log('Nuevo usuario detectado: creando perfil básico en Firestore:', firebaseUser.uid)
 
-          // Si no tiene deviceId (primera vez en este dispositivo tras ser autorizado), lo vinculamos
-          const updateData: any = { ...baseData }
-          if (!userData.deviceId) {
-            updateData.deviceId = currentDeviceId
-            logger.log('Binding device for newly authorized user:', currentDeviceId)
-          }
-
-          await setDoc(userRef, updateData, { merge: true })
-          logger.log('User document updated on login')
+        const createData: any = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+          emailVerified: firebaseUser.emailVerified,
+          role: 'user',
+          businessId: '',
+          createdAt: serverTimestamp(),
+          lastLogin: serverTimestamp(),
+          lastActivity: serverTimestamp(),
         }
+
+        if (Capacitor.isNativePlatform()) {
+          createData.deviceId = currentDeviceId
+        }
+
+        await setDoc(userRef, createData, { merge: true })
+        logger.log('Perfil de usuario creado para nuevo usuario')
+        return
+      }
+
+      const userData = userDoc.data() as UserDocument
+
+      if (Capacitor.isNativePlatform() && userData.deviceId && userData.deviceId !== currentDeviceId) {
+        logger.warn('Device mismatch detected!', { stored: userData.deviceId, current: currentDeviceId })
+        throw new Error('DEVICE_LOCKED')
+      }
+
+      const updateData: any = {
+        ...baseData,
+        lastLogin: serverTimestamp(),
+        lastActivity: serverTimestamp(),
+      }
+
+      if (!userData.deviceId && Capacitor.isNativePlatform()) {
+        updateData.deviceId = currentDeviceId
+        logger.log('Binding device for newly authorized user:', currentDeviceId)
+      }
+
+      if (isNewLogin) {
+        await setDoc(userRef, updateData, { merge: true })
+        logger.log('User document updated on login')
       } else {
         await setDoc(userRef, { lastActivity: serverTimestamp() }, { merge: true })
       }

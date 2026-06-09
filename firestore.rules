@@ -168,7 +168,7 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
-      allow create: if false; 
+      allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null && request.auth.uid == userId
                     // Impedir que el usuario cambie su propio rol o UID (usando diff para mayor robustez)
                     && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid'])
