@@ -524,7 +524,28 @@ const DetailView = memo(({
           )}
         </Card>
 
-        {/* SERVICIO */}
+          {orden.tipoMantenimiento === 'garantia' && (
+          <Card title="Garantía Aplicada" icon={ShieldCheck} iconColor="text-amber-400">
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-1.5">Orden de Referencia</p>
+                <p className="text-lg font-black text-amber-200 font-mono tracking-tighter bg-amber-500/10 px-3 py-2 rounded-xl border border-amber-500/20 inline-block">
+                  #{orden.garantiaReferenciaId || "No especificada"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-1.5">Motivo del Reclamo</p>
+                <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 shadow-inner">
+                  <p className="text-sm text-gray-300 leading-relaxed font-medium">
+                    {orden.garantiaMotivo || "Sin detalles específicos del reclamo."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+          )}
+
+          {/* SERVICIO */}
         <Card title="Servicio realizado" icon={Wrench} iconColor="text-orange-400">
           {orden.tareasRealizadas && orden.tareasRealizadas.length > 0 && (
             <div className="mb-5">

@@ -182,6 +182,84 @@ export const getOrdenesPaginadas = async (userId: string, pageSize: number = 10,
 };
 
 /**
+ * Obtiene órdenes paginadas con un filtro opcional de tipo de mantenimiento
+ */
+export const getOrdenesPaginadasConFiltro = async (
+  userId: string,
+  pageSize: number = 10,
+  lastDoc: any = null,
+  tipoMantenimiento: string = 'todos'
+) => {
+  try {
+    const ordenesRef = collection(db, 'ordenes');
+    const constraints: any[] = [
+      where('userId', '==', userId),
+      where('tipo', '==', 'mantenimiento')
+    ];
+
+    if (tipoMantenimiento && tipoMantenimiento !== 'todos') {
+      constraints.push(where('tipoMantenimiento', '==', tipoMantenimiento));
+    }
+
+    constraints.push(orderBy('fechaCreacion', 'desc'));
+
+    if (lastDoc) {
+      constraints.push(startAfter(lastDoc));
+    }
+
+    constraints.push(limit(pageSize));
+
+    const q = query(ordenesRef, ...constraints);
+    const querySnapshot = await getDocs(q);
+    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+
+    const ordenes = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Orden[];
+
+    return { ordenes, lastDoc: lastVisible };
+  } catch (error) {
+    console.error('Error obteniendo órdenes paginadas con filtro:', error);
+    return { ordenes: [], lastDoc: null };
+  }
+};
+
+/**
+ * Obtiene todas las órdenes (sin paginación) filtradas por tipo de mantenimiento
+ * para realizar búsqueda client-side sobre el set de datos filtrado.
+ */
+export const getTodasLasOrdenesConFiltro = async (
+  userId: string,
+  tipoMantenimiento: string = 'todos'
+): Promise<Orden[]> => {
+  try {
+    const ordenesRef = collection(db, 'ordenes');
+    const constraints: any[] = [
+      where('userId', '==', userId),
+      where('tipo', '==', 'mantenimiento')
+    ];
+
+    if (tipoMantenimiento && tipoMantenimiento !== 'todos') {
+      constraints.push(where('tipoMantenimiento', '==', tipoMantenimiento));
+    }
+
+    constraints.push(orderBy('fechaCreacion', 'desc'));
+
+    const q = query(ordenesRef, ...constraints);
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Orden[];
+  } catch (error) {
+    console.error('Error obteniendo todas las órdenes con filtro:', error);
+    return [];
+  }
+};
+
+/**
  * Retorna un resumen de la orden omitiendo campos pesados (DTO pattern)
  */
 export const mapToOrdenResumen = (orden: any): Partial<Orden> => {
@@ -387,20 +465,21 @@ export const generarIdPersonalizado = async (userId: string, prefijo: string = '
 
 // Generar ID por usuario (ahora todas las órdenes usan 'mantenimiento' y el prefijo 'OSER')
 export const generarIdPorTipo = async (userId: string, _tipoOrden: 'mantenimiento' | 'diagnostico' | 'garantia' | 'entrega' = 'mantenimiento'): Promise<string> => {
+  const prefijo = 'OSER';
+  
   try {
-    const prefijo = 'OSER';
-
-    // Offline fallback: ID temporal basado en timestamp
+    // Offline fallback: ID temporal basado en navigator.onLine (rápido)
     if (typeof window !== 'undefined' && !window.navigator.onLine) {
-      return `${prefijo}${Date.now()}`;
+      return `${prefijo}-TEMP-${Date.now()}`;
     }
 
     const numero = await incrementarContador(userId);
     // Mantener padding de 3 para compatibilidad con IDs previos tipo OSER###
     return `${prefijo}${numero.toString().padStart(3, '0')}`;
   } catch (error) {
-    console.error('Error generando ID por tipo (user-scoped):', error);
-    throw error;
+    // Si falla por red u otra razón, no bloquear el flujo del técnico
+    console.warn('Error generando ID online, usando fallback temporal:', error);
+    return `${prefijo}-TEMP-${Date.now()}`;
   }
 };
 

@@ -1,10 +1,11 @@
 // components/forms/MantenimientoInfo.tsx
 'use client'
-import { Settings, Shield, Wrench, Stethoscope, Monitor, CheckCircle2, ArrowUpIcon, ArrowLeft } from 'lucide-react'
+import { Settings, Shield, Wrench, Stethoscope, Monitor, CheckCircle2, ArrowUpIcon, ArrowLeft, ShieldCheck } from 'lucide-react'
 import TareasInput from './TareasInput'
 import PiezasInput from './PiezasInput'
 import DiagnosticoInfo from './DiagnosticoInfo'
 import InstalacionInfo from './InstalacionInfo'
+import GarantiaInfo from './GarantiaInfo'
 import { useMemo, memo, Dispatch, SetStateAction, useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence, Variants } from 'framer-motion'
 
@@ -16,7 +17,7 @@ interface Pieza {
 }
 
 interface MantenimientoInfoProps {
-  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | '' 
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia' | '' 
   tareasSeleccionadas: string[]
   tareasPersonalizadas: string[]
   piezasUsadas: Pieza[]
@@ -26,7 +27,7 @@ interface MantenimientoInfoProps {
   pruebasRealizadas?: string
   diagnosticoFinal?: string
   
-  onCambiarTipoMantenimiento: (tipo: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | '') => void
+  onCambiarTipoMantenimiento: (tipo: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia' | '') => void
   onToggleTareaPredefinida: (tarea: string) => void
   onSetMostrarTareasPredefinidas: (mostrar: boolean) => void
   onActualizarTareaPersonalizada: (index: number, valor: string) => void
@@ -35,6 +36,12 @@ interface MantenimientoInfoProps {
   onCambiarObservaciones?: (valor: string) => void
   onCambiarPruebas?: (valor: string) => void
   onCambiarDiagnostico?: (valor: string) => void
+
+  // Props de Garantía (Respuesta)
+  garantiaReferenciaId?: string
+  garantiaMotivo?: string
+  onCambiarGarantiaReferenciaId?: (valor: string) => void
+  onCambiarGarantiaMotivo?: (valor: string) => void
 
   // Props de Instalación
   instalacionRecomendaciones?: boolean
@@ -84,6 +91,15 @@ const TIPO_CONFIG = {
     colorIcon: 'bg-purple-500/20 text-purple-400',
     colorText: 'text-purple-300',
     gradient: 'from-purple-500/20 to-transparent',
+  },
+  garantia: {
+    icono: ShieldCheck,
+    nombre: 'Garantía',
+    colorBorder: 'border-amber-500/40',
+    colorBg: 'bg-amber-500/10',
+    colorIcon: 'bg-amber-500/20 text-amber-400',
+    colorText: 'text-amber-300',
+    gradient: 'from-amber-500/20 to-transparent',
   },
 } as const
 
@@ -163,6 +179,12 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   onCambiarPruebas = () => {},
   onCambiarDiagnostico = () => {},
 
+  // Props de Garantía
+  garantiaReferenciaId = '',
+  garantiaMotivo = '',
+  onCambiarGarantiaReferenciaId = () => {},
+  onCambiarGarantiaMotivo = () => {},
+
   // Props de Instalación
   instalacionRecomendaciones = false,
   instalacionRecomendacionesDetalle = '',
@@ -178,7 +200,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   const [isChanging, setIsChanging] = useState(false)
   const [hoveredTipo, setHoveredTipo] = useState<string | null>(null)
 
-  const handleTipoChange = useCallback(async (tipo: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | '') => {
+  const handleTipoChange = useCallback(async (tipo: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia' | '') => {
     setIsChanging(true)
     // Pequeña pausa para la animación de salida
     await new Promise(resolve => setTimeout(resolve, 150))
@@ -187,7 +209,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   }, [onCambiarTipoMantenimiento])
 
   const tareasInputProps = useMemo(() => ({
-    tipoMantenimiento,
+    tipoMantenimiento: tipoMantenimiento as 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia' | '',
     tareasSeleccionadas,
     tareasPersonalizadas,
     onToggleTareaPredefinida,
@@ -226,6 +248,18 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
     onCambiarDiagnostico,
   ])
 
+  const garantiaProps = useMemo(() => ({
+    referenciaId: garantiaReferenciaId,
+    motivo: garantiaMotivo,
+    onCambiarReferencia: onCambiarGarantiaReferenciaId,
+    onCambiarMotivo: onCambiarGarantiaMotivo
+  }), [
+    garantiaReferenciaId,
+    garantiaMotivo,
+    onCambiarGarantiaReferenciaId,
+    onCambiarGarantiaMotivo
+  ])
+
   const instalacionProps = useMemo(() => ({
     recomendaciones: instalacionRecomendaciones,
     recomendacionesDetalle: instalacionRecomendacionesDetalle,
@@ -255,6 +289,43 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
 
     if (tipoMantenimiento === 'instalacion') {
       return <InstalacionInfo {...instalacionProps} />
+    }
+
+    if (tipoMantenimiento === 'garantia') {
+      return (
+        <motion.div 
+          className="space-y-8"
+          variants={contentVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          <GarantiaInfo {...garantiaProps} />
+          
+          <motion.div 
+            className="h-px w-full bg-gradient-to-r from-transparent via-gray-700/50 to-transparent"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+          />
+
+          <motion.section variants={itemVariants}>
+            <div className="flex items-center gap-2 mb-3 px-1">
+              <div className="w-1.5 h-5 bg-amber-500 rounded-full" />
+              <h3 className="text-gray-200 text-sm font-semibold uppercase tracking-wider">Acciones por Garantía</h3>
+            </div>
+            <TareasInput {...tareasInputProps} />
+          </motion.section>
+
+          <motion.section variants={itemVariants}>
+             <div className="flex items-center gap-2 mb-3 px-1">
+              <div className="w-1.5 h-5 bg-orange-500 rounded-full" />
+              <h3 className="text-gray-200 text-sm font-semibold uppercase tracking-wider">Repuestos en Garantía</h3>
+            </div>
+            <PiezasInput {...piezasInputProps} />
+          </motion.section>
+        </motion.div>
+      )
     }
 
     if (tipoMantenimiento === 'preventivo' || tipoMantenimiento === 'correctivo') {
@@ -351,7 +422,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
               exit="exit"
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
             >
-              {(['preventivo', 'correctivo', 'diagnostico', 'instalacion'] as const).map(tipo => {
+              {(['preventivo', 'correctivo', 'diagnostico', 'instalacion', 'garantia'] as const).map(tipo => {
                 const config = TIPO_CONFIG[tipo]
                 const isHovered = hoveredTipo === tipo
                 
@@ -390,6 +461,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                         {tipo === 'correctivo' && 'Reparación de fallas'}
                         {tipo === 'diagnostico' && 'Evaluación técnica'}
                         {tipo === 'instalacion' && 'Entrega de equipos y configuraciones'}
+                        {tipo === 'garantia' && 'Respuesta por fallo de servicio previo'}
                       </p>
                     </div>
                     

@@ -48,6 +48,11 @@ const TIPO_CONFIG: Record<string, TipoConfig> = {
     dot:    'bg-purple-400',
     badge:  'bg-purple-500/10 text-purple-400 ring-1 ring-inset ring-purple-500/20',
   },
+  garantia: {
+    accent: 'bg-amber-500',
+    dot:    'bg-amber-400',
+    badge:  'bg-amber-500/10 text-amber-400 ring-1 ring-inset ring-amber-500/20',
+  },
 }
 
 const DEFAULT_TIPO: TipoConfig = {
@@ -108,6 +113,9 @@ function getOrdenResumen(orden: OrdenMantenimiento): string {
     return orden.instalacionConfiguracionTipos?.length
       ? orden.instalacionConfiguracionTipos.join(', ')
       : orden.instalacionRecomendacionesDetalle || 'Instalación completada'
+  }
+  if (orden.tipoMantenimiento === 'garantia') {
+    return orden.garantiaMotivo || `Ref: #${orden.garantiaReferenciaId}` || 'Atención por garantía'
   }
   return orden.observacionesIniciales || 'Sin detalles registrados'
 }

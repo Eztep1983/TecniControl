@@ -262,7 +262,27 @@ export default function FirmaInput({
                   }`}
                 >
                   Declaro que recibo el equipo a mi entera satisfacción y
-                  acepto el tratamiento de mis datos personales de acuerdo con la Ley 1581 de 2012 y el Decreto 1377 de 2013. He sido informado sobre la finalidad y las medidas de seguridad implementadas para proteger mi información.
+                  acepto el tratamiento de mis datos personales de acuerdo con la{' '}
+                  <a 
+                    href="/legal/politica-privacidad" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Política de Privacidad
+                  </a>
+                  {' '}y los{' '}
+                  <a 
+                    href="/legal/terminos-servicio" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Términos de Servicio
+                  </a>
+                  {' '}de TecniControl (Ley 1581 de 2012).
                 </span>
               </label>
 

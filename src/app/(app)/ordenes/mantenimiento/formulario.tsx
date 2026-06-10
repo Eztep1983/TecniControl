@@ -93,7 +93,7 @@ export interface FormState {
   dispositivoSeleccionado: Dispositivo | null
 
   // Mantenimiento
-  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | ''
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia' | ''
   tareasSeleccionadas: string[]
   tareasPersonalizadas: string[]
   mostrarTareasPredefinidas: boolean
@@ -112,7 +112,11 @@ export interface FormState {
   diagnosticoFinal: string
   contadorMaquina?: number
 
-  // Garantía
+  // Garantía (Respuesta)
+  garantiaReferenciaId: string
+  garantiaMotivo: string
+
+  // Garantía (Registro en nueva orden)
   garantiaHabilitada: boolean
   garantiaDescripcion: string
   garantiaTiempoDesde: string
@@ -155,6 +159,8 @@ type FormAction =
   | { type: 'SET_PRUEBAS_REALIZADAS'; payload: string }
   | { type: 'SET_DIAGNOSTICO_FINAL'; payload: string }
   | { type: 'SET_CONTADOR_MAQUINA'; payload: number | undefined }
+  | { type: 'SET_GARANTIA_REFERENCIA_ID'; payload: string }
+  | { type: 'SET_GARANTIA_MOTIVO'; payload: string }
   | { type: 'SET_GARANTIA_DESCRIPCION'; payload: string }
   | { type: 'SET_GARANTIA_TIEMPO_DESDE'; payload: string }
   | { type: 'SET_GARANTIA_TIEMPO_HASTA'; payload: string }
@@ -189,6 +195,8 @@ const initialState: FormState = {
   pruebasRealizadas: '',
   diagnosticoFinal: '',
   contadorMaquina: undefined,
+  garantiaReferenciaId: '',
+  garantiaMotivo: '',
   garantiaHabilitada: false,
   garantiaDescripcion: '',
   garantiaTiempoDesde: '',
@@ -246,6 +254,8 @@ function formReducer(state: FormState, action: FormAction): FormState {
         instalacionRecomendacionesDetalle: state.instalacionRecomendacionesDetalle,
         instalacionConfiguracion: state.instalacionConfiguracion,
         instalacionConfiguracionTipos: state.instalacionConfiguracionTipos,
+        garantiaReferenciaId: state.garantiaReferenciaId,
+        garantiaMotivo: state.garantiaMotivo,
       };
 
       const updatedColecciones = {
@@ -265,6 +275,8 @@ function formReducer(state: FormState, action: FormAction): FormState {
         instalacionRecomendacionesDetalle: '',
         instalacionConfiguracion: false,
         instalacionConfiguracionTipos: [],
+        garantiaReferenciaId: '',
+        garantiaMotivo: '',
       };
 
       return {
@@ -333,6 +345,12 @@ function formReducer(state: FormState, action: FormAction): FormState {
 
     case 'SET_CONTADOR_MAQUINA':
       return { ...state, contadorMaquina: action.payload }
+
+    case 'SET_GARANTIA_REFERENCIA_ID':
+      return { ...state, garantiaReferenciaId: action.payload }
+
+    case 'SET_GARANTIA_MOTIVO':
+      return { ...state, garantiaMotivo: action.payload }
 
     case 'SET_GARANTIA_DESCRIPCION':
       return { ...state, garantiaDescripcion: action.payload }
@@ -644,6 +662,9 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
       if (state.tipoMantenimiento === 'instalacion') {
         return state.instalacionConfiguracion || state.instalacionRecomendaciones
       }
+      if (state.tipoMantenimiento === 'garantia') {
+        return !!(state.garantiaReferenciaId.trim() && state.garantiaMotivo.trim())
+      }
       const todasLasTareas = [...state.tareasSeleccionadas, ...state.tareasPersonalizadas.filter(t => t.trim())]
       return todasLasTareas.length > 0
     },
@@ -912,6 +933,11 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
         nuevaOrden.instalacionConfiguracionTipos = state.instalacionConfiguracionTipos;
       }
 
+      if (state.tipoMantenimiento === 'garantia') {
+        nuevaOrden.garantiaReferenciaId = state.garantiaReferenciaId.trim();
+        nuevaOrden.garantiaMotivo = state.garantiaMotivo.trim();
+      }
+
       nuevaOrden.garantiaHabilitada = state.garantiaHabilitada;
       if (state.garantiaHabilitada) {
         if (state.garantiaTiempoDesde) nuevaOrden.garantiaTiempoDesde = new Date(state.garantiaTiempoDesde);
@@ -958,20 +984,36 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
         clearPersistence();
         setOrdenCreada(ordenOffline as any);
       } else {
-        // ── RUTA ONLINE: dejar que crearOrdenMutate maneje Firestore ───────────
-        const resultado = await crearOrdenMutate(nuevaOrden);
+        // ── RUTA ONLINE: intentar Firestore, con fallback a cola si falla ────────
+        try {
+          const resultado = await crearOrdenMutate(nuevaOrden);
 
-        const ordenFinal = resultado ?? {
-          ...nuevaOrden,
-          idPersonalizado: 'OSER-TEMP-' + Date.now(),
-          isOffline: true,
-        };
-        if (!ordenFinal.idPersonalizado) {
-          ordenFinal.idPersonalizado = ordenFinal.id || ('OSER-TEMP-' + Date.now());
+          const ordenFinal = resultado ?? {
+            ...nuevaOrden,
+            idPersonalizado: 'OSER-TEMP-' + Date.now(),
+            isOffline: true,
+          };
+          if (!ordenFinal.idPersonalizado) {
+            ordenFinal.idPersonalizado = ordenFinal.id || ('OSER-TEMP-' + Date.now());
+          }
+
+          clearPersistence();
+          setOrdenCreada(ordenFinal as OrdenMantenimiento);
+        } catch (error) {
+          console.warn('Fallo intento online (posible micro-corte), reintentando vía cola offline...', error);
+          
+          const ordenBase = {
+            ...nuevaOrden,
+            userId: user!.uid,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          const tempId = enqueueOrder(ordenBase, user!.uid);
+          const ordenOffline = { ...ordenBase, id: tempId, idPersonalizado: tempId, isOffline: true };
+
+          clearPersistence();
+          setOrdenCreada(ordenOffline as any);
         }
-
-        clearPersistence();
-        setOrdenCreada(ordenFinal as OrdenMantenimiento);
       }
 
     } catch (error) {
@@ -992,6 +1034,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
       correctivo: 'Correctivo',
       diagnostico: 'Diagnóstico',
       instalacion: 'Instalación',
+      garantia: 'Garantía',
       '': 'Sin especificar'
     } as const
 
@@ -1004,6 +1047,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
       correctivo: 'bg-orange-600/20 text-orange-400 border-orange-500/30',
       diagnostico: 'bg-blue-600/20 text-blue-400 border-blue-500/30',
       instalacion: 'bg-purple-600/20 text-purple-400 border-purple-500/30',
+      garantia: 'bg-amber-600/20 text-amber-400 border-amber-500/30',
       '': 'bg-gray-600/20 text-gray-400 border-gray-500/30'
     } as const
 
@@ -1047,6 +1091,14 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
 
   const handleCambiarDiagnostico = useCallback((valor: string) => {
     dispatch({ type: 'SET_DIAGNOSTICO_FINAL', payload: valor })
+  }, [])
+
+  const handleCambiarGarantiaReferenciaId = useCallback((valor: string) => {
+    dispatch({ type: 'SET_GARANTIA_REFERENCIA_ID', payload: valor })
+  }, [])
+
+  const handleCambiarGarantiaMotivo = useCallback((valor: string) => {
+    dispatch({ type: 'SET_GARANTIA_MOTIVO', payload: valor })
   }, [])
 
   const handleToggleInstalacionRecomendaciones = useCallback((valor: boolean) => {
@@ -1093,6 +1145,13 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
     onCambiarObservaciones: handleCambiarObservaciones,
     onCambiarPruebas: handleCambiarPruebas,
     onCambiarDiagnostico: handleCambiarDiagnostico,
+
+    // Props de Garantía
+    garantiaReferenciaId: state.garantiaReferenciaId,
+    garantiaMotivo: state.garantiaMotivo,
+    onCambiarGarantiaReferenciaId: handleCambiarGarantiaReferenciaId,
+    onCambiarGarantiaMotivo: handleCambiarGarantiaMotivo,
+
     instalacionRecomendaciones: state.instalacionRecomendaciones,
     instalacionRecomendacionesDetalle: state.instalacionRecomendacionesDetalle,
     instalacionConfiguracion: state.instalacionConfiguracion,
@@ -1259,8 +1318,12 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
         if (state.tipoMantenimiento === 'instalacion') {
           if (!state.instalacionConfiguracion && !state.instalacionRecomendaciones) return 'Configura o agrega recomendaciones';
         }
+        if (state.tipoMantenimiento === 'garantia') {
+          if (!state.garantiaReferenciaId.trim()) return 'Ingresa la orden de referencia';
+          if (!state.garantiaMotivo.trim()) return 'Ingresa el motivo de la garantía';
+        }
         const todasLasTareas = [...state.tareasSeleccionadas, ...state.tareasPersonalizadas.filter(t => t.trim())]
-        if (state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && todasLasTareas.length === 0) {
+        if (state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && state.tipoMantenimiento !== 'garantia' && todasLasTareas.length === 0) {
           return 'Agrega al menos una actividad';
         }
         return 'Completa la información del trabajo';
@@ -1455,7 +1518,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
               {state.currentStep === 'dispositivo' && 'Selecciona un dispositivo para continuar'}
               {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'diagnostico' && 'Completa todos los campos del diagnóstico'}
               {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'instalacion' && 'Configura o agrega recomendaciones para continuar'}
-              {state.currentStep === 'mantenimiento' && state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && 'Agrega al menos una actividad para continuar'}
+              {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'garantia' && 'Ingresa referencia y motivo para continuar'}
+              {state.currentStep === 'mantenimiento' && state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && state.tipoMantenimiento !== 'garantia' && 'Agrega al menos una actividad para continuar'}
               {state.currentStep === 'firma' && (
                 !state.firmaHabilitada ? 'Firma opcional desactivada' :
                 !state.firmaCliente ? 'Falta la firma del cliente' :

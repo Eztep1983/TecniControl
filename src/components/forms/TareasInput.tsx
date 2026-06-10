@@ -7,7 +7,7 @@ import { crearTarea, obtenerTareasPredefinidas, TareaPredefinida } from '@/lib/c
 import { useHapticFeedback } from '@/hooks/clientes/useHapticFeedback'
 
 interface TareasInputProps {
-  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | ''
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia' | ''
   tareasSeleccionadas: string[]
   tareasPersonalizadas: string[]
   onToggleTareaPredefinida: (tarea: string) => void

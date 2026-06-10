@@ -64,13 +64,17 @@ export interface OrdenMantenimiento {
   diagnosticoFinal?: string
   contadorMaquina?: number
   contador?: Contador;
-  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion';
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia';
   tareasRealizadas: string[];
   piezasUsadas: Array<{pieza: string, cantidad: number}>;
   garantiaTiempoDesde: Date | any;
   garantiaTiempoHasta: Date | any;
   garantiaDescripcion: string;
   garantiaHabilitada?: boolean;
+
+  // Campos de Garantía (Respuesta)
+  garantiaReferenciaId?: string;
+  garantiaMotivo?: string;
   
   // Campos de Instalación
   instalacionRecomendaciones?: boolean;
@@ -118,7 +122,7 @@ export interface SerializableOrdenPayload {
   dispositivoId: string
   cliente: Cliente
   dispositivo: Dispositivo
-  tipoMantenimiento: OrdenMantenimiento['tipoMantenimiento']
+  tipoMantenimiento: 'preventivo' | 'correctivo' | 'diagnostico' | 'instalacion' | 'garantia'
   tareasRealizadas: string[]
   piezasUsadas: Array<{pieza: string; cantidad: number}>
   // Campos opcionales
@@ -138,6 +142,8 @@ export interface SerializableOrdenPayload {
   garantiaTiempoDesde?: string  // ISO string
   garantiaTiempoHasta?: string  // ISO string
   garantiaDescripcion?: string
+  garantiaReferenciaId?: string
+  garantiaMotivo?: string
   instalacionRecomendaciones?: boolean
   instalacionRecomendacionesDetalle?: string
   instalacionConfiguracion?: boolean

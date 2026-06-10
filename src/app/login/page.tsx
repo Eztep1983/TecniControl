@@ -66,6 +66,7 @@ export default function LoginPage() {
   const [displayName, setDisplayName] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isEmailFormExpanded, setIsEmailFormExpanded] = useState(false)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
 
   // Function to reset all states
   const resetLoginState = useCallback(() => {
@@ -304,13 +305,64 @@ export default function LoginPage() {
                   </Alert>
                 )}
 
+                {/* Terms and Conditions Checkbox */}
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
+                    <div className="flex-shrink-0 mt-0.5 relative">
+                      <input
+                        id="terms"
+                        type="checkbox"
+                        checked={acceptedTerms}
+                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                        className="sr-only"
+                      />
+                      <div
+                        onClick={() => setAcceptedTerms(!acceptedTerms)}
+                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                          acceptedTerms
+                            ? 'bg-blue-600 border-blue-600'
+                            : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600'
+                        }`}
+                      >
+                        {acceptedTerms && (
+                          <CheckCircle2 className="w-4 h-4 text-white animate-in zoom-in duration-200" />
+                        )}
+                      </div>
+                    </div>
+                    <label 
+                      htmlFor="terms" 
+                      className="text-xs sm:text-sm text-slate-600 dark:text-gray-400 leading-relaxed cursor-pointer"
+                    >
+                      Acepto el tratamiento de mis datos personales de acuerdo con la{' '}
+                      <a 
+                        href="/legal/politica-privacidad" 
+                        target="_blank" 
+                        className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Política de Privacidad
+                      </a>
+                      {' '}y los{' '}
+                      <a 
+                        href="/legal/terminos-servicio" 
+                        target="_blank" 
+                        className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Términos de Servicio
+                      </a>
+                      {' '}de TecniControl (Ley 1581 de 2012).
+                    </label>
+                  </div>
+                </div>
+
                 {/* Primary Google Login Option */}
                 <div className="space-y-3">
                   <Button
                     onClick={handleGoogleSignIn}
-                    disabled={loading || isSigningIn}
+                    disabled={loading || isSigningIn || !acceptedTerms}
                     size="lg"
-                    className="w-full py-7 text-base font-bold bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl shadow-md hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all duration-200"
+                    className="w-full py-7 text-base font-bold bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl shadow-md hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale-[0.5]"
                   >
                     {loading || isSigningIn ? (
                       <>
@@ -414,8 +466,8 @@ export default function LoginPage() {
 
                             <Button
                               type="submit"
-                              disabled={loading || isSigningIn}
-                              className="w-full py-6 text-base font-medium bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                              disabled={loading || isSigningIn || !acceptedTerms}
+                              className="w-full py-6 text-base font-medium bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {isSigningIn ? (
                                 <>

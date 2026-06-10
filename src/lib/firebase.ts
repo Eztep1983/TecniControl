@@ -101,11 +101,14 @@ const auth = (() => {
     }
   }
   try {
-    // Browser / Capacitor: IndexedDB primero, localStorage como fallback
-    return initializeAuth(app, {
+    // Browser / Capacitor: IndexedDB (obligatorio para persistencia absoluta)
+    // browserLocalPersistence como fallback secundario.
+    const instance = initializeAuth(app, {
       persistence: [indexedDBLocalPersistence, browserLocalPersistence],
       popupRedirectResolver: browserPopupRedirectResolver,
     });
+    console.log("Auth initialized with indexedDBLocalPersistence");
+    return instance;
   } catch {
     // HMR: la instancia ya existe, reutilizarla
     return getAuth(app);
@@ -115,24 +118,26 @@ const auth = (() => {
 /**
  * Firestore — caché persistente universal:
  *
- * - Servidor: memoryLocalCache (sin IndexedDB disponible).
- * - Browser / Capacitor: persistentLocalCache con soporte multi-pestaña.
- *   Reemplaza el deprecado enableMultiTabIndexedDbPersistence.
+ * Se configura persistentLocalCache que es el estándar moderno del SDK v10+.
+ * Esto habilita IndexedDB para Firestore automáticamente en Browser/Capacitor.
  */
 const db = (() => {
   if (typeof window === "undefined") {
     try {
-      return initializeFirestore(app, { localCache: memoryLocalCache() });
+      return initializeFirestore(app, { 
+        localCache: memoryLocalCache(),
+        // Optimización de lecturas en servidor
+      });
     } catch {
-      // Ya inicializado en SSR
       const { getFirestore } = require("firebase/firestore");
       return getFirestore(app);
     }
   }
   try {
+    // Configuración para persistencia absoluta y reactividad optimizada
     return initializeFirestore(app, {
       localCache: persistentLocalCache({
-        tabManager: persistentMultipleTabManager(),
+        tabManager: persistentMultipleTabManager(), // Soporte multi-pestaña / multi-instancia
       }),
     });
   } catch {

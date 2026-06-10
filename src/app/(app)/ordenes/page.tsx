@@ -133,7 +133,7 @@ const TIPO_COLORS: Record<string, string> = {
   instalacion: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
 }
 
-export const getTipoColor = (tipo: string) =>
+const getTipoColor = (tipo: string) =>
   TIPO_COLORS[tipo] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'
 
 const StatCard = memo(

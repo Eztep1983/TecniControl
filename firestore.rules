@@ -113,7 +113,8 @@ service cloud.firestore {
                   'posiblesCausas', 'diagnosticoFinal', 'contadorMaquina',
                   'contador', 'tipoMantenimiento', 'tareasRealizadas',
                   'piezasUsadas', 'garantiaTiempoDesde', 'garantiaTiempoHasta',
-                  'garantiaDescripcion', 'instalacionRecomendaciones',
+                  'garantiaDescripcion', 'garantiaReferenciaId', 'garantiaMotivo',
+                  'instalacionRecomendaciones',
                   'instalacionRecomendacionesDetalle', 'instalacionConfiguracion',
                   'instalacionConfiguracionTipos', 'firmaCliente',
                   'nombreFirmante', 'validacionCliente', 'createdAt', 'updatedAt'
@@ -123,7 +124,7 @@ service cloud.firestore {
              && request.resource.data.clienteId is string
              && request.resource.data.dispositivoId is string
              && request.resource.data.horaCreacion is string
-             && request.resource.data.tipoMantenimiento in ['preventivo', 'correctivo', 'diagnostico', 'instalacion']
+             && request.resource.data.tipoMantenimiento in ['preventivo', 'correctivo', 'diagnostico', 'instalacion', 'garantia']
              && isOptionalMap('cliente')
              && isOptionalMap('dispositivo')
              && isOptionalList('tareasRealizadas')
@@ -136,6 +137,8 @@ service cloud.firestore {
              && isOptionalString('posiblesCausas')
              && isOptionalString('diagnosticoFinal')
              && isOptionalString('garantiaDescripcion')
+             && isOptionalString('garantiaReferenciaId')
+             && isOptionalString('garantiaMotivo')
              && isOptionalString('instalacionRecomendacionesDetalle')
              && isOptionalList('instalacionConfiguracionTipos')
              && isOptionalString('firmaCliente')
@@ -229,14 +232,15 @@ service cloud.firestore {
                             'posiblesCausas', 'diagnosticoFinal', 'contadorMaquina',
                             'contador', 'tipoMantenimiento', 'tareasRealizadas',
                             'piezasUsadas', 'garantiaTiempoDesde', 'garantiaTiempoHasta',
-                            'garantiaDescripcion', 'instalacionRecomendaciones',
+                            'garantiaDescripcion', 'garantiaReferenciaId', 'garantiaMotivo',
+                            'instalacionRecomendaciones',
                             'instalacionRecomendacionesDetalle', 'instalacionConfiguracion',
                             'instalacionConfiguracionTipos', 'firmaCliente',
                             'nombreFirmante', 'validacionCliente', 'createdAt', 'updatedAt'
                           ])
                        && isOptionalString('id')
                        && request.resource.data.tipo == 'mantenimiento'
-                       && request.resource.data.tipoMantenimiento in ['preventivo', 'correctivo', 'diagnostico', 'instalacion'];
+                       && request.resource.data.tipoMantenimiento in ['preventivo', 'correctivo', 'diagnostico', 'instalacion', 'garantia'];
 
       allow delete: if isAuthenticated()
                        && resource.data.userId == request.auth.uid;

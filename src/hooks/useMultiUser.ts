@@ -1,89 +1,75 @@
 // hooks/useMultiUser.ts
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { db } from '@/lib/firebase';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { OrdenMantenimiento, Cliente, Negocio } from '@/types/orden';
 import { 
   getClientesPorUsuario, 
-  getOrdenesPorUsuario, 
-  getOrdenesPaginadas,
-  getNegocioPorUsuario,
-  crearNegocio,
+  getOrdenesPaginadasConFiltro,
+  getTodasLasOrdenesConFiltro,
   crearOrden,
   generarIdPorTipo,
   getEstadisticasPorUsuario,
-  completarOnboarding
+  completarOnboarding,
+  getOrdenesPaginadas,
+  getNegocioPorUsuario
 } from '@/lib/multiuser-helpers';
 
-// ID generation moved to multiuser-helpers (per-user counters)
+/**
+ * ✅ Hook para Clientes
+ * Lee de la caché reactiva sincronizada por FirestoreSyncProvider.
+ */
 export const useClientesUsuario = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: clientes = [], isLoading: loading, error } = useQuery({
+  const queryResult = useQuery<Cliente[]>({
     queryKey: ['clientes', user?.uid],
     queryFn: () => getClientesPorUsuario(user!.uid),
     enabled: !!user?.uid,
+    staleTime: Infinity,
   });
 
   const refrescarClientes = () => {
     queryClient.invalidateQueries({ queryKey: ['clientes', user?.uid] });
   };
 
-  return { clientes, loading, error: error ? 'Error al cargar los clientes' : null, refrescarClientes };
+  return { 
+    clientes: queryResult.data || [], 
+    loading: queryResult.isLoading, 
+    error: queryResult.error ? 'Error al cargar los clientes' : null,
+    refrescarClientes 
+  };
 };
 
+/**
+ * ✅ Hook para Órdenes (Dashboard / Recientes)
+ */
 export const useOrdenesUsuario = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: ordenes = [], isLoading: loading, error } = useQuery({
+  const queryResult = useQuery<OrdenMantenimiento[]>({
     queryKey: ['ordenes', user?.uid],
-    queryFn: () => getOrdenesPorUsuario(user!.uid),
+    queryFn: () => getTodasLasOrdenesConFiltro(user!.uid, 'todos') as Promise<OrdenMantenimiento[]>,
     enabled: !!user?.uid,
+    staleTime: Infinity,
   });
 
   const refrescarOrdenes = () => {
     queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid] });
   };
 
-  const crearOrdenConsecutiva = async (ordenData: any, userId: string) => {
-    try {
-      // Generar ID personalizado por usuario y tipo (usa contador por usuario)
-      const idPersonalizado = await generarIdPorTipo(userId, ordenData.tipo || 'mantenimiento');
-
-      // Crear la orden con el ID consecutivo
-      const ordenCompleta = {
-        ...ordenData,
-        idPersonalizado,
-        userId,
-        clienteId: ordenData.cliente?.id || ordenData.clienteId,
-        dispositivoId: ordenData.dispositivo?.id || ordenData.dispositivoId,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      // Guardar en Firestore usando helper centralizado
-      const docId = await crearOrden(ordenCompleta, userId);
-      
-      // Invalidar TODAS las queries que empiecen con ['ordenes', userId]
-      // Esto incluye: lista completa, recientes e infinitas.
-      queryClient.invalidateQueries({ queryKey: ['ordenes', userId] });
-      
-      return { id: docId, idPersonalizado };
-    } catch (error) {
-      console.error('Error creando orden:', error);
-      throw error;
-    }
-  };
-
-  return {
-     ordenes, loading, error: error ? 'Error al cargar las órdenes' : null, refrescarOrdenes, crearOrdenConsecutiva
+  return { 
+    ordenes: queryResult.data || [], 
+    loading: queryResult.isLoading, 
+    error: queryResult.error ? 'Error al cargar las órdenes' : null,
+    refrescarOrdenes
   };
 };
 
 /**
- * Hook para crear órdenes en Firestore (solo flujo online).
- * El manejo offline se realiza directamente en el formulario antes de llamar a esta mutación.
+ * ✅ Hook para crear órdenes
  */
 export const useCrearOrden = () => {
   const { user } = useAuth();
@@ -103,91 +89,42 @@ export const useCrearOrden = () => {
         updatedAt: new Date(),
       };
 
-      // Solo se llama cuando hay conexión real (el formulario ya bifurcó offline/online)
       const idPersonalizado = await generarIdPorTipo(userId, ordenData.tipo || 'mantenimiento');
       const ordenCompleta = { ...ordenBase, idPersonalizado };
       const docId = await crearOrden(ordenCompleta, userId);
       return { id: docId, idPersonalizado, isOffline: false, ...ordenCompleta };
     },
-
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ['ordenes', user?.uid] });
-      const previousRecent = queryClient.getQueryData(['ordenes', user?.uid, 'recientes', 3]);
-      return { previousRecent };
-    },
-
-    onError: (_err, _nuevaOrden, context) => {
-      if (context?.previousRecent) {
-        queryClient.setQueryData(
-          ['ordenes', user?.uid, 'recientes', 3],
-          context.previousRecent
-        );
-      }
-    },
-
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid] });
+      queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid, 'stats'] });
     },
   });
 };
 
 /**
- * Hook para marcar el onboarding como completado
- */
-export const useCompletarOnboarding = () => {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: () => completarOnboarding(user!.uid),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['negocio', user?.uid] });
-    },
-  });
-};
-
-/**
- * Hook para obtener datos del negocio del usuario
+ * ✅ Hook para Negocio
  */
 export const useNegocioUsuario = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: negocio = null, isLoading: loading, error } = useQuery({
+  const queryResult = useQuery<Negocio | null>({
     queryKey: ['negocio', user?.uid],
-    queryFn: async () => {
-      if (!user?.uid) return null;
-      let negocioData = await getNegocioPorUsuario(user.uid);
-      
-      // Si no existe el negocio, crear uno por defecto
-      if (!negocioData) {
-        const negocioDefault = {
-          userId: user.uid,
-          nombre: user.displayName || 'Mi Negocio',
-          direccion: '',
-          telefono: '',
-          email: user.email || '',
-          nit: '',
-          logoUrl: '',
-          onboardingCompleted: false
-        };
-        
-        await crearNegocio(negocioDefault, user.uid);
-        negocioData = await getNegocioPorUsuario(user.uid);
-      }
-      return negocioData;
-    },
+    queryFn: () => getNegocioPorUsuario(user!.uid),
     enabled: !!user?.uid,
+    staleTime: Infinity,
   });
 
-  const refrescarNegocio = () => {
-    queryClient.invalidateQueries({ queryKey: ['negocio', user?.uid] });
+  return { 
+    negocio: queryResult.data, 
+    loading: queryResult.isLoading, 
+    error: queryResult.error ? 'Error al cargar el negocio' : null,
+    refrescarNegocio: () => queryClient.invalidateQueries({ queryKey: ['negocio', user?.uid] })
   };
-
-  return { negocio, loading, error: error ? 'Error al cargar los datos del negocio' : null, refrescarNegocio };
 };
 
-// Hook combinado para obtener estadísticas del usuario
+/**
+ * ✅ Hook para Estadísticas
+ */
 export const useEstadisticasUsuario = () => {
   const { user } = useAuth();
 
@@ -202,14 +139,14 @@ export const useEstadisticasUsuario = () => {
     queryKey: ['ordenes', user?.uid, 'stats'],
     queryFn: () => getEstadisticasPorUsuario(user!.uid),
     enabled: !!user?.uid,
-    staleTime: 1000 * 60 * 5, // 5 minutos de cache para stats
+    staleTime: 1000 * 60 * 5, 
   });
 
   return { estadisticas, loading };
 };
 
 /**
- * Hook para pre-cargar datos (Prefetching - Fase 4)
+ * ✅ Hook para Pre-cargar datos
  */
 export const usePrefetchData = () => {
   const { user } = useAuth();
@@ -218,11 +155,8 @@ export const usePrefetchData = () => {
   const prefetchOrdenes = async () => {
     if (!user?.uid) return;
     await queryClient.prefetchQuery({
-      queryKey: ['ordenes', user.uid, 'recientes', 3],
-      queryFn: async () => {
-        const { ordenes } = await getOrdenesPaginadas(user.uid, 3);
-        return ordenes;
-      },
+      queryKey: ['ordenes', user.uid],
+      queryFn: () => getTodasLasOrdenesConFiltro(user.uid, 'todos'),
     });
   };
 
@@ -238,42 +172,67 @@ export const usePrefetchData = () => {
 };
 
 /**
- * Hook para obtener solo las órdenes más recientes (optimización para dashboard)
+ * ✅ Hook para Órdenes Recientes
  */
 export const useOrdenesRecientes = (limitCount: number = 5) => {
   const { user } = useAuth();
 
-  return useQuery({
+  return useQuery<OrdenMantenimiento[]>({
     queryKey: ['ordenes', user?.uid, 'recientes', limitCount],
     queryFn: async () => {
       const { ordenes } = await getOrdenesPaginadas(user!.uid, limitCount);
-      return ordenes;
+      return ordenes as OrdenMantenimiento[];
     },
     enabled: !!user?.uid,
+    staleTime: Infinity,
   });
 };
 
 /**
- * Hook para obtener órdenes con paginación infinita
+ * ✅ Hook para Órdenes Infinitas
  */
-export const useOrdenesInfinitas = (pageSize: number = 10) => {
+export const useOrdenesInfinitas = (pageSize: number = 10, filtroTipo: string = 'todos') => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const query = useInfiniteQuery({
-    queryKey: ['ordenes', user?.uid, 'infinito'],
-    queryFn: ({ pageParam }) => getOrdenesPaginadas(user!.uid, pageSize, pageParam as any),
+    queryKey: ['ordenes', user?.uid, 'infinito', filtroTipo],
+    queryFn: ({ pageParam }) => getOrdenesPaginadasConFiltro(user!.uid, pageSize, pageParam as any, filtroTipo),
     initialPageParam: null as any,
     getNextPageParam: (lastPage) => lastPage.lastDoc || undefined,
     enabled: !!user?.uid,
+    staleTime: 1000 * 60,
   });
 
   const refrescarOrdenes = () => {
-    // Invalidando la llave raíz ['ordenes', user?.uid], 
-    // TanStack Query refresca automáticamente todas las sub-queries 
-    // (recientes, infinito, stats).
     queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid] });
   };
 
   return { ...query, refrescarOrdenes };
+};
+
+/**
+ * ✅ Hook para Búsqueda
+ */
+export const useOrdenesBusqueda = (filtroTipo: string = 'todos', enabled: boolean = true) => {
+  const { user } = useAuth();
+
+  return useQuery<OrdenMantenimiento[]>({
+    queryKey: ['ordenes', user?.uid, 'busqueda', filtroTipo],
+    queryFn: () => getTodasLasOrdenesConFiltro(user!.uid, filtroTipo) as Promise<OrdenMantenimiento[]>,
+    enabled: !!user?.uid && enabled,
+    staleTime: Infinity,
+  });
+};
+
+export const useCompletarOnboarding = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => completarOnboarding(user!.uid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['negocio', user?.uid] });
+    },
+  });
 };

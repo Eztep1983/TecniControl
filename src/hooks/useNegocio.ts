@@ -8,7 +8,7 @@ import { db } from '@/lib/firebase';
 export const useNegocio = () => {
   const { user } = useAuth();
 
-  const { data: negocio = null, isLoading: loading, error } = useQuery({
+  const { data: negocio = null, isLoading: loading, error } = useQuery<Negocio | null>({
     queryKey: ['negocio', user?.uid],
     queryFn: async () => {
       if (!user?.uid) return null;
@@ -19,9 +19,10 @@ export const useNegocio = () => {
       if (negocioDoc.exists()) {
         return { id: negocioDoc.id, ...negocioDoc.data() } as Negocio;
       }
-      throw new Error('No se encontró información del negocio');
+      return null;
     },
     enabled: !!user?.uid,
+    staleTime: Infinity, // El FirestoreSyncProvider mantiene esto actualizado en tiempo real
   });
 
   return { negocio, loading, error: error ? (error as Error).message : null };

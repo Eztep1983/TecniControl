@@ -96,6 +96,7 @@ const generarContenidoHTML = (
     .badge-correctivo { background-color: #ffedd5; color: #9a3412; }
     .badge-diagnostico { background-color: #dbeafe; color: #1e40af; }
     .badge-instalacion { background-color: #f3e8ff; color: #6b21a8; }
+    .badge-garantia { background-color: #fef3c7; color: #92400e; }
 
     .signatures { display: flex; gap: 40px; margin-top: 40px; }
     .signatures > div { flex: 1; }
@@ -227,7 +228,23 @@ const generarContenidoHTML = (
       </div>
     ` : ''}
 
-    ${(orden.tipoMantenimiento === 'preventivo' || orden.tipoMantenimiento === 'correctivo') ? `
+    ${orden.tipoMantenimiento === 'garantia' ? `
+      <div class="section">
+        <div class="section-title" style="border-left-color: #f59e0b;">Atención por Garantía</div>
+        <div class="flex-info">
+          <div class="data-box">
+            <span class="data-label">Orden de Referencia</span>
+            <div class="data-content" style="font-weight:700; color:#111;"># ${escapeHTML(orden.garantiaReferenciaId) || 'N/A'}</div>
+          </div>
+          <div class="data-box" style="flex:2;">
+            <span class="data-label">Motivo del Reclamo</span>
+            <div class="data-content">${escapeHTML(orden.garantiaMotivo) || 'Se atiende reporte de garantía del cliente.'}</div>
+          </div>
+        </div>
+      </div>
+    ` : ''}
+
+    ${(orden.tipoMantenimiento === 'preventivo' || orden.tipoMantenimiento === 'correctivo' || orden.tipoMantenimiento === 'garantia') ? `
       <div class="section">
         <div class="section-title">Tareas Realizadas</div>
         <div class="data-box">
@@ -591,7 +608,13 @@ export const usePrintService = ({ negocio }: PrintServiceProps) => {
 
         const fallbackWebCompartir = async () => {
           await descargarPDF(orden)
-          const telefono = orden.cliente?.phone ? orden.cliente.phone.replace(/\D/g, '') : ''
+          let telefono = orden.cliente?.phone ? orden.cliente.phone.replace(/\D/g, '') : ''
+          
+          // Fix: Si el teléfono tiene 10 dígitos (estándar Colombia), anteponer el prefijo '57'
+          if (telefono.length === 10) {
+            telefono = `57${telefono}`
+          }
+
           const mensaje = encodeURIComponent(`Hola ${orden.cliente?.name || ''}, te adjunto la orden de mantenimiento #${orden.idPersonalizado}.\n\n(Nota: Por favor adjunta el PDF que se acaba de descargar)`)
           const waUrl = telefono ? `https://wa.me/${telefono}?text=${mensaje}` : `https://api.whatsapp.com/send?text=${mensaje}`
           if (window.confirm('El entorno web no permite compartir el archivo directamente. El PDF se descargará automáticamente.\n\n¿Deseas abrir WhatsApp ahora para enviarlo manualmente?')) {

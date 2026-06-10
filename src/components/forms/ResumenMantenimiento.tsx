@@ -99,6 +99,7 @@ export default function ResumenMantenimiento({
             <h3 className="text-sm font-semibold text-purple-300 uppercase tracking-wide">
               {state.tipoMantenimiento === 'diagnostico' ? 'Diagnóstico Técnico' : 
                state.tipoMantenimiento === 'instalacion' ? 'Instalación y Configuración' : 
+               state.tipoMantenimiento === 'garantia' ? 'Atención por Garantía' :
                'Mantenimiento Realizado'}
             </h3>
           </div>
@@ -126,6 +127,51 @@ export default function ResumenMantenimiento({
                   <p className="text-2xl font-bold text-purple-300">{state.contadorMaquina.toLocaleString()} <span className="text-sm">unidades</span></p>
                 </div>
               )}
+            </div>
+          ) : state.tipoMantenimiento === 'garantia' ? (
+            <div className="space-y-4">
+              <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
+                <p className="text-xs text-amber-400/80 mb-2 font-bold uppercase tracking-wider">Orden de Referencia</p>
+                <p className="text-sm text-amber-100 font-mono">#{state.garantiaReferenciaId || 'No especificada'}</p>
+              </div>
+              <div className="p-3 bg-white/5 rounded-xl">
+                <p className="text-xs text-gray-400 mb-2 font-bold uppercase tracking-wider">Motivo del Reclamo</p>
+                <p className="text-sm text-gray-200 leading-relaxed">{state.garantiaMotivo || 'Sin motivo especificado'}</p>
+              </div>
+              
+              {/* Actividades y Repuestos en Garantía */}
+              <div className="space-y-4 pt-4 border-t border-white/10">
+                <div className="space-y-3">
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Actividades Realizadas</p>
+                  <div className="space-y-2">
+                    {state.tareasSeleccionadas.map((tarea, idx) => (
+                      <div key={`pred-${idx}`} className="flex items-start gap-3 bg-white/5 p-3 rounded-xl">
+                        <span className="text-xs text-blue-300 font-bold mt-0.5">✓</span>
+                        <span className="text-sm text-white">{tarea}</span>
+                      </div>
+                    ))}
+                    {state.tareasPersonalizadas.filter(t => t.trim()).map((tarea, idx) => (
+                      <div key={`custom-${idx}`} className="flex items-start gap-3 bg-white/5 p-3 rounded-xl">
+                        <span className="text-xs text-purple-300 font-bold mt-0.5">✓</span>
+                        <span className="text-sm text-white">{tarea}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {state.piezasUsadas.filter(p => p?.pieza?.trim()).length > 0 && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Repuestos Suministrados</p>
+                    <div className="space-y-2">
+                      {state.piezasUsadas.filter(p => p?.pieza?.trim()).map((pieza, idx) => (
+                        <div key={idx} className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
+                          <span className="text-sm text-white truncate">{pieza.pieza}</span>
+                          <span className="text-sm font-semibold text-purple-300 ml-2">x{pieza.cantidad}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           ) : state.tipoMantenimiento === 'instalacion' ? (
             <div className="space-y-4">

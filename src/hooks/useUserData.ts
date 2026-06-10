@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
-import { doc, getDoc } from 'firebase/firestore'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/components/auth/AuthProvider'
 
@@ -16,23 +17,27 @@ export interface UserData {
 
 export const useUserData = () => {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const userRef = doc(db, 'users', user.uid)
+    const unsubscribe = onSnapshot(userRef, (snap) => {
+      if (snap.exists()) {
+        queryClient.setQueryData(['userData', user.uid], snap.data() as UserData)
+      }
+    }, (err) => {
+      console.error('Error en listener de userData:', err)
+    })
+
+    return () => unsubscribe()
+  }, [user?.uid, queryClient])
 
   const { data: userData, isLoading: loading, error } = useQuery({
     queryKey: ['userData', user?.uid],
-    queryFn: async () => {
-      if (!user?.uid) return null
-
-      const userRef = doc(db, 'users', user.uid)
-      const userDoc = await getDoc(userRef)
-
-      if (userDoc.exists()) {
-        return userDoc.data() as UserData
-      }
-      return null
-    },
     enabled: !!user?.uid,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: Infinity, // Real-time via onSnapshot
   })
 
   return { userData, loading, error }

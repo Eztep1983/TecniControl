@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { FirestoreSyncProvider } from "@/components/providers/FirestoreSyncProvider";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html>
@@ -24,9 +26,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <QueryProvider>
           <CapacitorProvider>
             <AuthProvider>
-              <AuthGuard>
-                {children}
-              </AuthGuard>
+              <FirestoreSyncProvider>
+                <AuthGuard>
+                  {children}
+                </AuthGuard>
+              </FirestoreSyncProvider>
             </AuthProvider>
           </CapacitorProvider>
         </QueryProvider>
