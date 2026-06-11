@@ -3,7 +3,7 @@
 1. Nunca asumir requisitos no especificados.
    - Si existe ambigüedad, preguntar o documentar la suposición.
    - No inventar comportamientos.
-   - Siempre usar pnpm
+   - Siempre usar pnpm, nunca npm.
 
 2. Priorizar código mantenible sobre código corto.
    - La legibilidad tiene prioridad sobre la complejidad innecesaria.

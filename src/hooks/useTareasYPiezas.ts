@@ -19,7 +19,7 @@ import type { TareaPredefinida, PiezaPredefinida } from '@/lib/configuracion-hel
 
 // ─── Configuración de caché ───────────────────────────────────────────────────
 
-const STALE_TIME = 10 * 60 * 1000 // 10 min: no refetch si los datos son recientes
+const STALE_TIME = Infinity // Real-time sync a través de FirestoreSyncProvider
 const GC_TIME    = 60 * 60 * 1000 // 1 hora: mantener en caché aunque no haya suscriptores
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+// @ts-ignore: side-effect import of CSS - handled by Next.js
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthProvider"; 
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -18,6 +19,7 @@ export const metadata: Metadata = {
 };
 
 import { FirestoreSyncProvider } from "@/components/providers/FirestoreSyncProvider";
+import { OfflineSyncProvider } from "@/components/providers/OfflineSyncProvider";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -26,11 +28,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <QueryProvider>
           <CapacitorProvider>
             <AuthProvider>
-              <FirestoreSyncProvider>
-                <AuthGuard>
-                  {children}
-                </AuthGuard>
-              </FirestoreSyncProvider>
+              <OfflineSyncProvider>
+                <FirestoreSyncProvider>
+                  <AuthGuard>
+                    {children}
+                  </AuthGuard>
+                </FirestoreSyncProvider>
+              </OfflineSyncProvider>
             </AuthProvider>
           </CapacitorProvider>
         </QueryProvider>

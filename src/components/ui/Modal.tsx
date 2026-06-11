@@ -1,7 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
+import { useAndroidBack } from '@/hooks/useAndroidBack'
 
 // ─── Hook de keyboard avoidance para iOS / Android ─────────────────────
 export function useKeyboardOffset() {
@@ -40,16 +42,29 @@ interface ModalProps {
 
 export function Modal({ isOpen, onClose, title, children }: ModalProps) {
   const keyboardOffset = useKeyboardOffset()
+  const [shouldRender, setShouldRender] = useState(isOpen)
   const [isVisible, setIsVisible] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const modalRef = useRef<HTMLDivElement>(null)
 
-  // Sincronizar visibilidad para animaciones
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  // Interceptar gesto/botón de atrás de Android y navegador
+  useAndroidBack(isOpen, onClose)
+
+  // Sincronizar visibilidad para animaciones (apertura y cierre de 300ms)
   useEffect(() => {
     if (isOpen) {
-      const t = setTimeout(() => setIsVisible(true), 10)
+      setShouldRender(true)
+      const t = setTimeout(() => setIsVisible(true), 20)
       return () => clearTimeout(t)
     } else {
       setIsVisible(false)
+      const t = setTimeout(() => setShouldRender(false), 300)
+      return () => clearTimeout(t)
     }
   }, [isOpen])
 
@@ -68,9 +83,9 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
     }
   }, [isOpen])
 
-  if (!isOpen) return null
+  if (!shouldRender || !mounted) return null
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden"
       role="dialog"
@@ -78,9 +93,11 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
     >
       {/* Backdrop */}
       <div
-        className={`absolute inset-0 bg-black/80 transition-opacity duration-300 ${
-          isVisible ? 'opacity-100' : 'opacity-0'
-        }`}
+        className="absolute inset-0 bg-black/80"
+        style={{
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 300ms cubic-bezier(0.16, 1, 0.3, 1)'
+        }}
         onClick={onClose}
       />
 
@@ -92,15 +109,15 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
           // Usamos una traslación más agresiva pero limitada para asegurar visibilidad
           transform: isVisible 
             ? `translateY(calc(-${keyboardOffset}px * 0.45)) scale(1)` 
-            : 'translateY(100px) scale(0.9)',
+            : `translateY(calc(-${keyboardOffset}px * 0.45 + 40px)) scale(0.95)`,
           opacity: isVisible ? 1 : 0,
-          transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          transition: 'transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms cubic-bezier(0.16, 1, 0.3, 1)',
           maxHeight: keyboardOffset > 0 ? `calc(100dvh - ${keyboardOffset}px - 20px)` : '85dvh',
         }}
         className="
           relative bg-slate-900 w-full max-w-[min(400px,95vw)] rounded-[2.5rem]
           shadow-2xl border border-slate-700/60 flex flex-col overflow-hidden
-          ring-1 ring-white/10
+          ring-1 ring-white/10 transform-gpu will-change-[transform,opacity]
         "
         onClick={e => e.stopPropagation()}
       >
@@ -132,6 +149,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

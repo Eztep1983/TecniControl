@@ -6,11 +6,13 @@ import type { TareaPredefinida, PiezaPredefinida } from '@/lib/configuracion-hel
 import { useAuth } from '@/components/auth/AuthProvider'
 import {
   ListChecks, Package, Plus, Trash2, Edit3,
-  X, Search, AlertCircle, CheckCircle,
+  X, Search, AlertCircle, CheckCircle, Info,
   WifiOff, Loader2, CloudOff,
   RefreshCw
 } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
+import { ModalTarea, FormTarea } from '@/components/tareas-repuestos/ModalTarea'
+import { ModalPieza, FormPieza } from '@/components/tareas-repuestos/ModalPieza'
 
 // ─── Haptics (conservado) ────────────────────────────────────────────────────
 
@@ -50,61 +52,65 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced
 }
 
-// Hook de keyboard avoidance importado desde '@/components/ui/Modal'
-
-
-// ─── Tipos de formulario ──────────────────────────────────────────────────
-
-type FormTarea = { nombre: string; tipo: TareaPredefinida['tipo']; categoria: string }
-type FormPieza = { nombre: string; categoria: string }
-
-const FORM_TAREA_VACIO: FormTarea = { nombre: '', tipo: 'preventivo', categoria: 'General' }
-const FORM_PIEZA_VACIO: FormPieza = { nombre: '', categoria: 'Categoría Genérica' }
-
-// ─── Componente: Toast (conservado) ────────────────────────────────────────
+// ─── Componente: Toast con Barra de Progreso ───────────────────────────────
 
 interface ToastData { text: string; type: 'success' | 'error' | 'info' }
 
 const Toast = ({ toast, onClose }: { toast: ToastData; onClose: () => void }) => {
+  const duration = toast.type === 'error' ? 5000 : 3500
+
   useEffect(() => {
-    const t = setTimeout(onClose, 3500)
+    const t = setTimeout(onClose, duration)
     return () => clearTimeout(t)
-  }, [onClose])
+  }, [onClose, duration])
 
   const styles = {
     success: 'bg-blue-600/95 border-blue-500/50',
     error:   'bg-red-600/95 border-red-500/50',
-    info:    'bg-blue-600/95 border-blue-500/50',
+    info:    'bg-slate-800/95 border-slate-700/50',
   }
-  const Icon = toast.type === 'success' ? CheckCircle : toast.type === 'error' ? AlertCircle : RefreshCw
+  const Icon = toast.type === 'success' ? CheckCircle : toast.type === 'error' ? AlertCircle : Info
 
   return (
     <div
       className={`
         fixed bottom-[calc(env(safe-area-inset-bottom)+80px)] left-4 right-4 z-[60]
-        flex items-center gap-3 p-4 rounded-2xl border shadow-2xl 
+        flex flex-col rounded-2xl border shadow-2xl overflow-hidden
         animate-in slide-in-from-bottom-4 duration-300
         ${styles[toast.type]}
       `}
     >
-      <Icon className="w-5 h-5 text-white shrink-0" />
-      <span className="text-sm font-medium text-white flex-1">{toast.text}</span>
-      <button
-        onClick={onClose}
-        className="p-1.5 rounded-full hover:bg-white/20 active:bg-white/30 touch-manipulation"
-        aria-label="Cerrar"
-      >
-        <X className="w-4 h-4 text-white" />
-      </button>
+      <style>{`
+        @keyframes shrinkWidth {
+          from { width: 100%; }
+          to { width: 0%; }
+        }
+      `}</style>
+      <div className="flex items-center gap-3 p-4">
+        <Icon className="w-5 h-5 text-white shrink-0" />
+        <span className="text-sm font-medium text-white flex-1">{toast.text}</span>
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-full hover:bg-white/20 active:bg-white/30 touch-manipulation"
+          aria-label="Cerrar"
+        >
+          <X className="w-4 h-4 text-white" />
+        </button>
+      </div>
+      <div className="h-1 w-full bg-white/20">
+        <div
+          className="h-full bg-white/60"
+          style={{
+            animation: `shrinkWidth ${duration}ms linear forwards`,
+            transformOrigin: 'left',
+          }}
+        />
+      </div>
     </div>
   )
 }
 
-// Componente Modal importado desde '@/components/ui/Modal'
-
-
-
-// ─── Componente: Campo de búsqueda (conservado) ────────────────────────────
+// ─── Componente: Campo de búsqueda (2xl rounded) ────────────────────────────
 
 const SearchInput = ({
   value,
@@ -124,7 +130,7 @@ const SearchInput = ({
       placeholder={placeholder}
       className="
         w-full min-h-[48px] pl-10 pr-9 py-3
-        bg-slate-800/70 border border-slate-700/60 rounded-xl
+        bg-slate-800/70 border border-slate-700/60 rounded-2xl
         text-white placeholder-slate-500 text-sm
         focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-transparent
         transition-all
@@ -146,7 +152,7 @@ const SearchInput = ({
   </div>
 )
 
-// ─── Componente: Estadística (conservado) ──────────────────────────────────
+// ─── Componente: Estadística (12px legibilidad mínima) ─────────────────────
 
 const StatChip = ({
   label,
@@ -159,16 +165,16 @@ const StatChip = ({
   colorClass: string
   Icon: React.ComponentType<{ className?: string }>
 }) => (
-  <div className="shrink-0 bg-slate-800/50 border border-slate-700/40 rounded-2xl p-3 min-w-[90px]">
+  <div className="shrink-0 bg-slate-800/50 border border-slate-700/40 rounded-2xl p-3 min-w-[100px] flex-1">
     <div className="flex items-center gap-1.5 mb-0.5">
       <Icon className={`w-3.5 h-3.5 ${colorClass}`} />
       <span className={`text-xl font-bold leading-none ${colorClass}`}>{value}</span>
     </div>
-    <span className="text-[11px] text-slate-400 leading-tight">{label}</span>
+    <span className="text-xs text-slate-400 leading-tight">{label}</span>
   </div>
 )
 
-// ─── Componente: Item de Tarea (memoizado) ────────────────────────────────
+// ─── Componente: Item de Tarea (2xl rounded y w-11 h-11 botones táctiles) ──
 
 const TareaItem = memo(({ 
   tarea, 
@@ -181,9 +187,9 @@ const TareaItem = memo(({
 }) => (
   <div
     className="
-      bg-slate-800/70 rounded-xl px-4 py-3.5
+      bg-slate-800/70 rounded-2xl px-4 py-3.5
       border border-slate-700/40
-      flex items-start gap-3
+      flex items-center justify-between gap-3
       transition-colors hover:bg-slate-800
     "
   >
@@ -199,13 +205,13 @@ const TareaItem = memo(({
       </div>
     </div>
 
-    <div className="flex gap-1.5 shrink-0">
+    <div className="flex gap-3 shrink-0">
       <button
         onClick={() => onEdit(tarea)}
         type="button"
         className="
-          w-8 h-8 flex items-center justify-center
-          rounded-lg bg-blue-500/10 text-blue-400
+          w-11 h-11 flex items-center justify-center
+          rounded-2xl bg-blue-500/10 text-blue-400
           active:bg-blue-500/20
           touch-manipulation transition-all
         "
@@ -217,8 +223,8 @@ const TareaItem = memo(({
         onClick={() => onDelete(tarea.id)}
         type="button"
         className="
-          w-8 h-8 flex items-center justify-center
-          rounded-lg bg-red-500/10 text-red-400
+          w-11 h-11 flex items-center justify-center
+          rounded-2xl bg-red-500/10 text-red-400
           active:bg-red-500/20
           touch-manipulation transition-all
         "
@@ -232,7 +238,7 @@ const TareaItem = memo(({
 
 TareaItem.displayName = 'TareaItem'
 
-// ─── Componente: Item de Pieza (memoizado) ────────────────────────────────
+// ─── Componente: Item de Pieza (2xl rounded y w-11 h-11 botones táctiles) ──
 
 const PiezaItem = memo(({ 
   pieza, 
@@ -245,9 +251,9 @@ const PiezaItem = memo(({
 }) => (
   <div
     className="
-      bg-slate-800/70 rounded-xl px-4 py-3.5
+      bg-slate-800/70 rounded-2xl px-4 py-3.5
       border border-slate-700/40
-      flex items-start gap-3
+      flex items-center justify-between gap-3
       transition-colors hover:bg-slate-800
     "
   >
@@ -260,13 +266,13 @@ const PiezaItem = memo(({
       </span>
     </div>
 
-    <div className="flex gap-1.5 shrink-0">
+    <div className="flex gap-3 shrink-0">
       <button
         onClick={() => onEdit(pieza)}
         type="button"
         className="
-          w-8 h-8 flex items-center justify-center
-          rounded-lg bg-blue-500/10 text-blue-400
+          w-11 h-11 flex items-center justify-center
+          rounded-2xl bg-blue-500/10 text-blue-400
           active:bg-blue-500/20
           touch-manipulation transition-all
         "
@@ -278,8 +284,8 @@ const PiezaItem = memo(({
         onClick={() => onDelete(pieza.id)}
         type="button"
         className="
-          w-8 h-8 flex items-center justify-center
-          rounded-lg bg-red-500/10 text-red-400
+          w-11 h-11 flex items-center justify-center
+          rounded-2xl bg-red-500/10 text-red-400
           active:bg-red-500/20
           touch-manipulation transition-all
         "
@@ -310,7 +316,7 @@ const TipoChip = ({ tipo }: { tipo: TareaPredefinida['tipo'] }) => {
   )
 }
 
-// ─── Componente: Estado vacío (conservado) ─────────────────────────────────
+// ─── Componente: Estado vacío (py-10 optimizado) ───────────────────────────
 
 const EmptyState = ({
   Icon,
@@ -321,7 +327,7 @@ const EmptyState = ({
   title: string
   description: string
 }) => (
-  <div className="flex flex-col items-center justify-center py-14 text-center">
+  <div className="flex flex-col items-center justify-center py-10 text-center">
     <div className="bg-slate-800/50 p-5 rounded-full mb-4">
       <Icon className="w-9 h-9 text-slate-500" />
     </div>
@@ -382,7 +388,7 @@ const NetworkIndicator = ({
     return (
       <div className="flex items-center gap-1.5 text-xs text-amber-400">
         <CloudOff className="w-3 h-3" />
-        <span>{pendingCount} pendiente${pendingCount > 1 ? 's' : ''}</span>
+        <span>{pendingCount} pendiente{pendingCount > 1 ? 's' : ''}</span>
       </div>
     )
   }
@@ -390,213 +396,7 @@ const NetworkIndicator = ({
   return null
 }
 
-// ─── Formulario de Tarea (memoizado) ──────────────────────────────────────
-
-const FormularioTarea = memo(({
-  form,
-  onChange,
-  onSubmit,
-  onCancel,
-  submitLabel,
-  accentClass,
-}: {
-  form: FormTarea
-  onChange: (f: FormTarea) => void
-  onSubmit: () => void
-  onCancel?: () => void
-  submitLabel: string
-  accentClass: string
-}) => (
-  <div className="flex flex-col gap-5">
-    <div className="space-y-4">
-      <div className="group">
-        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">
-          Nombre de la tarea *
-        </label>
-        <input
-          type="text"
-          value={form.nombre}
-          onChange={e => onChange({ ...form, nombre: e.target.value })}
-          placeholder="Ej: Cambio de aceite"
-          className="
-            w-full min-h-[52px] px-4
-            bg-slate-800/50 border border-slate-700/50 rounded-2xl
-            text-white placeholder-slate-600 text-sm
-            focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/50
-            transition-all
-          "
-        />
-      </div>
-
-      <div className="group">
-        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">
-          Tipo de servicio
-        </label>
-        <div className="relative">
-          <select
-            value={form.tipo}
-            onChange={e => onChange({ ...form, tipo: e.target.value as TareaPredefinida['tipo'] })}
-            className="
-              w-full min-h-[52px] px-4 pr-10
-              bg-slate-800/50 border border-slate-700/50 rounded-2xl
-              text-white text-sm appearance-none
-              focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/50
-              transition-all
-            "
-          >
-            <option value="preventivo">Preventivo</option>
-            <option value="correctivo">Correctivo</option>
-            <option value="ambos">Ambos</option>
-          </select>
-          <RefreshCw className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-        </div>
-      </div>
-
-      <div className="group">
-        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">
-          Categoría
-        </label>
-        <input
-          type="text"
-          value={form.categoria}
-          onChange={e => onChange({ ...form, categoria: e.target.value })}
-          placeholder="Ej: Motor, Software, Hardware…"
-          className="
-            w-full min-h-[52px] px-4
-            bg-slate-800/50 border border-slate-700/50 rounded-2xl
-            text-white placeholder-slate-600 text-sm
-            focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/50
-            transition-all
-          "
-        />
-      </div>
-    </div>
-
-    <div className="flex flex-col gap-3 pt-2">
-      <button
-        onClick={onSubmit}
-        type="button"
-        className={`
-          w-full min-h-[54px] rounded-2xl font-bold text-sm
-          shadow-lg shadow-blue-500/10 active:scale-[0.98] 
-          touch-manipulation transition-all flex items-center justify-center gap-2
-          ${accentClass}
-        `}
-      >
-        <CheckCircle className="w-4 h-4" />
-        {submitLabel}
-      </button>
-      
-      {onCancel && (
-        <button
-          onClick={onCancel}
-          type="button"
-          className="
-            w-full min-h-[54px] rounded-2xl font-bold text-sm
-            text-slate-400 active:bg-slate-800 touch-manipulation transition-all
-          "
-        >
-          Cancelar
-        </button>
-      )}
-    </div>
-  </div>
-))
-
-FormularioTarea.displayName = 'FormularioTarea'
-
-// ─── Formulario de Pieza (memoizado) ──────────────────────────────────────
-
-const FormularioPieza = memo(({
-  form,
-  onChange,
-  onSubmit,
-  onCancel,
-  submitLabel,
-  accentClass,
-}: {
-  form: FormPieza
-  onChange: (f: FormPieza) => void
-  onSubmit: () => void
-  onCancel?: () => void
-  submitLabel: string
-  accentClass: string
-}) => (
-  <div className="flex flex-col gap-5">
-    <div className="space-y-4">
-      <div className="group">
-        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">
-          Nombre del repuesto *
-        </label>
-        <input
-          type="text"
-          value={form.nombre}
-          onChange={e => onChange({ ...form, nombre: e.target.value })}
-          placeholder="Ej: Filtro de aceite"
-          className="
-            w-full min-h-[52px] px-4
-            bg-slate-800/50 border border-slate-700/50 rounded-2xl
-            text-white placeholder-slate-600 text-sm
-            focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500/50
-            transition-all
-          "
-        />
-      </div>
-
-      <div className="group">
-        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">
-          Categoría
-        </label>
-        <input
-          type="text"
-          value={form.categoria}
-          onChange={e => onChange({ ...form, categoria: e.target.value })}
-          placeholder="Ej: Filtros, Eléctrico…"
-          className="
-            w-full min-h-[52px] px-4
-            bg-slate-800/50 border border-slate-700/50 rounded-2xl
-            text-white placeholder-slate-600 text-sm
-            focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500/50
-            transition-all
-          "
-        />
-      </div>
-    </div>
-
-    <div className="flex flex-col gap-3 pt-2">
-      <button
-        onClick={onSubmit}
-        type="button"
-        className={`
-          w-full min-h-[54px] rounded-2xl font-bold text-sm
-          shadow-lg shadow-purple-500/10 active:scale-[0.98] 
-          touch-manipulation transition-all flex items-center justify-center gap-2
-          ${accentClass}
-        `}
-      >
-        <CheckCircle className="w-4 h-4" />
-        {submitLabel}
-      </button>
-      
-      {onCancel && (
-        <button
-          onClick={onCancel}
-          type="button"
-          className="
-            w-full min-h-[54px] rounded-2xl font-bold text-sm
-            text-slate-400 active:bg-slate-800 touch-manipulation transition-all
-          "
-        >
-          Cancelar
-        </button>
-      )}
-    </div>
-  </div>
-))
-
-FormularioPieza.displayName = 'FormularioPieza'
-
-// ─── PÁGINA PRINCIPAL (REFACTORIZADA VISUALMENTE) ─────────────────────────
+// ─── PÁGINA PRINCIPAL ──────────────────────────────────────────────────────
 
 const PAGE_SIZE = 5
 
@@ -617,13 +417,15 @@ export default function TareasRepuestosPage() {
 
   // Formularios de creación
   const [modalTarea, setModalTarea] = useState(false)
-  const [formTarea, setFormTarea]   = useState<FormTarea>(FORM_TAREA_VACIO)
   const [modalPieza, setModalPieza] = useState(false)
-  const [formPieza, setFormPieza]   = useState<FormPieza>(FORM_PIEZA_VACIO)
 
   // Formularios de edición
   const [editTarea, setEditTarea]   = useState<TareaPredefinida | null>(null)
   const [editPieza, setEditPieza]   = useState<PiezaPredefinida | null>(null)
+
+  // Confirmar eliminación
+  const [tareaToDelete, setTareaToDelete] = useState<string | null>(null)
+  const [piezaToDelete, setPiezaToDelete] = useState<string | null>(null)
 
   // Búsqueda
   const [searchTareas, setSearchTareas] = useState('')
@@ -635,10 +437,17 @@ export default function TareasRepuestosPage() {
   const [pageTareas, setPageTareas]   = useState(1)
   const [pagePiezas, setPagePiezas]   = useState(1)
 
-  // Resetear página al cambiar búsqueda o tab
+  // Resetear página al cambiar búsqueda
   useEffect(() => { setPageTareas(1) }, [debouncedSearchTareas])
   useEffect(() => { setPagePiezas(1) }, [debouncedSearchPiezas])
-  useEffect(() => { setPageTareas(1); setPagePiezas(1) }, [tab])
+
+  // Resetear página y limpiar búsquedas al cambiar de tab para evitar estados inconsistentes
+  useEffect(() => {
+    setPageTareas(1)
+    setPagePiezas(1)
+    setSearchTareas('')
+    setSearchPiezas('')
+  }, [tab])
 
   const showToast = useCallback((text: string, type: ToastData['type'] = 'success') => {
     setToast({ text, type })
@@ -667,26 +476,26 @@ export default function TareasRepuestosPage() {
 
   // ── Handlers de Tareas ────────────────────────────────────────────────────
 
-  const handleCrearTarea = useCallback(() => {
-    if (!formTarea.nombre.trim()) {
+  const handleCrearTarea = useCallback((data: FormTarea) => {
+    if (!data.nombre.trim()) {
       showToast('El nombre de la tarea es requerido', 'error')
       notificationHaptic('error')
       return
     }
-    crearTarea({ nombre: formTarea.nombre.trim(), tipo: formTarea.tipo, categoria: formTarea.categoria.trim() || 'General' })
-    setFormTarea(FORM_TAREA_VACIO)
+    crearTarea({ nombre: data.nombre.trim(), tipo: data.tipo, categoria: data.categoria.trim() || 'General' })
     setModalTarea(false)
     haptic('medium')
     showToast(isOnline ? 'Tarea agregada' : 'Tarea guardada (sin conexión)')
-  }, [formTarea, crearTarea, isOnline, showToast])
+  }, [crearTarea, isOnline, showToast])
 
-  const handleActualizarTarea = useCallback(() => {
-    if (!editTarea?.nombre.trim()) {
+  const handleActualizarTarea = useCallback((data: FormTarea) => {
+    if (!editTarea) return
+    if (!data.nombre.trim()) {
       showToast('El nombre es requerido', 'error')
       notificationHaptic('error')
       return
     }
-    actualizarTarea(editTarea)
+    actualizarTarea({ ...editTarea, nombre: data.nombre.trim(), tipo: data.tipo, categoria: data.categoria.trim() })
     setEditTarea(null)
     haptic('light')
     showToast('Tarea actualizada')
@@ -700,26 +509,26 @@ export default function TareasRepuestosPage() {
 
   // ── Handlers de Piezas ────────────────────────────────────────────────────
 
-  const handleCrearPieza = useCallback(() => {
-    if (!formPieza.nombre.trim()) {
+  const handleCrearPieza = useCallback((data: FormPieza) => {
+    if (!data.nombre.trim()) {
       showToast('El nombre de la pieza es requerido', 'error')
       notificationHaptic('error')
       return
     }
-    crearPieza({ nombre: formPieza.nombre.trim(), categoria: formPieza.categoria.trim() || 'Categoría Genérica' })
-    setFormPieza(FORM_PIEZA_VACIO)
+    crearPieza({ nombre: data.nombre.trim(), categoria: data.categoria.trim() || 'Categoría Genérica' })
     setModalPieza(false)
     haptic('medium')
     showToast(isOnline ? 'Pieza agregada' : 'Pieza guardada (sin conexión)')
-  }, [formPieza, crearPieza, isOnline, showToast])
+  }, [crearPieza, isOnline, showToast])
 
-  const handleActualizarPieza = useCallback(() => {
-    if (!editPieza?.nombre.trim()) {
+  const handleActualizarPieza = useCallback((data: FormPieza) => {
+    if (!editPieza) return
+    if (!data.nombre.trim()) {
       showToast('El nombre es requerido', 'error')
       notificationHaptic('error')
       return
     }
-    actualizarPieza(editPieza)
+    actualizarPieza({ ...editPieza, nombre: data.nombre.trim(), categoria: data.categoria.trim() })
     setEditPieza(null)
     haptic('light')
     showToast('Pieza actualizada')
@@ -731,6 +540,13 @@ export default function TareasRepuestosPage() {
     showToast('Pieza eliminada')
   }, [eliminarPieza, showToast])
 
+  // ── Paginación: elementos visibles (Definidos ANTES de cualquier conditional return) ──
+
+  const visibleTareas = useMemo(() => tareasFiltradas.slice(0, pageTareas * PAGE_SIZE), [tareasFiltradas, pageTareas])
+  const visiblePiezas = useMemo(() => piezasFiltradas.slice(0, pagePiezas * PAGE_SIZE), [piezasFiltradas, pagePiezas])
+  const hasMoreTareas = visibleTareas.length < tareasFiltradas.length
+  const hasMorePiezas = visiblePiezas.length < piezasFiltradas.length
+
   // ── Guard ─────────────────────────────────────────────────────────────────
 
   if (!user) return (
@@ -739,30 +555,26 @@ export default function TareasRepuestosPage() {
     </div>
   )
 
-  // ── Paginación: elementos visibles ────────────────────────────────────────
-
-  const visibleTareas = useMemo(() => tareasFiltradas.slice(0, pageTareas * PAGE_SIZE), [tareasFiltradas, pageTareas])
-  const visiblePiezas = useMemo(() => piezasFiltradas.slice(0, pagePiezas * PAGE_SIZE), [piezasFiltradas, pagePiezas])
-  const hasMoreTareas = visibleTareas.length < tareasFiltradas.length
-  const hasMorePiezas = visiblePiezas.length < piezasFiltradas.length
-
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div
-      className="bg-transparent h-full"
-    >
+    <div className="bg-transparent h-full">
+      {/* Header Premium (Sticky con Blur, Borde y Margen Negativo) */}
       <header
         className="
-          bg-transparent shadow-2xl
-          px-4 py-3
+          sticky top-0 z-40
+          bg-gray-900/90 backdrop-blur-md border-b border-slate-800/60
+          -mx-4 -mt-4 px-4 py-3.5 mb-4
+          sm:-mx-6 sm:-mt-6 sm:px-6
+          lg:-mx-8 lg:-mt-8 lg:px-8
+          transition-all
         "
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
         <div className="flex items-center gap-3 max-w-2xl mx-auto">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-white shadow-2xl leading-tight truncate">
+              <h1 className="text-lg font-bold text-white leading-tight truncate">
                 Tareas y Repuestos
               </h1>
               {isMutating && (
@@ -776,12 +588,11 @@ export default function TareasRepuestosPage() {
             />
           </div>
         </div>
-        
       </header>
 
       {/* ── Banner offline ── */}
       {!isOnline && (
-        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center gap-2">
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center gap-2 -mt-4 mb-4">
           <WifiOff className="w-4 h-4 text-amber-400 shrink-0" />
           <p className="text-xs text-amber-300">
             Modo offline — los cambios se sincronizarán al reconectar
@@ -793,23 +604,41 @@ export default function TareasRepuestosPage() {
       {toast && <Toast toast={toast} onClose={() => setToast(null)} />}
 
       {/* ── Contenido principal ── */}
-      <main
-        className="max-w-2xl mx-auto px-4 py-5 space-y-5"
-        style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
-      >
+      <main className="max-w-2xl mx-auto px-4 py-2 space-y-5 pb-16">
         {isLoading ? (
           <Skeleton />
         ) : (
           <>
-            
+            {/* Resumen de Estadísticas */}
+            <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
+              <StatChip
+                label="Total Tareas"
+                value={tareas.length}
+                colorClass="text-blue-400"
+                Icon={ListChecks}
+              />
+              <StatChip
+                label="Total Repuestos"
+                value={piezas.length}
+                colorClass="text-purple-400"
+                Icon={Package}
+              />
+              {pendingCount > 0 && (
+                <StatChip
+                  label="Pendientes Sync"
+                  value={pendingCount}
+                  colorClass="text-amber-400"
+                  Icon={CloudOff}
+                />
+              )}
+            </div>
 
-
-            {/* Tabs */}
-            <div className="flex bg-slate-800/60 rounded-2xl p-1.5 border border-slate-700/40">
+            {/* Tabs (Contraste aumentado e inactivo rebajado) */}
+            <div className="flex bg-slate-800/60 rounded-2xl p-1.5 border border-slate-700/40 shadow-sm">
               {(
                 [
-                  { key: 'tareas', label: 'Tareas',    Icon: ListChecks, active: 'bg-blue-500/20 text-blue-300'   },
-                  { key: 'piezas', label: 'Repuestos',  Icon: Package,    active: 'bg-purple-500/20 text-purple-300'},
+                  { key: 'tareas', label: 'Tareas',    Icon: ListChecks, active: 'bg-blue-500/35 text-white font-semibold shadow-sm' },
+                  { key: 'piezas', label: 'Repuestos',  Icon: Package,    active: 'bg-purple-500/35 text-white font-semibold shadow-sm' },
                 ] as const
               ).map(({ key, label, Icon, active }) => (
                 <button
@@ -819,9 +648,9 @@ export default function TareasRepuestosPage() {
                   aria-pressed={tab === key}
                   className={`
                     flex-1 flex items-center justify-center gap-2
-                    min-h-[44px] rounded-xl text-sm font-medium
+                    min-h-[44px] rounded-xl text-sm
                     transition-all touch-manipulation select-none
-                    ${tab === key ? active : 'text-slate-400 active:text-slate-200'}
+                    ${tab === key ? active : 'text-slate-500 hover:text-slate-300 active:text-slate-250'}
                   `}
                 >
                   <Icon className="w-4 h-4" />
@@ -830,23 +659,23 @@ export default function TareasRepuestosPage() {
               ))}
             </div>
 
-            {/* ── Panel Tareas ── */}
+            {/* ── Panel Tareas (Con Animación animate-in fade-in) ── */}
             {tab === 'tareas' && (
-              <section className="bg-slate-800/40 rounded-2xl border border-slate-700/40 overflow-hidden">
+              <section className="bg-slate-800/40 rounded-2xl border border-slate-700/40 overflow-hidden animate-in fade-in duration-200">
                 <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-700/40">
                   <h2 className="text-white font-semibold text-sm">
                     Tareas predefinidas
-                    <span className="text-slate-500 font-normal ml-1">
-                      ({visibleTareas.length}{hasMoreTareas ? `+${tareasFiltradas.length - visibleTareas.length}` : ''})
+                    <span className="text-slate-500 font-normal ml-1.5">
+                      ({tareasFiltradas.length})
                     </span>
                   </h2>
                   <button
                     onClick={() => { haptic('light'); setModalTarea(true) }}
                     type="button"
                     className="
-                      flex items-center gap-1.5 pl-3 pr-4 min-h-[36px]
-                      bg-blue-500/15 text-blue-300 border border-blue-500/30 rounded-xl
-                      text-sm font-medium active:bg-blue-500/25
+                      flex items-center gap-1.5 pl-3 pr-4 min-h-[44px]
+                      bg-blue-500/15 text-blue-300 border border-blue-500/30 rounded-2xl
+                      text-sm font-semibold active:bg-blue-500/25
                       touch-manipulation transition-all
                     "
                     aria-label="Agregar tarea"
@@ -878,7 +707,7 @@ export default function TareasRepuestosPage() {
                             key={tarea.id} 
                             tarea={tarea} 
                             onEdit={setEditTarea} 
-                            onDelete={handleEliminarTarea} 
+                            onDelete={setTareaToDelete} 
                           />
                         ))}
 
@@ -895,7 +724,7 @@ export default function TareasRepuestosPage() {
                               flex items-center justify-center gap-1.5
                               text-sm font-medium text-blue-300
                               bg-blue-500/10 border border-blue-500/20
-                              rounded-xl active:bg-blue-500/20 active:scale-[0.98]
+                              rounded-2xl active:bg-blue-500/20 active:scale-[0.98]
                               touch-manipulation transition-all
                             "
                           >
@@ -909,22 +738,22 @@ export default function TareasRepuestosPage() {
               </section>
             )}
 
-            {/* ── Panel Piezas ── */}
+            {/* ── Panel Piezas (Con Animación animate-in fade-in) ── */}
             {tab === 'piezas' && (
-              <section className="bg-slate-800/40 rounded-2xl border border-slate-700/40 overflow-hidden">
+              <section className="bg-slate-800/40 rounded-2xl border border-slate-700/40 overflow-hidden animate-in fade-in duration-200">
                 <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-700/40">
                   <h2 className="text-white font-semibold text-sm">
                     Repuestos predefinidos
-                    <span className="text-slate-500 font-normal ml-1">
-                      ({visiblePiezas.length}{hasMorePiezas ? `+${piezasFiltradas.length - visiblePiezas.length}` : ''})
+                    <span className="text-slate-500 font-normal ml-1.5">
+                      ({piezasFiltradas.length})
                     </span>
                   </h2>
                   <button
                     onClick={() => { haptic('light'); setModalPieza(true) }}
                     className="
-                      flex items-center gap-1.5 pl-3 pr-4 min-h-[36px]
-                      bg-purple-500/15 text-purple-300 border border-purple-500/30 rounded-xl
-                      text-sm font-medium active:bg-purple-500/25
+                      flex items-center gap-1.5 pl-3 pr-4 min-h-[44px]
+                      bg-purple-500/15 text-purple-300 border border-purple-500/30 rounded-2xl
+                      text-sm font-semibold active:bg-purple-500/25
                       touch-manipulation transition-all
                     "
                     aria-label="Agregar repuesto"
@@ -955,7 +784,7 @@ export default function TareasRepuestosPage() {
                             key={pieza.id} 
                             pieza={pieza} 
                             onEdit={setEditPieza} 
-                            onDelete={handleEliminarPieza} 
+                            onDelete={setPiezaToDelete} 
                           />
                         ))}
 
@@ -971,7 +800,7 @@ export default function TareasRepuestosPage() {
                               flex items-center justify-center gap-1.5
                               text-sm font-medium text-purple-300
                               bg-purple-500/10 border border-purple-500/20
-                              rounded-xl active:bg-purple-500/20 active:scale-[0.98]
+                              rounded-2xl active:bg-purple-500/20 active:scale-[0.98]
                               touch-manipulation transition-all
                             "
                           >
@@ -988,68 +817,108 @@ export default function TareasRepuestosPage() {
         )}
       </main>
 
-      {/* ── Modales de CREACIÓN ── */}
+      {/* ── Modales de CREACIÓN Y EDICIÓN ── */}
+      <ModalTarea
+        isOpen={modalTarea || !!editTarea}
+        onClose={() => {
+          setModalTarea(false)
+          setEditTarea(null)
+        }}
+        tarea={editTarea}
+        onSubmit={editTarea ? handleActualizarTarea : handleCrearTarea}
+      />
+
+      <ModalPieza
+        isOpen={modalPieza || !!editPieza}
+        onClose={() => {
+          setModalPieza(false)
+          setEditPieza(null)
+        }}
+        pieza={editPieza}
+        onSubmit={editPieza ? handleActualizarPieza : handleCrearPieza}
+      />
+
+      {/* ── Modales de CONFIRMACIÓN DE ELIMINACIÓN ── */}
       <Modal
-        isOpen={modalTarea}
-        onClose={() => setModalTarea(false)}
-        title="Nueva tarea"
+        isOpen={!!tareaToDelete}
+        onClose={() => setTareaToDelete(null)}
+        title="Confirmar eliminación"
       >
-        <FormularioTarea
-          form={formTarea}
-          onChange={setFormTarea}
-          onSubmit={handleCrearTarea}
-          submitLabel="Agregar tarea"
-          accentClass="bg-blue-500/20 text-blue-300 border border-blue-500/30"
-        />
+        <div className="space-y-4">
+          <p className="text-sm text-slate-300 leading-relaxed">
+            ¿Estás seguro de que deseas eliminar esta tarea predefinida? Esta acción no se puede deshacer.
+          </p>
+          <div className="flex flex-col gap-3 pt-2">
+            <button
+              onClick={() => {
+                if (tareaToDelete) {
+                  handleEliminarTarea(tareaToDelete)
+                  setTareaToDelete(null)
+                }
+              }}
+              type="button"
+              className="
+                w-full min-h-[50px] rounded-2xl font-bold text-sm
+                bg-red-600/90 text-white hover:bg-red-600 active:scale-[0.98]
+                transition-all flex items-center justify-center gap-2
+              "
+            >
+              <Trash2 className="w-4 h-4" />
+              Sí, eliminar
+            </button>
+            <button
+              onClick={() => setTareaToDelete(null)}
+              type="button"
+              className="
+                w-full min-h-[50px] rounded-2xl font-bold text-sm
+                text-slate-400 active:bg-slate-800 touch-manipulation transition-all
+              "
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
       </Modal>
 
       <Modal
-        isOpen={modalPieza}
-        onClose={() => setModalPieza(false)}
-        title="Nuevo repuesto"
+        isOpen={!!piezaToDelete}
+        onClose={() => setPiezaToDelete(null)}
+        title="Confirmar eliminación"
       >
-        <FormularioPieza
-          form={formPieza}
-          onChange={setFormPieza}
-          onSubmit={handleCrearPieza}
-          submitLabel="Agregar repuesto"
-          accentClass="bg-purple-500/20 text-purple-300 border border-purple-500/30"
-        />
-      </Modal>
-
-      {/* ── Modales de EDICIÓN ── */}
-      <Modal
-        isOpen={!!editTarea}
-        onClose={() => setEditTarea(null)}
-        title="Editar tarea"
-      >
-        {editTarea && (
-          <FormularioTarea
-            form={{ nombre: editTarea.nombre, tipo: editTarea.tipo, categoria: editTarea.categoria }}
-            onChange={f => setEditTarea(prev => prev ? { ...prev, ...f } : null)}
-            onSubmit={handleActualizarTarea}
-            onCancel={() => setEditTarea(null)}
-            submitLabel="Guardar cambios"
-            accentClass="bg-blue-500/20 text-blue-300 border border-blue-500/30"
-          />
-        )}
-      </Modal>
-
-      <Modal
-        isOpen={!!editPieza}
-        onClose={() => setEditPieza(null)}
-        title="Editar repuesto"
-      >
-        {editPieza && (
-          <FormularioPieza
-            form={{ nombre: editPieza.nombre, categoria: editPieza.categoria }}
-            onChange={f => setEditPieza(prev => prev ? { ...prev, ...f } : null)}
-            onSubmit={handleActualizarPieza}
-            onCancel={() => setEditPieza(null)}
-            submitLabel="Guardar cambios"
-            accentClass="bg-blue-500/20 text-blue-300 border border-blue-500/30"
-          />
-        )}
+        <div className="space-y-4">
+          <p className="text-sm text-slate-300 leading-relaxed">
+            ¿Estás seguro de que deseas eliminar este repuesto predefinido? Esta acción no se puede deshacer.
+          </p>
+          <div className="flex flex-col gap-3 pt-2">
+            <button
+              onClick={() => {
+                if (piezaToDelete) {
+                  handleEliminarPieza(piezaToDelete)
+                  setPiezaToDelete(null)
+                }
+              }}
+              type="button"
+              className="
+                w-full min-h-[50px] rounded-2xl font-bold text-sm
+                bg-red-600/90 text-white hover:bg-red-600 active:scale-[0.98]
+                transition-all flex items-center justify-center gap-2
+              "
+            >
+              <Trash2 className="w-4 h-4" />
+              Sí, eliminar
+            </button>
+            <button
+              onClick={() => setPiezaToDelete(null)}
+              type="button"
+              className="
+                w-full min-h-[50px] rounded-2xl font-bold text-sm
+                text-slate-400 active:bg-slate-800 touch-manipulation transition-all
+              "
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   )

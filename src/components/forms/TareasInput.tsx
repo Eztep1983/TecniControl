@@ -3,7 +3,8 @@
 import { Check, AlertCircle, X, Search, Zap, Plus, ChevronDown } from 'lucide-react'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { crearTarea, obtenerTareasPredefinidas, TareaPredefinida } from '@/lib/configuracionTareasR-helpers'
+import { useTareasYPiezas } from '@/hooks/useTareasYPiezas'
+import { TareaPredefinida } from '@/lib/configuracion-helpers'
 import { useHapticFeedback } from '@/hooks/clientes/useHapticFeedback'
 
 interface TareasInputProps {
@@ -27,8 +28,7 @@ export default function TareasInput({
 }: TareasInputProps) {
   const { user } = useAuth()
   const { impactLight, selection, success, error: hapticError } = useHapticFeedback()
-  const [tareasPredefinidas, setTareasPredefinidas] = useState<TareaPredefinida[]>([])
-  const [cargando, setCargando] = useState(true)
+  const { tareas, isLoading: cargando, crearTarea } = useTareasYPiezas()
   const [error, setError] = useState<string | null>(null)
   
   const [query, setQuery] = useState('')
@@ -38,32 +38,15 @@ export default function TareasInput({
   const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Cargar tareas al montar
-  useEffect(() => {
-    const cargarTareas = async () => {
-      if (!user?.uid) {
-        setCargando(false)
-        return
-      }
-      setCargando(true)
-      try {
-        const tareas = await obtenerTareasPredefinidas(user.uid)
-        const tareasSanitizadas = (tareas || []).filter(Boolean).map(t => ({
-          ...t,
-          nombre: t.nombre || '',
-          tipo: t.tipo || 'preventivo'
-        }))
-        const filtradas = tareasSanitizadas.filter(t => t.tipo === tipoMantenimiento || t.tipo === 'ambos')
-        setTareasPredefinidas(filtradas)
-      } catch (err) {
-        console.error('Error cargando tareas:', err)
-        setError('Error al cargar tareas predefinidas')
-      } finally {
-        setCargando(false)
-      }
-    }
-    cargarTareas()
-  }, [user?.uid, tipoMantenimiento])
+  // Filtrar tareas reactivamente desde la caché
+  const tareasPredefinidas = useMemo(() => {
+    const tareasSanitizadas = (tareas || []).filter(Boolean).map(t => ({
+      ...t,
+      nombre: t.nombre || '',
+      tipo: t.tipo || 'preventivo'
+    }))
+    return tareasSanitizadas.filter(t => t.tipo === tipoMantenimiento || t.tipo === 'ambos')
+  }, [tareas, tipoMantenimiento])
 
   // Click outside to close dropdown
   useEffect(() => {
@@ -115,35 +98,23 @@ export default function TareasInput({
       return
     }
 
-    const tempId = Date.now().toString()
-    const nuevaTareaPredefinida: TareaPredefinida = {
-      id: tempId,
+    const tipoNuevaTarea = (tipoMantenimiento === 'preventivo' || tipoMantenimiento === 'correctivo') ? tipoMantenimiento : 'preventivo'
+
+    // Guardar en Firestore reactivamente con cola offline y UI optimista
+    crearTarea({
       nombre: nuevoValor,
-      tipo: (tipoMantenimiento === 'preventivo' || tipoMantenimiento === 'correctivo') ? tipoMantenimiento : 'preventivo',
+      tipo: tipoNuevaTarea,
       categoria: 'General'
-    }
+    })
 
-    // Guardar en Firestore en segundo plano
-    if (user?.uid) {
-      crearTarea(user.uid, {
-        nombre: nuevaTareaPredefinida.nombre,
-        tipo: nuevaTareaPredefinida.tipo,
-        categoria: nuevaTareaPredefinida.categoria
-      }).catch(err => {
-        console.error("Error guardando nueva tarea predefinida", err);
-      });
-    }
-
-    // Actualizar estado local
-    setTareasPredefinidas(prev => [...prev, nuevaTareaPredefinida]);
-    onAgregarTareaPersonalizada(nuevoValor)
+        onAgregarTareaPersonalizada(nuevoValor)
     
     success()
     setQuery('')
     setIsOpen(false)
     setPaginaActual(1)
     inputRef.current?.blur()
-  }, [tareasPersonalizadas.length, onAgregarTareaPersonalizada, user?.uid, tipoMantenimiento, success, hapticError])
+  }, [tareasPersonalizadas.length, onAgregarTareaPersonalizada, crearTarea, tipoMantenimiento, success, hapticError])
 
   const handleSeleccionarPredefinida = useCallback((nombre: string) => {
     onToggleTareaPredefinida(nombre)

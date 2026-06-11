@@ -310,6 +310,57 @@ export const actualizarOrden = async (ordenId: string, orden: Partial<Orden>, us
   }
 };
 
+/**
+ * Crea una orden e incrementa el contador de usuario de forma atómica.
+ * Excluye tempId y garantiza la consecutividad de los IDs personalizados.
+ */
+export const crearOrdenAtomica = async (
+  ordenData: Omit<Orden, 'id' | 'idPersonalizado'>,
+  userId: string
+): Promise<{ id: string; idPersonalizado: string }> => {
+  const contadorRef = doc(db, 'contadores', userId);
+  const nuevaOrdenRef = doc(collection(db, 'ordenes'));
+  let idPersonalizado = '';
+
+  await runTransaction(db, async (transaction) => {
+    // 1. Obtener y actualizar contador
+    const snap = await transaction.get(contadorRef);
+    let consecutivo = 1;
+
+    if (!snap.exists()) {
+      transaction.set(contadorRef, {
+        userId,
+        siguiente: 2,
+        ultimaOrden: '',
+        fechaActualizacion: new Date(),
+      });
+    } else {
+      const data = snap.data();
+      consecutivo = data.siguiente;
+      transaction.update(contadorRef, {
+        siguiente: consecutivo + 1,
+        fechaActualizacion: new Date(),
+      });
+    }
+
+    idPersonalizado = `OSER${consecutivo.toString().padStart(3, '0')}`;
+
+    // 2. Preparar el payload de la orden
+    const { tempId, ...ordenSinTempId } = ordenData as any; // Asegurar exclusión de tempId
+    const ordenCompleta = sanitizeOrdenPayload({
+      ...ordenSinTempId,
+      idPersonalizado,
+      userId,
+      updatedAt: new Date(),
+    });
+
+    // 3. Escribir documento en la transacción
+    transaction.set(nuevaOrdenRef, ordenCompleta);
+  });
+
+  return { id: nuevaOrdenRef.id, idPersonalizado };
+};
+
 // Negocio helpers
 export const getNegocioPorUsuario = async (userId: string): Promise<Negocio | null> => {
   try {

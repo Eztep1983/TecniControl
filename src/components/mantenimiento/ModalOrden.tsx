@@ -743,8 +743,29 @@ export const ModalOrden = ({
   const [mounted, setMounted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
+  // Estados locales para la animación de cierre (apertura y cierre de 300ms)
+  const [activeOrden, setActiveOrden] = useState<OrdenMantenimiento | null>(orden);
+  const [isVisible, setIsVisible] = useState(false);
+  const [shouldRender, setShouldRender] = useState(!!orden);
+
   useEffect(() => { setMounted(true); return () => setMounted(false); }, []);
   useEffect(() => { setView("detail"); }, [orden?.id]);
+
+  useEffect(() => {
+    if (orden) {
+      setActiveOrden(orden);
+      setShouldRender(true);
+      const t = setTimeout(() => setIsVisible(true), 20);
+      return () => clearTimeout(t);
+    } else {
+      setIsVisible(false);
+      const t = setTimeout(() => {
+        setShouldRender(false);
+        setActiveOrden(null);
+      }, 300);
+      return () => clearTimeout(t);
+    }
+  }, [orden]);
 
   useAndroidBack(!!orden && mounted, () => {
     if (view === "preview") setView("detail");
@@ -770,17 +791,28 @@ export const ModalOrden = ({
   const handlePreview = useCallback(() => setView("preview"), []);
   const handleDetail = useCallback(() => setView("detail"), []);
 
-  if (!orden || !mounted) return null;
+  if (!shouldRender || !mounted || !activeOrden) return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-black/70 flex items-end sm:items-center justify-center z-[110] sm:p-6 pointer-events-auto"
+      className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center sm:p-6 pointer-events-auto"
+      style={{
+        backgroundColor: isVisible ? 'rgba(0, 0, 0, 0.7)' : 'rgba(0, 0, 0, 0)',
+        transition: 'background-color 300ms cubic-bezier(0.16, 1, 0.3, 1)'
+      }}
       onClick={handleBackdropClick}
       role="presentation"
     >
       <div
         ref={modalRef}
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)'}}
+        style={{
+          transform: isVisible 
+            ? 'translateY(0) scale(1)' 
+            : 'translateY(40px) scale(0.95)',
+          opacity: isVisible ? 1 : 0,
+          transition: 'transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms cubic-bezier(0.16, 1, 0.3, 1)',
+          paddingBottom: 'env(safe-area-inset-bottom)'
+        }}
         className={cn(
           "bg-gray-950 w-full flex flex-col overflow-hidden relative",
           "shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] border-t border-x border-white/10 sm:border",
@@ -788,7 +820,7 @@ export const ModalOrden = ({
           "h-[92dvh] max-h-[92dvh]",
           "sm:h-auto sm:max-w-md sm:max-h-[85vh]",
           "lg:max-w-lg",
-          "transform-gpu slide-in-from-bottom-8 sm:zoom-in-95 duration-300 ease-out"
+          "transform-gpu will-change-[transform,opacity]"
         )}
         onClick={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
@@ -799,7 +831,7 @@ export const ModalOrden = ({
         aria-labelledby="modal-orden-title"
       >
         <h2 id="modal-orden-title" className="sr-only">
-          Orden de mantenimiento {orden.tipoMantenimiento} #{orden.idPersonalizado || orden.id?.slice(-6)}
+          Orden de mantenimiento {activeOrden.tipoMantenimiento} #{activeOrden.idPersonalizado || activeOrden.id?.slice(-6)}
         </h2>
 
         {/* Drag Handle - Visible on all devices when in sheet mode */}
@@ -809,7 +841,7 @@ export const ModalOrden = ({
 
         {view === "detail" && (
           <DetailView
-            orden={orden}
+            orden={activeOrden}
             onClose={onClose}
             onPreview={handlePreview}
             onShare={onShare}
@@ -818,7 +850,7 @@ export const ModalOrden = ({
         )}
         {view === "preview" && (
           <PDFPreviewView
-            orden={orden}
+            orden={activeOrden}
             onBack={handleDetail}
             onPrint={onPrint}
             onShare={onShare}

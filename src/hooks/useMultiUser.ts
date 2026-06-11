@@ -1,14 +1,12 @@
 // hooks/useMultiUser.ts
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
-import { db } from '@/lib/firebase';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { OrdenMantenimiento, Cliente, Negocio } from '@/types/orden';
 import { 
   getClientesPorUsuario, 
   getOrdenesPaginadasConFiltro,
   getTodasLasOrdenesConFiltro,
-  crearOrden,
-  generarIdPorTipo,
+  crearOrdenAtomica,
   getEstadisticasPorUsuario,
   completarOnboarding,
   getOrdenesPaginadas,
@@ -89,10 +87,10 @@ export const useCrearOrden = () => {
         updatedAt: new Date(),
       };
 
-      const idPersonalizado = await generarIdPorTipo(userId, ordenData.tipo || 'mantenimiento');
-      const ordenCompleta = { ...ordenBase, idPersonalizado };
-      const docId = await crearOrden(ordenCompleta, userId);
-      return { id: docId, idPersonalizado, isOffline: false, ...ordenCompleta };
+      // Crear orden e incrementar contador en un solo paso transaccional
+      const { id, idPersonalizado } = await crearOrdenAtomica(ordenBase, userId);
+
+      return { id, idPersonalizado, isOffline: false, ...ordenBase };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid, 'stats'] });

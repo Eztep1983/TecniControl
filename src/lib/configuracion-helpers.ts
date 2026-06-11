@@ -234,6 +234,7 @@ const sembrarPiezas = async (uid: string): Promise<void> => {
 // ─── Datos por defecto ────────────────────────────────────────────────────────
 
 const TAREAS_DEFAULT: TareaPredefinida[] = [
+  // ── Impresoras / Fotocopiadoras ──
   { id: 'def_t1', nombre: 'Limpieza de unidad fusora',                tipo: 'preventivo', categoria: 'Limpieza'      },
   { id: 'def_t2', nombre: 'Limpieza de rodillos de alimentación',     tipo: 'preventivo', categoria: 'Limpieza'      },
   { id: 'def_t3', nombre: 'Calibración de calidad de impresión',      tipo: 'preventivo', categoria: 'Calibración'   },
@@ -244,9 +245,17 @@ const TAREAS_DEFAULT: TareaPredefinida[] = [
   { id: 'def_t8', nombre: 'Configuración de escaneo en red',          tipo: 'correctivo', categoria: 'Redes'         },
   { id: 'def_t9', nombre: 'Revisión de sensores de papel',            tipo: 'preventivo', categoria: 'Diagnóstico'   },
   { id: 'def_t10', nombre: 'Mantenimiento de ADF/escaner automático', tipo: 'preventivo', categoria: 'Escáner'      },
+  // ── Computadoras / Servidores ──
+  { id: 'def_t11', nombre: 'Limpieza interna del equipo',             tipo: 'preventivo', categoria: 'Limpieza'      },
+  { id: 'def_t12', nombre: 'Limpieza de ventiladores',                tipo: 'preventivo', categoria: 'Limpieza'      },
+  { id: 'def_t13', nombre: 'Actualización de drivers',                tipo: 'preventivo', categoria: 'Software'      },
+  { id: 'def_t14', nombre: 'Diagnóstico de fallas del sistema',       tipo: 'correctivo', categoria: 'Diagnóstico'   },
+  { id: 'def_t15', nombre: 'Eliminación de virus y malware',          tipo: 'correctivo', categoria: 'Seguridad'     },
+  { id: 'def_t16', nombre: 'Reemplazo de disco duro defectuoso',      tipo: 'correctivo', categoria: 'Hardware'      },
 ]
 
 const PIEZAS_DEFAULT: PiezaPredefinida[] = [
+  // ── Impresoras / Fotocopiadoras ──
   { id: 'def_p1', nombre: 'Tóner',                    categoria: 'Consumibles'  },
   { id: 'def_p2', nombre: 'Drum / Unidad de imagen',  categoria: 'Impresión'    },
   { id: 'def_p3', nombre: 'Unidad fusora',            categoria: 'Fusión'       },
@@ -254,7 +263,14 @@ const PIEZAS_DEFAULT: PiezaPredefinida[] = [
   { id: 'def_p5', nombre: 'Banda de transferencia',   categoria: 'Transferencia'},
   { id: 'def_p6', nombre: 'Chip de tóner',            categoria: 'Electrónica'  },
   { id: 'def_p7', nombre: 'ADF / Alimentador',        categoria: 'Escáner'      },
-  { id: 'def_p8', nombre: 'Fuente de poder',          categoria: 'Energía'      },
+  { id: 'def_p8', nombre: 'Fuente de poder (Impresión)', categoria: 'Energía'   },
   { id: 'def_p9', nombre: 'Sensor de papel',          categoria: 'Sensores'     },
   { id: 'def_p10', nombre: 'Cabezal de impresión',    categoria: 'Impresión'    },
+  // ── Computadoras / Servidores ──
+  { id: 'def_p11', nombre: 'Disco Duro SSD',          categoria: 'Almacenamiento'},
+  { id: 'def_p12', nombre: 'Memoria RAM',             categoria: 'Memoria'       },
+  { id: 'def_p13', nombre: 'Ventilador CPU',          categoria: 'Refrigeración' },
+  { id: 'def_p14', nombre: 'Fuente de Poder (PC)',    categoria: 'Energía'       },
+  { id: 'def_p15', nombre: 'Teclado',                 categoria: 'Periféricos'   },
+  { id: 'def_p16', nombre: 'Mouse',                   categoria: 'Periféricos'   },
 ]

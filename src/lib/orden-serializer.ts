@@ -1,12 +1,15 @@
 // src/lib/orden-serializer.ts
 
-import type { OrdenMantenimiento, SerializableOrdenPayload } from '@/types/orden'
+import type { OrdenMantenimiento, SerializableOrdenPayload, TempOrderId } from '@/types/orden'
 
 /**
  * Convierte una orden con Date objects a un payload serializable para localStorage.
  * Ningún campo Date puede guardarse directamente en JSON.
  */
-export function serializeOrden(orden: Omit<OrdenMantenimiento, 'id' | 'idPersonalizado'>): SerializableOrdenPayload {
+export function serializeOrden(
+  orden: Omit<OrdenMantenimiento, 'id' | 'idPersonalizado'>, 
+  tempId?: TempOrderId
+): SerializableOrdenPayload {
   const toISO = (v: any): string | undefined => {
     if (!v) return undefined
     if (v instanceof Date) return v.toISOString()
@@ -47,6 +50,7 @@ export function serializeOrden(orden: Omit<OrdenMantenimiento, 'id' | 'idPersona
     firmaCliente: orden.firmaCliente,
     nombreFirmante: orden.nombreFirmante,
     validacionCliente: orden.validacionCliente,
+    tempId: tempId || (orden as any).tempId,
     horaCreacion: orden.horaCreacion,
     fechaCreacion: toISO(orden.fechaCreacion) ?? new Date().toISOString(),
     createdAt: toISO(orden.createdAt) ?? new Date().toISOString(),
@@ -64,6 +68,7 @@ export function deserializeOrdenPayload(payload: SerializableOrdenPayload): Omit
 
   return {
     ...payload,
+    tempId: payload.tempId,
     fechaCreacion: new Date(payload.fechaCreacion),
     createdAt: new Date(payload.createdAt),
     updatedAt: new Date(payload.updatedAt),

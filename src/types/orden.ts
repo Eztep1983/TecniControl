@@ -86,6 +86,7 @@ export interface OrdenMantenimiento {
   firmaCliente?: string;
   nombreFirmante?: string;
   validacionCliente?: boolean;
+  tempId?: TempOrderId; // ID temporal para deduplicación
 
   createdAt?: Date;
   updatedAt?: Date;
@@ -151,6 +152,7 @@ export interface SerializableOrdenPayload {
   firmaCliente?: string
   nombreFirmante?: string
   validacionCliente?: boolean
+  tempId?: TempOrderId
   horaCreacion: string
   fechaCreacion: string  // ISO string
   createdAt: string      // ISO string

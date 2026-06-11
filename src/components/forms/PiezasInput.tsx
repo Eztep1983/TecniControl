@@ -3,8 +3,8 @@
 import { Plus, Trash2, Package, Search, X, AlertCircle, ChevronDown } from 'lucide-react'
 import { useCallback, memo, useState, useEffect, useMemo, useRef, Dispatch, SetStateAction } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
-import {  obtenerPiezasPredefinidas, PiezaPredefinida } from '@/lib/configuracionTareasR-helpers'
-import { crearPieza } from '@/lib/configuracion-helpers'
+import { useTareasYPiezas } from '@/hooks/useTareasYPiezas'
+import { PiezaPredefinida } from '@/lib/configuracion-helpers'
 import { useHapticFeedback } from '@/hooks/clientes/useHapticFeedback'
 
 interface Pieza {
@@ -83,8 +83,7 @@ export default memo(function PiezasInput({
 }: PiezasInputProps) {
   const { user } = useAuth()
   const { impactLight, selection, success } = useHapticFeedback()
-  const [piezasPredefinidas, setPiezasPredefinidas] = useState<PiezaPredefinida[]>([])
-  const [loading, setLoading] = useState(true)
+  const { piezas, isLoading: loading, crearPieza } = useTareasYPiezas()
   const [errorLocal, setErrorLocal] = useState('')
 
   const [query, setQuery] = useState('')
@@ -94,28 +93,13 @@ export default memo(function PiezasInput({
   const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    const cargarPiezas = async () => {
-      if (!user?.uid) {
-        setLoading(false)
-        return
-      }
-      try {
-        const piezas = await obtenerPiezasPredefinidas(user.uid)
-        const piezasSanitizadas = (piezas || []).filter(Boolean).map(p => ({
-          ...p,
-          nombre: p.nombre || ''
-        }))
-        setPiezasPredefinidas(piezasSanitizadas)
-      } catch (err) {
-        console.error('Error cargando piezas:', err)
-        setErrorLocal('Error al cargar piezas predefinidas')
-      } finally {
-        setLoading(false)
-      }
-    }
-    cargarPiezas()
-  }, [user?.uid])
+  // Filtrar y sanitizar piezas reactivamente desde la caché
+  const piezasPredefinidas = useMemo(() => {
+    return (piezas || []).filter(Boolean).map(p => ({
+      ...p,
+      nombre: p.nombre || ''
+    }))
+  }, [piezas])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -173,32 +157,19 @@ export default memo(function PiezasInput({
   }, [setPiezasUsadas, selection])
 
   const handleAgregarPersonalizada = useCallback((nombre: string) => {
-    const tempId = Date.now().toString()
-    const nuevaPiezaPredefinida: PiezaPredefinida = {
-      id: tempId,
+    // Guardar en Firestore reactivamente con cola offline y UI optimista
+    crearPieza({
       nombre: nombre,
       categoria: 'General'
-    }
+    })
 
-    // Guardar en Firestore en segundo plano (sin bloquear UI)
-    if (user?.uid) {
-      crearPieza(user.uid, {
-        nombre: nuevaPiezaPredefinida.nombre,
-        categoria: nuevaPiezaPredefinida.categoria
-      }).catch(err => {
-        console.error("Error guardando nueva pieza predefinida", err);
-      });
-    }
-
-    // Actualizar estado local inmediatamente
-    setPiezasPredefinidas(prev => [...prev, nuevaPiezaPredefinida]);
     setPiezasUsadas(prev => [...prev, {
       pieza: nombre, cantidad: 1, tipo: 'personalizada'
     }])
     
     success()
     setQuery(''); setIsOpen(false); setPaginaActual(1); inputRef.current?.blur()
-  }, [setPiezasUsadas, user?.uid, success])
+  }, [setPiezasUsadas, crearPieza, success])
 
   const handleEliminar = useCallback((index: number) => {
     impactLight()

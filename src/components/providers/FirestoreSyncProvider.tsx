@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { getPendingTempIds } from '@/lib/offline-queue-helpers'
 
 /**
  * FirestoreSyncProvider: El motor de persistencia absoluta y reactividad.
@@ -54,8 +55,19 @@ export const FirestoreSyncProvider: React.FC<{ children: React.ReactNode }> = ({
       orderBy('fechaCreacion', 'desc')
     )
     const unsubOrdenes = onSnapshot(qOrdenes, (snap) => {
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      // Inyectamos en las diferentes llaves de cache para máxima reactividad
+      // 1. Mapear datos
+      const rawData = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      
+      // 2. Filtrar órdenes que aún están en la cola offline (Deduplicación)
+      const pendingTempIds = getPendingTempIds(user.uid)
+      const data = rawData.filter((orden: any) => {
+        if (orden.tempId && pendingTempIds.has(orden.tempId)) {
+          return false
+        }
+        return true
+      })
+
+      // 3. Inyectamos en las diferentes llaves de cache para máxima reactividad
       queryClient.setQueryData(['ordenes', user.uid], data)
       queryClient.setQueryData(['ordenes', user.uid, 'recientes', 20], data.slice(0, 20))
       queryClient.setQueryData(['ordenes', user.uid, 'recientes', 5], data.slice(0, 5))
@@ -81,12 +93,34 @@ export const FirestoreSyncProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     })
 
+    // 5. Listener de Tareas Predefinidas
+    const qTareas = collection(db, 'userConfig', user.uid, 'tareas')
+    const unsubTareas = onSnapshot(qTareas, (snap) => {
+      const cacheExistente = queryClient.getQueryData(['config-tareas', user.uid])
+      if (!snap.empty || cacheExistente !== undefined) {
+        const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        queryClient.setQueryData(['config-tareas', user.uid], data)
+      }
+    })
+
+    // 6. Listener de Piezas Predefinidas
+    const qPiezas = collection(db, 'userConfig', user.uid, 'piezas')
+    const unsubPiezas = onSnapshot(qPiezas, (snap) => {
+      const cacheExistente = queryClient.getQueryData(['config-piezas', user.uid])
+      if (!snap.empty || cacheExistente !== undefined) {
+        const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        queryClient.setQueryData(['config-piezas', user.uid], data)
+      }
+    })
+
     return () => {
       console.log('--- Limpiando Listeners Real-Time ---')
       unsubClientes()
       unsubOrdenes()
       unsubUser()
       unsubNegocio()
+      unsubTareas()
+      unsubPiezas()
     }
   }, [user?.uid, queryClient])
 
