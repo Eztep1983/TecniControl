@@ -3,11 +3,11 @@
   'use client'
   import { useState, useMemo, useCallback, useEffect, memo, useRef } from 'react'
   import { OrdenMantenimiento } from '@/types/orden'
-  import { Plus, Search, Eye, ArrowLeft, Wrench, Filter, ChevronDown, ChevronUp, X, Loader2 } from 'lucide-react'
+  import { Plus, Search, Eye, ArrowLeft, Wrench, Filter, ChevronDown, ChevronUp, X, Loader2, FileEdit } from 'lucide-react'
   import Link from 'next/link'
-  import FormularioMantenimiento from '@/app/(app)/ordenes/mantenimiento/formulario'
   import { useAuth } from '@/components/auth/AuthProvider'
   import { useEstadisticasUsuario } from '@/hooks/useMultiUser'
+  import { useRouter, useSearchParams } from 'next/navigation'
   import { useOrdenesInfinitas, usePrefetchData, useOrdenesBusqueda } from '@/hooks/useMultiUser'
   import { useNegocio } from '@/hooks/useNegocio'
   import { useDebounce } from 'use-debounce'
@@ -231,7 +231,11 @@
     const [debouncedBusqueda] = useDebounce(busqueda, 300)
     const [filtroTipo, setFiltroTipo] = useState<string>('todos')
     const [mounted, setMounted] = useState(false)
-    const [vista, setVista] = useState<'lista' | 'formulario'>('lista')
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    
+    // Solo 'lista' para la vista local, ya que 'formulario' ahora es global
+    const [vista, setVista] = useState<'lista'>('lista')
     const [hayBorrador, setHayBorrador] = useState(false)
     const [confirmandoDescarte, setConfirmandoDescarte] = useState(false)
     const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenMantenimiento | null>(null)
@@ -319,32 +323,26 @@
     // Escuchar acción de nueva orden desde el nav mobile
     useEffect(() => {
       if (pendingAction === 'open-nueva-orden') {
-        setVista('formulario');
+        router.push('?modal=crear-orden', { scroll: false });
         consumePendingAction();
       }
-    }, [pendingAction, consumePendingAction]);
+    }, [pendingAction, consumePendingAction, router]);
 
-    // Verificar borrador y sincronizar entre pestañas
+    // Efecto para checar si hay un borrador guardado (y volver a checar si volvemos del formulario)
+    const isFormOpen = searchParams?.get('modal') === 'crear-orden'
     useEffect(() => {
-      const checkDraft = () => {
-        if (safeLocalStorage.getItem('draft_mantenimiento')) {
-          setHayBorrador(true)
-        } else {
-          setHayBorrador(false)
-        }
+      if (!isFormOpen) {
+        // Small timeout to ensure safeLocalStorage is ready
+        const checkDraft = setTimeout(() => {
+          if (safeLocalStorage.getItem('draft_mantenimiento')) {
+            setHayBorrador(true)
+          } else {
+            setHayBorrador(false)
+          }
+        }, 500)
+        return () => clearTimeout(checkDraft)
       }
-
-      checkDraft()
-
-      const handleStorageChange = (e: StorageEvent) => {
-        if (e.key === 'draft_mantenimiento') {
-          checkDraft()
-        }
-      }
-
-      window.addEventListener('storage', handleStorageChange)
-      return () => window.removeEventListener('storage', handleStorageChange)
-    }, [])
+    }, [isFormOpen])
 
     // Cerrar dropdown de filtros al hacer clic fuera
     useEffect(() => {
@@ -498,24 +496,9 @@
     const mostrarCargando = authLoading || (!!user && ordenesLoadingInicial)
 
     return (
-      <div className={vista === 'formulario' ? '' : 'min-h-screen bg-gray-900 p-3 sm:p-4 lg:p-8'}>
-        <div className={vista === 'formulario' ? '' : 'max-w-7xl mx-auto'}>
-          {vista === 'formulario' ? (
-            <FormularioMantenimiento
-              onClose={() => {
-                setVista('lista')
-                if (safeLocalStorage.getItem('draft_mantenimiento')) {
-                  setHayBorrador(true)
-                }
-              }}
-              onSuccess={() => {
-                setVista('lista')
-                setHayBorrador(false)
-                refrescarOrdenes()
-                triggerHaptics('success')
-              }}
-            />
-          ) : mostrarCargando ? (
+      <div className="min-h-screen bg-gray-900 p-3 sm:p-4 lg:p-8">
+        <div className="max-w-7xl mx-auto">
+          {mostrarCargando ? (
             <div className="flex flex-1 flex-col p-4 sm:p-8">
               <div className="max-w-7xl mx-auto w-full space-y-6">
                 <div className="flex justify-between items-center">
@@ -585,9 +568,8 @@
                     </div>
                     
                     <button
-                      onClick={() => setVista('formulario')}
-                      onMouseEnter={() => prefetchClientes()}
-                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 text-sm sm:text-base w-full sm:w-auto"
+                  onClick={() => router.push('?modal=crear-orden', { scroll: false })}
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 text-sm sm:text-base w-full sm:w-auto"
                     >
                       <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                       <span>Nueva orden</span>
@@ -598,57 +580,68 @@
 
               {/* Banner de Borrador Pendiente */}
               {hayBorrador && (
-                <div className="bg-blue-500/10 border border-blue-500/20 px-4 py-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
-                  {confirmandoDescarte ? (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-red-400 font-medium">¿Seguro que deseas descartar el borrador? Se perderán los datos.</span>
-                      </div>
-                      <div className="flex gap-2 w-full sm:w-auto">
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="bg-blue-500/10 border border-blue-500/20 px-4 py-3 rounded-xl flex flex-col sm:flex-row sm:items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 mb-4 sm:mb-6"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <FileEdit className="w-4 h-4 text-blue-400 shrink-0" aria-hidden="true" />
+                    <span className="text-xs text-blue-300 truncate">
+                      {confirmandoDescarte ? '¿Seguro que deseas descartar la orden?' : 'Orden en pausa detectada'}
+                    </span>
+                  </div>
+                  
+                  <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                    {confirmandoDescarte ? (
+                      <>
                         <button
-                          onClick={() => setConfirmandoDescarte(false)}
-                          className="flex-1 sm:flex-none border border-gray-650 text-gray-400 hover:bg-gray-800 px-3 py-1.5 rounded-lg text-sm transition-colors"
+                          type="button"
+                          onClick={() => {
+                            setConfirmandoDescarte(false)
+                            triggerHaptics('light')
+                          }}
+                          className="flex-1 sm:flex-none text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:bg-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-400"
                         >
                           Cancelar
                         </button>
                         <button
+                          type="button"
                           onClick={() => {
                             safeLocalStorage.removeItem('draft_mantenimiento')
                             setHayBorrador(false)
                             setConfirmandoDescarte(false)
                             triggerHaptics('medium')
                           }}
-                          className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors shadow-md"
+                          className="flex-1 sm:flex-none bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-400"
                         >
                           Descartar
                         </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-blue-400 font-medium">Tienes una orden en borrador.</span>
-                      </div>
-                      <div className="flex gap-2 w-full sm:w-auto">
+                      </>
+                    ) : (
+                      <>
                         <button
+                          type="button"
                           onClick={() => {
                             setConfirmandoDescarte(true)
                             triggerHaptics('light')
                           }}
-                          className="flex-1 sm:flex-none border border-blue-600/30 text-blue-600 hover:text-blue-500 hover:bg-blue-500/10 px-3 py-1.5 rounded-lg text-sm transition-colors"
-                          aria-label="Descartar borrador"
+                          className="flex-1 sm:flex-none text-blue-500/80 bg-white/5 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          aria-label="Descartar orden en pausa"
                         >
                           Descartar
                         </button>
                         <button
-                          onClick={() => setVista('formulario')}
-                          className="flex-1 sm:flex-none bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-all shadow-md"
+                          type="button"
+                          onClick={() => router.push('?modal=crear-orden', { scroll: false })}
+                          className="flex-1 sm:flex-none bg-blue-500 text-gray-900 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          aria-label="Reanudar orden en pausa"
                         >
                           Reanudar
                         </button>
-                      </div>
-                    </>
-                  )}
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -908,7 +901,7 @@
                 ) : ordenesFiltradas.length === 0 ? (
                   <EmptyState
                     hasFilters={hasActiveFilters}
-                    onCreateNew={() => setVista('formulario')}
+                    onCreateNew={() => router.push('?modal=crear-orden', { scroll: false })}
                     onClearFilters={limpiarFiltros}
                   />
                 ) : (

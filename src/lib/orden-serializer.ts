@@ -43,6 +43,8 @@ export function serializeOrden(
     garantiaTiempoDesde: toISO(orden.garantiaTiempoDesde),
     garantiaTiempoHasta: toISO(orden.garantiaTiempoHasta),
     garantiaDescripcion: orden.garantiaDescripcion,
+    garantiaReferenciaId: orden.garantiaReferenciaId,
+    garantiaMotivo: orden.garantiaMotivo,
     instalacionRecomendaciones: orden.instalacionRecomendaciones,
     instalacionRecomendacionesDetalle: orden.instalacionRecomendacionesDetalle,
     instalacionConfiguracion: orden.instalacionConfiguracion,

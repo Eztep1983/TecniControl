@@ -62,6 +62,7 @@ const setCachedUid = (uid: string | null) => {
 
 interface AuthContextType {
   user: User | null
+  userProfile: UserDocument | null
   loading: boolean
   error: string | null
   signInWithGoogle: () => Promise<void>
@@ -85,10 +86,12 @@ interface UserDocument {
   loginAttempts?: number
   lastActivity?: any
   deviceId?: string
+  plan: 'free' | 'pro'
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  userProfile: null,
   loading: true,
   error: null,
   signInWithGoogle: async () => {},
@@ -103,6 +106,7 @@ export const useAuth = () => useContext(AuthContext)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
+  const [userProfile, setUserProfile] = useState<UserDocument | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const lastActivityRef = useRef<number>(Date.now())
@@ -133,7 +137,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { valid: true }
   }, [validateEmailDomain])
 
-  const syncUserDocument = useCallback(async (firebaseUser: User, isNewLogin: boolean): Promise<void> => {
+  const syncUserDocument = useCallback(async (firebaseUser: User, isNewLogin: boolean): Promise<UserDocument> => {
     try {
       const userRef = doc(db, 'users', firebaseUser.uid)
     
@@ -175,6 +179,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           emailVerified: firebaseUser.emailVerified,
           role: 'user',
           businessId: '',
+          plan: 'free',
           createdAt: serverTimestamp(),
           lastLogin: serverTimestamp(),
           lastActivity: serverTimestamp(),
@@ -186,7 +191,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         await setDoc(userRef, createData, { merge: true })
         logger.log('Perfil de usuario creado para nuevo usuario')
-        return
+        return { ...createData, plan: 'free' } as UserDocument
       }
 
       const userData = userDoc.data() as UserDocument
@@ -213,6 +218,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         await setDoc(userRef, { lastActivity: serverTimestamp() }, { merge: true })
       }
+      return { ...userData, ...updateData, plan: userData.plan || 'free' } as UserDocument
     } catch (error: any) {
       logger.error('Error syncing user document:', error)
       throw error
@@ -334,16 +340,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return
         }
 
-        const isReopen = getCachedUid() === firebaseUser.uid
-        
         try {
-          await syncUserDocument(firebaseUser, !isReopen)
+          const isNewLogin = getCachedUid() !== firebaseUser.uid
+          const updatedProfile = await syncUserDocument(firebaseUser, isNewLogin)
           
           setCachedUid(firebaseUser.uid)
           setUser(firebaseUser)
+          setUserProfile(updatedProfile)
           lastActivityRef.current = Date.now()
-          setLoading(false)
           setError(null)
+          setLoading(false)
         } catch (err: any) {
           logger.error('Error in auth state listener:', err)
           setCachedUid(null)
@@ -355,6 +361,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         setCachedUid(null)
         setUser(null)
+        setUserProfile(null)
         setLoading(false)
       }
     })
@@ -431,6 +438,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value: AuthContextType = useMemo(() => ({
     user,
+    userProfile,
     loading,
     error,
     signInWithGoogle,
@@ -439,7 +447,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     refreshSession,
     clearError,
-  }), [user, loading, error, signInWithGoogle, signInWithEmail, sendPasswordReset, logout, refreshSession, clearError])
+  }), [user, userProfile, loading, error, signInWithGoogle, signInWithEmail, sendPasswordReset, logout, refreshSession, clearError])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

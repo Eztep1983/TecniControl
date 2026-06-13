@@ -402,7 +402,10 @@ function formReducer(state: FormState, action: FormAction): FormState {
         instalacionRecomendacionesDetalle: '',
         instalacionConfiguracion: false,
         instalacionConfiguracionTipos: [],
-        instalacionConfiguracionPersonalizada: ''
+        instalacionConfiguracionPersonalizada: '',
+        garantiaHabilitada: false,
+        garantiaReferenciaId: '',
+        garantiaMotivo: '',
       }
 
     case 'SET_INSTALACION_RECOMENDACIONES':
@@ -513,29 +516,6 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   // ============================================================================
   // EFFECTS
   // ============================================================================
-
-  // 1 Ocultar elementos globales de forma robusta
-  useEffect(() => {
-    // Inyectar estilo para asegurar que el mobile-nav esté oculto siempre que el formulario esté abierto
-    // Esto es más robusto que manipular el DOM directamente porque persiste aunque el nav se desmonte/monte
-    const style = document.createElement('style');
-    style.id = 'hide-global-nav-style';
-    style.innerHTML = `
-      #mobile-nav, #sidebar, #top-bar { display: none !important; }
-      body { overflow: hidden !important; }
-      [data-keyboard-visible="true"] .bottom-nav-container { 
-        display: none !important; 
-        transform: translateY(100%) !important;
-        opacity: 0 !important;
-      }
-    `;
-    document.head.appendChild(style);
-
-    return () => {
-      const styleElement = document.getElementById('hide-global-nav-style');
-      if (styleElement) styleElement.remove();
-    };
-  }, []);
 
   // 2. Auto-scroll al enfocar inputs (Mejora UX Nativa)
   useEffect(() => {
@@ -735,43 +715,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
     }
   }, [state.currentStep, state.highestStepCompleted, canProceedToNextStep, scrollToTop])
 
-  // Manejar el botón back del navegador/Android
-  useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      // 1. Ignorar popstate si fue programático (ej. al cerrar un modal interno con useAndroidBack)
-      // Esta es la solución más robusta para evitar que cerrar un modal haga un "back" en el formulario
-      if ((window as any).__ignoring_next_popstate__) {
-        (window as any).__ignoring_next_popstate__ = false;
-        // Re-inyectamos el estado para que el siguiente back real funcione
-        window.history.pushState(null, '', window.location.pathname);
-        return;
-      }
+  // (El manejo del botón atrás de Android ahora se hace de forma nativa mediante la URL y ?modal=crear-orden)
 
-      // 2. Ignorar si el estado tiene un modalId
-      if (event.state?.modalId) {
-        return;
-      }
-
-      event.preventDefault()
-      const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
-
-      if (currentIndex > 0) {
-        prevStep()
-        // Re-pushear el estado para el siguiente back real
-        window.history.pushState(null, '', window.location.pathname)
-      } else {
-        onClose()
-      }
-    }
-
-    // Estado inicial limpio
-    window.history.pushState({ isFormBase: true }, '', window.location.pathname)
-    window.addEventListener('popstate', handlePopState)
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState)
-    }
-  }, [state.currentStep, onClose, prevStep])
 
   // Handler para saltar a un paso específico (solo si es accesible)
   const goToStep = useCallback((stepKey: FormStep) => {
@@ -869,7 +814,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
       ...state.tareasPersonalizadas.filter(t => t.trim())
     ];
 
-    if (state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && todasLasTareas.length === 0) {
+    if (state.tipoMantenimiento !== 'diagnostico' && state.tipoMantenimiento !== 'instalacion' && state.tipoMantenimiento !== 'garantia' && todasLasTareas.length === 0) {
       alert('Error: Debes agregar al menos una tarea realizada.');
       return;
     }
@@ -1170,6 +1115,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
     state.observacionesIniciales,
     state.pruebasRealizadas,
     state.diagnosticoFinal,
+    state.garantiaReferenciaId,
+    state.garantiaMotivo,
     state.instalacionRecomendaciones,
     state.instalacionRecomendacionesDetalle,
     state.instalacionConfiguracion,
@@ -1184,6 +1131,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
     handleCambiarObservaciones,
     handleCambiarPruebas,
     handleCambiarDiagnostico,
+    handleCambiarGarantiaReferenciaId,
+    handleCambiarGarantiaMotivo,
     handleToggleInstalacionRecomendaciones,
     handleCambiarInstalacionRecomendacionesDetalle,
     handleToggleInstalacionConfiguracion,
@@ -1339,7 +1288,13 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   }
 
   return (
-    <div className="h-[calc(100dvh-5rem)] w bg-gray-900 flex flex-col overflow-hidden relative">
+    <motion.div 
+      initial={{ y: "100%" }}
+      animate={{ y: 0 }}
+      exit={{ y: "100%" }}
+      transition={{ type: "spring", damping: 25, stiffness: 200 }}
+      className="fixed inset-0 z-[100] bg-gray-900 flex flex-col overflow-hidden w-full h-[100dvh]"
+    >
       {/* Onboarding Contextual Hint & Progress */}
       <AnimatePresence mode="wait">
         {isOnboarding && (
@@ -1586,7 +1541,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
                       }}
                       className="w-full h-12 mt-4 text-gray-400 hover:text-white font-medium transition-colors touch-manipulation"
                     >
-                      Volver a la lista
+                      Volver
                     </button>
                   </div>
                 </div>
@@ -1599,6 +1554,6 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
           document.body
         )
       }
-    </div>
+    </motion.div>
   )
 }

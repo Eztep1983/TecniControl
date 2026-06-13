@@ -1,822 +1,842 @@
 {
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\capacitor.config.ts": {
+  "capacitor.config.ts": {
     "mtime": 1780326765.3400948,
     "ast_hash": "35c4f665fd81b51dbc6e75d798a78fa7",
     "semantic_hash": "35c4f665fd81b51dbc6e75d798a78fa7"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\components.json": {
+  "components.json": {
     "mtime": 1768939458.0881307,
     "ast_hash": "1bddba27dcaadf1ddd5959717236300b",
     "semantic_hash": "1bddba27dcaadf1ddd5959717236300b"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\cors.json": {
+  "cors.json": {
     "mtime": 1778351506.8195262,
     "ast_hash": "274c41d9c1691f183b4a3df555cee167",
     "semantic_hash": "274c41d9c1691f183b4a3df555cee167"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\next.config.ts": {
+  "next.config.ts": {
     "mtime": 1780326526.7746553,
     "ast_hash": "5cc7eeb7adb6a339114eab9841127244",
     "semantic_hash": "5cc7eeb7adb6a339114eab9841127244"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\package.json": {
+  "package.json": {
     "mtime": 1780518957.3477802,
     "ast_hash": "07705573ad02d3c7471b8380ffa949fc",
     "semantic_hash": "07705573ad02d3c7471b8380ffa949fc"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\postcss.config.mjs": {
+  "postcss.config.mjs": {
     "mtime": 1768939458.1130638,
     "ast_hash": "3507368dae6e94b0070b0a10efa15a05",
     "semantic_hash": "3507368dae6e94b0070b0a10efa15a05"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\.od-skills\\web-prototype\\open-design.json": {
+  "src/app/(app)/.od-skills/web-prototype/open-design.json": {
     "mtime": 1779115361.856,
     "ast_hash": "0c28ca993559568b0f2b67ad91f6b072",
     "semantic_hash": "0c28ca993559568b0f2b67ad91f6b072"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\clientes\\page.tsx": {
+  "src/app/(app)/clientes/page.tsx": {
     "mtime": 1768939458.1170535,
     "ast_hash": "f870d84a47f950de9e430d2c0fc615ef",
     "semantic_hash": "f870d84a47f950de9e430d2c0fc615ef"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\configuracion\\page.tsx": {
+  "src/app/(app)/configuracion/page.tsx": {
     "mtime": 1779721749.227848,
     "ast_hash": "9b5fb87c13f1c722ccc07be63c1e78b4",
     "semantic_hash": "9b5fb87c13f1c722ccc07be63c1e78b4"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\layout.tsx": {
+  "src/app/(app)/layout.tsx": {
     "mtime": 1781041744.202129,
     "ast_hash": "b6eb3728008b56750a9262ae4057e379",
     "semantic_hash": "b6eb3728008b56750a9262ae4057e379"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\ordenes\\mantenimiento\\formulario.tsx": {
-    "mtime": 1781124903.662241,
-    "ast_hash": "0c2df578ea339a4d33436671a2dae503",
-    "semantic_hash": "0c2df578ea339a4d33436671a2dae503"
+  "src/app/(app)/ordenes/mantenimiento/formulario.tsx": {
+    "mtime": 1781299321.5840328,
+    "ast_hash": "cccfd7ac75b3438d5deeaf22ab79fb32",
+    "semantic_hash": ""
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\ordenes\\mantenimiento\\page.tsx": {
-    "mtime": 1781112497.2810571,
-    "ast_hash": "19c01ce37ef6bb2f4f344354b0746bcb",
-    "semantic_hash": "19c01ce37ef6bb2f4f344354b0746bcb"
+  "src/app/(app)/ordenes/mantenimiento/page.tsx": {
+    "mtime": 1781297970.3239584,
+    "ast_hash": "b2a659ede065edfb4e2e0d704998a381",
+    "semantic_hash": ""
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\ordenes\\page.tsx": {
+  "src/app/(app)/ordenes/page.tsx": {
     "mtime": 1781110808.7868996,
     "ast_hash": "e090d84430decd5c9118c6d5bcd67ce8",
     "semantic_hash": "e090d84430decd5c9118c6d5bcd67ce8"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\page.tsx": {
+  "src/app/(app)/page.tsx": {
     "mtime": 1778977176.4184396,
     "ast_hash": "1153c0b50f307cd498cd03aeeac79e14",
     "semantic_hash": "1153c0b50f307cd498cd03aeeac79e14"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\tareas-repuestos\\page.tsx": {
-    "mtime": 1781220289.3833308,
-    "ast_hash": "2b61ece88926604d01f5a27a72178576",
-    "semantic_hash": "2b61ece88926604d01f5a27a72178576"
+  "src/app/(app)/tareas-repuestos/page.tsx": {
+    "mtime": 1781297979.3136318,
+    "ast_hash": "a7b5c089bf44d11badf30523d512ad9e",
+    "semantic_hash": ""
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\layout.tsx": {
+  "src/app/layout.tsx": {
     "mtime": 1781212672.1123097,
     "ast_hash": "d2537ebd553b4a8f7049c9918352d58c",
     "semantic_hash": "d2537ebd553b4a8f7049c9918352d58c"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\legal\\politica-privacidad\\page.tsx": {
+  "src/app/legal/politica-privacidad/page.tsx": {
     "mtime": 1781124594.2455146,
     "ast_hash": "d9ffe3945d3cc22ff1c6684dc0c04868",
     "semantic_hash": "d9ffe3945d3cc22ff1c6684dc0c04868"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\legal\\terminos-servicio\\page.tsx": {
+  "src/app/legal/terminos-servicio/page.tsx": {
     "mtime": 1781124594.2455146,
     "ast_hash": "896f5e9391c765e612acf859ef9df78f",
     "semantic_hash": "896f5e9391c765e612acf859ef9df78f"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\login\\page.tsx": {
+  "src/app/login/page.tsx": {
     "mtime": 1781124654.6216762,
     "ast_hash": "63fc41dd80c409195007acb57972f1f2",
     "semantic_hash": "63fc41dd80c409195007acb57972f1f2"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\not-found.tsx": {
+  "src/app/not-found.tsx": {
     "mtime": 1779483153.6053436,
     "ast_hash": "60e127f246fa5670b245535a2f952780",
     "semantic_hash": "60e127f246fa5670b245535a2f952780"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\auth\\AuthGuard.tsx": {
+  "src/components/auth/AuthGuard.tsx": {
     "mtime": 1777411940.1068556,
     "ast_hash": "18e90ccd42cc5dc43570116ea9d3d1cb",
     "semantic_hash": "18e90ccd42cc5dc43570116ea9d3d1cb"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\auth\\AuthProvider.tsx": {
+  "src/components/auth/AuthProvider.tsx": {
     "mtime": 1781038300.1026998,
     "ast_hash": "ce608de1d944eba606c23828085d2fc4",
     "semantic_hash": "ce608de1d944eba606c23828085d2fc4"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\auth\\SpeechProvider.tsx": {
+  "src/components/auth/SpeechProvider.tsx": {
     "mtime": 1779572449.0232885,
     "ast_hash": "c6ace72bd6611166cdfb6db5240dbbf0",
     "semantic_hash": "c6ace72bd6611166cdfb6db5240dbbf0"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\auth\\UserProfile.tsx": {
-    "mtime": 1778976744.1978962,
-    "ast_hash": "dd5be75a2007c53ef90d6480daa6c553",
-    "semantic_hash": "dd5be75a2007c53ef90d6480daa6c553"
+  "src/components/auth/UserProfile.tsx": {
+    "mtime": 1781297986.9517965,
+    "ast_hash": "75fe03cf831d4a57d572d331e0f3ec11",
+    "semantic_hash": ""
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\business\\headersNegocio.tsx": {
+  "src/components/business/headersNegocio.tsx": {
     "mtime": 1768939458.1330233,
     "ast_hash": "b34958722ffd908fe281f8c305ec90dc",
     "semantic_hash": "b34958722ffd908fe281f8c305ec90dc"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\clientes\\ClienteFormModal.tsx": {
+  "src/components/clientes/ClienteFormModal.tsx": {
     "mtime": 1781045954.6521056,
     "ast_hash": "3765766e443afa9d510899ae376cf7dd",
     "semantic_hash": "3765766e443afa9d510899ae376cf7dd"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\clientes\\ClienteHistorialModal.tsx": {
+  "src/components/clientes/ClienteHistorialModal.tsx": {
     "mtime": 1780522505.22076,
     "ast_hash": "0b78b82cd58c050dbdd2bafe410feacd",
     "semantic_hash": "0b78b82cd58c050dbdd2bafe410feacd"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\clientes\\ClienteSimpleFormModal.tsx": {
+  "src/components/clientes/ClienteSimpleFormModal.tsx": {
     "mtime": 1779318956.9840543,
     "ast_hash": "47032dd702200cf953e086b334d7085d",
     "semantic_hash": "47032dd702200cf953e086b334d7085d"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\clientes\\ClienteViewModal.tsx": {
+  "src/components/clientes/ClienteViewModal.tsx": {
     "mtime": 1780608515.619705,
     "ast_hash": "b7544f58055c53ac249852e36fbdc59c",
     "semantic_hash": "b7544f58055c53ac249852e36fbdc59c"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\clientes\\ClientesDataTable.tsx": {
+  "src/components/clientes/ClientesDataTable.tsx": {
     "mtime": 1779553356.1855214,
     "ast_hash": "9c5dd168afc2b7e48dc8a690fd59a56a",
     "semantic_hash": "9c5dd168afc2b7e48dc8a690fd59a56a"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\clientes\\ClientesList.tsx": {
+  "src/components/clientes/ClientesList.tsx": {
     "mtime": 1779553397.0380862,
     "ast_hash": "6e41f39e19d6caa9b6a7afcfb28d7e42",
     "semantic_hash": "6e41f39e19d6caa9b6a7afcfb28d7e42"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\clientes\\DispositivoFormModal.tsx": {
+  "src/components/clientes/DispositivoFormModal.tsx": {
     "mtime": 1779233154.8110058,
     "ast_hash": "a403ac9283744ad098487e082c6af875",
     "semantic_hash": "a403ac9283744ad098487e082c6af875"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\configuracion\\CuentaYSeguridad.tsx": {
+  "src/components/configuracion/CuentaYSeguridad.tsx": {
     "mtime": 1779721242.8269005,
     "ast_hash": "6feb3156216c30a31ffb0efec55765c7",
     "semantic_hash": "6feb3156216c30a31ffb0efec55765c7"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\forms\\ClienteSelector.tsx": {
+  "src/components/forms/ClienteSelector.tsx": {
     "mtime": 1779318962.5394807,
     "ast_hash": "43451bdb29b06866777a0124e9d89760",
     "semantic_hash": "43451bdb29b06866777a0124e9d89760"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\forms\\ContadorInput.tsx": {
+  "src/components/forms/ContadorInput.tsx": {
     "mtime": 1779226880.941441,
     "ast_hash": "a11228a378812a49c56b92a3c8195b1f",
     "semantic_hash": "a11228a378812a49c56b92a3c8195b1f"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\forms\\DiagnosticoInfo.tsx": {
+  "src/components/forms/DiagnosticoInfo.tsx": {
     "mtime": 1779572579.6821413,
     "ast_hash": "18febc91546bb54880d50fc5cb47e23c",
     "semantic_hash": "18febc91546bb54880d50fc5cb47e23c"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\forms\\DispositivoSelector.tsx": {
+  "src/components/forms/DispositivoSelector.tsx": {
     "mtime": 1780329219.51092,
     "ast_hash": "78904303a24675c71854d94e6718a6f7",
     "semantic_hash": "78904303a24675c71854d94e6718a6f7"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\forms\\FirmaInput.tsx": {
+  "src/components/forms/FirmaInput.tsx": {
     "mtime": 1781124608.4247963,
     "ast_hash": "ee75e73a926477c11c83e18a81899f23",
     "semantic_hash": "ee75e73a926477c11c83e18a81899f23"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\forms\\FormActions.tsx": {
+  "src/components/forms/FormActions.tsx": {
     "mtime": 1768939458.1389942,
     "ast_hash": "678e89771ebfc1ad998e6eff5ccbc0c1",
     "semantic_hash": "678e89771ebfc1ad998e6eff5ccbc0c1"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\forms\\GarantiaInfo.tsx": {
-    "mtime": 1781113725.2357101,
-    "ast_hash": "dc21653e230008a42410753c32a23ca7",
-    "semantic_hash": "dc21653e230008a42410753c32a23ca7"
+  "src/components/forms/GarantiaInfo.tsx": {
+    "mtime": 1781297583.7682116,
+    "ast_hash": "9ec3596fc636de4c61907138b8566e52",
+    "semantic_hash": ""
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\forms\\GarantiaInput.tsx": {
-    "mtime": 1778862346.743169,
-    "ast_hash": "497af91d21c6734adf2d4c23bdd409eb",
-    "semantic_hash": "497af91d21c6734adf2d4c23bdd409eb"
+  "src/components/forms/GarantiaInput.tsx": {
+    "mtime": 1781297274.2624981,
+    "ast_hash": "a9613efc0cc10201b5b39ed5ad2b547b",
+    "semantic_hash": ""
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\forms\\InstalacionInfo.tsx": {
+  "src/components/forms/InstalacionInfo.tsx": {
     "mtime": 1778777706.4067538,
     "ast_hash": "6c4684378ae28e8bc6f2f71e1327f00b",
     "semantic_hash": "6c4684378ae28e8bc6f2f71e1327f00b"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\forms\\MantenimientoInfo.tsx": {
+  "src/components/forms/MantenimientoInfo.tsx": {
     "mtime": 1781124953.5987606,
     "ast_hash": "5623fb4e2386bb9a4259af211a73a21c",
     "semantic_hash": "5623fb4e2386bb9a4259af211a73a21c"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\forms\\PiezasInput.tsx": {
+  "src/components/forms/PiezasInput.tsx": {
     "mtime": 1781217849.6763208,
     "ast_hash": "cefddb7b206bfff2d5e9cee878128493",
     "semantic_hash": "cefddb7b206bfff2d5e9cee878128493"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\forms\\ResumenMantenimiento.tsx": {
-    "mtime": 1781114411.785085,
-    "ast_hash": "c470b6559355e5f97383dea810f6c85e",
-    "semantic_hash": "c470b6559355e5f97383dea810f6c85e"
+  "src/components/forms/ResumenMantenimiento.tsx": {
+    "mtime": 1781297332.4722488,
+    "ast_hash": "3e39f82b248665304a3ebd7bb8959f10",
+    "semantic_hash": ""
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\forms\\TareasInput.tsx": {
+  "src/components/forms/TareasInput.tsx": {
     "mtime": 1781217838.630937,
     "ast_hash": "25f48eb6f864bd001e9db372b1cf58da",
     "semantic_hash": "25f48eb6f864bd001e9db372b1cf58da"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\mantenimiento\\ModalOrden.tsx": {
+  "src/components/mantenimiento/ModalOrden.tsx": {
     "mtime": 1781220904.5545237,
     "ast_hash": "c77e14de07f4de38a8d923413cc2028c",
     "semantic_hash": "c77e14de07f4de38a8d923413cc2028c"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\mantenimiento\\OrdenCard.tsx": {
+  "src/components/mantenimiento/OrdenCard.tsx": {
     "mtime": 1781114607.5584857,
     "ast_hash": "4ba7cfc1c51045706c711468eb188274",
     "semantic_hash": "4ba7cfc1c51045706c711468eb188274"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\mantenimiento\\PrintService.tsx": {
+  "src/components/mantenimiento/PrintService.tsx": {
     "mtime": 1781124563.9008155,
     "ast_hash": "a19b75edcb52e0bd0666d23da6f878a9",
     "semantic_hash": "a19b75edcb52e0bd0666d23da6f878a9"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\onboarding\\OnboardingSuccess.tsx": {
+  "src/components/onboarding/OnboardingSuccess.tsx": {
     "mtime": 1779490990.701329,
     "ast_hash": "5ecb1f6b28adde1846f81ad2e5091d8b",
     "semantic_hash": "5ecb1f6b28adde1846f81ad2e5091d8b"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\onboarding\\WelcomeScreen.tsx": {
+  "src/components/onboarding/WelcomeScreen.tsx": {
     "mtime": 1779563880.2506905,
     "ast_hash": "55942a7cb9f728d57a732559f42d5c4e",
     "semantic_hash": "55942a7cb9f728d57a732559f42d5c4e"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\providers\\CapacitorProvider.tsx": {
+  "src/components/providers/CapacitorProvider.tsx": {
     "mtime": 1779569683.4292922,
     "ast_hash": "a04aab760406641449bddfbe55453ee7",
     "semantic_hash": "a04aab760406641449bddfbe55453ee7"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\providers\\FirestoreSyncProvider.tsx": {
+  "src/components/providers/FirestoreSyncProvider.tsx": {
     "mtime": 1781217815.917127,
     "ast_hash": "ac275a0e4f417b589fd188da1aaf7566",
     "semantic_hash": "ac275a0e4f417b589fd188da1aaf7566"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\providers\\MobileAppShell.tsx": {
+  "src/components/providers/MobileAppShell.tsx": {
     "mtime": 1780523685.797962,
     "ast_hash": "bfb52f8619466727b298b98aba575312",
     "semantic_hash": "bfb52f8619466727b298b98aba575312"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\providers\\MobileNavigationContext.tsx": {
+  "src/components/providers/MobileNavigationContext.tsx": {
     "mtime": 1780523891.435501,
     "ast_hash": "f43299ec1f5d28d93e1d128b337662c4",
     "semantic_hash": "f43299ec1f5d28d93e1d128b337662c4"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\providers\\OfflineSyncProvider.tsx": {
+  "src/components/providers/OfflineSyncProvider.tsx": {
     "mtime": 1781213530.4055698,
     "ast_hash": "f809b42d4c53a89a6df180249e2efc8c",
     "semantic_hash": "f809b42d4c53a89a6df180249e2efc8c"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\providers\\QueryProvider.tsx": {
+  "src/components/providers/QueryProvider.tsx": {
     "mtime": 1780523934.0434425,
     "ast_hash": "37de221d7f4a06f8d60d2bf14359bc77",
     "semantic_hash": "37de221d7f4a06f8d60d2bf14359bc77"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\shadcnui\\app-sidebar.tsx": {
+  "src/components/shadcnui/app-sidebar.tsx": {
     "mtime": 1778415488.2004128,
     "ast_hash": "3b88b95072b0960f101987f025fcb2e1",
     "semantic_hash": "3b88b95072b0960f101987f025fcb2e1"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\shadcnui\\mobile-nav.tsx": {
+  "src/components/shadcnui/mobile-nav.tsx": {
     "mtime": 1781046007.9928353,
     "ast_hash": "d36c41ca95d291e9437da5454d6a8a95",
     "semantic_hash": "d36c41ca95d291e9437da5454d6a8a95"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\tareas-repuestos\\ModalPieza.tsx": {
+  "src/components/tareas-repuestos/ModalPieza.tsx": {
     "mtime": 1781219622.5647495,
     "ast_hash": "91b51a92e0b1cb50c07e746e48cdac2e",
     "semantic_hash": "91b51a92e0b1cb50c07e746e48cdac2e"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\tareas-repuestos\\ModalTarea.tsx": {
+  "src/components/tareas-repuestos/ModalTarea.tsx": {
     "mtime": 1781219617.2202132,
     "ast_hash": "10d9a6cca79ea5d29db803e949716fa7",
     "semantic_hash": "10d9a6cca79ea5d29db803e949716fa7"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\AnimatedContent.tsx": {
+  "src/components/ui/AnimatedContent.tsx": {
     "mtime": 1777408782.3503876,
     "ast_hash": "b18b49ddee0bc7b06a1eda99b0efd130",
     "semantic_hash": "b18b49ddee0bc7b06a1eda99b0efd130"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\AnimatedList.tsx": {
+  "src/components/ui/AnimatedList.tsx": {
     "mtime": 1778262308.134889,
     "ast_hash": "040e444623803527efcc8394f8b4d20a",
     "semantic_hash": "040e444623803527efcc8394f8b4d20a"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\CountUp.tsx": {
+  "src/components/ui/CountUp.tsx": {
     "mtime": 1778951366.3080225,
     "ast_hash": "6a4a19410563791f99f3cec52da02e01",
     "semantic_hash": "6a4a19410563791f99f3cec52da02e01"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\Modal.tsx": {
+  "src/components/ui/Modal.tsx": {
     "mtime": 1781220894.1227098,
     "ast_hash": "6849a55e6f61f9954a75c4204d160b2e",
     "semantic_hash": "6849a55e6f61f9954a75c4204d160b2e"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\NetworkStatusBanner.tsx": {
+  "src/components/ui/NetworkStatusBanner.tsx": {
     "mtime": 1778271591.7467277,
     "ast_hash": "a1e602b0ff74e2aaafccf2e2bb128180",
     "semantic_hash": "a1e602b0ff74e2aaafccf2e2bb128180"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\OfflineSyncBanner.tsx": {
+  "src/components/ui/OfflineSyncBanner.tsx": {
     "mtime": 1780501246.458212,
     "ast_hash": "596a0cfb411fbd2d7ff95804ddb03473",
     "semantic_hash": "596a0cfb411fbd2d7ff95804ddb03473"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\PageTransition.tsx": {
+  "src/components/ui/PageTransition.tsx": {
     "mtime": 1778383709.1529422,
     "ast_hash": "1c4622041621859dc848232c6d4b02ae",
     "semantic_hash": "1c4622041621859dc848232c6d4b02ae"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\Section.tsx": {
+  "src/components/ui/basic/Section.tsx": {
     "mtime": 1781046046.4379053,
     "ast_hash": "51a8b569e03aa9a084720ac01fc68fb3",
     "semantic_hash": "51a8b569e03aa9a084720ac01fc68fb3"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\accordion.tsx": {
+  "src/components/ui/basic/accordion.tsx": {
     "mtime": 1768939458.1459763,
     "ast_hash": "569ca301be6e361d95386c49e6c1a6d8",
     "semantic_hash": "569ca301be6e361d95386c49e6c1a6d8"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\alert-dialog.tsx": {
+  "src/components/ui/basic/alert-dialog.tsx": {
     "mtime": 1768939458.1469738,
     "ast_hash": "ce729f916662c8573cb0b64ac5547e57",
     "semantic_hash": "ce729f916662c8573cb0b64ac5547e57"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\alert.tsx": {
+  "src/components/ui/basic/alert.tsx": {
     "mtime": 1768939458.1469738,
     "ast_hash": "59e3895ea793fed08d8d9f0f83ad13df",
     "semantic_hash": "59e3895ea793fed08d8d9f0f83ad13df"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\avatar.tsx": {
+  "src/components/ui/basic/avatar.tsx": {
     "mtime": 1768939458.1479707,
     "ast_hash": "89f1b4ec930c44c54ad1e9ac169d7020",
     "semantic_hash": "89f1b4ec930c44c54ad1e9ac169d7020"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\badge.tsx": {
+  "src/components/ui/basic/badge.tsx": {
     "mtime": 1768939458.1479707,
     "ast_hash": "2ba8b44541085f725b216267f9feb892",
     "semantic_hash": "2ba8b44541085f725b216267f9feb892"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\button.tsx": {
+  "src/components/ui/basic/button.tsx": {
     "mtime": 1768939458.1489687,
     "ast_hash": "55bae00127c054032e205b63a62802db",
     "semantic_hash": "55bae00127c054032e205b63a62802db"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\calendar.tsx": {
+  "src/components/ui/basic/calendar.tsx": {
     "mtime": 1768939458.1489687,
     "ast_hash": "5695adc979b7fbd7235d3cdfa19f3514",
     "semantic_hash": "5695adc979b7fbd7235d3cdfa19f3514"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\card.tsx": {
+  "src/components/ui/basic/card.tsx": {
     "mtime": 1768939458.1489687,
     "ast_hash": "b6df38eb58a41ec0235a0024dec73e8e",
     "semantic_hash": "b6df38eb58a41ec0235a0024dec73e8e"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\checkbox.tsx": {
+  "src/components/ui/basic/checkbox.tsx": {
     "mtime": 1768939458.1509626,
     "ast_hash": "c6c1095ad2efdd82babcdeda23454c46",
     "semantic_hash": "c6c1095ad2efdd82babcdeda23454c46"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\collapsible.tsx": {
+  "src/components/ui/basic/collapsible.tsx": {
     "mtime": 1768939458.1509626,
     "ast_hash": "cb66adfc183b69da16a00c9e5ddf1fb2",
     "semantic_hash": "cb66adfc183b69da16a00c9e5ddf1fb2"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\dialog.tsx": {
+  "src/components/ui/basic/dialog.tsx": {
     "mtime": 1778188632.440945,
     "ast_hash": "a6b8c86c87d54d21d5909864f76b9ed1",
     "semantic_hash": "a6b8c86c87d54d21d5909864f76b9ed1"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\dropdown-menu.tsx": {
+  "src/components/ui/basic/dropdown-menu.tsx": {
     "mtime": 1768939458.1519604,
     "ast_hash": "d048be0171f160f4faa01ee87e17ce28",
     "semantic_hash": "d048be0171f160f4faa01ee87e17ce28"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\form.tsx": {
+  "src/components/ui/basic/form.tsx": {
     "mtime": 1768939458.1529574,
     "ast_hash": "d57cd7cd5761ef020bf00b63b5cfb347",
     "semantic_hash": "d57cd7cd5761ef020bf00b63b5cfb347"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\input.tsx": {
+  "src/components/ui/basic/input.tsx": {
     "mtime": 1768939458.1529574,
     "ast_hash": "f5c3f6115f14eb06180e98b0e302bc00",
     "semantic_hash": "f5c3f6115f14eb06180e98b0e302bc00"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\label.tsx": {
+  "src/components/ui/basic/label.tsx": {
     "mtime": 1768939458.1529574,
     "ast_hash": "a82ec35cf363a42512246117aeb61897",
     "semantic_hash": "a82ec35cf363a42512246117aeb61897"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\menubar.tsx": {
+  "src/components/ui/basic/menubar.tsx": {
     "mtime": 1768939458.153955,
     "ast_hash": "4ea324bf925bfac1d0e17370b369c67c",
     "semantic_hash": "4ea324bf925bfac1d0e17370b369c67c"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\popover.tsx": {
+  "src/components/ui/basic/popover.tsx": {
     "mtime": 1768939458.153955,
     "ast_hash": "8f2a759975424d02d19f702277c7d14f",
     "semantic_hash": "8f2a759975424d02d19f702277c7d14f"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\progress.tsx": {
+  "src/components/ui/basic/progress.tsx": {
     "mtime": 1768939458.154952,
     "ast_hash": "3b55993b81716f20c623ac93cd3c6971",
     "semantic_hash": "3b55993b81716f20c623ac93cd3c6971"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\radio-group.tsx": {
+  "src/components/ui/basic/radio-group.tsx": {
     "mtime": 1768939458.154952,
     "ast_hash": "f3f0779a8db9be7ef9c5f0f0c5e17cd1",
     "semantic_hash": "f3f0779a8db9be7ef9c5f0f0c5e17cd1"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\scroll-area.tsx": {
+  "src/components/ui/basic/scroll-area.tsx": {
     "mtime": 1768939458.155949,
     "ast_hash": "3087f329a403714a59102c681d82a182",
     "semantic_hash": "3087f329a403714a59102c681d82a182"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\select.tsx": {
+  "src/components/ui/basic/select.tsx": {
     "mtime": 1768939458.155949,
     "ast_hash": "07f2301f393f867e06a0d64c34a23dd4",
     "semantic_hash": "07f2301f393f867e06a0d64c34a23dd4"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\separator.tsx": {
+  "src/components/ui/basic/separator.tsx": {
     "mtime": 1768939458.155949,
     "ast_hash": "a554485146f11e2f99567142c3eea40a",
     "semantic_hash": "a554485146f11e2f99567142c3eea40a"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\sheet.tsx": {
+  "src/components/ui/basic/sheet.tsx": {
     "mtime": 1778976194.3814428,
     "ast_hash": "c620327b4d12b9ef93d1964a6d4df87d",
     "semantic_hash": "c620327b4d12b9ef93d1964a6d4df87d"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\sidebar.tsx": {
+  "src/components/ui/basic/sidebar.tsx": {
     "mtime": 1768939458.1580155,
     "ast_hash": "ea633f2997da92c1cc76bacd99e05edd",
     "semantic_hash": "ea633f2997da92c1cc76bacd99e05edd"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\skeleton.tsx": {
+  "src/components/ui/basic/skeleton.tsx": {
     "mtime": 1768939458.1580155,
     "ast_hash": "0166abaa35206d438bd5ac705fb5dfb7",
     "semantic_hash": "0166abaa35206d438bd5ac705fb5dfb7"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\slider.tsx": {
+  "src/components/ui/basic/slider.tsx": {
     "mtime": 1768939458.1590068,
     "ast_hash": "bdf76093fc0ce4bc0fa48177275f5167",
     "semantic_hash": "bdf76093fc0ce4bc0fa48177275f5167"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\switch.tsx": {
+  "src/components/ui/basic/switch.tsx": {
     "mtime": 1768939458.1590068,
     "ast_hash": "6ad4b53d64d8c73798cb71f1c6f3e1ba",
     "semantic_hash": "6ad4b53d64d8c73798cb71f1c6f3e1ba"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\table.tsx": {
+  "src/components/ui/basic/table.tsx": {
     "mtime": 1768939458.160004,
     "ast_hash": "554e91a3c4302c898342d712f80c3718",
     "semantic_hash": "554e91a3c4302c898342d712f80c3718"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\tabs.tsx": {
+  "src/components/ui/basic/tabs.tsx": {
     "mtime": 1768939458.160004,
     "ast_hash": "757304383216f297885d99adc3205f99",
     "semantic_hash": "757304383216f297885d99adc3205f99"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\textarea.tsx": {
+  "src/components/ui/basic/textarea.tsx": {
     "mtime": 1768939458.1610012,
     "ast_hash": "17f1c7192a56c7436d208794ae889b1c",
     "semantic_hash": "17f1c7192a56c7436d208794ae889b1c"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\toast.tsx": {
+  "src/components/ui/basic/toast.tsx": {
     "mtime": 1768939458.1610012,
     "ast_hash": "5c7c1ac18b49d8e42f0c0c400e242a86",
     "semantic_hash": "5c7c1ac18b49d8e42f0c0c400e242a86"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\toaster.tsx": {
+  "src/components/ui/basic/toaster.tsx": {
     "mtime": 1768939458.1620076,
     "ast_hash": "c9168274e136772fd93e8774611eb6c4",
     "semantic_hash": "c9168274e136772fd93e8774611eb6c4"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\basic\\tooltip.tsx": {
+  "src/components/ui/basic/tooltip.tsx": {
     "mtime": 1768939458.1620076,
     "ast_hash": "bc2e2a293268aa7f49c511658c4f3190",
     "semantic_hash": "bc2e2a293268aa7f49c511658c4f3190"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\button.tsx": {
+  "src/components/ui/button.tsx": {
     "mtime": 1768939458.1620076,
     "ast_hash": "55bae00127c054032e205b63a62802db",
     "semantic_hash": "55bae00127c054032e205b63a62802db"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\drawer.tsx": {
+  "src/components/ui/drawer.tsx": {
     "mtime": 1770670394.7921147,
     "ast_hash": "5d1fc2e6dcd8496d69a68a23a9e251e7",
     "semantic_hash": "5d1fc2e6dcd8496d69a68a23a9e251e7"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\input.tsx": {
+  "src/components/ui/input.tsx": {
     "mtime": 1768939458.1629965,
     "ast_hash": "f5c3f6115f14eb06180e98b0e302bc00",
     "semantic_hash": "f5c3f6115f14eb06180e98b0e302bc00"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\separator.tsx": {
+  "src/components/ui/separator.tsx": {
     "mtime": 1768939458.1629965,
     "ast_hash": "a554485146f11e2f99567142c3eea40a",
     "semantic_hash": "a554485146f11e2f99567142c3eea40a"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\sheet.tsx": {
+  "src/components/ui/sheet.tsx": {
     "mtime": 1768939458.1639934,
     "ast_hash": "fc637f79433ea9d829e8c6b1d4df983a",
     "semantic_hash": "fc637f79433ea9d829e8c6b1d4df983a"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\sidebar.tsx": {
+  "src/components/ui/sidebar.tsx": {
     "mtime": 1770756217.1449072,
     "ast_hash": "81707d696fa4343bd8c0b7061cfeb6e5",
     "semantic_hash": "81707d696fa4343bd8c0b7061cfeb6e5"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\skeleton.tsx": {
+  "src/components/ui/skeleton.tsx": {
     "mtime": 1768939458.1639934,
     "ast_hash": "0166abaa35206d438bd5ac705fb5dfb7",
     "semantic_hash": "0166abaa35206d438bd5ac705fb5dfb7"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\ui\\tooltip.tsx": {
+  "src/components/ui/tooltip.tsx": {
     "mtime": 1768939458.1649904,
     "ast_hash": "83648df381f44af01cb238f19828f3c0",
     "semantic_hash": "83648df381f44af01cb238f19828f3c0"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\components\\useAppLifecycle.ts": {
+  "src/components/useAppLifecycle.ts": {
     "mtime": 1778515863.831964,
     "ast_hash": "a1de31ed5a5234b60a2a7ad6c2a7b878",
     "semantic_hash": "a1de31ed5a5234b60a2a7ad6c2a7b878"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\clientes\\useClienteModal.ts": {
+  "src/hooks/clientes/useClienteModal.ts": {
     "mtime": 1776982280.632621,
     "ast_hash": "eb7dff5508d0ba81578fad9a8ae427d0",
     "semantic_hash": "eb7dff5508d0ba81578fad9a8ae427d0"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\clientes\\useHapticFeedback.ts": {
+  "src/hooks/clientes/useHapticFeedback.ts": {
     "mtime": 1779469103.6660104,
     "ast_hash": "4d62f4e2442661d41a53edca3c95e36a",
     "semantic_hash": "4d62f4e2442661d41a53edca3c95e36a"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\clientes\\useMediaQuery.ts": {
+  "src/hooks/clientes/useMediaQuery.ts": {
     "mtime": 1778419872.2741325,
     "ast_hash": "37acfaf34c4f4a0c13becff1311a1810",
     "semantic_hash": "37acfaf34c4f4a0c13becff1311a1810"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\clientes\\useOrdenesCliente.ts": {
+  "src/hooks/clientes/useOrdenesCliente.ts": {
     "mtime": 1779569430.7434516,
     "ast_hash": "8fdaf7e167ccff1073cff1d5533a4bb7",
     "semantic_hash": "8fdaf7e167ccff1073cff1d5533a4bb7"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\clientes\\usePullToRefresh.ts": {
+  "src/hooks/clientes/usePullToRefresh.ts": {
     "mtime": 1778693892.2976775,
     "ast_hash": "3c5a4d26c326c40ca85297fa388e2c1c",
     "semantic_hash": "3c5a4d26c326c40ca85297fa388e2c1c"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\clientes\\useSwipeToClose.ts": {
+  "src/hooks/clientes/useSwipeToClose.ts": {
     "mtime": 1780522498.6257215,
     "ast_hash": "1fdfec17437559cc54d678c97c26b016",
     "semantic_hash": "1fdfec17437559cc54d678c97c26b016"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\ordenes\\useDashboardGreeting.ts": {
+  "src/hooks/ordenes/useDashboardGreeting.ts": {
     "mtime": 1781042785.6472242,
     "ast_hash": "801214443f682de1f9cd147e28084fca",
     "semantic_hash": "801214443f682de1f9cd147e28084fca"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\ordenes\\useDraftBanner.ts": {
+  "src/hooks/ordenes/useDraftBanner.ts": {
     "mtime": 1779748214.5532858,
     "ast_hash": "3401cb11b7fd92f3df50f80b9363d41d",
     "semantic_hash": "3401cb11b7fd92f3df50f80b9363d41d"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\ordenes\\useOnboardingFlow.ts": {
+  "src/hooks/ordenes/useOnboardingFlow.ts": {
     "mtime": 1779744742.5727367,
     "ast_hash": "df23b54ada5678702a05082012a85d9e",
     "semantic_hash": "df23b54ada5678702a05082012a85d9e"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\use-mobile.tsx": {
+  "src/hooks/use-mobile.tsx": {
     "mtime": 1768939458.1659882,
     "ast_hash": "654e2ca2e9fddc27eb7e3954900dc48e",
     "semantic_hash": "654e2ca2e9fddc27eb7e3954900dc48e"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\use-toast.ts": {
+  "src/hooks/use-toast.ts": {
     "mtime": 1768939458.1659882,
     "ast_hash": "34c1ee819df5bbaa208800e97a1944e4",
     "semantic_hash": "34c1ee819df5bbaa208800e97a1944e4"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\useAndroidBack.ts": {
+  "src/hooks/useAndroidBack.ts": {
     "mtime": 1779229007.0617535,
     "ast_hash": "3abfb5dd126238e46e4d7eff95bee92a",
     "semantic_hash": "3abfb5dd126238e46e4d7eff95bee92a"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\useKeyboardVisible.ts": {
+  "src/hooks/useKeyboardVisible.ts": {
     "mtime": 1779396685.3061364,
     "ast_hash": "8c34b6f968764e08e1b483cf5648581c",
     "semantic_hash": "8c34b6f968764e08e1b483cf5648581c"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\useMultiUser.ts": {
+  "src/hooks/useMultiUser.ts": {
     "mtime": 1781213568.904601,
     "ast_hash": "abbafaecf2e3ed40a1f911ac7ef15a87",
     "semantic_hash": "abbafaecf2e3ed40a1f911ac7ef15a87"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\useNegocio.ts": {
+  "src/hooks/useNegocio.ts": {
     "mtime": 1781126893.2597506,
     "ast_hash": "61f222cb01924c2f24136651bdd166ea",
     "semantic_hash": "61f222cb01924c2f24136651bdd166ea"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\useNetworkStatus.ts": {
+  "src/hooks/useNetworkStatus.ts": {
     "mtime": 1778271863.8014805,
     "ast_hash": "15315812d666dcd8aac22608a4ecb976",
     "semantic_hash": "15315812d666dcd8aac22608a4ecb976"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\useOfflineOrderQueue.ts": {
+  "src/hooks/useOfflineOrderQueue.ts": {
     "mtime": 1781212096.222977,
     "ast_hash": "cc8b48a9d7779ce2d9557e049a44d299",
     "semantic_hash": "cc8b48a9d7779ce2d9557e049a44d299"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\useOfflineQueue.ts": {
+  "src/hooks/useOfflineQueue.ts": {
     "mtime": 1781212072.2839322,
     "ast_hash": "b3af3b638c600727f387c0ad70742346",
     "semantic_hash": "b3af3b638c600727f387c0ad70742346"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\usePersistentReducer.ts": {
+  "src/hooks/usePersistentReducer.ts": {
     "mtime": 1779311394.3240156,
     "ast_hash": "e475c6d6a595b122580e72155a1d369f",
     "semantic_hash": "e475c6d6a595b122580e72155a1d369f"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\useScrollAware.ts": {
+  "src/hooks/useScrollAware.ts": {
     "mtime": 1780351486.1000123,
     "ast_hash": "c894c3430bb380f1a66de49768977616",
     "semantic_hash": "c894c3430bb380f1a66de49768977616"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\useSignatureCanvas.ts": {
+  "src/hooks/useSignatureCanvas.ts": {
     "mtime": 1780518163.256659,
     "ast_hash": "c21d3dfba812aac3b1928f93427a7f70",
     "semantic_hash": "c21d3dfba812aac3b1928f93427a7f70"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\useTareasYPiezas.ts": {
+  "src/hooks/useTareasYPiezas.ts": {
     "mtime": 1781217821.3690393,
     "ast_hash": "ace05a5bcf209882058d537c9cd6af7d",
     "semantic_hash": "ace05a5bcf209882058d537c9cd6af7d"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\hooks\\useUserData.ts": {
+  "src/hooks/useUserData.ts": {
     "mtime": 1781126695.741943,
     "ast_hash": "5a6f18ce9356e95675fcd82d280d6400",
     "semantic_hash": "5a6f18ce9356e95675fcd82d280d6400"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\lib\\configuracion-helpers.ts": {
+  "src/lib/configuracion-helpers.ts": {
     "mtime": 1781217808.6676717,
     "ast_hash": "a1f0ba4bc762d7a56f642ee701d7c3c0",
     "semantic_hash": "a1f0ba4bc762d7a56f642ee701d7c3c0"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\lib\\dal.ts": {
+  "src/lib/dal.ts": {
     "mtime": 1768942818.471888,
     "ast_hash": "be78887e23282cf579c9d673b0ced9ae",
     "semantic_hash": "be78887e23282cf579c9d673b0ced9ae"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\lib\\encryption-utils.ts": {
+  "src/lib/encryption-utils.ts": {
     "mtime": 1780521330.6261027,
     "ast_hash": "3bfe91e72053a08051ee371b2cc01006",
     "semantic_hash": "3bfe91e72053a08051ee371b2cc01006"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\lib\\firebase-utils.ts": {
+  "src/lib/firebase-utils.ts": {
     "mtime": 1778515547.3382995,
     "ast_hash": "2e77f8af34b69ed36d31f52d100acc2a",
     "semantic_hash": "2e77f8af34b69ed36d31f52d100acc2a"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\lib\\firebase.ts": {
+  "src/lib/firebase.ts": {
     "mtime": 1781126644.6307294,
     "ast_hash": "c150e4d9de324b256e21253afaaef6dc",
     "semantic_hash": "c150e4d9de324b256e21253afaaef6dc"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\lib\\firestore-sanitizers.ts": {
-    "mtime": 1781213514.093367,
-    "ast_hash": "5a0a0f817b46808f8a4023f6e7888337",
-    "semantic_hash": "5a0a0f817b46808f8a4023f6e7888337"
+  "src/lib/firestore-sanitizers.ts": {
+    "mtime": 1781299840.7439723,
+    "ast_hash": "f1537b39a3b3f166db3b192df040a779",
+    "semantic_hash": ""
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\lib\\multiuser-helpers.ts": {
+  "src/lib/multiuser-helpers.ts": {
     "mtime": 1781213521.5434902,
     "ast_hash": "c1c43b8b01692dc13a09f2c2406a1db1",
     "semantic_hash": "c1c43b8b01692dc13a09f2c2406a1db1"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\lib\\navigation-config.ts": {
+  "src/lib/navigation-config.ts": {
     "mtime": 1780523094.773623,
     "ast_hash": "eb12d0eff14caf8291d6d23e995d054f",
     "semantic_hash": "eb12d0eff14caf8291d6d23e995d054f"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\lib\\offline-queue-helpers.ts": {
+  "src/lib/offline-queue-helpers.ts": {
     "mtime": 1781211622.2780404,
     "ast_hash": "61e1bef54fc240294ee6a258cc35da02",
     "semantic_hash": "61e1bef54fc240294ee6a258cc35da02"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\lib\\orden-serializer.ts": {
-    "mtime": 1781211364.9654279,
-    "ast_hash": "cdd3404741adab374801be3791fd5293",
-    "semantic_hash": "cdd3404741adab374801be3791fd5293"
+  "src/lib/orden-serializer.ts": {
+    "mtime": 1781296866.4724987,
+    "ast_hash": "aa049182548bd56d59f0214aa660a21d",
+    "semantic_hash": ""
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\lib\\signature-utils.ts": {
+  "src/lib/signature-utils.ts": {
     "mtime": 1780518152.7566323,
     "ast_hash": "eb38c115d5bbf25a03b2bad916054bdf",
     "semantic_hash": "eb38c115d5bbf25a03b2bad916054bdf"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\lib\\utils.ts": {
+  "src/lib/utils.ts": {
     "mtime": 1768939458.1700604,
     "ast_hash": "1d8011eb18769078bf77502b220daa5e",
     "semantic_hash": "1d8011eb18769078bf77502b220daa5e"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\types\\orden.ts": {
+  "src/types/orden.ts": {
     "mtime": 1781211364.9654279,
     "ast_hash": "7d63d54ee2e23a0dcf7b6a2a5d82dc57",
     "semantic_hash": "7d63d54ee2e23a0dcf7b6a2a5d82dc57"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\types\\react-window.d.ts": {
+  "src/types/react-window.d.ts": {
     "mtime": 1779466305.4489112,
     "ast_hash": "9d56cb2203fdc596c229ce0f19fc26b6",
     "semantic_hash": "9d56cb2203fdc596c229ce0f19fc26b6"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\tailwind.config.ts": {
+  "tailwind.config.ts": {
     "mtime": 1768939458.181031,
     "ast_hash": "94db44b03491d7385f0ff7c23b796742",
     "semantic_hash": "94db44b03491d7385f0ff7c23b796742"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\tsconfig.json": {
+  "tsconfig.json": {
     "mtime": 1768939458.181031,
     "ast_hash": "cfa4afed07c91fd928be2e6da3c8a2a6",
     "semantic_hash": "cfa4afed07c91fd928be2e6da3c8a2a6"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\README.md": {
+  "README.md": {
     "mtime": 1780274763.057417,
     "ast_hash": "02a770801eb51a594f76cf36a76238d2",
     "semantic_hash": "02a770801eb51a594f76cf36a76238d2"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\Rules.md": {
+  "Rules.md": {
     "mtime": 1781211391.0667994,
     "ast_hash": "1c67658ca23287dca13eb0ec5542094d",
     "semantic_hash": "1c67658ca23287dca13eb0ec5542094d"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\optimal.md": {
+  "optimal.md": {
     "mtime": 1780276124.4062455,
     "ast_hash": "a3430e316f80b1aa3b7220ad324a752d",
     "semantic_hash": "a3430e316f80b1aa3b7220ad324a752d"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\pnpm-workspace.yaml": {
+  "pnpm-workspace.yaml": {
     "mtime": 1778880945.0231702,
     "ast_hash": "8040e83c11e2b8618149422e3417ccd9",
     "semantic_hash": "8040e83c11e2b8618149422e3417ccd9"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\.od-skills\\web-prototype\\SKILL.md": {
+  "src/app/(app)/.od-skills/web-prototype/SKILL.md": {
     "mtime": 1779115361.852,
     "ast_hash": "873c779855ba6988ccea781812b752f7",
     "semantic_hash": "873c779855ba6988ccea781812b752f7"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\.od-skills\\web-prototype\\assets\\template.html": {
+  "src/app/(app)/.od-skills/web-prototype/assets/template.html": {
     "mtime": 1781219986.3976574,
     "ast_hash": "e50050ad6186c596451d8bf304061b04",
     "semantic_hash": "e50050ad6186c596451d8bf304061b04"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\.od-skills\\web-prototype\\example.html": {
+  "src/app/(app)/.od-skills/web-prototype/example.html": {
     "mtime": 1779115361.853,
     "ast_hash": "c9f3a0c012aa9aa697ef07b2985f38fd",
     "semantic_hash": "c9f3a0c012aa9aa697ef07b2985f38fd"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\.od-skills\\web-prototype\\references\\checklist.md": {
+  "src/app/(app)/.od-skills/web-prototype/references/checklist.md": {
     "mtime": 1779115361.857,
     "ast_hash": "7bf5d465a7d525639b490ba85bfd338d",
     "semantic_hash": "7bf5d465a7d525639b490ba85bfd338d"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\app\\(app)\\.od-skills\\web-prototype\\references\\layouts.md": {
+  "src/app/(app)/.od-skills/web-prototype/references/layouts.md": {
     "mtime": 1779115361.86,
     "ast_hash": "fcdd0804d7fb10538ebcdaf086218c16",
     "semantic_hash": "fcdd0804d7fb10538ebcdaf086218c16"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\assets\\icon-only.png": {
+  "assets/icon-only.png": {
     "mtime": 1778280245.041294,
     "ast_hash": "767f387675fd10cafee4f369e18b68bf",
     "semantic_hash": "767f387675fd10cafee4f369e18b68bf"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\assets\\logo.png": {
+  "assets/logo.png": {
     "mtime": 1778949454.7381399,
     "ast_hash": "954b766e46b00340d030227bf3662117",
     "semantic_hash": "954b766e46b00340d030227bf3662117"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\assets\\splash.png": {
+  "assets/splash.png": {
     "mtime": 1778949569.0171845,
     "ast_hash": "0800de8c3754ad766d4fe10780eedaff",
     "semantic_hash": "0800de8c3754ad766d4fe10780eedaff"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\public\\icono.png": {
+  "src/public/icono.png": {
     "mtime": 1778280245.041294,
     "ast_hash": "767f387675fd10cafee4f369e18b68bf",
     "semantic_hash": "767f387675fd10cafee4f369e18b68bf"
   },
-  "C:\\Users\\TMZ\\Desktop\\Estep\\TecniControl\\src\\public\\logo.png": {
+  "src/public/logo.png": {
     "mtime": 1778949454.7381399,
     "ast_hash": "954b766e46b00340d030227bf3662117",
     "semantic_hash": "954b766e46b00340d030227bf3662117"
+  },
+  ".claude/settings.json": {
+    "mtime": 1781285920.3806603,
+    "ast_hash": "7bf81dca0376bde3a32244b82bc7cbc0",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1781285920.378658,
+    "ast_hash": "8a6643a420fdad6bfb583523bc6cef16",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1781285920.378658,
+    "ast_hash": "8a6643a420fdad6bfb583523bc6cef16",
+    "semantic_hash": ""
+  },
+  "rules.md": {
+    "mtime": 1781211391.0667994,
+    "ast_hash": "1c67658ca23287dca13eb0ec5542094d",
+    "semantic_hash": ""
   }
 }

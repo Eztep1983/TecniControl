@@ -12,6 +12,8 @@ import { useMobileNavigation, AppView } from "@/components/providers/MobileNavig
 import { ROUTES } from "@/lib/navigation-config";
 import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { AnimatePresence } from "motion/react";
 
 const ViewLoading = () => (
   <div className="flex flex-1 items-center justify-center min-h-[60vh]">
@@ -22,11 +24,17 @@ const ViewLoading = () => (
 // Mapeo dinámico de componentes (usando factory explícito para evitar resolución ambigua)
 const VIEW_COMPONENTS: Record<AppView, React.ComponentType> = {
   "ordenes": dynamic(() => import("@/app/(app)/ordenes/page"), { loading: () => <ViewLoading />, ssr: false }),
-  "ordenes/mantenimiento": dynamic(() => import("@/app/(app)/ordenes/mantenimiento/page"), { loading: () => <ViewLoading />, ssr: false }),
   "clientes": dynamic(() => import("@/app/(app)/clientes/page"), { loading: () => <ViewLoading />, ssr: false }),
   "tareas-repuestos": dynamic(() => import("@/app/(app)/tareas-repuestos/page"), { loading: () => <ViewLoading />, ssr: false }),
+  "ordenes/mantenimiento": dynamic(() => import("@/app/(app)/ordenes/mantenimiento/page"), { loading: () => <ViewLoading />, ssr: false }),
   "configuracion": dynamic(() => import("@/app/(app)/configuracion/page"), { loading: () => <ViewLoading />, ssr: false }),
 };
+
+// Componente Global del Formulario
+const GlobalFormularioMantenimiento = dynamic(
+  () => import("@/app/(app)/ordenes/mantenimiento/formulario"),
+  { ssr: false }
+);
 
 // Vista gestionada: mantiene un historial reciente para liberar memoria (LRU simple: 3 vistas)
 const ManagedView = memo(function ManagedView({
@@ -89,6 +97,10 @@ export function MobileAppShell({ children }: { children: React.ReactNode }) {
   const { activeView, slideDirection, isMobileNav } = useMobileNavigation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [history, setHistory] = useState<AppView[]>([activeView]);
+  
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const isModalCrearOrdenOpen = searchParams?.get("modal") === "crear-orden";
 
   useEffect(() => {
     setHistory(prev => {
@@ -102,23 +114,40 @@ export function MobileAppShell({ children }: { children: React.ReactNode }) {
   if (!isMobileNav) return <>{children}</>;
 
   return (
-    <div
-      ref={containerRef}
-      className="w-full"
-      style={{
-        willChange: "transform, opacity",
-        WebkitBackfaceVisibility: "hidden",
-        backfaceVisibility: "hidden",
-      } as React.CSSProperties}
-    >
-      {ROUTES.map((route) => (
-        <ManagedView
-          key={route.view}
-          view={route.view}
-          isActive={route.view === activeView}
-          shouldMount={history.includes(route.view)}
-        />
-      ))}
-    </div>
+    <>
+      <div
+        ref={containerRef}
+        className="w-full"
+        style={{
+          willChange: "transform, opacity",
+          WebkitBackfaceVisibility: "hidden",
+          backfaceVisibility: "hidden",
+        } as React.CSSProperties}
+      >
+        {ROUTES.map((route) => (
+          <ManagedView
+            key={route.view}
+            view={route.view}
+            isActive={route.view === activeView}
+            shouldMount={history.includes(route.view)}
+          />
+        ))}
+      </div>
+
+      <AnimatePresence>
+        {isModalCrearOrdenOpen && (
+          <GlobalFormularioMantenimiento
+            onClose={() => router.back()}
+            onSuccess={() => {
+              router.back();
+              // Asegurarse de que volvemos a órdenes si no estábamos ahí
+              if (activeView !== "ordenes") {
+                setTimeout(() => router.push("/ordenes"), 300);
+              }
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 }

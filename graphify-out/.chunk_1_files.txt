@@ -1,0 +1,13 @@
+C:\Users\TMZ\Desktop\Estep\TecniControl\.claude\settings.json
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\app\(app)\layout.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\app\(app)\ordenes\mantenimiento\formulario.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\app\(app)\ordenes\mantenimiento\page.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\app\(app)\ordenes\page.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\app\(app)\tareas-repuestos\page.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\auth\AuthProvider.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\auth\UserProfile.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\forms\GarantiaInfo.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\forms\GarantiaInput.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\forms\MantenimientoInfo.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\forms\PiezasInput.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\forms\ResumenMantenimiento.tsx

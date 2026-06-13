@@ -210,6 +210,9 @@ export const sanitizeOrdenPayload = (input: any): Partial<OrdenMantenimiento> =>
     }
   }
 
+  if (input.garantiaHabilitada === true) {
+    cleaned.garantiaHabilitada = true
+  }
   setIfDefined(cleaned, 'garantiaTiempoDesde', parseDateLike(input.garantiaTiempoDesde))
   setIfDefined(cleaned, 'garantiaTiempoHasta', parseDateLike(input.garantiaTiempoHasta))
   setIfDefined(cleaned, 'garantiaDescripcion', cleanString(input.garantiaDescripcion))

@@ -1,0 +1,523 @@
+{
+  "nodes": [
+    {
+      "id": "forms_tareasinput_tareasinput",
+      "label": "TareasInput",
+      "file_type": "code",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "mantenimiento_modalorden_modalorden",
+      "label": "ModalOrden",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "mantenimiento_modalorden_pdfpreviewview",
+      "label": "PDFPreviewView",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "mantenimiento_modalorden_detailview",
+      "label": "DetailView",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "providers_capacitorprovider_capacitorprovider",
+      "label": "CapacitorProvider",
+      "file_type": "code",
+      "source_file": "src/components/providers/CapacitorProvider.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "providers_capacitorprovider_capacitor_error_interception",
+      "label": "Capacitor Error Interception",
+      "file_type": "rationale",
+      "source_file": "src/components/providers/CapacitorProvider.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "providers_mobileappshell_mobileappshell",
+      "label": "MobileAppShell",
+      "file_type": "code",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "providers_mobileappshell_managedview",
+      "label": "ManagedView",
+      "file_type": "code",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "providers_mobileappshell_useslideanimation",
+      "label": "useSlideAnimation",
+      "file_type": "code",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "providers_mobileappshell_mobile_view_management",
+      "label": "Mobile View Management Shell",
+      "file_type": "rationale",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "shadcnui_app_sidebar_appsidebar",
+      "label": "AppSidebar",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "shadcnui_mobile_nav_mobilenav",
+      "label": "MobileNav",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "shadcnui_mobile_nav_navbutton",
+      "label": "NavButton",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ui_upgradeprompt_upgradeprompt",
+      "label": "UpgradePrompt",
+      "file_type": "code",
+      "source_file": "src/components/ui/UpgradePrompt.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ui_drawer_drawer",
+      "label": "Drawer",
+      "file_type": "code",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ui_drawer_drawercontent",
+      "label": "DrawerContent",
+      "file_type": "code",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ui_drawer_drawertrigger",
+      "label": "DrawerTrigger",
+      "file_type": "code",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "lib_firestore_sanitizers_sanitizeclientepayload",
+      "label": "sanitizeClientePayload",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "lib_firestore_sanitizers_sanitizenegociopayload",
+      "label": "sanitizeNegocioPayload",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "label": "sanitizeOrdenPayload",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "lib_firestore_sanitizers_sanitizetareapayload",
+      "label": "sanitizeTareaPayload",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "lib_firestore_sanitizers_sanitizepiezapayload",
+      "label": "sanitizePiezaPayload",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "lib_firestore_sanitizers_sanitizedispositivo",
+      "label": "sanitizeDispositivo",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "lib_navigation_config_routes",
+      "label": "ROUTES",
+      "file_type": "code",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "lib_navigation_config_getroutebypath",
+      "label": "getRouteByPath",
+      "file_type": "code",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "lib_navigation_config_getpathbyview",
+      "label": "getPathByView",
+      "file_type": "code",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "lib_orden_serializer_serializeorden",
+      "label": "serializeOrden",
+      "file_type": "code",
+      "source_file": "src/lib/orden-serializer.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "lib_orden_serializer_deserializeordenpayload",
+      "label": "deserializeOrdenPayload",
+      "file_type": "code",
+      "source_file": "src/lib/orden-serializer.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "agents_graphify",
+      "label": "Graphify",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "claude_graphify",
+      "label": "Graphify",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "mantenimiento_modalorden_modalorden",
+      "target": "mantenimiento_modalorden_pdfpreviewview",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden_modalorden",
+      "target": "mantenimiento_modalorden_detailview",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav_mobilenav",
+      "target": "shadcnui_mobile_nav_navbutton",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell_mobileappshell",
+      "target": "providers_mobileappshell_managedview",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell_mobileappshell",
+      "target": "providers_mobileappshell_useslideanimation",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "providers_capacitorprovider_capacitorprovider",
+      "target": "providers_capacitorprovider_capacitor_error_interception",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/components/providers/CapacitorProvider.tsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell_mobileappshell",
+      "target": "providers_mobileappshell_mobile_view_management",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "target": "lib_firestore_sanitizers_sanitizeclientepayload",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "target": "lib_firestore_sanitizers_sanitizedispositivo",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeclientepayload",
+      "target": "lib_firestore_sanitizers_sanitizedispositivo",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "lib_navigation_config_getroutebypath",
+      "target": "lib_navigation_config_routes",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "lib_navigation_config_getpathbyview",
+      "target": "lib_navigation_config_routes",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "target": "lib_orden_serializer_serializeorden",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "agents_graphify",
+      "target": "claude_graphify",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput_tareasinput",
+      "target": "ui_drawer_drawer",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput_tareasinput",
+      "target": "ui_drawer_drawercontent",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput_tareasinput",
+      "target": "ui_drawer_drawertrigger",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "navigation_components",
+      "label": "Navigation System Components",
+      "nodes": [
+        "shadcnui_app_sidebar_appsidebar",
+        "shadcnui_mobile_nav_mobilenav",
+        "providers_mobileappshell_mobileappshell"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/components/shadcnui/mobile-nav.tsx"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

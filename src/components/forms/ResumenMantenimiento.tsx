@@ -304,7 +304,7 @@ export default function ResumenMantenimiento({
           <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
             <div className="flex items-center gap-2 mb-3">
               <Shield className="w-5 h-5 text-gray-400" />
-              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Garantía</h3>
+              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Garantía del servicio</h3>
             </div>
             <p className="text-base text-gray-400">No aplica</p>
           </div>

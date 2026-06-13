@@ -1,8 +1,8 @@
 export type AppView =
   | "ordenes"
-  | "ordenes/mantenimiento"
   | "clientes"
   | "tareas-repuestos"
+  | "ordenes/mantenimiento"
   | "configuracion";
 
 export interface RouteConfig {
@@ -13,10 +13,10 @@ export interface RouteConfig {
 
 export const ROUTES: RouteConfig[] = [
   { path: "/ordenes", view: "ordenes", order: 0 },
-  { path: "/ordenes/mantenimiento", view: "ordenes/mantenimiento", order: 0 },
   { path: "/clientes", view: "clientes", order: 1 },
   { path: "/tareas-repuestos", view: "tareas-repuestos", order: 2 },
-  { path: "/configuracion", view: "configuracion", order: 3 },
+  { path: "/ordenes/mantenimiento", view: "ordenes/mantenimiento", order: 3 },
+  { path: "/configuracion", view: "configuracion", order: 4 },
 ];
 
 export const getRouteByPath = (pathname: string): RouteConfig | undefined => {

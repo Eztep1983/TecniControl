@@ -21,8 +21,6 @@ import {
 import { useNegocio } from '@/hooks/useNegocio'
 import { OrdenMantenimiento } from '@/types/orden'
 import { useQueryClient } from '@tanstack/react-query'
-
-import FormularioMantenimiento from '@/app/(app)/ordenes/mantenimiento/formulario'
 import ModalOrden from '@/components/mantenimiento/ModalOrden'
 import OrdenCard from '@/components/mantenimiento/OrdenCard'
 import { OfflineSyncBanner } from '@/components/ui/OfflineSyncBanner'
@@ -198,34 +196,67 @@ const DraftBanner = memo(
   }: {
     onDiscard: () => void
     onResume: () => void
-  }) => (
-    <div
-      role="status"
-      aria-live="polite"
-      className="bg-blue-500/10 border border-blue-500/20 px-4 py-3 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300"
-    >
-      <FileEdit className="w-4 h-4 text-blue-400 shrink-0" aria-hidden="true" />
-      <span className="text-xs text-blue-300 flex-1">Orden en pausa detectada</span>
-      <div className="flex flex-col sm:flex-row gap-2 w-full">
-        <button
-          type="button"
-          onClick={onDiscard}
-          className="text-blue-500/80 bg-white/5 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          aria-label="Descartar orden en pausa"
-        >
-          Descartar
-        </button>
-        <button
-          type="button"
-          onClick={onResume}
-          className="bg-blue-500 text-gray-900 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          aria-label="Reanudar orden en pausa"
-        >
-          Reanudar
-        </button>
+  }) => {
+    const [isConfirming, setIsConfirming] = useState(false)
+
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        className="bg-blue-500/10 border border-blue-500/20 px-4 py-3 rounded-xl flex flex-col sm:flex-row sm:items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300"
+      >
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <FileEdit className="w-4 h-4 text-blue-400 shrink-0" aria-hidden="true" />
+          <span className="text-xs text-blue-300 truncate">
+            {isConfirming ? '¿Seguro que deseas descartar la orden?' : 'Orden en pausa detectada'}
+          </span>
+        </div>
+        
+        <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+          {isConfirming ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setIsConfirming(false)}
+                className="flex-1 sm:flex-none text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:bg-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsConfirming(false)
+                  onDiscard()
+                }}
+                className="flex-1 sm:flex-none bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-400"
+              >
+                Descartar
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => setIsConfirming(true)}
+                className="flex-1 sm:flex-none text-blue-500/80 bg-white/5 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                aria-label="Descartar orden en pausa"
+              >
+                Descartar
+              </button>
+              <button
+                type="button"
+                onClick={onResume}
+                className="flex-1 sm:flex-none bg-blue-500 text-gray-900 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                aria-label="Reanudar orden en pausa"
+              >
+                Reanudar
+              </button>
+            </>
+          )}
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 )
 DraftBanner.displayName = 'DraftBanner'
 
@@ -274,14 +305,16 @@ function OrdenesDashboardContent() {
 
   const handleCreateNuevaOrden = () => {
     setIsCreating(true)
-    setView('form')
+    router.push('?modal=crear-orden', { scroll: false })
   }
 
+  const isFormOpen = searchParams.get('modal') === 'crear-orden'
   useEffect(() => {
-    if (view !== 'form') {
+    if (!isFormOpen) {
       setIsCreating(false)
+      syncDraft()
     }
-  }, [view])
+  }, [isFormOpen, syncDraft])
 
   // Only switch to onboarding views — never overwrite 'form' view
   useEffect(() => {
@@ -309,10 +342,10 @@ function OrdenesDashboardContent() {
 
   useEffect(() => {
     if (pendingAction === 'open-nueva-orden') {
-      setView('form')
       consumePendingAction()
+      router.push('?modal=crear-orden', { scroll: false })
     }
-  }, [pendingAction, consumePendingAction])
+  }, [pendingAction, consumePendingAction, router])
 
   // ── Loading skeleton (auth initialising) ────────────────────────────────
   if (authLoading) {
@@ -385,27 +418,7 @@ function OrdenesDashboardContent() {
       />
     )
 
-  if (view === 'form')
-    return (
-      <FormularioMantenimiento
-        isOnboarding={onboarding.isOnboardingMode}
-        onClose={() => {
-          onboarding.setIsOnboardingMode(false)
-          setView('dashboard')
-          syncDraft()
-        }}
-        onSuccess={() => {
-          if (onboarding.isOnboardingMode) {
-            onboarding.finishOnboarding()
-            setView('success')
-          } else {
-            setView('dashboard')
-            refrescarDatos()
-            syncDraft()
-          }
-        }}
-      />
-    )
+  // (Formulario ahora es manejado de manera global a través de Search Params)
 
   // ── Dashboard ────────────────────────────────────────────────────────────
   return (
@@ -413,8 +426,9 @@ function OrdenesDashboardContent() {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-gray-900/95 border-b border-gray-800 pt-safe">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            {/* FIX: BusinessAvatar with infinite-loop-safe error handling */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {/* FIX: BusinessAvatar with infinite-loop-safe error handling */}
             <BusinessAvatar
               logoUrl={negocio?.logoUrl}
               photoURL={user.photoURL}
@@ -433,8 +447,17 @@ function OrdenesDashboardContent() {
               )}
             </div>
           </div>
+          
+          <div className="flex flex-col items-center opacity-40">
+            <div className="w-8 h-8 rounded-lg overflow-hidden bg-black flex items-center justify-center p-0.5 shadow-inner">
+              {/* Se asume el logo estático en root, si falla usa Wrench como fallback */}
+              <img src="/icono.png" alt="TecniControl" className="w-full h-full object-cover rounded-md" onError={(e) => e.currentTarget.style.display = 'none'} />
+            </div>
+            <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest mt-1">TecniControl</span>
+          </div>
         </div>
       </div>
+    </div>
 
       <div className="max-w-7xl mx-auto px-4 py-5 space-y-6">
         {/* Nueva Orden CTA */}
@@ -461,7 +484,7 @@ function OrdenesDashboardContent() {
         {hayBorrador && (
           <DraftBanner
             onDiscard={descartarBorrador}
-            onResume={() => setView('form')}
+            onResume={handleCreateNuevaOrden}
           />
         )}
 

@@ -320,7 +320,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
           <motion.section variants={itemVariants}>
              <div className="flex items-center gap-2 mb-3 px-1">
               <div className="w-1.5 h-5 bg-orange-500 rounded-full" />
-              <h3 className="text-gray-200 text-sm font-semibold uppercase tracking-wider">Repuestos en Garantía</h3>
+              <h3 className="text-gray-200 text-sm font-semibold uppercase tracking-wider">Repuestos Utilizados</h3>
             </div>
             <PiezasInput {...piezasInputProps} />
           </motion.section>

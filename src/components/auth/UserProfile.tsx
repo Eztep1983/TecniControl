@@ -48,7 +48,7 @@ export function UserProfile() {
           <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-gray-800 bg-green-500" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64 bg-gray-900/95 backdrop-blur-md border-gray-700 text-gray-200 shadow-2xl" align="end" forceMount>
+      <DropdownMenuContent className="w-64 bg-gray-900/95 border-gray-700 text-gray-200 shadow-2xl" align="end" forceMount>
         <DropdownMenuLabel className="font-normal p-4">
           <div className="flex flex-col space-y-3">
             <div className="flex items-center gap-3">

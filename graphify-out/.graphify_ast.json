@@ -1,0 +1,5804 @@
+{
+  "nodes": [
+    {
+      "id": "app_layout",
+      "label": "layout.tsx",
+      "file_type": "code",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "app_layout_layoutcontent",
+      "label": "LayoutContent()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L19",
+      "_origin": "ast"
+    },
+    {
+      "id": "app_layout_applayout",
+      "label": "AppLayout()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L69",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_formulario",
+      "label": "formulario.tsx",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_formulario_formulariomantenimientoprops",
+      "label": "FormularioMantenimientoProps",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L29",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_formulario_onboarding_hints",
+      "label": "ONBOARDING_HINTS",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L35",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_formulario_pieza",
+      "label": "Pieza",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L74",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_formulario_formstep",
+      "label": "FormStep",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L81",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_formulario_formstate",
+      "label": "FormState",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L86",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_formulario_formaction",
+      "label": "FormAction",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L142",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_formulario_initialstate",
+      "label": "initialState",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L183",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_formulario_formreducer",
+      "label": "formReducer()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L218",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_formulario_steps_config",
+      "label": "STEPS_CONFIG",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L486",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_formulario_formulariomantenimiento",
+      "label": "FormularioMantenimiento()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L498",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_page",
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_page_safelocalstorage",
+      "label": "safeLocalStorage",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L30",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_page_gettipocolor",
+      "label": "getTipoColor()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L53",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_page_gettipolabel",
+      "label": "getTipoLabel()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L64",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_page_filterchip",
+      "label": "FilterChip()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L76",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_page_emptystate",
+      "label": "EmptyState()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L93",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_page_normalize",
+      "label": "normalize()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L137",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_page_formatfechapure",
+      "label": "formatFechaPure()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L144",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_page_buildsearchabletext",
+      "label": "buildSearchableText()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L158",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_page_highlight",
+      "label": "Highlight",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L182",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_page_triggerhaptics",
+      "label": "triggerHaptics()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L205",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_page_ordenesmantenimientopage",
+      "label": "OrdenesMantenimientoPage()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L228",
+      "_origin": "ast"
+    },
+    {
+      "id": "ordenes_page",
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "ordenes_page_getinitials",
+      "label": "getInitials()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L41",
+      "_origin": "ast"
+    },
+    {
+      "id": "ordenes_page_businessavatar",
+      "label": "BusinessAvatar",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L57",
+      "_origin": "ast"
+    },
+    {
+      "id": "ordenes_page_tipo_colors",
+      "label": "TIPO_COLORS",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L127",
+      "_origin": "ast"
+    },
+    {
+      "id": "ordenes_page_gettipocolor",
+      "label": "getTipoColor()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L134",
+      "_origin": "ast"
+    },
+    {
+      "id": "ordenes_page_statcard",
+      "label": "StatCard",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L137",
+      "_origin": "ast"
+    },
+    {
+      "id": "ordenes_page_emptyordenes",
+      "label": "EmptyOrdenes",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L170",
+      "_origin": "ast"
+    },
+    {
+      "id": "ordenes_page_draftbanner",
+      "label": "DraftBanner",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L192",
+      "_origin": "ast"
+    },
+    {
+      "id": "ordenes_page_ordenesdashboardpage",
+      "label": "OrdenesDashboardPage()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L265",
+      "_origin": "ast"
+    },
+    {
+      "id": "ordenes_page_ordenesdashboardcontent",
+      "label": "OrdenesDashboardContent()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L275",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page",
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_haptic",
+      "label": "haptic()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L19",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_notificationhaptic",
+      "label": "notificationHaptic()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L30",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_usedebounce",
+      "label": "useDebounce()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L46",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_toastdata",
+      "label": "ToastData",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L57",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_toast",
+      "label": "Toast()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L59",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_searchinput",
+      "label": "SearchInput()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L115",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_statchip",
+      "label": "StatChip()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L157",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_tareaitem",
+      "label": "TareaItem",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L179",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_piezaitem",
+      "label": "PiezaItem",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L243",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_tipochip",
+      "label": "TipoChip()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L304",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_emptystate",
+      "label": "EmptyState()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L321",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_skeleton",
+      "label": "Skeleton()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L341",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_networkindicator",
+      "label": "NetworkIndicator()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L358",
+      "_origin": "ast"
+    },
+    {
+      "id": "tareas_repuestos_page_tareasrepuestospage",
+      "label": "TareasRepuestosPage()",
+      "file_type": "code",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L403",
+      "_origin": "ast"
+    },
+    {
+      "id": "auth_authprovider",
+      "label": "AuthProvider.tsx",
+      "file_type": "code",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "auth_authprovider_security_config",
+      "label": "SECURITY_CONFIG",
+      "file_type": "code",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L23",
+      "_origin": "ast"
+    },
+    {
+      "id": "auth_authprovider_logger",
+      "label": "logger",
+      "file_type": "code",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L32",
+      "_origin": "ast"
+    },
+    {
+      "id": "auth_authprovider_getcacheduid",
+      "label": "getCachedUid()",
+      "file_type": "code",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L41",
+      "_origin": "ast"
+    },
+    {
+      "id": "auth_authprovider_setcacheduid",
+      "label": "setCachedUid()",
+      "file_type": "code",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L50",
+      "_origin": "ast"
+    },
+    {
+      "id": "auth_authprovider_authcontexttype",
+      "label": "AuthContextType",
+      "file_type": "code",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L63",
+      "_origin": "ast"
+    },
+    {
+      "id": "auth_authprovider_userdocument",
+      "label": "UserDocument",
+      "file_type": "code",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L76",
+      "_origin": "ast"
+    },
+    {
+      "id": "auth_authprovider_authcontext",
+      "label": "AuthContext",
+      "file_type": "code",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L92",
+      "_origin": "ast"
+    },
+    {
+      "id": "auth_authprovider_useauth",
+      "label": "useAuth()",
+      "file_type": "code",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L105",
+      "_origin": "ast"
+    },
+    {
+      "id": "auth_authprovider_authprovider",
+      "label": "AuthProvider()",
+      "file_type": "code",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L107",
+      "_origin": "ast"
+    },
+    {
+      "id": "auth_userprofile",
+      "label": "UserProfile.tsx",
+      "file_type": "code",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "auth_userprofile_userprofile",
+      "label": "UserProfile()",
+      "file_type": "code",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L18",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_garantiainfo",
+      "label": "GarantiaInfo.tsx",
+      "file_type": "code",
+      "source_file": "src/components/forms/GarantiaInfo.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_garantiainfo_garantiainfoprops",
+      "label": "GarantiaInfoProps",
+      "file_type": "code",
+      "source_file": "src/components/forms/GarantiaInfo.tsx",
+      "source_location": "L6",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_garantiainfo_garantiainfo",
+      "label": "GarantiaInfo()",
+      "file_type": "code",
+      "source_file": "src/components/forms/GarantiaInfo.tsx",
+      "source_location": "L13",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_garantiainput",
+      "label": "GarantiaInput.tsx",
+      "file_type": "code",
+      "source_file": "src/components/forms/GarantiaInput.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_garantiainput_garantiainputprops",
+      "label": "GarantiaInputProps",
+      "file_type": "code",
+      "source_file": "src/components/forms/GarantiaInput.tsx",
+      "source_location": "L6",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_garantiainput_garantiainput",
+      "label": "GarantiaInput()",
+      "file_type": "code",
+      "source_file": "src/components/forms/GarantiaInput.tsx",
+      "source_location": "L18",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_mantenimientoinfo",
+      "label": "MantenimientoInfo.tsx",
+      "file_type": "code",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_mantenimientoinfo_pieza",
+      "label": "Pieza",
+      "file_type": "code",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L12",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_mantenimientoinfo_mantenimientoinfoprops",
+      "label": "MantenimientoInfoProps",
+      "file_type": "code",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L19",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_mantenimientoinfo_tipo_config",
+      "label": "TIPO_CONFIG",
+      "file_type": "code",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L58",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_mantenimientoinfo_containervariants",
+      "label": "containerVariants",
+      "file_type": "code",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L107",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_mantenimientoinfo_itemvariants",
+      "label": "itemVariants",
+      "file_type": "code",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L122",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_mantenimientoinfo_contentvariants",
+      "label": "contentVariants",
+      "file_type": "code",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L143",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_mantenimientoinfo_mantenimientoinfo",
+      "label": "MantenimientoInfo",
+      "file_type": "code",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L162",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_piezasinput",
+      "label": "PiezasInput.tsx",
+      "file_type": "code",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_piezasinput_pieza",
+      "label": "Pieza",
+      "file_type": "code",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L11",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_piezasinput_piezasinputprops",
+      "label": "PiezasInputProps",
+      "file_type": "code",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L18",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_piezasinput_selectorcantidad",
+      "label": "SelectorCantidad",
+      "file_type": "code",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L24",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_resumenmantenimiento",
+      "label": "ResumenMantenimiento.tsx",
+      "file_type": "code",
+      "source_file": "src/components/forms/ResumenMantenimiento.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_resumenmantenimiento_resumenmantenimientoprops",
+      "label": "ResumenMantenimientoProps",
+      "file_type": "code",
+      "source_file": "src/components/forms/ResumenMantenimiento.tsx",
+      "source_location": "L6",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_resumenmantenimiento_resumenmantenimiento",
+      "label": "ResumenMantenimiento()",
+      "file_type": "code",
+      "source_file": "src/components/forms/ResumenMantenimiento.tsx",
+      "source_location": "L12",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_tareasinput",
+      "label": "TareasInput.tsx",
+      "file_type": "code",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "forms_tareasinput_tareasinputprops",
+      "label": "TareasInputProps",
+      "file_type": "code",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L11",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden",
+      "label": "ModalOrden.tsx",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden_modalview",
+      "label": "ModalView",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L21",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden_iscapacitor",
+      "label": "isCapacitor()",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L27",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden_isnativeplatform",
+      "label": "isNativePlatform()",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L30",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden_formatfecha",
+      "label": "formatFecha()",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L35",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden_chip",
+      "label": "Chip",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L57",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden_datarow",
+      "label": "DataRow",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L86",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden_card",
+      "label": "Card",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L124",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden_actionbtn",
+      "label": "ActionBtn",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L149",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden_previewstate",
+      "label": "PreviewState",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L192",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden_pdfpreviewview",
+      "label": "PDFPreviewView",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L199",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden_statusbadge",
+      "label": "StatusBadge",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L407",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden_detailview",
+      "label": "DetailView",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L420",
+      "_origin": "ast"
+    },
+    {
+      "id": "mantenimiento_modalorden_modalorden",
+      "label": "ModalOrden()",
+      "file_type": "code",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L725",
+      "_origin": "ast"
+    },
+    {
+      "id": "providers_capacitorprovider",
+      "label": "CapacitorProvider.tsx",
+      "file_type": "code",
+      "source_file": "src/components/providers/CapacitorProvider.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "providers_capacitorprovider_capacitorprovider",
+      "label": "CapacitorProvider()",
+      "file_type": "code",
+      "source_file": "src/components/providers/CapacitorProvider.tsx",
+      "source_location": "L21",
+      "_origin": "ast"
+    },
+    {
+      "id": "providers_mobileappshell",
+      "label": "MobileAppShell.tsx",
+      "file_type": "code",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "providers_mobileappshell_viewloading",
+      "label": "ViewLoading()",
+      "file_type": "code",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L18",
+      "_origin": "ast"
+    },
+    {
+      "id": "providers_mobileappshell_view_components",
+      "label": "VIEW_COMPONENTS",
+      "file_type": "code",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L25",
+      "_origin": "ast"
+    },
+    {
+      "id": "providers_mobileappshell_globalformulariomantenimiento",
+      "label": "GlobalFormularioMantenimiento",
+      "file_type": "code",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L34",
+      "_origin": "ast"
+    },
+    {
+      "id": "providers_mobileappshell_managedview",
+      "label": "ManagedView",
+      "file_type": "code",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L40",
+      "_origin": "ast"
+    },
+    {
+      "id": "providers_mobileappshell_useslideanimation",
+      "label": "useSlideAnimation()",
+      "file_type": "code",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L68",
+      "_origin": "ast"
+    },
+    {
+      "id": "providers_mobileappshell_mobileappshell",
+      "label": "MobileAppShell()",
+      "file_type": "code",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L96",
+      "_origin": "ast"
+    },
+    {
+      "id": "shadcnui_app_sidebar",
+      "label": "app-sidebar.tsx",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "shadcnui_app_sidebar_navigation",
+      "label": "navigation",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L32",
+      "_origin": "ast"
+    },
+    {
+      "id": "shadcnui_app_sidebar_secondarynavigation",
+      "label": "secondaryNavigation",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L53",
+      "_origin": "ast"
+    },
+    {
+      "id": "shadcnui_app_sidebar_appsidebar",
+      "label": "AppSidebar()",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L62",
+      "_origin": "ast"
+    },
+    {
+      "id": "shadcnui_mobile_nav",
+      "label": "mobile-nav.tsx",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "shadcnui_mobile_nav_navitemconfig",
+      "label": "NavItemConfig",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L15",
+      "_origin": "ast"
+    },
+    {
+      "id": "shadcnui_mobile_nav_left_items",
+      "label": "LEFT_ITEMS",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L21",
+      "_origin": "ast"
+    },
+    {
+      "id": "shadcnui_mobile_nav_right_items",
+      "label": "RIGHT_ITEMS",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L26",
+      "_origin": "ast"
+    },
+    {
+      "id": "shadcnui_mobile_nav_mobilenav",
+      "label": "MobileNav()",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L31",
+      "_origin": "ast"
+    },
+    {
+      "id": "shadcnui_mobile_nav_navbuttonprops",
+      "label": "NavButtonProps",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L178",
+      "_origin": "ast"
+    },
+    {
+      "id": "shadcnui_mobile_nav_navbutton",
+      "label": "NavButton()",
+      "file_type": "code",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L184",
+      "_origin": "ast"
+    },
+    {
+      "id": "ui_upgradeprompt",
+      "label": "UpgradePrompt.tsx",
+      "file_type": "code",
+      "source_file": "src/components/ui/UpgradePrompt.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "ui_upgradeprompt_upgradepromptprops",
+      "label": "UpgradePromptProps",
+      "file_type": "code",
+      "source_file": "src/components/ui/UpgradePrompt.tsx",
+      "source_location": "L4",
+      "_origin": "ast"
+    },
+    {
+      "id": "ui_upgradeprompt_upgradeprompt",
+      "label": "UpgradePrompt()",
+      "file_type": "code",
+      "source_file": "src/components/ui/UpgradePrompt.tsx",
+      "source_location": "L11",
+      "_origin": "ast"
+    },
+    {
+      "id": "ui_drawer",
+      "label": "drawer.tsx",
+      "file_type": "code",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "ui_drawer_drawer",
+      "label": "Drawer()",
+      "file_type": "code",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L8",
+      "_origin": "ast"
+    },
+    {
+      "id": "ui_drawer_draweroverlay",
+      "label": "DrawerOverlay",
+      "file_type": "code",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L25",
+      "_origin": "ast"
+    },
+    {
+      "id": "ui_drawer_drawercontent",
+      "label": "DrawerContent",
+      "file_type": "code",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L37",
+      "_origin": "ast"
+    },
+    {
+      "id": "ui_drawer_drawerheader",
+      "label": "DrawerHeader()",
+      "file_type": "code",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L58",
+      "_origin": "ast"
+    },
+    {
+      "id": "ui_drawer_drawerfooter",
+      "label": "DrawerFooter()",
+      "file_type": "code",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L69",
+      "_origin": "ast"
+    },
+    {
+      "id": "ui_drawer_drawertitle",
+      "label": "DrawerTitle",
+      "file_type": "code",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L80",
+      "_origin": "ast"
+    },
+    {
+      "id": "ui_drawer_drawerdescription",
+      "label": "DrawerDescription",
+      "file_type": "code",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L95",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers",
+      "label": "firestore-sanitizers.ts",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers_cleanstring",
+      "label": "cleanString()",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L4",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers_cleanboolean",
+      "label": "cleanBoolean()",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L10",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers_cleannumber",
+      "label": "cleanNumber()",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L14",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers_cleandate",
+      "label": "cleanDate()",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L18",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers_parsedatelike",
+      "label": "parseDateLike()",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L22",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers_cleanstringarray",
+      "label": "cleanStringArray()",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L31",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers_setifdefined",
+      "label": "setIfDefined()",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L38",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers_sanitizedispositivo",
+      "label": "sanitizeDispositivo()",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L44",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers_sanitizeclientepayload",
+      "label": "sanitizeClientePayload()",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L61",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers_sanitizenegociopayload",
+      "label": "sanitizeNegocioPayload()",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L100",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "label": "sanitizeOrdenPayload()",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L135",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers_sanitizetareapayload",
+      "label": "sanitizeTareaPayload()",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L236",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_firestore_sanitizers_sanitizepiezapayload",
+      "label": "sanitizePiezaPayload()",
+      "file_type": "code",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L252",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_navigation_config",
+      "label": "navigation-config.ts",
+      "file_type": "code",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_navigation_config_appview",
+      "label": "AppView",
+      "file_type": "code",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_navigation_config_routeconfig",
+      "label": "RouteConfig",
+      "file_type": "code",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": "L8",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_navigation_config_routes",
+      "label": "ROUTES",
+      "file_type": "code",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": "L14",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_navigation_config_getroutebypath",
+      "label": "getRouteByPath()",
+      "file_type": "code",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": "L22",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_navigation_config_getpathbyview",
+      "label": "getPathByView()",
+      "file_type": "code",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": "L32",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_navigation_config_tab_order",
+      "label": "TAB_ORDER",
+      "file_type": "code",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": "L36",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_orden_serializer",
+      "label": "orden-serializer.ts",
+      "file_type": "code",
+      "source_file": "src/lib/orden-serializer.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_orden_serializer_serializeorden",
+      "label": "serializeOrden()",
+      "file_type": "code",
+      "source_file": "src/lib/orden-serializer.ts",
+      "source_location": "L9",
+      "_origin": "ast"
+    },
+    {
+      "id": "lib_orden_serializer_deserializeordenpayload",
+      "label": "deserializeOrdenPayload()",
+      "file_type": "code",
+      "source_file": "src/lib/orden-serializer.ts",
+      "source_location": "L67",
+      "_origin": "ast"
+    }
+  ],
+  "edges": [
+    {
+      "source": "app_layout",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "navigation",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_public_icono_png",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_ui_sidebar_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "ui_sidebar_sidebarprovider",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "ui_sidebar_sidebarinset",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "ui_sidebar_sidebartrigger",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "ui_sidebar_usesidebar",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "shadcnui_app_sidebar",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "shadcnui_app_sidebar_appsidebar",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "auth_authprovider",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "auth_authprovider_useauth",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_ui_separator_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "ui_separator_separator",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "link",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "shadcnui_mobile_nav",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "shadcnui_mobile_nav_mobilenav",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_ui_pagetransition_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "ui_pagetransition_pagetransition",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_ui_networkstatusbanner_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "ui_networkstatusbanner_networkstatusbanner",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_providers_mobilenavigationcontext_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "providers_mobilenavigationcontext_mobilenavigationprovider",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_auth_speechprovider_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "auth_speechprovider_speechprovider",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "providers_mobileappshell",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "providers_mobileappshell_mobileappshell",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "app_layout_layoutcontent",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout",
+      "target": "app_layout_applayout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_types_orden_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "types_orden_ordenmantenimiento",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "types_orden_cliente",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "types_orden_dispositivo",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "react_dom",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "auth_authprovider",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "auth_authprovider_useauth",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usemultiuser_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "hooks_usemultiuser_usecrearorden",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "hooks_usemultiuser_useclientesusuario",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usenegocio_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "hooks_usenegocio_usenegocio",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_mantenimiento_printservice_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "mantenimiento_printservice_useprintservice",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_forms_clienteselector_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_forms_dispositivoselector_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "forms_mantenimientoinfo",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "forms_garantiainput",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_forms_contadorinput_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "forms_contadorinput_contador",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_forms_firmainput_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "forms_resumenmantenimiento",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usepersistentreducer_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "hooks_usepersistentreducer_usepersistentreducer",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usekeyboardvisible_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "hooks_usekeyboardvisible_usekeyboardvisible",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_useofflineorderqueue_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "hooks_useofflineorderqueue_useofflineorderqueue",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "mantenimiento_formulario_formulariomantenimientoprops",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "mantenimiento_formulario_onboarding_hints",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "mantenimiento_formulario_pieza",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "mantenimiento_formulario_formstep",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L81",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "mantenimiento_formulario_formstate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "mantenimiento_formulario_formaction",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L142",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "mantenimiento_formulario_initialstate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L183",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "mantenimiento_formulario_formreducer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L218",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "mantenimiento_formulario_steps_config",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L486",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario",
+      "target": "mantenimiento_formulario_formulariomantenimiento",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L498",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_types_orden_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "types_orden_ordenmantenimiento",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "link",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "auth_authprovider",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "auth_authprovider_useauth",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usemultiuser_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "hooks_usemultiuser_useestadisticasusuario",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "navigation",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usemultiuser_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "hooks_usemultiuser_useordenesinfinitas",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "hooks_usemultiuser_useprefetchdata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "hooks_usemultiuser_useordenesbusqueda",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usenegocio_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "hooks_usenegocio_usenegocio",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "use_debounce",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_modalorden",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_modalorden_modalorden",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_mantenimiento_ordencard_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_mantenimiento_printservice_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_printservice_printbutton",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_printservice_sharebutton",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_printservice_useprintservice",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_ui_basic_skeleton_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "basic_skeleton_skeleton",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_clientes_usemediaquery_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "clientes_usemediaquery_usemediaquery",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_providers_mobilenavigationcontext_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "providers_mobilenavigationcontext_usemobilenavigation",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_ui_basic_sheet_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "basic_sheet_sheet",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "basic_sheet_sheetcontent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "basic_sheet_sheetdescription",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "basic_sheet_sheetheader",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "basic_sheet_sheettitle",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "basic_sheet_sheettrigger",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_page_safelocalstorage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_page_gettipocolor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_page_gettipolabel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_page_filterchip",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_page_emptystate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L93",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_page_normalize",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_page_formatfechapure",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L144",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_page_buildsearchabletext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L158",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_page_highlight",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L182",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_page_triggerhaptics",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L205",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page",
+      "target": "mantenimiento_page_ordenesmantenimientopage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L228",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page_buildsearchabletext",
+      "target": "mantenimiento_page_gettipolabel",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L169",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page_buildsearchabletext",
+      "target": "mantenimiento_page_formatfechapure",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L174",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page_triggerhaptics",
+      "target": "haptics",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L208",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page_ordenesmantenimientopage",
+      "target": "mantenimiento_page_gettipolabel",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L696",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "link",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "navigation",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "auth_authprovider",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "auth_authprovider_useauth",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usemultiuser_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "hooks_usemultiuser_useordenesrecientes",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "hooks_usemultiuser_useestadisticasusuario",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "hooks_usemultiuser_useprefetchdata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usenegocio_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "hooks_usenegocio_usenegocio",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_types_orden_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "types_orden_ordenmantenimiento",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "react_query",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "mantenimiento_modalorden",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_mantenimiento_ordencard_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_ui_offlinesyncbanner_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ui_offlinesyncbanner_offlinesyncbanner",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_mantenimiento_printservice_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "mantenimiento_printservice_useprintservice",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_onboarding_welcomescreen_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_onboarding_onboardingsuccess_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_ui_skeleton_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ui_skeleton_skeleton",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_lib_utils_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "lib_utils_cn",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_ordenes_usedashboardgreeting_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ordenes_usedashboardgreeting_usedashboardgreeting",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_ordenes_usedraftbanner_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ordenes_usedraftbanner_usedraftbanner",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_ordenes_useonboardingflow_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ordenes_useonboardingflow_useonboardingflow",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_providers_mobilenavigationcontext_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "providers_mobilenavigationcontext_usemobilenavigation",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ordenes_page_getinitials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ordenes_page_businessavatar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ordenes_page_tipo_colors",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L127",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ordenes_page_gettipocolor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L134",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ordenes_page_statcard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ordenes_page_emptyordenes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L170",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ordenes_page_draftbanner",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L192",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ordenes_page_ordenesdashboardpage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L265",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page",
+      "target": "ordenes_page_ordenesdashboardcontent",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L275",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usetareasypiezas_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "hooks_usetareasypiezas_usetareasypiezas",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_lib_configuracion_helpers_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "lib_configuracion_helpers_tareapredefinida",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "lib_configuracion_helpers_piezapredefinida",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "auth_authprovider",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "auth_authprovider_useauth",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_ui_modal_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "ui_modal_modal",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_tareas_repuestos_modaltarea_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_modaltarea_modaltarea",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_modaltarea_formtarea",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_tareas_repuestos_modalpieza_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_modalpieza_modalpieza",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_modalpieza_formpieza",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_haptic",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_notificationhaptic",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_usedebounce",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_toastdata",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_toast",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_searchinput",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L115",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_statchip",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L157",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_tareaitem",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L179",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_piezaitem",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L243",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_tipochip",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L304",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_emptystate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L321",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_skeleton",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L341",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_networkindicator",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L358",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page",
+      "target": "tareas_repuestos_page_tareasrepuestospage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L403",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page_haptic",
+      "target": "haptics",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page_notificationhaptic",
+      "target": "haptics",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page_tareasrepuestospage",
+      "target": "tareas_repuestos_page_usedebounce",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L433",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "auth",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "core",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "device",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_lib_firebase_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "lib_firebase_auth",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "lib_firebase_db",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "firestore",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "auth_authprovider_security_config",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "auth_authprovider_logger",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "auth_authprovider_getcacheduid",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "auth_authprovider_setcacheduid",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "auth_authprovider_authcontexttype",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "auth_authprovider_userdocument",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "auth_authprovider_authcontext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L92",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "auth_authprovider_useauth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L105",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_authprovider",
+      "target": "auth_authprovider_authprovider",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L107",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_ui_basic_avatar_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "basic_avatar_avatar",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "basic_avatar_avatarfallback",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "basic_avatar_avatarimage",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_ui_basic_button_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "basic_button_button",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_ui_basic_dropdown_menu_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "basic_dropdown_menu_dropdownmenu",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "basic_dropdown_menu_dropdownmenucontent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "basic_dropdown_menu_dropdownmenugroup",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "basic_dropdown_menu_dropdownmenuitem",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "basic_dropdown_menu_dropdownmenulabel",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "basic_dropdown_menu_dropdownmenuseparator",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "basic_dropdown_menu_dropdownmenutrigger",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "auth_authprovider",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "auth_authprovider_useauth",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "link",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile",
+      "target": "auth_userprofile_userprofile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_garantiainfo",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/GarantiaInfo.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_garantiainfo",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/GarantiaInfo.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_garantiainfo",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/GarantiaInfo.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_garantiainfo",
+      "target": "forms_garantiainfo_garantiainfoprops",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/GarantiaInfo.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_garantiainfo",
+      "target": "forms_garantiainfo_garantiainfo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/GarantiaInfo.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_garantiainput",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/GarantiaInput.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_garantiainput",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/GarantiaInput.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_garantiainput",
+      "target": "forms_garantiainput_garantiainputprops",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/GarantiaInput.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_garantiainput",
+      "target": "forms_garantiainput_garantiainput",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/GarantiaInput.tsx",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "forms_tareasinput",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "forms_piezasinput",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_forms_diagnosticoinfo_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_forms_instalacioninfo_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "forms_garantiainfo",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "framer_motion",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "forms_mantenimientoinfo_pieza",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "forms_mantenimientoinfo_mantenimientoinfoprops",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "forms_mantenimientoinfo_tipo_config",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L58",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "forms_mantenimientoinfo_containervariants",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L107",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "forms_mantenimientoinfo_itemvariants",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L122",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "forms_mantenimientoinfo_contentvariants",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L143",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "forms_mantenimientoinfo_mantenimientoinfo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L162",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "ui_drawer",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "ui_drawer_drawer",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "ui_drawer_drawercontent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "ui_drawer_drawertrigger",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "ui_drawer_drawertitle",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "auth_authprovider",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "auth_authprovider_useauth",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usetareasypiezas_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "hooks_usetareasypiezas_usetareasypiezas",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_lib_configuracion_helpers_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "lib_configuracion_helpers_piezapredefinida",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_clientes_usehapticfeedback_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "clientes_usehapticfeedback_usehapticfeedback",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "forms_piezasinput_pieza",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "forms_piezasinput_piezasinputprops",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_piezasinput",
+      "target": "forms_piezasinput_selectorcantidad",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/PiezasInput.tsx",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_resumenmantenimiento",
+      "target": "mantenimiento_formulario",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/ResumenMantenimiento.tsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_resumenmantenimiento",
+      "target": "mantenimiento_formulario_formstate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/ResumenMantenimiento.tsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_resumenmantenimiento",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/ResumenMantenimiento.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_resumenmantenimiento",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/ResumenMantenimiento.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_resumenmantenimiento",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_lib_signature_utils_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/ResumenMantenimiento.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_resumenmantenimiento",
+      "target": "lib_signature_utils_deobfuscatesignature",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/ResumenMantenimiento.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_resumenmantenimiento",
+      "target": "forms_resumenmantenimiento_resumenmantenimientoprops",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/ResumenMantenimiento.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_resumenmantenimiento",
+      "target": "forms_resumenmantenimiento_resumenmantenimiento",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/ResumenMantenimiento.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "ui_drawer",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "ui_drawer_drawer",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "ui_drawer_drawercontent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "ui_drawer_drawertrigger",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "ui_drawer_drawertitle",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "auth_authprovider",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "auth_authprovider_useauth",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usetareasypiezas_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "hooks_usetareasypiezas_usetareasypiezas",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_lib_configuracion_helpers_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "lib_configuracion_helpers_tareapredefinida",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_clientes_usehapticfeedback_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "clientes_usehapticfeedback_usehapticfeedback",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_tareasinput",
+      "target": "forms_tareasinput_tareasinputprops",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/TareasInput.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_types_orden_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "types_orden_ordenmantenimiento",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "react_dom",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_lib_utils_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "lib_utils_cn",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_useandroidback_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "hooks_useandroidback_useandroidback",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_lib_signature_utils_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "lib_signature_utils_deobfuscatesignature",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "mantenimiento_modalorden_modalview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "mantenimiento_modalorden_iscapacitor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "mantenimiento_modalorden_isnativeplatform",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "mantenimiento_modalorden_formatfecha",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "mantenimiento_modalorden_chip",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "mantenimiento_modalorden_datarow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "mantenimiento_modalorden_card",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L124",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "mantenimiento_modalorden_actionbtn",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L149",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "mantenimiento_modalorden_previewstate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L192",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "mantenimiento_modalorden_pdfpreviewview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L199",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "mantenimiento_modalorden_statusbadge",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L407",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "mantenimiento_modalorden_detailview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L420",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden",
+      "target": "mantenimiento_modalorden_modalorden",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L725",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_modalorden_isnativeplatform",
+      "target": "mantenimiento_modalorden_iscapacitor",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/mantenimiento/ModalOrden.tsx",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_capacitorprovider",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/CapacitorProvider.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_capacitorprovider",
+      "target": "navigation",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/CapacitorProvider.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_capacitorprovider",
+      "target": "splash_screen",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/CapacitorProvider.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_capacitorprovider",
+      "target": "providers_capacitorprovider_capacitorprovider",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/CapacitorProvider.tsx",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_providers_mobilenavigationcontext_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "providers_mobilenavigationcontext_usemobilenavigation",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "providers_mobilenavigationcontext_appview",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "lib_navigation_config",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "lib_navigation_config_routes",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "dynamic",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "navigation",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "providers_mobileappshell_viewloading",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "providers_mobileappshell_view_components",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "providers_mobileappshell_globalformulariomantenimiento",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "providers_mobileappshell_managedview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "providers_mobileappshell_useslideanimation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell",
+      "target": "providers_mobileappshell_mobileappshell",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L96",
+      "weight": 1.0
+    },
+    {
+      "source": "providers_mobileappshell_mobileappshell",
+      "target": "providers_mobileappshell_useslideanimation",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/providers/MobileAppShell.tsx",
+      "source_location": "L112",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "link",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "navigation",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_public_icono_png",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_ui_sidebar_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "ui_sidebar_sidebar",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "ui_sidebar_sidebarcontent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "ui_sidebar_sidebarfooter",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "ui_sidebar_sidebargroup",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "ui_sidebar_sidebargroupcontent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "ui_sidebar_sidebarheader",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "ui_sidebar_sidebarmenu",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "ui_sidebar_sidebarmenubutton",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "ui_sidebar_sidebarmenuitem",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "ui_sidebar_usesidebar",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usemultiuser_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "hooks_usemultiuser_useprefetchdata",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_providers_mobilenavigationcontext_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "providers_mobilenavigationcontext_usemobilenavigation",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "providers_mobilenavigationcontext_appview",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "shadcnui_app_sidebar_navigation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "shadcnui_app_sidebar_secondarynavigation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_app_sidebar",
+      "target": "shadcnui_app_sidebar_appsidebar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/app-sidebar.tsx",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_lib_utils_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "lib_utils_cn",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_components_providers_mobilenavigationcontext_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "providers_mobilenavigationcontext_usemobilenavigation",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "providers_mobilenavigationcontext_appview",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usekeyboardvisible_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "hooks_usekeyboardvisible_usekeyboardvisible",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usemultiuser_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "hooks_usemultiuser_useestadisticasusuario",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_hooks_usescrollaware_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "hooks_usescrollaware_usescrollaware",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "navigation",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "shadcnui_mobile_nav_navitemconfig",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "shadcnui_mobile_nav_left_items",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "shadcnui_mobile_nav_right_items",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "shadcnui_mobile_nav_mobilenav",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "shadcnui_mobile_nav_navbuttonprops",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L178",
+      "weight": 1.0
+    },
+    {
+      "source": "shadcnui_mobile_nav",
+      "target": "shadcnui_mobile_nav_navbutton",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/shadcnui/mobile-nav.tsx",
+      "source_location": "L184",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_upgradeprompt",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/UpgradePrompt.tsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_upgradeprompt",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/UpgradePrompt.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_upgradeprompt",
+      "target": "ui_upgradeprompt_upgradepromptprops",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/UpgradePrompt.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_upgradeprompt",
+      "target": "ui_upgradeprompt_upgradeprompt",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/UpgradePrompt.tsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_drawer",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_drawer",
+      "target": "vaul",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_drawer",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_lib_utils_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_drawer",
+      "target": "lib_utils_cn",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_drawer",
+      "target": "ui_drawer_drawer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_drawer",
+      "target": "ui_drawer_draweroverlay",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_drawer",
+      "target": "ui_drawer_drawercontent",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_drawer",
+      "target": "ui_drawer_drawerheader",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L58",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_drawer",
+      "target": "ui_drawer_drawerfooter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_drawer",
+      "target": "ui_drawer_drawertitle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "ui_drawer",
+      "target": "ui_drawer_drawerdescription",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/ui/drawer.tsx",
+      "source_location": "L95",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_types_orden_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "types_orden_cliente",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "types_orden_dispositivo",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "types_orden_negocio",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "types_orden_ordenmantenimiento",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_lib_configuracion_helpers_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_configuracion_helpers_tareapredefinida",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_configuracion_helpers_piezapredefinida",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_firestore_sanitizers_cleanstring",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_firestore_sanitizers_cleanboolean",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_firestore_sanitizers_cleannumber",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_firestore_sanitizers_cleandate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_firestore_sanitizers_parsedatelike",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_firestore_sanitizers_cleanstringarray",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_firestore_sanitizers_setifdefined",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_firestore_sanitizers_sanitizedispositivo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_firestore_sanitizers_sanitizeclientepayload",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L61",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_firestore_sanitizers_sanitizenegociopayload",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L100",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L135",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_firestore_sanitizers_sanitizetareapayload",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L236",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers",
+      "target": "lib_firestore_sanitizers_sanitizepiezapayload",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L252",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizedispositivo",
+      "target": "lib_firestore_sanitizers_cleanstring",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizedispositivo",
+      "target": "lib_firestore_sanitizers_setifdefined",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L54",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeclientepayload",
+      "target": "lib_firestore_sanitizers_cleanstring",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeclientepayload",
+      "target": "lib_firestore_sanitizers_setifdefined",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L91",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizenegociopayload",
+      "target": "lib_firestore_sanitizers_cleanstring",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L104",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizenegociopayload",
+      "target": "lib_firestore_sanitizers_setifdefined",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizenegociopayload",
+      "target": "lib_firestore_sanitizers_cleanboolean",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizenegociopayload",
+      "target": "lib_firestore_sanitizers_cleandate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L126",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "target": "lib_firestore_sanitizers_cleanstring",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "target": "lib_firestore_sanitizers_sanitizeclientepayload",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L155",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "target": "lib_firestore_sanitizers_sanitizedispositivo",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L160",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "target": "lib_firestore_sanitizers_setifdefined",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L164",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "target": "lib_firestore_sanitizers_parsedatelike",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L164",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "target": "lib_firestore_sanitizers_cleannumber",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L171",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "target": "lib_firestore_sanitizers_cleanstringarray",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L196",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizeordenpayload",
+      "target": "lib_firestore_sanitizers_cleanboolean",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L221",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizetareapayload",
+      "target": "lib_firestore_sanitizers_cleanstring",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L240",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_firestore_sanitizers_sanitizepiezapayload",
+      "target": "lib_firestore_sanitizers_cleanstring",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/firestore-sanitizers.ts",
+      "source_location": "L256",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_navigation_config",
+      "target": "lib_navigation_config_appview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_navigation_config",
+      "target": "lib_navigation_config_routeconfig",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_navigation_config",
+      "target": "lib_navigation_config_routes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_navigation_config",
+      "target": "lib_navigation_config_getroutebypath",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_navigation_config",
+      "target": "lib_navigation_config_getpathbyview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_navigation_config",
+      "target": "lib_navigation_config_tab_order",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/navigation-config.ts",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_orden_serializer",
+      "target": "c_users_tmz_desktop_estep_tecnicontrol_src_types_orden_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/orden-serializer.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_orden_serializer",
+      "target": "types_orden_ordenmantenimiento",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/orden-serializer.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_orden_serializer",
+      "target": "types_orden_serializableordenpayload",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/orden-serializer.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_orden_serializer",
+      "target": "types_orden_temporderid",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/orden-serializer.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_orden_serializer",
+      "target": "lib_orden_serializer_serializeorden",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/orden-serializer.ts",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "lib_orden_serializer",
+      "target": "lib_orden_serializer_deserializeordenpayload",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/orden-serializer.ts",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_mantenimientoinfo",
+      "target": "forms_garantiainfo_garantiainfo",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/MantenimientoInfo.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "forms_resumenmantenimiento_resumenmantenimientoprops",
+      "target": "mantenimiento_formulario_formstate",
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/forms/ResumenMantenimiento.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "app_layout_applayout",
+      "target": "auth_authprovider_useauth",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/(app)/layout.tsx",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_formulario_formulariomantenimiento",
+      "target": "auth_authprovider_useauth",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
+      "source_location": "L499",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page_ordenesmantenimientopage",
+      "target": "auth_authprovider_useauth",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L229",
+      "weight": 1.0
+    },
+    {
+      "source": "mantenimiento_page_ordenesmantenimientopage",
+      "target": "tareas_repuestos_page_usedebounce",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/app/(app)/ordenes/mantenimiento/page.tsx",
+      "source_location": "L231",
+      "weight": 1.0
+    },
+    {
+      "source": "ordenes_page_ordenesdashboardcontent",
+      "target": "auth_authprovider_useauth",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/(app)/ordenes/page.tsx",
+      "source_location": "L279",
+      "weight": 1.0
+    },
+    {
+      "source": "tareas_repuestos_page_tareasrepuestospage",
+      "target": "auth_authprovider_useauth",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/(app)/tareas-repuestos/page.tsx",
+      "source_location": "L404",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile_userprofile",
+      "target": "auth_authprovider_useauth",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "auth_userprofile_userprofile",
+      "target": "ordenes_page_getinitials",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/components/auth/UserProfile.tsx",
+      "source_location": "L43",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

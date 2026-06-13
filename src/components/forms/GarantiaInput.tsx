@@ -321,9 +321,9 @@ export default function GarantiaInput({
             <Info className="w-5 h-5 text-blue-400" />
           </div>
           <div className="space-y-1">
-            <h4 className="text-lg font-bold text-blue-400">Garantía opcional</h4>
+            <h4 className="text-lg font-bold text-blue-400">¿Registrar Garantía del Servicio?</h4>
             <p className="text-sm text-gray-400 leading-relaxed">
-              Puede omitir el registro de garantía desactivando el toggle superior si el servicio no lo requiere.
+              Puede omitir el registro de garantía del servicio realizado desactivando el toggle superior si el servicio no lo requiere.
             </p>
           </div>
         </div>

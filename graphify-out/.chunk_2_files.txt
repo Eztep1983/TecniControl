@@ -1,0 +1,13 @@
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\forms\TareasInput.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\mantenimiento\ModalOrden.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\providers\CapacitorProvider.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\providers\MobileAppShell.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\shadcnui\app-sidebar.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\shadcnui\mobile-nav.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\ui\UpgradePrompt.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\components\ui\drawer.tsx
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\lib\firestore-sanitizers.ts
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\lib\navigation-config.ts
+C:\Users\TMZ\Desktop\Estep\TecniControl\src\lib\orden-serializer.ts
+C:\Users\TMZ\Desktop\Estep\TecniControl\AGENTS.md
+C:\Users\TMZ\Desktop\Estep\TecniControl\CLAUDE.md

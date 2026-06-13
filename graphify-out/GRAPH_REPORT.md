@@ -1,13 +1,18 @@
-# Graph Report - .  (2026-06-12)
+# Graph Report - TecniControl  (2026-06-12)
 
 ## Corpus Check
-- 164 files · ~252,000 words
+- 159 files · ~252,707 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1055 nodes · 2054 edges · 72 communities (50 shown, 22 thin omitted)
+- 1137 nodes · 2129 edges · 78 communities (53 shown, 25 thin omitted)
 - Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 131 edges (avg confidence: 0.89)
 - Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `2d120fc8`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - [[_COMMUNITY_Capacitor & App Dependencies|Capacitor & App Dependencies]]
@@ -77,6 +82,11 @@
 - [[_COMMUNITY_Anti-Slop Spot Check Module|Anti-Slop Spot Check Module]]
 - [[_COMMUNITY_Rules and Guidelines Module|Rules and Guidelines Module]]
 - [[_COMMUNITY_DrawerPortal Module|DrawerPortal Module]]
+- [[_COMMUNITY_Community 72|Community 72]]
+- [[_COMMUNITY_Community 73|Community 73]]
+- [[_COMMUNITY_Community 74|Community 74]]
+- [[_COMMUNITY_Community 75|Community 75]]
+- [[_COMMUNITY_Community 76|Community 76]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `cn()` - 67 edges
@@ -93,14 +103,14 @@
 ## Surprising Connections (you probably didn't know these)
 - `AppLayout()` --calls--> `useAuth()`  [INFERRED]
   src/app/(app)/layout.tsx → src/components/auth/AuthProvider.tsx
-- `ClienteFormModal` --semantically_similar_to--> `ClienteSimpleFormModal()`  [INFERRED] [semantically similar]
-  src/components/clientes/ClienteFormModal.tsx → src/components/clientes/ClienteSimpleFormModal.tsx
 - `ClienteSelector` --semantically_similar_to--> `DispositivoSelector()`  [INFERRED] [semantically similar]
   src/components/forms/ClienteSelector.tsx → src/components/forms/DispositivoSelector.tsx
-- `OfflineSyncProvider()` --semantically_similar_to--> `FirestoreSyncProvider()`  [INFERRED] [semantically similar]
-  src/components/providers/OfflineSyncProvider.tsx → src/components/providers/FirestoreSyncProvider.tsx
 - `Separator` --semantically_similar_to--> `Separator`  [INFERRED] [semantically similar]
   src/components/ui/basic/separator.tsx → src/components/ui/separator.tsx
+- `Skeleton()` --semantically_similar_to--> `Skeleton()`  [INFERRED] [semantically similar]
+  src/components/ui/basic/skeleton.tsx → src/components/ui/skeleton.tsx
+- `useIsMobile()` --semantically_similar_to--> `useMediaQuery()`  [INFERRED] [semantically similar]
+  src/hooks/use-mobile.tsx → src/hooks/clientes/useMediaQuery.ts
 
 ## Import Cycles
 - None detected.
@@ -118,39 +128,39 @@
 - **Multi-User Firestore Data Hooks** — hooks_usemultiuser_useclientesusuario, hooks_usemultiuser_useordenesusuario, hooks_usemultiuser_usecrearorden, hooks_usemultiuser_usenegociousuario, hooks_usemultiuser_useestadisticasusuario, hooks_usemultiuser_useprefetchdata, hooks_usemultiuser_useordenesrecientes, hooks_usemultiuser_useordenesinfinitas, hooks_usemultiuser_useordenesbusqueda, hooks_usemultiuser_usecompletaronboarding [EXTRACTED 1.00]
 - **Web Prototype Tooling and Specs** — web_prototype_skill_web_prototype, assets_template_seed, references_layouts_skeletons, references_checklist_p0_rules [EXTRACTED 1.00]
 
-## Communities (72 total, 22 thin omitted)
+## Communities (78 total, 25 thin omitted)
 
 ### Community 0 - "Capacitor & App Dependencies"
 Cohesion: 0.03
 Nodes (65): dependencies, @capacitor/android, @capacitor/app, @capacitor/cli, @capacitor-community/file-opener, @capacitor-community/speech-recognition, @capacitor/core, @capacitor/device (+57 more)
 
 ### Community 1 - "Offline Sync & Firestore Storage"
-Cohesion: 0.07
-Nodes (51): useNetworkStatus(), useOfflineOrderQueue(), useOfflineQueue(), useTareasYPiezas, actualizarPieza(), actualizarTarea(), configDocRef(), crearPieza() (+43 more)
+Cohesion: 0.05
+Nodes (56): App Layout, Layout Content, inter, metadata, RootLayout(), AuthGuard(), AuthGuardProps, PUBLIC_ROUTES (+48 more)
 
 ### Community 2 - "Sidebar UI Component"
-Cohesion: 0.05
-Nodes (58): Comp, Sidebar, SIDEBAR_COOKIE_MAX_AGE, SIDEBAR_COOKIE_NAME, SIDEBAR_KEYBOARD_SHORTCUT, SIDEBAR_WIDTH, SIDEBAR_WIDTH_ICON, SIDEBAR_WIDTH_MOBILE (+50 more)
+Cohesion: 0.06
+Nodes (53): Sidebar, SIDEBAR_COOKIE_MAX_AGE, SIDEBAR_COOKIE_NAME, SIDEBAR_KEYBOARD_SHORTCUT, SIDEBAR_WIDTH, SIDEBAR_WIDTH_ICON, SIDEBAR_WIDTH_MOBILE, SidebarContent (+45 more)
 
 ### Community 3 - "Alert & Alert-Dialog UI"
 Cohesion: 0.07
-Nodes (36): Alert, AlertDescription, AlertTitle, alertVariants, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription (+28 more)
+Nodes (37): Alert, AlertDescription, AlertTitle, alertVariants, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription (+29 more)
 
 ### Community 4 - "App Layout & Voice Speech Provider"
 Cohesion: 0.07
-Nodes (35): AppLayout(), LayoutContent(), SpeechContext, SpeechContextType, SpeechProvider(), usePrefetchData(), useScrollAware(), AppView (+27 more)
+Nodes (37): AppLayout(), LayoutContent(), SpeechContext, SpeechContextType, SpeechProvider(), useKeyboardVisible(), useEstadisticasUsuario(), usePrefetchData() (+29 more)
 
 ### Community 5 - "Business Logic & Firestore Sanitizers"
-Cohesion: 0.10
-Nodes (31): NegocioHeaderProps, NegocioConUsuario, useOrdenesUsuario(), cleanBoolean(), cleanDate(), cleanNumber(), cleanString(), cleanStringArray() (+23 more)
+Cohesion: 0.12
+Nodes (26): cleanBoolean(), cleanDate(), cleanNumber(), cleanString(), cleanStringArray(), parseDateLike(), sanitizeClientePayload(), sanitizeDispositivo() (+18 more)
 
 ### Community 6 - "Base UI Elements"
-Cohesion: 0.08
-Nodes (24): AccordionContent, AccordionItem, AccordionTrigger, Badge(), BadgeProps, badgeVariants, Button, ButtonProps (+16 more)
+Cohesion: 0.06
+Nodes (37): AlertDialog, Badge(), BadgeProps, badgeVariants, ButtonProps, buttonVariants, Calendar(), CalendarProps (+29 more)
 
 ### Community 7 - "User Onboarding Flow"
 Cohesion: 0.07
-Nodes (24): useCompletarOnboarding(), useEstadisticasUsuario(), useOrdenesRecientes(), OnboardingSuccess(), OnboardingSuccessProps, WelcomeScreen(), WelcomeScreenProps, BusinessAvatar (+16 more)
+Nodes (23): useCompletarOnboarding(), useOrdenesRecientes(), OnboardingSuccess(), OnboardingSuccessProps, WelcomeScreen(), WelcomeScreenProps, BusinessAvatar, DraftBanner (+15 more)
 
 ### Community 8 - "Open Design & Skill Config"
 Cohesion: 0.05
@@ -161,12 +171,12 @@ Cohesion: 0.07
 Nodes (26): audioManager, DiagnosticoInfo, DiagnosticoInfoProps, MicButton, PermissionWarning, RecordingIndicator, restartManager, SectionHeader (+18 more)
 
 ### Community 10 - "Parts & Tasks Modals"
-Cohesion: 0.09
-Nodes (20): PiezaPredefinida, colorStyles, FORM_PIEZA_VACIO, FormPieza, FormularioPieza, ModalPieza(), ModalPiezaProps, colorStyles (+12 more)
+Cohesion: 0.10
+Nodes (14): ModalPieza(), colorStyles, FORM_TAREA_VACIO, FormTarea, FormularioTarea, ModalTarea(), ModalTareaProps, PiezaItem (+6 more)
 
 ### Community 11 - "Client History Modal & Sheet UI"
-Cohesion: 0.11
-Nodes (24): DialogDescription, DialogHeader(), Sheet, SheetDescription, SheetTitle, ClienteHistorialModal(), ClienteHistorialModalProps, DialogHeaderContent (+16 more)
+Cohesion: 0.10
+Nodes (18): Sheet, ClienteHistorialModalProps, DialogHeaderContent, HistorialContent, HistorialContentProps, ModalOrdenLazy, OrdenItem, SheetHeaderContent (+10 more)
 
 ### Community 12 - "Toast Notifications UI"
 Cohesion: 0.13
@@ -174,7 +184,7 @@ Nodes (25): Toast, ToastAction, ToastActionElement, ToastClose, ToastDescription
 
 ### Community 13 - "Dialog & Form Layouts"
 Cohesion: 0.12
-Nodes (22): AlertDialog, Dialog, DialogContent, DialogFooter(), DialogOverlay, DialogTitle, Form, FormControl (+14 more)
+Nodes (21): Dialog, Form, FormControl, FormDescription, FormField(), FormFieldContext, FormFieldContextValue, FormItem (+13 more)
 
 ### Community 14 - "Client Form & Select UI Components"
 Cohesion: 0.09
@@ -182,7 +192,7 @@ Nodes (22): Select, SelectContent, SelectItem, SelectLabel, SelectScrollDownButt
 
 ### Community 15 - "input.tsx & Input"
 Cohesion: 0.10
-Nodes (17): Input, Separator, SidebarMenuButton, sidebarMenuButtonVariants, SidebarProvider, SidebarRail, Tooltip, TooltipContent (+9 more)
+Nodes (18): Separator, SidebarGroupContent, SidebarGroupLabel, sidebarMenuButtonVariants, SidebarMenuSub, SidebarProvider, Skeleton(), Tooltip (+10 more)
 
 ### Community 16 - "tsconfig.json & compilerOptions"
 Cohesion: 0.10
@@ -197,8 +207,8 @@ Cohesion: 0.16
 Nodes (15): UserProfile(), Avatar, AvatarFallback, AvatarImage, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem (+7 more)
 
 ### Community 19 - "useOrdenesCliente.ts & useOrdenesCliente()"
-Cohesion: 0.16
-Nodes (11): useOrdenesCliente(), UserData, useUserData(), getUser(), verifyRole(), auth, db, firebaseConfig (+3 more)
+Cohesion: 0.06
+Nodes (31): ACCESIBILIDAD, ANIMACIONES, API, BASE DE DATOS, BOTONES, COLORES, COMPONENTES, DASHBOARDS SaaS (+23 more)
 
 ### Community 20 - "components.json & aliases"
 Cohesion: 0.11
@@ -209,36 +219,36 @@ Cohesion: 0.12
 Nodes (11): Menubar, MenubarCheckboxItem, MenubarContent, MenubarItem, MenubarLabel, MenubarRadioItem, MenubarSeparator, MenubarShortcut() (+3 more)
 
 ### Community 22 - "ClientesDataTable.tsx & ClienteCard"
-Cohesion: 0.14
-Nodes (8): ClienteCard, ClientesDataTableProps, Pagination, PaginationProps, haptic, useHapticFeedback(), CountUp(), CountUpProps
+Cohesion: 0.18
+Nodes (14): DialogContent, DialogDescription, DialogFooter(), DialogHeader(), DialogOverlay, DialogTitle, ClienteCard, ClientesDataTableProps (+6 more)
 
 ### Community 23 - "useKeyboardVisible.ts & useKeyboardVisible()"
-Cohesion: 0.16
-Nodes (13): useKeyboardVisible(), useCrearOrden(), usePersistentReducer(), FormAction, FormStep, FormularioMantenimiento(), FormularioMantenimientoProps, initialState (+5 more)
+Cohesion: 0.13
+Nodes (16): Contador, ContadorInput, ContadorInputProps, TIPOS_CONTADOR, useCrearOrden(), usePersistentReducer(), FormAction, FormStep (+8 more)
 
 ### Community 24 - "SheetTrigger & useOrdenesBusqueda()"
 Cohesion: 0.17
 Nodes (10): SheetTrigger, useOrdenesBusqueda(), useOrdenesInfinitas(), buildSearchableText(), formatFechaPure(), getTipoLabel(), Highlight, OrdenesMantenimientoPage() (+2 more)
 
 ### Community 25 - "App Layout & Layout Content"
-Cohesion: 0.22
-Nodes (12): App Layout, Layout Content, AuthGuard(), AuthGuardProps, PUBLIC_ROUTES, useAuth(), ClientesPage(), useAppLifecycle() (+4 more)
+Cohesion: 0.19
+Nodes (21): useTareasYPiezas, actualizarPieza(), actualizarTarea(), configDocRef(), crearPieza(), crearTarea(), eliminarPieza(), eliminarTarea() (+13 more)
 
 ### Community 26 - "ClienteFormModalProps & ClienteCardProps"
-Cohesion: 0.19
-Nodes (14): ClienteFormModalProps, ClienteCardProps, ClienteSimpleFormModalProps, ClienteViewModalProps, DispositivoFormModal(), DispositivoFormModalProps, DispositivoRow, DispositivoRowProps (+6 more)
+Cohesion: 0.17
+Nodes (15): ClienteFormModalProps, ClienteCardProps, ClienteSimpleFormModalProps, ClienteViewModalProps, DispositivoFormModal(), DispositivoFormModalProps, ClienteModalState, DispositivoRow (+7 more)
 
 ### Community 27 - "OrdenCard.tsx & CLS_BTN_PRIMARY"
 Cohesion: 0.13
 Nodes (11): CLS_BTN_PRIMARY, CLS_BTN_SECONDARY, CLS_CARD, DEFAULT_TIPO, DeviceIcon, Highlight, LAPTOP_BRANDS, OrdenCard (+3 more)
 
 ### Community 28 - "sheet.tsx & SheetContent"
-Cohesion: 0.19
-Nodes (12): SheetContent, SheetContentProps, SheetFooter(), SheetHeader(), SheetOverlay, sheetVariants, SheetContent, SheetContentProps (+4 more)
+Cohesion: 0.13
+Nodes (14): 1. FICHA TÉCNICA DEL PROYECTO, 2. DIAGNÓSTICO RÁPIDO, 3. ANÁLISIS TÉCNICO — LO QUE EL CÓDIGO REVELA, 4. EXPERIENCIA DE USO — DESDE EL CÓDIGO, 5. FIT CON EL MERCADO COLOMBIANO — LECTURA TÉCNICA, 6. NO NEGOCIABLES — LO QUE BLOQUEA EL LANZAMIENTO, 7. QUÉ QUITAR — SCOPE CREEP DETECTADO EN EL CÓDIGO, 8. RESUMEN DE ÁREAS DE MEJORA PRIORITARIAS (+6 more)
 
 ### Community 29 - "ClienteFormModal & ClientesDataTable"
-Cohesion: 0.23
-Nodes (10): ClienteFormModal, ClientesDataTable, ClientesList(), ClientesSkeleton, ClienteModalState, ModalMode, useClienteModal(), usePullToRefresh() (+2 more)
+Cohesion: 0.14
+Nodes (18): ClienteFormModal, ClienteHistorialModal(), ClientesDataTable, ClienteSimpleFormModal(), ClientesList(), ClientesSkeleton, ClienteViewModal(), ModalMode (+10 more)
 
 ### Community 30 - "modalOrdenImport() & ModalOrden.tsx"
 Cohesion: 0.15
@@ -249,12 +259,12 @@ Cohesion: 0.20
 Nodes (12): OrdenCardProps, DownloadButtonProps, escapeHTML(), generarContenidoHTML(), isCapacitor(), isNativePlatform(), PrintButton(), PrintButtonProps (+4 more)
 
 ### Community 32 - "inter & metadata"
-Cohesion: 0.25
-Nodes (7): inter, metadata, RootLayout(), AuthProvider(), CapacitorProvider(), FirestoreSyncProvider(), QueryProvider()
+Cohesion: 0.15
+Nodes (12): Class inventory (must exist in `template.html`), Layout 1 — Hero, centered, Layout 2 — Hero, split (text + visual), Layout 3 — Feature triplet, Layout 4 — Stat row (data billboard), Layout 5 — Pull quote (testimonial), Layout 6 — CTA strip (closing), Layout 7 — Log list (changelog / blog index / posts) (+4 more)
 
 ### Community 33 - "ContadorInput.tsx & Contador"
-Cohesion: 0.22
-Nodes (9): Contador, ContadorInput, ContadorInputProps, TIPOS_CONTADOR, ResumenMantenimiento(), ResumenMantenimientoProps, deobfuscateSignature(), FormState (+1 more)
+Cohesion: 0.35
+Nodes (6): useNetworkStatus(), useOfflineOrderQueue(), useOfflineQueue(), useOfflineSync(), NetworkStatusBanner(), OfflineSyncBanner()
 
 ### Community 34 - "PiezasInput.tsx & Pieza"
 Cohesion: 0.25
@@ -273,20 +283,16 @@ Cohesion: 0.22
 Nodes (9): devDependencies, @capacitor/assets, postcss, tailwindcss, @types/crypto-js, @types/node, @types/react, @types/react-dom (+1 more)
 
 ### Community 38 - "HTML Seed Template & Theme Tokens"
-Cohesion: 0.25
-Nodes (8): HTML Seed Template, Theme Tokens, P0 Must-Pass Checklist, Section Rhythm Guidance, Layout Skeletons, Tomato Web Prototype Example, Web Prototype Hard Rules, Web Prototype Skill
-
-### Community 39 - "AuthProvider.tsx & AuthContext"
-Cohesion: 0.25
-Nodes (5): AuthContext, AuthContextType, logger, SECURITY_CONFIG, UserDocument
+Cohesion: 0.11
+Nodes (18): HTML Seed Template, Theme Tokens, P0 Must-Pass Checklist, Section Rhythm Guidance, Layout Skeletons, Tomato Web Prototype Example, Web Prototype Hard Rules, Hard rules (the seed protects most of these — don't fight it) (+10 more)
 
 ### Community 40 - "ClienteSimpleFormModal() & ClienteSelector.tsx"
-Cohesion: 0.29
-Nodes (5): ClienteSimpleFormModal(), ClienteRow, ClienteRowProps, ClienteSelector, ClienteSelectorProps
+Cohesion: 0.33
+Nodes (6): PiezaPredefinida, colorStyles, FORM_PIEZA_VACIO, FormPieza, FormularioPieza, ModalPiezaProps
 
 ### Community 41 - "FirmaInput.tsx & FirmaInput()"
-Cohesion: 0.43
-Nodes (5): FirmaInput(), FirmaInputProps, SignatureState, useSignatureCanvas(), obfuscateSignature()
+Cohesion: 0.24
+Nodes (10): FirmaInput(), FirmaInputProps, ResumenMantenimiento(), ResumenMantenimientoProps, SignatureState, useSignatureCanvas(), deobfuscateSignature(), obfuscateSignature() (+2 more)
 
 ### Community 44 - "react-window.d.ts & FixedSizeList"
 Cohesion: 0.50
@@ -300,20 +306,32 @@ Nodes (3): TecniControl Brand Mark, Órdenes de Servicio Concept, Servicio Técn
 Cohesion: 0.67
 Nodes (3): Checklist and Compliance Concept, TecniControl Brand Logo, TecniControl Brand Identity
 
+### Community 72 - "Community 72"
+Cohesion: 0.33
+Nodes (5): Anti-slop spot-check, P0 — must pass, P1 — should pass, P2 — nice to have, Web prototype checklist
+
+### Community 73 - "Community 73"
+Cohesion: 0.50
+Nodes (3): AccordionContent, AccordionItem, AccordionTrigger
+
+### Community 74 - "Community 74"
+Cohesion: 1.00
+Nodes (3): Comp, Comp, Comp
+
 ## Knowledge Gaps
-- **415 isolated node(s):** `config`, `$schema`, `style`, `rsc`, `tsx` (+410 more)
+- **485 isolated node(s):** `config`, `$schema`, `style`, `rsc`, `tsx` (+480 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **22 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **25 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `cn()` connect `Base UI Elements` to `ContadorInput.tsx & Contador`, `Alert & Alert-Dialog UI`, `table.tsx & Table`, `App Layout & Voice Speech Provider`, `User Onboarding Flow`, `Client History Modal & Sheet UI`, `Toast Notifications UI`, `Dialog & Form Layouts`, `Client Form & Select UI Components`, `input.tsx & Input`, `button.tsx & Button`, `UserProfile.tsx & UserProfile()`, `menubar.tsx & Menubar`, `ClientesDataTable.tsx & ClienteCard`, `OrdenCard.tsx & CLS_BTN_PRIMARY`, `sheet.tsx & SheetContent`, `modalOrdenImport() & ModalOrden.tsx`?**
-  _High betweenness centrality (0.107) - this node is a cross-community bridge._
-- **Why does `useAuth()` connect `App Layout & Layout Content` to `inter & metadata`, `Offline Sync & Firestore Storage`, `PiezasInput.tsx & Pieza`, `Alert & Alert-Dialog UI`, `App Layout & Voice Speech Provider`, `Business Logic & Firestore Sanitizers`, `AuthProvider.tsx & AuthContext`, `ClienteSimpleFormModal() & ClienteSelector.tsx`, `User Onboarding Flow`, `Parts & Tasks Modals`, `Dialog & Form Layouts`, `Client Form & Select UI Components`, `UserProfile.tsx & UserProfile()`, `useOrdenesCliente.ts & useOrdenesCliente()`, `useKeyboardVisible.ts & useKeyboardVisible()`, `SheetTrigger & useOrdenesBusqueda()`, `ClienteFormModalProps & ClienteCardProps`, `ClienteFormModal & ClientesDataTable`?**
-  _High betweenness centrality (0.096) - this node is a cross-community bridge._
-- **Why does `db` connect `useOrdenesCliente.ts & useOrdenesCliente()` to `inter & metadata`, `Offline Sync & Firestore Storage`, `Alert & Alert-Dialog UI`, `Business Logic & Firestore Sanitizers`, `AuthProvider.tsx & AuthContext`, `ClientesDataTable.tsx & ClienteCard`, `App Layout & Layout Content`?**
-  _High betweenness centrality (0.018) - this node is a cross-community bridge._
+- **Why does `cn()` connect `Base UI Elements` to `Alert & Alert-Dialog UI`, `table.tsx & Table`, `App Layout & Voice Speech Provider`, `User Onboarding Flow`, `Community 73`, `FirmaInput.tsx & FirmaInput()`, `Client History Modal & Sheet UI`, `Toast Notifications UI`, `Dialog & Form Layouts`, `Client Form & Select UI Components`, `input.tsx & Input`, `button.tsx & Button`, `UserProfile.tsx & UserProfile()`, `menubar.tsx & Menubar`, `ClientesDataTable.tsx & ClienteCard`, `OrdenCard.tsx & CLS_BTN_PRIMARY`, `modalOrdenImport() & ModalOrden.tsx`?**
+  _High betweenness centrality (0.091) - this node is a cross-community bridge._
+- **Why does `useAuth()` connect `Offline Sync & Firestore Storage` to `PiezasInput.tsx & Pieza`, `Alert & Alert-Dialog UI`, `App Layout & Voice Speech Provider`, `Business Logic & Firestore Sanitizers`, `User Onboarding Flow`, `Parts & Tasks Modals`, `Client History Modal & Sheet UI`, `Dialog & Form Layouts`, `Client Form & Select UI Components`, `UserProfile.tsx & UserProfile()`, `useKeyboardVisible.ts & useKeyboardVisible()`, `SheetTrigger & useOrdenesBusqueda()`, `ClienteFormModalProps & ClienteCardProps`, `ClienteFormModal & ClientesDataTable`?**
+  _High betweenness centrality (0.084) - this node is a cross-community bridge._
+- **Why does `db` connect `Offline Sync & Firestore Storage` to `Alert & Alert-Dialog UI`, `Business Logic & Firestore Sanitizers`, `Client History Modal & Sheet UI`, `ClientesDataTable.tsx & ClienteCard`, `App Layout & Layout Content`?**
+  _High betweenness centrality (0.017) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `useAuth()` (e.g. with `AppLayout()` and `ClientesPage()`) actually correct?**
   _`useAuth()` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 30 inferred relationships involving `SidebarContext` (e.g. with `Comp` and `Sidebar`) actually correct?**
@@ -321,4 +339,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Are the 30 inferred relationships involving `SidebarContextProps` (e.g. with `Comp` and `Sidebar`) actually correct?**
   _`SidebarContextProps` has 30 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `config`, `$schema`, `style` to the rest of the system?**
-  _418 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _488 weakly-connected nodes found - possible documentation gaps or missing edges._

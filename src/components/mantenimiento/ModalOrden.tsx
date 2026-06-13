@@ -605,7 +605,7 @@ const DetailView = memo(({
 
         {/* GARANTÍA */}
         {(orden.garantiaHabilitada !== false && (orden.garantiaTiempoHasta || orden.garantiaDescripcion)) || (orden.garantiaHabilitada === false) ? (
-          <Card title="Garantía" icon={ShieldCheck} iconColor="text-amber-400">
+          <Card title="Garantía de la orden" icon={ShieldCheck} iconColor="text-amber-400">
             {orden.garantiaHabilitada === false ? (
               <div className="flex items-center justify-between py-1">
                 <p className="text-sm font-bold text-gray-500 italic">No aplica garantía</p>

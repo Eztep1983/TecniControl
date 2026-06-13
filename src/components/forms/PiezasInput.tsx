@@ -1,7 +1,8 @@
 // components/forms/PiezasInput.tsx
 'use client'
 import { Plus, Trash2, Package, Search, X, AlertCircle, ChevronDown } from 'lucide-react'
-import { useCallback, memo, useState, useEffect, useMemo, useRef, Dispatch, SetStateAction } from 'react'
+import { useCallback, memo, useState, useMemo, useRef, Dispatch, SetStateAction } from 'react'
+import { Drawer, DrawerContent, DrawerTrigger, DrawerTitle } from '@/components/ui/drawer'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { useTareasYPiezas } from '@/hooks/useTareasYPiezas'
 import { PiezaPredefinida } from '@/lib/configuracion-helpers'
@@ -22,10 +23,12 @@ interface PiezasInputProps {
 
 const SelectorCantidad = memo(({ 
   cantidad, 
+  nombrePieza,
   onCambiar, 
   onEliminar 
 }: { 
   cantidad: number, 
+  nombrePieza: string,
   onCambiar: (c: number) => void, 
   onEliminar: () => void 
 }) => {
@@ -48,6 +51,7 @@ const SelectorCantidad = memo(({
       <input
         type="number"
         inputMode="numeric"
+        aria-label={`Cantidad de ${nombrePieza}`}
         value={cantidad}
         onChange={(e) => {
           const val = parseInt(e.target.value) || 0;
@@ -90,7 +94,6 @@ export default memo(function PiezasInput({
   const [isOpen, setIsOpen] = useState(false)
   const [paginaActual, setPaginaActual] = useState(1)
   const ITEMS_POR_PAGINA = 8
-  const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Filtrar y sanitizar piezas reactivamente desde la caché
@@ -101,33 +104,15 @@ export default memo(function PiezasInput({
     }))
   }, [piezas])
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
   // Optimización de piezas ya agregadas
-  const idsSeleccionadas = useMemo(() => {
+  const { idsSeleccionadas, nombresPersonalizadas } = useMemo(() => {
     const ids = new Set<string>()
-    piezasUsadas.forEach(p => {
-      if (p.tipo === 'predefinida' && p.idPredefinida) {
-        ids.add(p.idPredefinida)
-      }
-    })
-    return ids
-  }, [piezasUsadas])
-
-  const nombresPersonalizadas = useMemo(() => {
     const names = new Set<string>()
     piezasUsadas.forEach(p => {
+      if (p.tipo === 'predefinida' && p.idPredefinida) ids.add(p.idPredefinida)
       if (p.tipo === 'personalizada') names.add(p.pieza.toLowerCase())
     })
-    return names
+    return { idsSeleccionadas: ids, nombresPersonalizadas: names }
   }, [piezasUsadas])
 
   const opcionesDisponibles = useMemo(() => {
@@ -149,27 +134,39 @@ export default memo(function PiezasInput({
 
   // Acciones
   const handleAgregarPredefinida = useCallback((pieza: PiezaPredefinida) => {
-    setPiezasUsadas(prev => [...prev, {
-      pieza: pieza.nombre, cantidad: 1, tipo: 'predefinida', idPredefinida: pieza.id
-    }])
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+    setIsOpen(false)
     selection()
-    setQuery(''); setIsOpen(false); setPaginaActual(1); inputRef.current?.blur()
+
+    setTimeout(() => {
+      setPiezasUsadas(prev => [...prev, {
+        pieza: pieza.nombre, cantidad: 1, tipo: 'predefinida', idPredefinida: pieza.id
+      }])
+    }, 200)
   }, [setPiezasUsadas, selection])
 
   const handleAgregarPersonalizada = useCallback((nombre: string) => {
-    // Guardar en Firestore reactivamente con cola offline y UI optimista
-    crearPieza({
-      nombre: nombre,
-      categoria: 'General'
-    })
-
-    setPiezasUsadas(prev => [...prev, {
-      pieza: nombre, cantidad: 1, tipo: 'personalizada'
-    }])
-    
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+    setIsOpen(false)
     success()
-    setQuery(''); setIsOpen(false); setPaginaActual(1); inputRef.current?.blur()
-  }, [setPiezasUsadas, crearPieza, success])
+
+    setTimeout(() => {
+      const existeEnPredefinidas = piezasPredefinidas.some(p => (p.nombre || '').toLowerCase() === nombre.toLowerCase())
+      if (!existeEnPredefinidas) {
+        crearPieza({
+          nombre: nombre,
+          categoria: 'General'
+        })
+      }
+      setPiezasUsadas(prev => [...prev, {
+        pieza: nombre, cantidad: 1, tipo: 'personalizada'
+      }])
+    }, 200)
+  }, [setPiezasUsadas, crearPieza, success, piezasPredefinidas])
 
   const handleEliminar = useCallback((index: number) => {
     impactLight()
@@ -195,97 +192,6 @@ export default memo(function PiezasInput({
 
   return (
     <div className="space-y-4">
-      {/* Search Input (Omnibox) */}
-      <div className="relative" ref={dropdownRef}>
-        <div className="relative flex items-center group">
-          <Search className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:text-purple-400 transition-colors pointer-events-none" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value)
-              setIsOpen(true)
-            }}
-            onFocus={() => setIsOpen(true)}
-            onKeyDown={handleKeyDown}
-            placeholder={loading ? "Cargando repuestos..." : "Busca o añade un repuesto..."}
-            className="w-full pl-12 pr-12 py-4 bg-gray-800/80 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-gray-800 transition-all text-base touch-manipulation shadow-inner"
-            disabled={loading}
-          />
-          {query && (
-             <button
-               type="button"
-               onClick={() => { setQuery(''); setIsOpen(false) }}
-               className="absolute right-3 w-10 h-10 flex items-center justify-center text-gray-500 hover:text-white rounded-xl hover:bg-gray-700/50 transition-colors touch-manipulation"
-               aria-label="Limpiar búsqueda"
-             >
-               <X className="w-5 h-5" />
-             </button>
-          )}
-        </div>
-
-        {/* Dropdown Lista */}
-        {isOpen && (!loading) && (opcionesDisponibles.length > 0 || mostrarAgregar) && (
-          <div className="absolute z-50 w-full mt-2 bg-gray-900/95 border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="max-h-[300px] overflow-y-auto overscroll-contain">
-              {mostrarAgregar && (
-                <button
-                  type="button"
-                  onClick={() => handleAgregarPersonalizada(queryLimpio)}
-                  className="w-full text-left px-5 py-4 border-b border-gray-700/50 hover:bg-purple-500/10 text-purple-300 active:bg-purple-500/20 transition-all flex items-center gap-4 group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Plus className="w-5 h-5 text-purple-400" />
-                  </div>
-                  <div className="flex-1">
-                    <span className="block font-bold text-sm uppercase tracking-wide">Añadir "{queryLimpio}"</span>
-                    <span className="text-[11px] text-purple-400/60 font-medium">Repuesto manual</span>
-                  </div>
-                </button>
-              )}
-
-              {opcionesPaginadas.map(pieza => (
-                <button
-                  key={pieza.id}
-                  type="button"
-                  onClick={() => handleAgregarPredefinida(pieza)}
-                  className="w-full text-left px-5 py-4 hover:bg-gray-700/40 active:bg-gray-700/60 text-gray-200 transition-all border-b border-gray-700/30 last:border-0 flex items-center gap-4 group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-gray-700 flex-shrink-0 flex items-center justify-center group-hover:bg-gray-600 transition-colors">
-                    <Package className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
-                  </div>
-                  <div className="flex-1">
-                    <span className="block font-medium text-sm sm:text-base leading-tight">{pieza.nombre}</span>
-                    {pieza.categoria && <span className="text-[10px] text-gray-500 uppercase tracking-tighter">{pieza.categoria}</span>}
-                  </div>
-                </button>
-              ))}
-
-              {tieneMasOpciones && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setPaginaActual(p => p + 1)
-                    impactLight()
-                  }}
-                  className="w-full py-4 text-center text-purple-400 font-bold text-sm hover:bg-purple-500/5 active:bg-purple-500/10 transition-colors flex items-center justify-center gap-2"
-                >
-                  <ChevronDown className="w-4 h-4" />
-                  Ver más piezas
-                </button>
-              )}
-            </div>
-
-            <div className="bg-gray-800/50 px-4 py-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest flex justify-between items-center">
-              <span>{opcionesDisponibles.length} repuestos</span>
-              {opcionesDisponibles.length > 0 && <span>Pág {paginaActual}</span>}
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Alertas */}
       {errorMostrar && (
         <div className="flex items-center gap-3 text-red-400 text-sm bg-red-500/10 p-4 rounded-xl border border-red-500/20 animate-in shake duration-500">
@@ -295,8 +201,8 @@ export default memo(function PiezasInput({
       )}
 
       {/* Lista de Repuestos Seleccionados */}
-      {piezasUsadas.length > 0 && (
-        <div className="flex flex-col gap-3 mt-2">
+      {piezasUsadas.length > 0 ? (
+        <div className="flex flex-col gap-3">
           <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Repuestos agregados</h4>
           {piezasUsadas.map((pieza, index) => (
             <div 
@@ -315,6 +221,7 @@ export default memo(function PiezasInput({
               <div className="flex items-center gap-3 flex-shrink-0">
                 <SelectorCantidad 
                   cantidad={pieza.cantidad}
+                  nombrePieza={pieza.pieza}
                   onCambiar={(c) => handleCambiarCantidad(index, c)}
                   onEliminar={() => handleEliminar(index)}
                 />
@@ -323,7 +230,7 @@ export default memo(function PiezasInput({
                   type="button"
                   onClick={() => handleEliminar(index)}
                   className="w-11 h-11 flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-500/10 active:bg-red-500/20 rounded-xl transition-all touch-manipulation shadow-sm"
-                  aria-label="Eliminar repuesto"
+                  aria-label={`Eliminar ${pieza.pieza}`}
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>
@@ -331,17 +238,135 @@ export default memo(function PiezasInput({
             </div>
           ))}
         </div>
+      ) : (
+        !loading && (
+          <div className="flex flex-col items-center justify-center py-6 px-4 text-center border-2 border-dashed border-gray-700/30 rounded-2xl bg-gray-800/10">
+            <p className="text-gray-500 text-sm font-medium">No hay repuestos registrados aún</p>
+          </div>
+        )
       )}
 
-      {piezasUsadas.length === 0 && !loading && (
-        <div className="flex flex-col items-center justify-center py-10 px-4 text-center border-2 border-dashed border-gray-700/30 rounded-2xl bg-gray-800/10">
-          <div className="w-12 h-12 rounded-full bg-gray-800/50 flex items-center justify-center mb-3">
-             <Package className="w-6 h-6 text-gray-600" />
+      {/* Drawer para Búsqueda */}
+      <Drawer open={isOpen} onOpenChange={(open) => {
+        setIsOpen(open)
+        if (open) {
+          setPaginaActual(1)
+        } else {
+          // Limpiar query después de que termine la animación de cierre
+          setTimeout(() => setQuery(''), 300)
+        }
+      }}>
+        <DrawerTrigger asChild>
+          <button 
+            type="button" 
+            className="w-full py-4 bg-gray-800/80 border-2 border-gray-700/50 rounded-2xl text-gray-400 hover:text-white hover:border-purple-500/50 transition-all text-base font-medium flex items-center justify-center gap-2 shadow-inner"
+            disabled={loading}
+          >
+            <Plus className="w-5 h-5" />
+            {loading ? "Cargando repuestos..." : "Añadir repuesto..."}
+          </button>
+        </DrawerTrigger>
+        <DrawerContent className="bg-gray-900 border-t border-gray-800 max-h-[85vh] flex flex-col">
+          <DrawerTitle className="sr-only">Buscador de repuestos</DrawerTitle>
+          <div className="p-4 border-b border-gray-800/50 shrink-0">
+            <div className="relative flex items-center group">
+              <Search className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:text-purple-400 transition-colors pointer-events-none" />
+              <input
+                ref={inputRef}
+                type="text"
+                role="combobox"
+                aria-expanded={true}
+                aria-controls="piezas-listbox"
+                aria-haspopup="listbox"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  setPaginaActual(1)
+                }}
+                onKeyDown={handleKeyDown}
+                placeholder="Escribe para buscar o añadir..."
+                className="w-full pl-12 pr-12 py-4 bg-gray-800/80 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-gray-800 transition-all text-base touch-manipulation shadow-inner"
+                autoFocus
+              />
+              {query && (
+                 <button
+                   type="button"
+                   onClick={() => setQuery('')}
+                   className="absolute right-3 w-10 h-10 flex items-center justify-center text-gray-500 hover:text-white rounded-xl hover:bg-gray-700/50 transition-colors touch-manipulation"
+                   aria-label="Limpiar búsqueda"
+                 >
+                   <X className="w-5 h-5" />
+                 </button>
+              )}
+            </div>
           </div>
-          <p className="text-gray-500 text-sm font-medium">No hay repuestos registrados aún</p>
-          <p className="text-gray-600 text-xs mt-1">Busca piezas en el inventario o añádelas manualmente</p>
-        </div>
-      )}
+
+          <div id="piezas-listbox" role="listbox" className="overflow-y-auto overscroll-contain flex-1 p-0 pb-6">
+             {(opcionesDisponibles.length > 0 || mostrarAgregar) ? (
+               <div className="flex flex-col">
+                  {mostrarAgregar && (
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected="false"
+                      onClick={() => handleAgregarPersonalizada(queryLimpio)}
+                      className="w-full text-left px-5 py-4 border-b border-gray-800 hover:bg-purple-500/10 text-purple-300 active:bg-purple-500/20 transition-all flex items-center gap-4 group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Plus className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="block font-bold text-sm uppercase tracking-wide truncate">Añadir "{queryLimpio}"</span>
+                        <span className="text-[11px] text-purple-400/60 font-medium truncate">Repuesto manual</span>
+                      </div>
+                    </button>
+                  )}
+                  {opcionesPaginadas.map(pieza => (
+                    <button
+                      key={pieza.id}
+                      type="button"
+                      role="option"
+                      aria-selected="false"
+                      onClick={() => handleAgregarPredefinida(pieza)}
+                      className="w-full text-left px-5 py-4 hover:bg-gray-800/40 active:bg-gray-800/60 text-gray-200 transition-all border-b border-gray-800 last:border-0 flex items-center gap-4 group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gray-700 flex-shrink-0 flex items-center justify-center group-hover:bg-gray-600 transition-colors">
+                        <Package className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="block font-medium text-sm sm:text-base leading-tight truncate">{pieza.nombre}</span>
+                        {pieza.categoria && <span className="text-[10px] text-gray-500 uppercase tracking-tighter truncate">{pieza.categoria}</span>}
+                      </div>
+                    </button>
+                  ))}
+                  {tieneMasOpciones && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setPaginaActual(p => p + 1)
+                        impactLight()
+                      }}
+                      className="w-full py-4 text-center text-purple-400 font-bold text-sm hover:bg-purple-500/5 active:bg-purple-500/10 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                      Ver más repuestos
+                    </button>
+                  )}
+               </div>
+             ) : (
+               <div className="py-12 text-center text-gray-500">
+                  <p className="text-sm">No se encontraron resultados</p>
+               </div>
+             )}
+          </div>
+          
+          <div className="bg-gray-900 px-4 py-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest flex justify-between items-center border-t border-gray-800 shrink-0">
+            <span>{opcionesDisponibles.length} repuestos</span>
+            {opcionesDisponibles.length > 0 && <span>Pág {paginaActual}</span>}
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   )
 })

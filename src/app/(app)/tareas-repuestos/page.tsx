@@ -563,7 +563,7 @@ export default function TareasRepuestosPage() {
       <header
         className="
           sticky top-0 z-40
-          bg-gray-900/90 backdrop-blur-md border-b border-slate-800/60
+          bg-gray-900/90 border-b border-slate-800/60
           -mx-4 -mt-4 px-4 py-3.5 mb-4
           sm:-mx-6 sm:-mt-6 sm:px-6
           lg:-mx-8 lg:-mt-8 lg:px-8

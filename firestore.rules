@@ -33,6 +33,13 @@ service cloud.firestore {
       return request.resource.data.userId == request.auth.uid;
     }
 
+    /// Obtiene el plan del usuario actual
+    function isPro() {
+      return isAuthenticated() 
+             && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+             && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.plan == 'pro';
+    }
+
     function isNonEmptyString(field) {
       return request.resource.data[field] is string
              && request.resource.data[field].size() > 0;
@@ -113,7 +120,7 @@ service cloud.firestore {
                   'posiblesCausas', 'diagnosticoFinal', 'contadorMaquina',
                   'contador', 'tipoMantenimiento', 'tareasRealizadas',
                   'piezasUsadas', 'garantiaTiempoDesde', 'garantiaTiempoHasta',
-                  'garantiaDescripcion', 'garantiaReferenciaId', 'garantiaMotivo',
+                  'garantiaDescripcion', 'garantiaHabilitada', 'garantiaReferenciaId', 'garantiaMotivo',
                   'instalacionRecomendaciones',
                   'instalacionRecomendacionesDetalle', 'instalacionConfiguracion',
                   'instalacionConfiguracionTipos', 'firmaCliente',
@@ -143,6 +150,7 @@ service cloud.firestore {
              && isOptionalList('instalacionConfiguracionTipos')
              && isOptionalString('firmaCliente')
              && isOptionalString('nombreFirmante')
+             && isOptionalBool('garantiaHabilitada')
              && isOptionalBool('instalacionRecomendaciones')
              && isOptionalBool('instalacionConfiguracion')
              && isOptionalBool('validacionCliente');
@@ -173,8 +181,8 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null && request.auth.uid == userId
-                    // Impedir que el usuario cambie su propio rol o UID (usando diff para mayor robustez)
-                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid'])
+                    // Impedir que el usuario cambie su propio rol, UID o plan (usando diff para mayor robustez)
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid', 'plan'])
                     // Lógica de Device Binding: Si ya tiene un deviceId, no puede cambiarlo
                     && (!('deviceId' in resource.data) || request.resource.data.deviceId == resource.data.deviceId);
       allow delete: if false;
@@ -232,7 +240,7 @@ service cloud.firestore {
                             'posiblesCausas', 'diagnosticoFinal', 'contadorMaquina',
                             'contador', 'tipoMantenimiento', 'tareasRealizadas',
                             'piezasUsadas', 'garantiaTiempoDesde', 'garantiaTiempoHasta',
-                            'garantiaDescripcion', 'garantiaReferenciaId', 'garantiaMotivo',
+                            'garantiaDescripcion', 'garantiaHabilitada', 'garantiaReferenciaId', 'garantiaMotivo',
                             'instalacionRecomendaciones',
                             'instalacionRecomendacionesDetalle', 'instalacionConfiguracion',
                             'instalacionConfiguracionTipos', 'firmaCliente',
@@ -255,7 +263,8 @@ service cloud.firestore {
       allow create: if isOwner(userId) && validNegocioPayload();
       allow update: if isOwner(userId)
                        && request.resource.data.userId == userId
-                       && validNegocioPayload();
+                       && validNegocioPayload()
+                       && (isPro() || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['logoUrl']));
       allow delete: if isOwner(userId);
     }
 
@@ -323,24 +332,28 @@ service cloud.firestore {
         allow read: if isOwner(userId);
 
         allow create: if isOwner(userId)
-                         && validTareaPayload();
+                         && validTareaPayload()
+                         && isPro();
 
         allow update: if isOwner(userId)
-                         && validTareaPayload();
+                         && validTareaPayload()
+                         && isPro();
 
-        allow delete: if isOwner(userId);
+        allow delete: if isOwner(userId) && isPro();
       }
 
       match /piezas/{piezaId} {
         allow read: if isOwner(userId);
 
         allow create: if isOwner(userId)
-                         && validPiezaPayload();
+                         && validPiezaPayload()
+                         && isPro();
 
         allow update: if isOwner(userId)
-                         && validPiezaPayload();
+                         && validPiezaPayload()
+                         && isPro();
 
-        allow delete: if isOwner(userId);
+        allow delete: if isOwner(userId) && isPro();
       }
     }
 

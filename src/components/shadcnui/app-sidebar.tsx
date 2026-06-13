@@ -68,9 +68,6 @@ export function AppSidebar() {
   const isActive = (href: string, view: AppView) => {
     if (isMobileNav) {
       // En mobile usamos el estado del contexto
-      if (view === 'ordenes') {
-        return activeView === 'ordenes' || activeView === 'ordenes/mantenimiento'
-      }
       return activeView === view
     }
     // En desktop usamos el pathname de Next.js

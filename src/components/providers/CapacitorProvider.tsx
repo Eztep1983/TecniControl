@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { SplashScreen } from "@capacitor/splash-screen";
 
 // Interceptar y desviar errores del bridge nativo de Capacitor para evitar que
@@ -18,6 +19,7 @@ if (typeof window !== "undefined") {
 }
 
 export default function CapacitorProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   useEffect(() => {
     // Hide the splash screen once the client-side app has mounted
     const hideSplash = async () => {
@@ -29,6 +31,18 @@ export default function CapacitorProvider({ children }: { children: React.ReactN
     };
     hideSplash();
   }, []);
+
+  // Limpieza global defensiva de estilos de scroll-lock
+  // Cuando el usuario navega a otra ruta mientras un modal o drawer estaba abierto (animando su cierre)
+  // las librerías como vaul o radix a veces no logran limpiar el body, bloqueando la app entera.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    document.body.style.pointerEvents = "";
+    document.body.style.overflow = "";
+    document.body.style.touchAction = "";
+    document.body.removeAttribute("data-scroll-locked");
+    document.body.classList.remove("onboarding-active"); // En caso de que haya quedado pegado
+  }, [pathname]);
 
   return <>{children}</>;
 }

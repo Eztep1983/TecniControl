@@ -10,6 +10,7 @@ import {
 import { useKeyboardVisible } from "@/hooks/useKeyboardVisible";
 import { useEstadisticasUsuario } from "@/hooks/useMultiUser";
 import { useScrollAware } from "@/hooks/useScrollAware";
+import { useRouter } from "next/navigation";
 
 interface NavItemConfig {
   name: string;
@@ -37,9 +38,6 @@ export function MobileNav() {
   const isHidden = isKeyboardVisible || !isScrollVisible;
 
   const isViewActive = (view: AppView) => {
-    if (view === "ordenes") {
-      return activeView === "ordenes" || activeView === "ordenes/mantenimiento";
-    }
     return activeView === view;
   };
 
@@ -47,14 +45,10 @@ export function MobileNav() {
     navigateTo(view);
   };
 
+  const router = useRouter();
+
   const handleNuevaOrden = () => {
-    if (isViewActive("ordenes")) {
-      triggerNuevaOrden();
-    } else {
-      navigateTo("ordenes");
-      // Disparar después de navegar (deferred) — permite montar listeners
-      setTimeout(() => triggerNuevaOrden(), 0);
-    }
+    router.push("?modal=crear-orden", { scroll: false });
   };
 
   return (

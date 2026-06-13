@@ -1,7 +1,8 @@
 // components/forms/TareasInput.tsx
 'use client'
 import { Check, AlertCircle, X, Search, Zap, Plus, ChevronDown } from 'lucide-react'
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
+import { Drawer, DrawerContent, DrawerTrigger, DrawerTitle } from '@/components/ui/drawer'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { useTareasYPiezas } from '@/hooks/useTareasYPiezas'
 import { TareaPredefinida } from '@/lib/configuracion-helpers'
@@ -17,7 +18,7 @@ interface TareasInputProps {
   onEliminarTareaPersonalizada: (index: number) => void
 }
 
-export default function TareasInput({
+export default memo(function TareasInput({
   tipoMantenimiento,
   tareasSeleccionadas = [],
   tareasPersonalizadas = [],
@@ -35,7 +36,6 @@ export default function TareasInput({
   const [isOpen, setIsOpen] = useState(false)
   const [paginaActual, setPaginaActual] = useState(1)
   const ITEMS_POR_PAGINA = 8
-  const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Filtrar tareas reactivamente desde la caché
@@ -47,17 +47,6 @@ export default function TareasInput({
     }))
     return tareasSanitizadas.filter(t => t.tipo === tipoMantenimiento || t.tipo === 'ambos')
   }, [tareas, tipoMantenimiento])
-
-  // Click outside to close dropdown
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   // Consolidar chips a mostrar
   const chips = useMemo(() => {
@@ -100,29 +89,37 @@ export default function TareasInput({
 
     const tipoNuevaTarea = (tipoMantenimiento === 'preventivo' || tipoMantenimiento === 'correctivo') ? tipoMantenimiento : 'preventivo'
 
-    // Guardar en Firestore reactivamente con cola offline y UI optimista
-    crearTarea({
-      nombre: nuevoValor,
-      tipo: tipoNuevaTarea,
-      categoria: 'General'
-    })
-
-        onAgregarTareaPersonalizada(nuevoValor)
-    
-    success()
-    setQuery('')
+    // Ocultar teclado y cerrar modal primero para animaciones fluidas
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
     setIsOpen(false)
-    setPaginaActual(1)
-    inputRef.current?.blur()
-  }, [tareasPersonalizadas.length, onAgregarTareaPersonalizada, crearTarea, tipoMantenimiento, success, hapticError])
+    success()
+    
+    // Retrasar la actualización del estado para no desmontar el botón durante el click (previene bug de scroll lock en vaul)
+    setTimeout(() => {
+      const existeEnPredefinidas = tareasPredefinidas.some(t => (t.nombre || '').toLowerCase() === nuevoValor.toLowerCase())
+      if (!existeEnPredefinidas) {
+        crearTarea({
+          nombre: nuevoValor,
+          tipo: tipoNuevaTarea,
+          categoria: 'General'
+        })
+      }
+      onAgregarTareaPersonalizada(nuevoValor)
+    }, 200)
+  }, [tareasPersonalizadas.length, onAgregarTareaPersonalizada, crearTarea, tipoMantenimiento, success, hapticError, tareasPredefinidas])
 
   const handleSeleccionarPredefinida = useCallback((nombre: string) => {
-    onToggleTareaPredefinida(nombre)
-    selection()
-    setQuery('')
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
     setIsOpen(false)
-    setPaginaActual(1)
-    inputRef.current?.blur()
+    selection()
+    
+    setTimeout(() => {
+      onToggleTareaPredefinida(nombre)
+    }, 200)
   }, [onToggleTareaPredefinida, selection])
 
   const handleEliminarChip = useCallback((chip: typeof chips[0]) => {
@@ -147,97 +144,6 @@ export default function TareasInput({
 
   return (
     <div className="space-y-4">
-      {/* Search Input (Omnibox) */}
-      <div className="relative" ref={dropdownRef}>
-        <div className="relative flex items-center group">
-          <Search className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:text-blue-400 transition-colors pointer-events-none" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value)
-              setIsOpen(true)
-            }}
-            onFocus={() => setIsOpen(true)}
-            onKeyDown={handleKeyDown}
-            placeholder={cargando ? "Cargando tareas..." : "Busca o añade una tarea..."}
-            className="w-full pl-12 pr-12 py-4 bg-gray-800/80 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:bg-gray-800 transition-all text-base touch-manipulation shadow-inner"
-            disabled={cargando}
-          />
-          {query && (
-             <button
-               type="button"
-               onClick={() => { setQuery(''); setIsOpen(false) }}
-               className="absolute right-3 w-10 h-10 flex items-center justify-center text-gray-500 hover:text-white rounded-xl hover:bg-gray-700/50 transition-colors touch-manipulation"
-               aria-label="Limpiar búsqueda"
-             >
-               <X className="w-5 h-5" />
-             </button>
-          )}
-        </div>
-
-        {/*Lista */}
-        {isOpen && (!cargando) && (opcionesDisponibles.length > 0 || mostrarOpcionAgregar) && (
-          <div className="absolute z-50 w-full mt-2 bg-gray-900/95 border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="max-h-[300px] overflow-y-auto overscroll-contain">
-              {mostrarOpcionAgregar && (
-                <button
-                  type="button"
-                  onClick={() => handleAgregarPersonalizada(query.trim())}
-                  className="w-full text-left px-5 py-4 border-b border-gray-700/50 hover:bg-blue-500/10 text-blue-300 active:bg-blue-500/20 transition-all flex items-center gap-4 group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Plus className="w-5 h-5 text-blue-400" />
-                  </div>
-                  <div className="flex-1">
-                    <span className="block font-bold text-sm uppercase tracking-wide">Añadir "{query.trim()}"</span>
-                    <span className="text-[11px] text-blue-400/60 font-medium">Nueva tarea personalizada</span>
-                  </div>
-                </button>
-              )}
-
-              {opcionesPaginadas.map(tarea => (
-                <button
-                  key={tarea.id}
-                  type="button"
-                  onClick={() => handleSeleccionarPredefinida(tarea.nombre)}
-                  className="w-full text-left px-5 py-4 hover:bg-gray-700/40 active:bg-gray-700/60 text-gray-200 transition-all border-b border-gray-700/30 last:border-0 flex items-center gap-4 group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-gray-700 flex-shrink-0 flex items-center justify-center group-hover:bg-gray-600 transition-colors">
-                    <Zap className="w-5 h-5 text-gray-400 group-hover:text-yellow-400 transition-colors" />
-                  </div>
-                  <div className="flex-1">
-                    <span className="block font-medium text-sm sm:text-base leading-tight">{tarea.nombre}</span>
-                    {tarea.categoria && <span className="text-[10px] text-gray-500 uppercase tracking-tighter">{tarea.categoria}</span>}
-                  </div>
-                </button>
-              ))}
-
-              {tieneMasOpciones && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setPaginaActual(p => p + 1)
-                    impactLight()
-                  }}
-                  className="w-full py-4 text-center text-blue-400 font-bold text-sm hover:bg-blue-500/5 active:bg-blue-500/10 transition-colors flex items-center justify-center gap-2"
-                >
-                  <ChevronDown className="w-4 h-4" />
-                  Cargar más resultados
-                </button>
-              )}
-            </div>
-            
-            <div className="bg-gray-800/50 px-4 py-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest flex justify-between items-center">
-              <span>{opcionesDisponibles.length} resultados</span>
-              {opcionesDisponibles.length > 0 && <span>Pág {paginaActual}</span>}
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Alertas Error */}
       {error && (
         <div className="flex items-center gap-3 text-red-400 text-sm bg-red-500/10 p-4 rounded-xl border border-red-500/20 animate-in shake duration-500">
@@ -247,8 +153,8 @@ export default function TareasInput({
       )}
 
       {/* Chips (Seleccionadas) */}
-      {chips.length > 0 && (
-        <div className="flex flex-col gap-2.5 mt-2">
+      {chips.length > 0 ? (
+        <div className="flex flex-col gap-2.5">
           <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">Items seleccionados</h4>
           <div className="flex flex-wrap gap-2.5">
             {chips.map(chip => (
@@ -262,7 +168,7 @@ export default function TareasInput({
                   }
                 `}
               >
-                <span className="max-w-[200px] truncate">{chip.nombre}</span>
+                <span className="min-w-0 flex-1 truncate">{chip.nombre}</span>
                 <button
                   type="button"
                   onClick={() => handleEliminarChip(chip)}
@@ -270,7 +176,7 @@ export default function TareasInput({
                     w-8 h-8 flex items-center justify-center rounded-xl hover:bg-black/20 focus:outline-none transition-colors touch-manipulation
                     ${chip.esPredefinida ? 'text-blue-400 hover:text-blue-200' : 'text-purple-400 hover:text-purple-200'}
                   `}
-                  aria-label="Eliminar tarea"
+                  aria-label={`Eliminar ${chip.nombre}`}
                 >
                   <X className="w-4 h-4" strokeWidth={3} />
                 </button>
@@ -278,18 +184,135 @@ export default function TareasInput({
             ))}
           </div>
         </div>
+      ) : (
+        !cargando && (
+          <div className="flex flex-col items-center justify-center py-6 px-4 text-center border-2 border-dashed border-gray-700/30 rounded-2xl bg-gray-800/10">
+            <p className="text-gray-500 text-sm font-medium">No hay actividades registradas aún</p>
+          </div>
+        )
       )}
 
-      {chips.length === 0 && !cargando && (
-        <div className="flex flex-col items-center justify-center py-10 px-4 text-center border-2 border-dashed border-gray-700/30 rounded-2xl bg-gray-800/10">
-          <div className="w-12 h-12 rounded-full bg-gray-800/50 flex items-center justify-center mb-3">
-             <Plus className="w-6 h-6 text-gray-600" />
+      {/* Botón para abrir el Drawer */}
+      <Drawer open={isOpen} onOpenChange={(open) => {
+        setIsOpen(open)
+        if (open) {
+          setPaginaActual(1)
+        } else {
+          // Limpiar query después de que termine la animación de cierre
+          setTimeout(() => setQuery(''), 300)
+        }
+      }}>
+        <DrawerTrigger asChild>
+          <button 
+            type="button" 
+            className="w-full py-4 bg-gray-800/80 border-2 border-gray-700/50 rounded-2xl text-gray-400 hover:text-white hover:border-blue-500/50 transition-all text-base font-medium flex items-center justify-center gap-2 shadow-inner"
+            disabled={cargando}
+          >
+            <Plus className="w-5 h-5" />
+            {cargando ? "Cargando tareas..." : "Añadir tarea..."}
+          </button>
+        </DrawerTrigger>
+        <DrawerContent className="bg-gray-900 border-t border-gray-800 max-h-[85vh] flex flex-col">
+          <DrawerTitle className="sr-only">Buscador de tareas</DrawerTitle>
+          <div className="p-4 border-b border-gray-800/50 shrink-0">
+            <div className="relative flex items-center group">
+              <Search className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:text-blue-400 transition-colors pointer-events-none" />
+              <input
+                ref={inputRef}
+                type="text"
+                role="combobox"
+                aria-expanded={true}
+                aria-controls="tareas-listbox"
+                aria-haspopup="listbox"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  setPaginaActual(1)
+                }}
+                onKeyDown={handleKeyDown}
+                placeholder="Escribe para buscar o añadir..."
+                className="w-full pl-12 pr-12 py-4 bg-gray-800/80 border-2 border-gray-700/50 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:bg-gray-800 transition-all text-base touch-manipulation shadow-inner"
+                autoFocus
+              />
+              {query && (
+                 <button
+                   type="button"
+                   onClick={() => setQuery('')}
+                   className="absolute right-3 w-10 h-10 flex items-center justify-center text-gray-500 hover:text-white rounded-xl hover:bg-gray-700/50 transition-colors touch-manipulation"
+                   aria-label="Limpiar búsqueda"
+                 >
+                   <X className="w-5 h-5" />
+                 </button>
+              )}
+            </div>
           </div>
-          <p className="text-gray-500 text-sm font-medium">No hay actividades registradas aún</p>
-          <p className="text-gray-600 text-xs mt-1">Usa el buscador para añadir tareas realizadas</p>
-        </div>
-      )}
+
+          <div id="tareas-listbox" role="listbox" className="overflow-y-auto overscroll-contain flex-1 p-0 pb-6">
+             {(opcionesDisponibles.length > 0 || mostrarOpcionAgregar) ? (
+               <div className="flex flex-col">
+                  {mostrarOpcionAgregar && (
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected="false"
+                      onClick={() => handleAgregarPersonalizada(query.trim())}
+                      className="w-full text-left px-5 py-4 border-b border-gray-800 hover:bg-blue-500/10 text-blue-300 active:bg-blue-500/20 transition-all flex items-center gap-4 group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Plus className="w-5 h-5 text-blue-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="block font-bold text-sm uppercase tracking-wide truncate">Añadir "{query.trim()}"</span>
+                        <span className="text-[11px] text-blue-400/60 font-medium truncate">Nueva tarea personalizada</span>
+                      </div>
+                    </button>
+                  )}
+                  {opcionesPaginadas.map(tarea => (
+                    <button
+                      key={tarea.id}
+                      type="button"
+                      role="option"
+                      aria-selected="false"
+                      onClick={() => handleSeleccionarPredefinida(tarea.nombre)}
+                      className="w-full text-left px-5 py-4 hover:bg-gray-800/40 active:bg-gray-800/60 text-gray-200 transition-all border-b border-gray-800 last:border-0 flex items-center gap-4 group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gray-700 flex-shrink-0 flex items-center justify-center group-hover:bg-gray-600 transition-colors">
+                        <Zap className="w-5 h-5 text-gray-400 group-hover:text-yellow-400 transition-colors" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="block font-medium text-sm sm:text-base leading-tight truncate">{tarea.nombre}</span>
+                        {tarea.categoria && <span className="text-[10px] text-gray-500 uppercase tracking-tighter truncate">{tarea.categoria}</span>}
+                      </div>
+                    </button>
+                  ))}
+                  {tieneMasOpciones && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setPaginaActual(p => p + 1)
+                        impactLight()
+                      }}
+                      className="w-full py-4 text-center text-blue-400 font-bold text-sm hover:bg-blue-500/5 active:bg-blue-500/10 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                      Cargar más resultados
+                    </button>
+                  )}
+               </div>
+             ) : (
+               <div className="py-12 text-center text-gray-500">
+                  <p className="text-sm">No se encontraron resultados</p>
+               </div>
+             )}
+          </div>
+          
+          <div className="bg-gray-900 px-4 py-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest flex justify-between items-center border-t border-gray-800 shrink-0">
+            <span>{opcionesDisponibles.length} resultados</span>
+            {opcionesDisponibles.length > 0 && <span>Pág {paginaActual}</span>}
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   )
-  
-}
+})
