@@ -1,12 +1,13 @@
 // formulario.tsx
 'use client'
-import { useState, useEffect, useCallback, useMemo, useReducer } from 'react'
+import { useState, useEffect, useCallback, useMemo, useReducer, useRef } from 'react'
 import { OrdenMantenimiento, Cliente, Dispositivo } from '@/types/orden'
 import { createPortal } from 'react-dom';
 import {
   ArrowLeft, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench,
   ClipboardCheck, GaugeCircle, Laptop, ShieldCheck, PenLine, Check, Share2, Sparkles,
-  LockIcon, CloudOff
+  LockIcon, CloudOff,
+  X
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -27,8 +28,8 @@ import { useKeyboardVisible } from '@/hooks/useKeyboardVisible'
 import { useOfflineOrderQueue } from '@/hooks/useOfflineOrderQueue'
 
 interface FormularioMantenimientoProps {
-  onClose: () => void
-  onSuccess: () => void
+  onClose: (stepsToPop?: number) => void
+  onSuccess: (stepsToPop?: number) => void
   isOnboarding?: boolean
 }
 
@@ -506,6 +507,10 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   const [hintExpanded, setHintExpanded] = useState(false)
   // ordenCreada es estado LOCAL (no persistente) para que clearPersistence() no lo borre
   const [ordenCreada, setOrdenCreada] = useState<OrdenMantenimiento | null>(null)
+  
+  // Ref para manejar el botón de atrás en Android y evitar cerrar el modal
+  const stepsPushed = useRef(0)
+
   const [state, dispatch, clearPersistence] = usePersistentReducer(
     isOnboarding ? 'draft_onboarding' : 'draft_mantenimiento',
     formReducer,
@@ -516,6 +521,37 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   // ============================================================================
   // EFFECTS
   // ============================================================================
+
+  // Sincronizar steps con el history API para el botón de retroceso nativo
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state?.modal === "crear-orden" && e.state?.formStep) {
+        stepsPushed.current = Math.max(0, stepsPushed.current - 1)
+        dispatch({ type: 'SET_CURRENT_STEP', payload: e.state.formStep })
+      }
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  // Inyectar historial cuando se reanuda un borrador (hidratación asíncrona)
+  useEffect(() => {
+    const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
+    
+    // Si estamos en un paso avanzado y no hemos pusheado historia aún (al reanudar después del HYDRATE)
+    if (currentIndex > 0 && stepsPushed.current === 0) {
+      window.history.replaceState({ ...window.history.state, formStep: STEPS_CONFIG[0].key }, "")
+      
+      for (let i = 1; i <= currentIndex; i++) {
+        stepsPushed.current += 1
+        window.history.pushState({ ...window.history.state, formStep: STEPS_CONFIG[i].key }, "")
+      }
+    } else if (!window.history.state?.formStep && currentIndex === 0) {
+      // Flujo normal al empezar nueva orden
+      window.history.replaceState({ ...window.history.state, formStep: state.currentStep }, "")
+    }
+  }, [state.currentStep])
 
   // 2. Auto-scroll al enfocar inputs (Mejora UX Nativa)
   useEffect(() => {
@@ -690,10 +726,9 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   const prevStep = useCallback(() => {
     const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
     if (currentIndex > 0) {
-      dispatch({ type: 'SET_CURRENT_STEP', payload: STEPS_CONFIG[currentIndex - 1].key })
-      scrollToTop()
+      window.history.back()
     }
-  }, [state.currentStep, scrollToTop])
+  }, [state.currentStep])
 
   const canProceedToNextStep = useCallback(() => {
     const currentIndex = STEPS_CONFIG.findIndex(step => step.key === state.currentStep)
@@ -710,7 +745,10 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
         dispatch({ type: 'SET_HIGHEST_STEP_COMPLETED', payload: nextIndex })
       }
 
-      dispatch({ type: 'SET_CURRENT_STEP', payload: STEPS_CONFIG[nextIndex].key })
+      const nextKey = STEPS_CONFIG[nextIndex].key
+      stepsPushed.current += 1
+      window.history.pushState({ ...window.history.state, formStep: nextKey }, "")
+      dispatch({ type: 'SET_CURRENT_STEP', payload: nextKey })
       scrollToTop()
     }
   }, [state.currentStep, state.highestStepCompleted, canProceedToNextStep, scrollToTop])
@@ -722,6 +760,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   const goToStep = useCallback((stepKey: FormStep) => {
     const targetIndex = STEPS_CONFIG.findIndex(step => step.key === stepKey)
     if (isStepAccessible(targetIndex)) {
+      stepsPushed.current += 1
+      window.history.pushState({ ...window.history.state, formStep: stepKey }, "")
       dispatch({ type: 'SET_CURRENT_STEP', payload: stepKey })
       scrollToTop()
     }
@@ -1345,11 +1385,12 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
       <header className="sticky top-0 z-30 bg-gray-900/95 border-b border-gray-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white p-2 -ml-2 rounded-full hover:bg-gray-800 transition-all active:scale-90"
-            aria-label="Cerrar"
+            type="button"
+            onClick={() => onClose(stepsPushed.current + 1)}
+            className="p-3 text-white/80 hover:bg-white/10 rounded-full transition-colors active:scale-95 touch-manipulation"
+            aria-label="Cerrar formulario"
           >
-            <ArrowLeft className="w-6 h-6" />
+            <X className="w-6 h-6" />
           </button>
           
           <div className="text-center flex-1 mx-4">
@@ -1422,7 +1463,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={() => onClose(stepsPushed.current + 1)}
                 disabled={state.loading}
                 className="h-12 px-5 text-base font-medium text-gray-300 bg-gray-800 rounded-xl hover:bg-gray-700 disabled:opacity-50 transition-all active:scale-95 touch-manipulation"
               >
@@ -1536,8 +1577,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
                     </button>
                     <button
                       onClick={() => {
-                        onSuccess();
-                        onClose();
+                        onSuccess(stepsPushed.current + 1);
                       }}
                       className="w-full h-12 mt-4 text-gray-400 hover:text-white font-medium transition-colors touch-manipulation"
                     >

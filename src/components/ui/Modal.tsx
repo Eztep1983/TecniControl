@@ -36,7 +36,7 @@ export function useKeyboardOffset() {
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
-  title: string
+  title: React.ReactNode
   children: React.ReactNode
 }
 
@@ -87,43 +87,48 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden"
-      role="dialog"
-      aria-modal="true"
+      className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center sm:p-6 pointer-events-auto"
+      style={{
+        backgroundColor: isVisible ? 'rgba(0, 0, 0, 0.7)' : 'rgba(0, 0, 0, 0)',
+        transition: 'background-color 300ms cubic-bezier(0.16, 1, 0.3, 1)'
+      }}
+      onClick={onClose}
+      role="presentation"
     >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/80"
-        style={{
-          opacity: isVisible ? 1 : 0,
-          transition: 'opacity 300ms cubic-bezier(0.16, 1, 0.3, 1)'
-        }}
-        onClick={onClose}
-      />
-
-      {/* Modal Container */}
       <div
         ref={modalRef}
         style={{
-          // Levantamos el modal si el teclado está abierto (UX optimizado para Android/iOS)
-          // Usamos una traslación más agresiva pero limitada para asegurar visibilidad
           transform: isVisible 
-            ? `translateY(calc(-${keyboardOffset}px * 0.45)) scale(1)` 
-            : `translateY(calc(-${keyboardOffset}px * 0.45 + 40px)) scale(0.95)`,
+            ? 'translateY(0) scale(1)' 
+            : 'translateY(40px) scale(0.95)',
           opacity: isVisible ? 1 : 0,
           transition: 'transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms cubic-bezier(0.16, 1, 0.3, 1)',
-          maxHeight: keyboardOffset > 0 ? `calc(100dvh - ${keyboardOffset}px - 20px)` : '85dvh',
+          paddingBottom: keyboardOffset > 0 ? `${keyboardOffset}px` : 'env(safe-area-inset-bottom)'
         }}
-        className="
-          relative bg-slate-900 w-full max-w-[min(400px,95vw)] rounded-[2.5rem]
-          shadow-2xl border border-slate-700/60 flex flex-col overflow-hidden
-          ring-1 ring-white/10 transform-gpu will-change-[transform,opacity]
-        "
+        className={`
+          bg-slate-900 w-full flex flex-col overflow-hidden relative
+          shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] border-t border-x border-slate-700/60 sm:border
+          rounded-t-[2.5rem] sm:rounded-[2.5rem]
+          max-h-[92dvh]
+          sm:h-auto sm:max-w-md sm:max-h-[85vh]
+          transform-gpu will-change-[transform,opacity]
+        `}
         onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
       >
+        {/* Drag Handle - Visible on all devices when in sheet mode */}
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0 sm:hidden">
+          <div className="w-12 h-1.5 rounded-full bg-white/10" />
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800/50 shrink-0">
-          <h3 className="text-xl font-bold text-white tracking-tight">{title}</h3>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800/50 shrink-0 relative">
+          {typeof title === 'string' ? (
+            <h3 className="text-xl font-bold text-white tracking-tight">{title}</h3>
+          ) : (
+            title
+          )}
           <button
             onClick={onClose}
             type="button"
@@ -143,7 +148,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
           className="p-6 overflow-y-auto overscroll-contain flex-1 custom-scrollbar"
           style={{ 
             WebkitOverflowScrolling: 'touch',
-            paddingBottom: keyboardOffset > 0 ? '2rem' : '1.5rem' 
+            paddingBottom: '1.5rem' 
           }}
         >
           {children}

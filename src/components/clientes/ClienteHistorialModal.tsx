@@ -2,8 +2,7 @@
 
 import React, { useState, useCallback, Suspense, memo, useMemo, useRef } from "react";
 import { FixedSizeList as List, ListChildComponentProps } from "react-window";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/basic/dialog";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/basic/sheet";
+import { Modal } from "@/components/ui/Modal";
 import { useMediaQuery } from "@/hooks/clientes/useMediaQuery";
 import { useOrdenesCliente } from "@/hooks/clientes/useOrdenesCliente";
 import { useAndroidBack } from "@/hooks/useAndroidBack";
@@ -49,60 +48,7 @@ function formatFecha(fecha: any): string {
   }
 }
 
-// ── Componente de Cabecera Memoizado ───────────────────────────────────────
-// FIX #8: Usa SheetTitle/SheetDescription cuando está dentro de Sheet
-//         y DialogTitle/DialogDescription cuando está dentro de Dialog.
-//         Cada wrapper semántico provee los aria-roles correctos.
 
-const SheetHeaderContent = memo(({
-  loading,
-  ordenesCount,
-  clienteNombre,
-}: {
-  loading: boolean;
-  ordenesCount: number;
-  clienteNombre: string;
-}) => (
-  <div className="flex items-center justify-between w-full pr-10">
-    <div className="min-w-0">
-      <SheetTitle className="text-base font-bold text-white leading-tight">Historial de órdenes</SheetTitle>
-      <SheetDescription className="text-xs text-gray-500 truncate mt-0.5">{clienteNombre}</SheetDescription>
-    </div>
-    {!loading && ordenesCount > 0 && (
-      <div className="flex-shrink-0 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
-        <span className="text-[10px] font-black text-blue-400">
-          {ordenesCount} {ordenesCount === 1 ? 'ORDEN' : 'ÓRDENES'}
-        </span>
-      </div>
-    )}
-  </div>
-));
-SheetHeaderContent.displayName = "SheetHeaderContent";
-
-const DialogHeaderContent = memo(({
-  loading,
-  ordenesCount,
-  clienteNombre,
-}: {
-  loading: boolean;
-  ordenesCount: number;
-  clienteNombre: string;
-}) => (
-  <div className="flex items-center justify-between w-full pr-10">
-    <div className="min-w-0">
-      <DialogTitle className="text-base font-bold text-white leading-tight">Historial de órdenes</DialogTitle>
-      <DialogDescription className="text-xs text-gray-500 truncate mt-0.5">{clienteNombre}</DialogDescription>
-    </div>
-    {!loading && ordenesCount > 0 && (
-      <div className="flex-shrink-0 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
-        <span className="text-[10px] font-black text-blue-400">
-          {ordenesCount} {ordenesCount === 1 ? 'ORDEN' : 'ÓRDENES'}
-        </span>
-      </div>
-    )}
-  </div>
-));
-DialogHeaderContent.displayName = "DialogHeaderContent";
 
 // ── Tarjeta de Orden Individual Memoizada ──────────────────────────────────
 const OrdenItem = memo(({
@@ -371,91 +317,43 @@ export function ClienteHistorialModal({
 
   return (
     <>
-      {isMobile ? (
-        <Sheet open={open} onOpenChange={handleOpenChange}>
-          <SheetContent
-            hideClose
-            side="bottom"
-            className="rounded-t-[2.5rem] bg-gray-900 border-t border-gray-800 p-0 max-h-[90vh] flex flex-col overflow-hidden z-[105]"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onInteractOutside={handleInteractOutside}
-          >
-            <div className="w-12 h-1.5 bg-gray-800 rounded-full mx-auto mt-3 mb-1 flex-shrink-0" />
-
-            {/* FIX #8: SheetHeader con SheetTitle/SheetDescription para aria correcto */}
-            <SheetHeader className="px-6 py-4 border-b border-gray-800/50 text-left relative">
-              <SheetHeaderContent
-                loading={loading}
-                ordenesCount={ordenes.length}
-                clienteNombre={clienteNombre}
-              />
-              <button
-                onClick={onClose}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-gray-800/50 active:bg-gray-700 flex items-center justify-center transition-colors"
-                aria-label="Cerrar historial"
-              >
-                <X className="w-5 h-5 text-gray-400" />
-              </button>
-            </SheetHeader>
-            <div
-              ref={scrollRef}
-              className="overflow-y-auto flex-1 p-6 space-y-4 custom-scrollbar"
-              onTouchStart={stopTouchPropagation}
-            >
-              <HistorialContent
-                loading={loading}
-                error={error}
-                ordenes={ordenes}
-                showAll={showAll}
-                setShowAll={setShowAll}
-                openOrden={openOrden}
-                handleRefresh={handleRefresh}
-                clienteId={clienteId}
-                onClose={onClose}
-              />
+      <Modal
+        isOpen={open}
+        onClose={onClose}
+        title={
+          <div className="flex items-center justify-between w-full pr-10">
+            <div className="min-w-0">
+              <h3 className="text-base font-bold text-white leading-tight">Historial de órdenes</h3>
+              <p className="text-xs text-gray-500 truncate mt-0.5">{clienteNombre}</p>
             </div>
-          </SheetContent>
-        </Sheet>
-      ) : (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
-          <DialogContent
-            hideClose
-            className="w-[calc(100%-1.5rem)] max-w-lg mx-auto rounded-3xl bg-gray-900 border border-gray-800 p-0 gap-0 max-h-[85vh] flex flex-col overflow-hidden shadow-2xl z-[105]"
-            onInteractOutside={handleInteractOutside}
-          >
-            {/* FIX #8: DialogHeader con DialogTitle/DialogDescription para aria correcto */}
-            <DialogHeader className="px-6 py-5 border-b border-gray-800/50 relative">
-              <DialogHeaderContent
-                loading={loading}
-                ordenesCount={ordenes.length}
-                clienteNombre={clienteNombre}
-              />
-              <button
-                onClick={onClose}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-gray-800/50 active:bg-gray-700 flex items-center justify-center transition-colors"
-                aria-label="Cerrar historial"
-              >
-                <X className="w-5 h-5 text-gray-400" />
-              </button>
-            </DialogHeader>
-            <div className="overflow-y-auto flex-1 p-6 custom-scrollbar">
-              <HistorialContent
-                loading={loading}
-                error={error}
-                ordenes={ordenes}
-                showAll={showAll}
-                setShowAll={setShowAll}
-                openOrden={openOrden}
-                handleRefresh={handleRefresh}
-                clienteId={clienteId}
-                onClose={onClose}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+            {!loading && ordenes.length > 0 && (
+              <div className="flex-shrink-0 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <span className="text-[10px] font-black text-blue-400">
+                  {ordenes.length} {ordenes.length === 1 ? 'ORDEN' : 'ÓRDENES'}
+                </span>
+              </div>
+            )}
+          </div>
+        }
+      >
+        <div
+          ref={scrollRef}
+          className="space-y-4"
+          onTouchStart={stopTouchPropagation}
+        >
+          <HistorialContent
+            loading={loading}
+            error={error}
+            ordenes={ordenes}
+            showAll={showAll}
+            setShowAll={setShowAll}
+            openOrden={openOrden}
+            handleRefresh={handleRefresh}
+            clienteId={clienteId}
+            onClose={onClose}
+          />
+        </div>
+      </Modal>
       {selectedOrden && (
         <Suspense fallback={null}>
           <ModalOrdenLazy

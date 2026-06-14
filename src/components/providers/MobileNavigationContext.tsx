@@ -57,10 +57,9 @@ interface MobileNavigationContextValue {
   triggerNuevaOrden: () => void;
   /** Consumir la acción pendiente */
   consumePendingAction: () => void;
-  /** Estado local para evitar latencia de Next.js router */
   isModalOpenLocally: boolean;
   openModal: () => void;
-  closeModal: () => void;
+  closeModal: (stepsToPop?: number) => void;
 }
 
 const MobileNavigationContext = createContext<MobileNavigationContextValue>({
@@ -177,10 +176,10 @@ export function MobileNavigationProvider({
     window.history.pushState({ mobileNav: true, view: activeView, modal: "crear-orden" }, "", currentUrl.toString());
   }, [activeView]);
 
-  const closeModal = useCallback(() => {
+  const closeModal = useCallback((stepsToPop: number = 1) => {
     setIsModalOpenLocally(false);
     // Let the standard back button action take place or pop state manually
-    window.history.back();
+    window.history.go(-stepsToPop);
   }, []);
 
   const triggerNuevaOrden = useCallback(() => {

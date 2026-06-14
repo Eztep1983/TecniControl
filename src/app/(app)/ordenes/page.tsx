@@ -11,7 +11,11 @@ import {
   Stethoscope,
   FileX,
   FileEdit,
+  Package,
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/components/auth/AuthProvider'
 import {
   useOrdenesRecientes,
@@ -203,57 +207,80 @@ const DraftBanner = memo(
       <div
         role="status"
         aria-live="polite"
-        className="bg-blue-500/10 border border-blue-500/20 px-4 py-3 rounded-xl flex flex-col sm:flex-row sm:items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300"
+        className="bg-blue-500/10 border border-blue-500/20 px-4 py-3 rounded-xl overflow-hidden"
       >
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <FileEdit className="w-4 h-4 text-blue-400 shrink-0" aria-hidden="true" />
-          <span className="text-xs text-blue-300 truncate">
-            {isConfirming ? '¿Seguro que deseas descartar la orden?' : 'Orden en pausa detectada'}
-          </span>
-        </div>
-        
-        <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-          {isConfirming ? (
-            <>
-              <button
-                type="button"
-                onClick={() => setIsConfirming(false)}
-                className="flex-1 sm:flex-none text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:bg-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsConfirming(false)
-                  onDiscard()
-                }}
-                className="flex-1 sm:flex-none bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-400"
-              >
-                Descartar
-              </button>
-            </>
+        <AnimatePresence mode="wait">
+          {!isConfirming ? (
+            <motion.div
+              key="alert"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col sm:flex-row sm:items-center gap-3"
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <FileEdit className="w-4 h-4 text-blue-400 shrink-0" aria-hidden="true" />
+                <span className="text-sm font-medium text-blue-300 truncate">
+                  Orden en pausa detectada
+                </span>
+              </div>
+              <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                <button
+                  type="button"
+                  onClick={() => setIsConfirming(true)}
+                  className="flex-1 sm:flex-none text-blue-500/80 bg-white/5 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  aria-label="Descartar orden en pausa"
+                >
+                  Descartar
+                </button>
+                <button
+                  type="button"
+                  onClick={onResume}
+                  className="flex-1 sm:flex-none bg-blue-500 text-gray-900 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  aria-label="Reanudar orden en pausa"
+                >
+                  Reanudar
+                </button>
+              </div>
+            </motion.div>
           ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => setIsConfirming(true)}
-                className="flex-1 sm:flex-none text-blue-500/80 bg-white/5 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                aria-label="Descartar orden en pausa"
-              >
-                Descartar
-              </button>
-              <button
-                type="button"
-                onClick={onResume}
-                className="flex-1 sm:flex-none bg-blue-500 text-gray-900 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                aria-label="Reanudar orden en pausa"
-              >
-                Reanudar
-              </button>
-            </>
+            <motion.div
+              key="confirm"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col sm:flex-row sm:items-center gap-3"
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <FileEdit className="w-4 h-4 text-red-400 shrink-0" aria-hidden="true" />
+                <span className="text-sm font-medium text-red-300 truncate">
+                  ¿Seguro que deseas descartar?
+                </span>
+              </div>
+              <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                <button
+                  type="button"
+                  onClick={() => setIsConfirming(false)}
+                  className="flex-1 sm:flex-none text-gray-400 bg-gray-800 border border-gray-700 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsConfirming(false)
+                    onDiscard()
+                  }}
+                  className="flex-1 sm:flex-none bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-400"
+                >
+                  Confirmar descarte
+                </button>
+              </div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </div>
     )
   }
@@ -280,7 +307,7 @@ function OrdenesDashboardContent() {
   const { user, loading: authLoading } = useAuth()
   const queryClient = useQueryClient()
 
-  const { data: ordenesRecientes = [], isLoading: ordenesLoading } = useOrdenesRecientes(3)
+  const { data: ordenesRecientes = [], isLoading: ordenesLoading, isError: ordenesError, isRefetching } = useOrdenesRecientes(3)
   const { estadisticas, loading: statsLoading } = useEstadisticasUsuario()
   const { negocio, loading: negocioLoading } = useNegocio()
 
@@ -416,42 +443,30 @@ function OrdenesDashboardContent() {
   return (
     <div className="bg-transparent min-h-screen pb-safe">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-gray-900/95 border-b border-gray-800 pt-safe">
+      <div className="sticky top-0 z-40 bg-gray-900/95 border-b border-gray-800 pt-safe backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {/* FIX: BusinessAvatar with infinite-loop-safe error handling */}
-            <BusinessAvatar
-              logoUrl={negocio?.logoUrl}
-              photoURL={user.photoURL}
-              displayName={negocio?.nombre || user.displayName}
-              email={user.email}
-            />
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl overflow-hidden bg-white flex items-center justify-center p-0.5 shadow-inner shrink-0 border border-gray-800">
+              <img 
+                src="/icono.png" 
+                alt="TecniControl" 
+                className="w-full h-full object-cover rounded-[10px]" 
+                onError={(e) => e.currentTarget.style.display = 'none'} 
+              />
+            </div>
             <div className="min-w-0">
               <h1 className="text-lg font-bold text-white truncate">{greetingData.title}</h1>
-              <p className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">
+              <p className="text-xs uppercase tracking-wider text-gray-400 font-medium mt-0.5">
                 {greetingData.subtitle}
               </p>
-              {greetingData.motivational && (
-                <p className="text-[10px] text-blue-400 font-medium mt-0.5">
-                  {greetingData.motivational}
-                </p>
-              )}
             </div>
-          </div>
-          
-          <div className="flex flex-col items-center opacity-40">
-            <div className="w-8 h-8 rounded-lg overflow-hidden bg-black flex items-center justify-center p-0.5 shadow-inner">
-              {/* Se asume el logo estático en root, si falla usa Wrench como fallback */}
-              <img src="/icono.png" alt="TecniControl" className="w-full h-full object-cover rounded-md" onError={(e) => e.currentTarget.style.display = 'none'} />
-            </div>
-            <span className="text-[12px] font-black text-blue-400 tracking-widest mt-1">TecniControl</span>
           </div>
         </div>
       </div>
-    </div>
 
       <div className="max-w-7xl mx-auto px-4 py-5 space-y-6">
+        <OfflineSyncBanner />
+
         {/* Nueva Orden CTA */}
         <button
           type="button"
@@ -459,15 +474,13 @@ function OrdenesDashboardContent() {
           aria-label="Emitir nueva orden de mantenimiento"
           className={cn(
             "w-full bg-blue-600 text-white rounded-xl flex items-center justify-center gap-2 transition-all font-bold shadow-lg shadow-blue-900/20",
-            "py-3 px-4",
+            "py-4 px-4 min-h-[56px]",
             "hover:bg-blue-700 active:scale-95"
           )}
         >
           <Plus className="w-5 h-5" aria-hidden="true" />
           Nueva Orden
         </button>
-
-        <OfflineSyncBanner />
 
         {/* Draft banner */}
         {hayBorrador && (
@@ -479,12 +492,22 @@ function OrdenesDashboardContent() {
 
         {/* Estadísticas */}
         <section aria-labelledby="resumen-heading">
-          <h2
-            id="resumen-heading"
-            className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1 mb-3"
-          >
-            Resumen
-          </h2>
+          <div className="flex items-center justify-between ml-1 mb-3">
+            <h2
+              id="resumen-heading"
+              className="text-sm font-bold text-gray-400 uppercase tracking-widest"
+            >
+              Resumen
+            </h2>
+            <button 
+              onClick={refrescarDatos} 
+              className="p-1.5 text-gray-500 hover:text-blue-400 rounded-lg hover:bg-gray-800 transition-colors"
+              disabled={isRefetching || statsLoading}
+              aria-label="Actualizar datos"
+            >
+              <RefreshCw className={cn("w-4 h-4", (isRefetching || statsLoading) && "animate-spin text-blue-400")} />
+            </button>
+          </div>
 
           {statsLoading && estadisticas.totalOrdenes === 0 ? (
             <div className="flex gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0" role="status" aria-label="Cargando estadísticas">
@@ -494,7 +517,7 @@ function OrdenesDashboardContent() {
             </div>
           ) : (
             <div
-              className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 [mask-image:linear-gradient(to_right,black_96%,transparent)] scrollbar-none"
+              className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 [mask-image:linear-gradient(to_right,black_80%,transparent)] scrollbar-none"
               role="list"
               aria-label="Estadísticas de actividad"
             >
@@ -518,7 +541,7 @@ function OrdenesDashboardContent() {
                 colorClass="border-blue-500/20"
               />
               <StatCard
-                icon={Wrench}
+                icon={Package}
                 value={estadisticas.instalaciones}
                 label="Instalaciones"
                 colorClass="border-purple-500/20"
@@ -531,7 +554,7 @@ function OrdenesDashboardContent() {
         <section aria-labelledby="recientes-heading">
           <h2
             id="recientes-heading"
-            className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1 mb-3"
+            className="text-sm font-bold text-gray-400 uppercase tracking-widest ml-1 mb-3"
           >
             Recientes
           </h2>
@@ -541,6 +564,17 @@ function OrdenesDashboardContent() {
               {Array.from({ length: 3 }).map((_, i) => (
                 <Skeleton key={i} className="h-24 w-full rounded-xl" />
               ))}
+            </div>
+          ) : ordenesError ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center rounded-xl bg-red-500/10 border border-red-500/20">
+              <AlertTriangle className="w-8 h-8 text-red-400 mb-2" />
+              <p className="text-sm font-medium text-red-400">Error al cargar las órdenes</p>
+              <button 
+                onClick={refrescarDatos} 
+                className="mt-3 px-4 py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg text-xs font-bold transition-all active:scale-95"
+              >
+                Reintentar
+              </button>
             </div>
           ) : ordenesRecientes.length > 0 ? (
             <div className="grid gap-3">

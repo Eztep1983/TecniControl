@@ -34,11 +34,6 @@ import { haptic } from "@/hooks/clientes/useHapticFeedback";
 import { useMediaQuery } from "@/hooks/clientes/useMediaQuery";
 import { cn } from "@/lib/utils";
 
-// ── Constantes de swipe ──────────────────────────────────────────────────────
-const DELETE_THRESHOLD = -80;
-const DANGER_ZONE = DELETE_THRESHOLD * 0.6;
-const MAX_SWIPE = DELETE_THRESHOLD * 1.5;
-
 // ── Tarjeta individual ───────────────────────────────────────────────────────
 interface ClienteCardProps {
   client: Cliente;
@@ -59,10 +54,6 @@ const ClienteCard = memo(function ClienteCard({
   onDeleteClick,
   onHistorial,
 }: ClienteCardProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const backdropRef = useRef<HTMLDivElement>(null);
-  const swipeRef = useRef({ startX: 0, currentX: 0, swiping: false, raf: 0 });
-
   const handleView = useCallback(() => {
     haptic.selection();
     onView(client);
@@ -86,171 +77,101 @@ const ClienteCard = memo(function ClienteCard({
     [client, onHistorial]
   );
 
-  const handleDeleteConfirmButton = useCallback(() => {
-    haptic.impactMedium();
-    onDeleteClick(client.id!);
-  }, [client.id, onDeleteClick]);
-
-  const applySwipeTransform = useCallback(() => {
-    const s = swipeRef.current;
-    const card = cardRef.current;
-    const backdrop = backdropRef.current;
-    if (!card) return;
-
-    const x = s.currentX;
-    const progress = Math.min(1, Math.abs(x) / Math.abs(DELETE_THRESHOLD));
-
-    card.style.transform = x !== 0
-      ? `translate3d(${x}px, 0, 0)`
-      : "translate3d(0, 0, 0)";
-    card.style.willChange = s.swiping ? "transform" : "auto";
-
-    if (backdrop) {
-      backdrop.style.opacity = x < 0 ? String(progress) : "0";
-      backdrop.style.display = x < 0 ? "flex" : "none";
-      backdrop.style.backgroundColor = x < DANGER_ZONE ? "#ef4444" : "#b91c1c";
-    }
-  }, []);
-
-  const onTouchStart = useCallback(
-    (e: React.TouchEvent) => {
-      if (!isMobile) return;
-      const s = swipeRef.current;
-      s.startX = e.touches[0].clientX;
-      s.swiping = true;
-
-      const onMove = (ev: TouchEvent) => {
-        const delta = ev.touches[0].clientX - s.startX;
-        s.currentX = delta < 0 ? Math.max(delta, MAX_SWIPE) : 0;
-
-        cancelAnimationFrame(s.raf);
-        s.raf = requestAnimationFrame(applySwipeTransform);
-      };
-
-      const onEnd = () => {
-        document.removeEventListener("touchmove", onMove);
-        document.removeEventListener("touchend", onEnd);
-
-        if (s.currentX <= DELETE_THRESHOLD) {
-          haptic.impactMedium();
-          onDeleteClick(client.id!);
-        }
-
-        s.currentX = 0;
-        s.swiping = false;
-        cancelAnimationFrame(s.raf);
-        applySwipeTransform();
-      };
-
-      document.addEventListener("touchmove", onMove, { passive: true });
-      document.addEventListener("touchend", onEnd, { passive: true });
+  const handleDeleteConfirmButton = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      haptic.impactMedium();
+      onDeleteClick(client.id!);
     },
-    [isMobile, applySwipeTransform, onDeleteClick, client.id]
+    [client.id, onDeleteClick]
   );
 
   return (
-    <div className="relative overflow-hidden rounded-2xl">
-      {isMobile && (
-        <div
-          ref={backdropRef}
-          className="absolute inset-y-0 right-0 items-center justify-end pr-6 rounded-2xl"
-          style={{ width: "100%", opacity: 0, display: "none" }}
-          aria-hidden="true"
-        >
-          <div className="flex flex-col items-center gap-1">
-            <Trash2 className="text-white w-5 h-5" />
-            <span className="text-[10px] font-bold text-white uppercase tracking-tighter">
-              Eliminar
-            </span>
-          </div>
-        </div>
+    <div
+      className={cn(
+        "relative bg-gray-800/40 rounded-2xl border border-gray-700/50 transition-all duration-200 overflow-hidden",
+        isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100",
+        "group hover:bg-gray-800/60 hover:border-gray-600/50"
       )}
-
-      <div
-        className={cn(
-          "bg-gray-800/40 rounded-2xl border border-gray-700/50 transition-all duration-200",
-          isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100"
-        )}
-        style={{ transform: "translate3d(0, 0, 0)" }}
-        ref={cardRef}
-        onTouchStart={onTouchStart}
+    >
+      <div 
+        className="relative p-5 cursor-pointer flex flex-col gap-4"
+        onClick={handleView}
+        role="button"
+        tabIndex={0}
       >
-        <div className="relative p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div
-              onClick={handleView}
-              className="flex-1 min-w-0 cursor-pointer"
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
-                  <User className="w-6 h-6 text-blue-400" aria-hidden="true" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold text-white text-base leading-tight truncate">
-                    {client.name}
-                  </h3>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <IdCard className="w-3.5 h-3.5 text-gray-500" />
-                    <span className="text-xs font-medium text-gray-400">{client.cedula}</span>
-                  </div>
-                </div>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-blue-600/20">
+                <User className="w-6 h-6 text-blue-400" aria-hidden="true" />
               </div>
-
-              <div className="grid grid-cols-1 gap-2 mt-4">
-                {client.phone && (
-                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-900/40 border border-gray-700/30">
-                    <div className="w-7 h-7 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-3.5 h-3.5 text-green-400" />
-                    </div>
-                    <span className="text-xs text-gray-300 font-medium truncate">{client.phone}</span>
-                  </div>
-                )}
-                {client.email && (
-                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-900/40 border border-gray-700/30">
-                    <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-3.5 h-3.5 text-blue-400" />
-                    </div>
-                    <span className="text-xs text-gray-300 font-medium truncate">{client.email}</span>
-                  </div>
-                )}
-                {client.address && (
-                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-900/40 border border-gray-700/30">
-                    <div className="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-3.5 h-3.5 text-purple-400" />
-                    </div>
-                    <span className="text-xs text-gray-300 font-medium truncate">{client.address}</span>
-                  </div>
-                )}
+              <div className="min-w-0">
+                <h3 className="font-bold text-white text-base leading-tight truncate group-hover:text-blue-400 transition-colors">
+                  {client.name}
+                </h3>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <IdCard className="w-3.5 h-3.5 text-gray-500" />
+                  <span className="text-xs font-medium text-gray-400">{client.cedula}</span>
+                </div>
               </div>
             </div>
 
-            {!isMobile && (
-              <button
-                onClick={handleDeleteConfirmButton}
-                className="opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-xl hover:bg-red-500/10 text-gray-500 hover:text-red-400"
-                aria-label="Eliminar cliente"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
-            )}
+            <div className="grid grid-cols-1 gap-2 mt-4">
+              {client.phone && (
+                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-900/40 border border-gray-700/30">
+                  <div className="w-7 h-7 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                    <Phone className="w-3.5 h-3.5 text-green-400" />
+                  </div>
+                  <span className="text-xs text-gray-300 font-medium truncate">{client.phone}</span>
+                </div>
+              )}
+              {client.email && (
+                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-900/40 border border-gray-700/30">
+                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                    <Mail className="w-3.5 h-3.5 text-blue-400" />
+                  </div>
+                  <span className="text-xs text-gray-300 font-medium truncate">{client.email}</span>
+                </div>
+              )}
+              {client.address && (
+                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-900/40 border border-gray-700/30">
+                  <div className="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-3.5 h-3.5 text-purple-400" />
+                  </div>
+                  <span className="text-xs text-gray-300 font-medium truncate">{client.address}</span>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="flex gap-2 mt-5">
-            <button
-              onClick={handleHistorial}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gray-700/30 active:bg-gray-700/50 border border-gray-700/50 text-xs font-bold text-gray-300 transition-all active:scale-[0.97]"
-            >
-              <History className="w-4 h-4" />
-              Historial
-            </button>
-            <button
-              onClick={handleEdit}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-500/10 active:bg-blue-500/20 border border-blue-500/20 text-xs font-bold text-blue-400 transition-all active:scale-[0.97]"
-            >
-              <Edit className="w-4 h-4" />
-              Editar
-            </button>
-          </div>
+          <button
+            onClick={handleDeleteConfirmButton}
+            className={cn(
+              "p-2 rounded-xl hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-colors",
+              !isMobile && "opacity-0 group-hover:opacity-100"
+            )}
+            aria-label="Eliminar cliente"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={handleHistorial}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gray-700/30 hover:bg-gray-700/50 active:bg-gray-700/60 border border-gray-700/50 text-xs font-bold text-gray-300 transition-all active:scale-[0.97]"
+          >
+            <History className="w-4 h-4" />
+            Historial
+          </button>
+          <button
+            onClick={handleEdit}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 active:bg-blue-500/30 border border-blue-500/20 text-xs font-bold text-blue-400 transition-all active:scale-[0.97]"
+          >
+            <Edit className="w-4 h-4" />
+            Editar
+          </button>
         </div>
       </div>
     </div>

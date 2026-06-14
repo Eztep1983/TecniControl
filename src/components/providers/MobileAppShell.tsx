@@ -13,7 +13,9 @@ import { ROUTES } from "@/lib/navigation-config";
 import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, motion, PanInfo } from "motion/react";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { TAB_ORDER } from "@/lib/navigation-config";
 
 const ViewLoading = () => (
   <div className="flex flex-1 items-center justify-center min-h-[60vh]">
@@ -94,7 +96,7 @@ function useSlideAnimation(
 }
 
 export function MobileAppShell({ children }: { children: React.ReactNode }) {
-  const { activeView, slideDirection, isMobileNav, isModalOpenLocally, closeModal } = useMobileNavigation();
+  const { activeView, slideDirection, isMobileNav, isModalOpenLocally, closeModal, navigateTo } = useMobileNavigation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [history, setHistory] = useState<AppView[]>([activeView]);
   
@@ -113,33 +115,62 @@ export function MobileAppShell({ children }: { children: React.ReactNode }) {
 
   if (!isMobileNav) return <>{children}</>;
 
+  const handleDragEnd = async (e: any, info: PanInfo) => {
+    const currentIndex = TAB_ORDER.indexOf(activeView);
+    if (currentIndex === -1) return;
+
+    const swipeThreshold = 50;
+    const { offset, velocity } = info;
+
+    if (offset.x < -swipeThreshold || velocity.x < -500) {
+      if (currentIndex < TAB_ORDER.length - 1) {
+        await Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+        navigateTo(TAB_ORDER[currentIndex + 1]);
+      }
+    } else if (offset.x > swipeThreshold || velocity.x > 500) {
+      if (currentIndex > 0) {
+        await Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+        navigateTo(TAB_ORDER[currentIndex - 1]);
+      }
+    }
+  };
+
   return (
     <>
-      <div
-        ref={containerRef}
-        className="w-full"
-        style={{
-          willChange: "transform, opacity",
-          WebkitBackfaceVisibility: "hidden",
-          backfaceVisibility: "hidden",
-        } as React.CSSProperties}
+      <motion.div
+        drag="x"
+        dragDirectionLock
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.08}
+        onDragEnd={handleDragEnd}
+        className="w-full touch-pan-y"
       >
-        {ROUTES.map((route) => (
-          <ManagedView
-            key={route.view}
-            view={route.view}
-            isActive={route.view === activeView}
-            shouldMount={history.includes(route.view)}
-          />
-        ))}
-      </div>
+        <div
+          ref={containerRef}
+          className="w-full"
+          style={{
+            willChange: "transform, opacity",
+            WebkitBackfaceVisibility: "hidden",
+            backfaceVisibility: "hidden",
+          } as React.CSSProperties}
+        >
+          {ROUTES.map((route) => (
+            <ManagedView
+              key={route.view}
+              view={route.view}
+              isActive={route.view === activeView}
+              shouldMount={history.includes(route.view)}
+            />
+          ))}
+        </div>
+      </motion.div>
 
       <AnimatePresence>
         {isModalCrearOrdenOpen && (
           <GlobalFormularioMantenimiento
             onClose={closeModal}
-            onSuccess={() => {
-              closeModal();
+            onSuccess={(steps) => {
+              closeModal(steps);
               // Asegurarse de que volvemos a órdenes si no estábamos ahí
               if (activeView !== "ordenes") {
                 setTimeout(() => router.push("/ordenes"), 300);
