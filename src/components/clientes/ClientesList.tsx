@@ -138,8 +138,8 @@ export function ClientesList() {
   const isNoUser = !user;
   const hasError = !!error;
   const isEmpty = !loading && clientes.length === 0;
-  const isFiltered = !loading && clientes.length > 0 && filteredClientes.length === 0;
-  const showTable = !loading && filteredClientes.length > 0;
+  const isFiltered = clientes.length > 0 && filteredClientes.length === 0;
+  const showTable = filteredClientes.length > 0;
 
   // ── Guard: sin usuario ──────────────────────────────────────────────────
   if (isNoUser) {
@@ -325,7 +325,7 @@ export function ClientesList() {
 
             {/* Contenido */}
             <main className="p-4 sm:p-5">
-              {loading && <ClientesSkeleton />}
+              {loading && clientes.length === 0 && <ClientesSkeleton />}
 
               {isEmpty && (
                 <div className="text-center py-14 px-4" role="status">

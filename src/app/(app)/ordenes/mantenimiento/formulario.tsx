@@ -923,8 +923,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
           createdAt: new Date(),
           updatedAt: new Date(),
         };
-        const tempId = enqueueOrder(ordenBase, user!.uid);
-        const ordenOffline = { ...ordenBase, id: tempId, idPersonalizado: tempId, isOffline: true };
+        const { tempId, idPersonalizado } = enqueueOrder(ordenBase, user!.uid);
+        const ordenOffline = { ...ordenBase, id: tempId, idPersonalizado, isOffline: true };
 
         clearPersistence();
         setOrdenCreada(ordenOffline as any);
@@ -953,8 +953,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
             createdAt: new Date(),
             updatedAt: new Date(),
           };
-          const tempId = enqueueOrder(ordenBase, user!.uid);
-          const ordenOffline = { ...ordenBase, id: tempId, idPersonalizado: tempId, isOffline: true };
+          const { tempId, idPersonalizado } = enqueueOrder(ordenBase, user!.uid);
+          const ordenOffline = { ...ordenBase, id: tempId, idPersonalizado, isOffline: true };
 
           clearPersistence();
           setOrdenCreada(ordenOffline as any);

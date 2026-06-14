@@ -20,7 +20,7 @@
     "semantic_hash": "5cc7eeb7adb6a339114eab9841127244"
   },
   "package.json": {
-    "mtime": 1781398151.485037,
+    "mtime": 1781392751.349755,
     "ast_hash": "01986334e0609af50f65713389d120be",
     "semantic_hash": "01986334e0609af50f65713389d120be"
   },
@@ -125,8 +125,8 @@
     "semantic_hash": "b34958722ffd908fe281f8c305ec90dc"
   },
   "src/components/clientes/ClienteFormModal.tsx": {
-    "mtime": 1781397742.1203492,
-    "ast_hash": "d0eb3a636fdcc043859ac007b228c953",
+    "mtime": 1781397203.523095,
+    "ast_hash": "9874167a196ece91a7082cd9367d8a6e",
     "semantic_hash": ""
   },
   "src/components/clientes/ClienteHistorialModal.tsx": {

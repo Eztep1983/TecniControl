@@ -152,6 +152,7 @@ export interface SerializableOrdenPayload {
   firmaCliente?: string
   nombreFirmante?: string
   validacionCliente?: boolean
+  idPersonalizado?: string
   tempId?: TempOrderId
   horaCreacion: string
   fechaCreacion: string  // ISO string

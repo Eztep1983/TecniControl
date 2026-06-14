@@ -29,7 +29,7 @@ const RIGHT_ITEMS: NavItemConfig[] = [
 ];
 
 export function MobileNav() {
-  const { activeView, navigateTo, triggerNuevaOrden } = useMobileNavigation();
+  const { activeView, navigateTo, openModal } = useMobileNavigation();
   const { estadisticas } = useEstadisticasUsuario();
   const isKeyboardVisible = useKeyboardVisible();
   const isScrollVisible = useScrollAware(80); // ↑ Aumentado a 80px para menos flicker
@@ -45,10 +45,8 @@ export function MobileNav() {
     navigateTo(view);
   };
 
-  const router = useRouter();
-
   const handleNuevaOrden = () => {
-    router.push("?modal=crear-orden", { scroll: false });
+    openModal();
   };
 
   return (

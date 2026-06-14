@@ -1,17 +1,24 @@
 // hooks/useMultiUser.ts
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { useNetworkStatus } from './useNetworkStatus';
+import { useOfflineSync } from '@/components/providers/OfflineSyncProvider';
 import { OrdenMantenimiento, Cliente, Negocio } from '@/types/orden';
 import { 
   getClientesPorUsuario, 
   getOrdenesPaginadasConFiltro,
   getTodasLasOrdenesConFiltro,
   crearOrdenAtomica,
+  reservarBloqueIds,
+  crearOrden,
   getEstadisticasPorUsuario,
   completarOnboarding,
   getOrdenesPaginadas,
-  getNegocioPorUsuario
+  getNegocioPorUsuario,
+  crearCliente,
+  actualizarCliente
 } from '@/lib/multiuser-helpers';
+import { obtenerSiguienteIdDePool, saveLocalIdPool } from '@/lib/id-pool-helper';
 
 /**
  * ✅ Hook para Clientes
@@ -20,6 +27,8 @@ import {
 export const useClientesUsuario = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { connected } = useNetworkStatus();
+  const { enqueueConfig } = useOfflineSync();
 
   const queryResult = useQuery<Cliente[]>({
     queryKey: ['clientes', user?.uid],
@@ -32,11 +41,98 @@ export const useClientesUsuario = () => {
     queryClient.invalidateQueries({ queryKey: ['clientes', user?.uid] });
   };
 
+  // Mutación para crear cliente (online/offline)
+  const crearClienteMutation = useMutation({
+    mutationFn: async (clienteData: Omit<Cliente, 'id'>) => {
+      return crearCliente(clienteData, user!.uid);
+    },
+    onSuccess: () => {
+      refrescarClientes();
+    }
+  });
+
+  const crearClienteFn = async (clienteData: Omit<Cliente, 'id'>): Promise<string> => {
+    const userId = user!.uid;
+    const nowStr = new Date().toISOString();
+    const clienteConFechas = {
+      ...clienteData,
+      userId,
+      createdAt: (clienteData as any).createdAt || nowStr,
+      updatedAt: nowStr
+    };
+
+    if (!connected) {
+      const tempId = `client_temp_${Date.now()}`;
+      const optimista: Cliente = {
+        id: tempId,
+        ...clienteConFechas
+      } as Cliente;
+
+      // Optimistic update
+      await queryClient.cancelQueries({ queryKey: ['clientes', userId] });
+      queryClient.setQueryData<Cliente[]>(['clientes', userId], old =>
+        [...(old ?? []), optimista]
+      );
+
+      // Encolar offline
+      enqueueConfig({
+        type: 'create',
+        entity: 'cliente',
+        payload: { tempId, ...clienteConFechas },
+        userId
+      });
+
+      return tempId;
+    } else {
+      const newId = await crearClienteMutation.mutateAsync(clienteConFechas);
+      return newId;
+    }
+  };
+
+  // Mutación para actualizar cliente (online/offline)
+  const actualizarClienteMutation = useMutation({
+    mutationFn: async ({ id, clienteData }: { id: string; clienteData: Partial<Cliente> }) => {
+      await actualizarCliente(id, clienteData, user!.uid);
+    },
+    onSuccess: () => {
+      refrescarClientes();
+    }
+  });
+
+  const actualizarClienteFn = async (id: string, clienteData: Partial<Cliente>): Promise<void> => {
+    const userId = user!.uid;
+    const nowStr = new Date().toISOString();
+    const payload = {
+      ...clienteData,
+      updatedAt: nowStr
+    };
+
+    if (!connected) {
+      // Optimistic update
+      await queryClient.cancelQueries({ queryKey: ['clientes', userId] });
+      queryClient.setQueryData<Cliente[]>(['clientes', userId], old =>
+        (old ?? []).map(c => c.id === id ? { ...c, ...payload } as Cliente : c)
+      );
+
+      // Encolar offline
+      enqueueConfig({
+        type: 'update',
+        entity: 'cliente',
+        payload: { id, ...payload },
+        userId
+      });
+    } else {
+      await actualizarClienteMutation.mutateAsync({ id, clienteData: payload });
+    }
+  };
+
   return { 
     clientes: queryResult.data || [], 
     loading: queryResult.isLoading, 
     error: queryResult.error ? 'Error al cargar los clientes' : null,
-    refrescarClientes 
+    refrescarClientes,
+    crearCliente: crearClienteFn,
+    actualizarCliente: actualizarClienteFn
   };
 };
 
@@ -87,8 +183,33 @@ export const useCrearOrden = () => {
         updatedAt: new Date(),
       };
 
-      // Crear orden e incrementar contador en un solo paso transaccional
-      const { id, idPersonalizado } = await crearOrdenAtomica(ordenBase, userId);
+      // 1. Intentar resolver un ID definitivo desde el pool local
+      let idPersonalizado = obtenerSiguienteIdDePool(userId);
+
+      if (!idPersonalizado) {
+        // Pool vacío o de año anterior, intentar reservar un bloque nuevo
+        try {
+          const nuevoPool = await reservarBloqueIds(userId, 10);
+          saveLocalIdPool(userId, nuevoPool);
+          idPersonalizado = obtenerSiguienteIdDePool(userId);
+        } catch (error) {
+          console.warn('Error reservando bloque de IDs online, usando crearOrdenAtomica como fallback:', error);
+        }
+      }
+
+      let id = '';
+      if (idPersonalizado) {
+        // Crear orden directamente sin transacciones individuales
+        id = await crearOrden({
+          ...ordenBase,
+          idPersonalizado
+        }, userId);
+      } else {
+        // Fallback si la transacción del pool falla por red/concurrencia
+        const res = await crearOrdenAtomica(ordenBase, userId);
+        id = res.id;
+        idPersonalizado = res.idPersonalizado;
+      }
 
       return { id, idPersonalizado, isOffline: false, ...ordenBase };
     },

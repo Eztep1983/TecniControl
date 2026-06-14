@@ -31,7 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useState, useEffect } from "react";
 import type { Cliente } from "@/types/orden";
-import { crearCliente, actualizarCliente } from "@/lib/multiuser-helpers";
+import { useClientesUsuario } from "@/hooks/useMultiUser";
 import { useAndroidBack } from "@/hooks/useAndroidBack";
 
 // ── Schema con Validaciones ──────────────────────────────────────────────────
@@ -76,6 +76,7 @@ export function ClienteSimpleFormModal({
 }: ClienteSimpleFormModalProps) {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { crearCliente, actualizarCliente } = useClientesUsuario();
   const [isLoading, setIsLoading] = useState(false);
   const isEditing = !!initialData?.id;
 
@@ -161,7 +162,7 @@ export function ClienteSimpleFormModal({
       };
 
       if (isEditing && initialData?.id) {
-        await actualizarCliente(initialData.id, sanitizedPayload, user.uid);
+        await actualizarCliente(initialData.id, sanitizedPayload);
         toast({
           title: "✓ Cliente actualizado",
           description: `${sanitizedPayload.name} actualizado correctamente.`,
@@ -169,8 +170,7 @@ export function ClienteSimpleFormModal({
         onSuccess({ ...initialData, ...sanitizedPayload, id: initialData.id } as Cliente);
       } else {
         const newId = await crearCliente(
-          { ...sanitizedPayload, createdAt: new Date().toISOString() },
-          user.uid
+          { ...sanitizedPayload, createdAt: new Date().toISOString() }
         );
         toast({
           title: "✓ Cliente creado",

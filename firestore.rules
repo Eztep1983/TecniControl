@@ -33,12 +33,6 @@ service cloud.firestore {
       return request.resource.data.userId == request.auth.uid;
     }
 
-    /// Obtiene el plan del usuario actual
-    function isPro() {
-      return isAuthenticated() 
-             && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-             && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.plan == 'pro';
-    }
 
     function isNonEmptyString(field) {
       return request.resource.data[field] is string
@@ -157,7 +151,7 @@ service cloud.firestore {
     }
 
     function validTareaPayload() {
-      return request.resource.data.keys().hasOnly(['nombre', 'tipo', 'categoria', 'creadoEn', 'actualizadoEn'])
+      return request.resource.data.keays().hasOnly(['nombre', 'tipo', 'categoria', 'creadoEn', 'actualizadoEn'])
              && isNonEmptyString('nombre')
              && request.resource.data.tipo in ['preventivo', 'correctivo', 'ambos']
              && isNonEmptyString('categoria')
@@ -263,8 +257,7 @@ service cloud.firestore {
       allow create: if isOwner(userId) && validNegocioPayload();
       allow update: if isOwner(userId)
                        && request.resource.data.userId == userId
-                       && validNegocioPayload()
-                       && (isPro() || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['logoUrl']));
+                       && validNegocioPayload();
       allow delete: if isOwner(userId);
     }
 
@@ -293,8 +286,9 @@ service cloud.firestore {
                              : contadorId.matches('ordenes(Mantenimiento|Diagnostico|Entrega)'))
                        && request.resource.data.keys().hasOnly([
                             'userId', 'siguiente', 'ultimaOrden',
-                            'fechaActualizacion', 'ultimoNumero'
-                          ]);
+                            'fechaActualizacion', 'ultimoNumero', 'siguientePorAnio'
+                          ])
+                       && isOptionalMap('siguientePorAnio');
 
       // Actualización: igual que create, pero ultimoNumero/siguiente solo sube
       allow update: if isAuthenticated()
@@ -303,8 +297,9 @@ service cloud.firestore {
                                 && request.resource.data.siguiente >= resource.data.siguiente
                                 && request.resource.data.keys().hasOnly([
                                      'userId', 'siguiente', 'ultimaOrden',
-                                     'fechaActualizacion'
-                                   ]))
+                                     'fechaActualizacion', 'siguientePorAnio'
+                                   ])
+                                && isOptionalMap('siguientePorAnio'))
                              : (contadorId.matches('ordenes(Mantenimiento|Diagnostico|Entrega)')
                                 && request.resource.data.ultimoNumero >= resource.data.ultimoNumero
                                 && request.resource.data.keys().hasOnly(['ultimoNumero'])));
@@ -319,41 +314,42 @@ service cloud.firestore {
       allow read:  if isOwner(userId);
       allow write: if isOwner(userId)
                        && request.resource.data.keys().hasOnly([
-                            'migradoV2', 'tareasPredefinidas', 'piezasPredefinidas'
+                            'migradoV2', 'tareasPredefinidas', 'piezasPredefinidas',
+                            'inicializado', 'inicializadoPiezas'
                           ])
                        && (!request.resource.data.keys().hasAny(['migradoV2'])
                             || request.resource.data.migradoV2 is bool)
                        && (!request.resource.data.keys().hasAny(['tareasPredefinidas'])
                             || request.resource.data.tareasPredefinidas is list)
                        && (!request.resource.data.keys().hasAny(['piezasPredefinidas'])
-                            || request.resource.data.piezasPredefinidas is list);
+                            || request.resource.data.piezasPredefinidas is list)
+                       && (!request.resource.data.keys().hasAny(['inicializado'])
+                            || request.resource.data.inicializado is bool)
+                       && (!request.resource.data.keys().hasAny(['inicializadoPiezas'])
+                            || request.resource.data.inicializadoPiezas is bool);
 
       match /tareas/{tareaId} {
         allow read: if isOwner(userId);
 
         allow create: if isOwner(userId)
-                         && validTareaPayload()
-                         && isPro();
+                         && validTareaPayload();
 
         allow update: if isOwner(userId)
-                         && validTareaPayload()
-                         && isPro();
+                         && validTareaPayload();
 
-        allow delete: if isOwner(userId) && isPro();
+        allow delete: if isOwner(userId);
       }
 
       match /piezas/{piezaId} {
         allow read: if isOwner(userId);
 
         allow create: if isOwner(userId)
-                         && validPiezaPayload()
-                         && isPro();
+                         && validPiezaPayload();
 
         allow update: if isOwner(userId)
-                         && validPiezaPayload()
-                         && isPro();
+                         && validPiezaPayload();
 
-        allow delete: if isOwner(userId) && isPro();
+        allow delete: if isOwner(userId);
       }
     }
 

@@ -312,7 +312,7 @@ export const actualizarOrden = async (ordenId: string, orden: Partial<Orden>, us
 
 /**
  * Crea una orden e incrementa el contador de usuario de forma atómica.
- * Excluye tempId y garantiza la consecutividad de los IDs personalizados.
+ * Excluye tempId y garantiza la consecutividad de los IDs personalizados con formato anual.
  */
 export const crearOrdenAtomica = async (
   ordenData: Omit<Orden, 'id' | 'idPersonalizado'>,
@@ -320,6 +320,7 @@ export const crearOrdenAtomica = async (
 ): Promise<{ id: string; idPersonalizado: string }> => {
   const contadorRef = doc(db, 'contadores', userId);
   const nuevaOrdenRef = doc(collection(db, 'ordenes'));
+  const currentYear = new Date().getFullYear();
   let idPersonalizado = '';
 
   await runTransaction(db, async (transaction) => {
@@ -328,22 +329,29 @@ export const crearOrdenAtomica = async (
     let consecutivo = 1;
 
     if (!snap.exists()) {
+      const siguientePorAnio = {
+        [currentYear]: 2
+      };
       transaction.set(contadorRef, {
         userId,
-        siguiente: 2,
+        siguiente: 2, // Para compatibilidad
         ultimaOrden: '',
         fechaActualizacion: new Date(),
+        siguientePorAnio
       });
     } else {
       const data = snap.data();
-      consecutivo = data.siguiente;
+      const siguientePorAnio = data.siguientePorAnio || {};
+      consecutivo = siguientePorAnio[currentYear] || 1;
+      siguientePorAnio[currentYear] = consecutivo + 1;
+
       transaction.update(contadorRef, {
-        siguiente: consecutivo + 1,
+        siguientePorAnio,
         fechaActualizacion: new Date(),
       });
     }
 
-    idPersonalizado = `OSER${consecutivo.toString().padStart(3, '0')}`;
+    idPersonalizado = `OSER-${currentYear}-${consecutivo.toString().padStart(6, '0')}`;
 
     // 2. Preparar el payload de la orden
     const { tempId, ...ordenSinTempId } = ordenData as any; // Asegurar exclusión de tempId
@@ -359,6 +367,59 @@ export const crearOrdenAtomica = async (
   });
 
   return { id: nuevaOrdenRef.id, idPersonalizado };
+};
+
+/**
+ * Reserva un rango de IDs consecutivos para un usuario y año actuales.
+ */
+export const reservarBloqueIds = async (
+  userId: string,
+  size: number = 10
+): Promise<{ year: number; nextAvailable: number; maxAllowed: number }> => {
+  const contadorRef = doc(db, 'contadores', userId);
+  const currentYear = new Date().getFullYear();
+  let range: { year: number; nextAvailable: number; maxAllowed: number } | null = null;
+
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(contadorRef);
+    let consecutivo = 1;
+
+    if (!snap.exists()) {
+      const siguientePorAnio = {
+        [currentYear]: 1 + size
+      };
+      transaction.set(contadorRef, {
+        userId,
+        siguiente: 1, // Para compatibilidad
+        ultimaOrden: '',
+        fechaActualizacion: new Date(),
+        siguientePorAnio
+      });
+      consecutivo = 1;
+    } else {
+      const data = snap.data();
+      const siguientePorAnio = data.siguientePorAnio || {};
+      consecutivo = siguientePorAnio[currentYear] || 1;
+      siguientePorAnio[currentYear] = consecutivo + size;
+
+      transaction.update(contadorRef, {
+        siguientePorAnio,
+        fechaActualizacion: new Date()
+      });
+    }
+
+    range = {
+      year: currentYear,
+      nextAvailable: consecutivo,
+      maxAllowed: consecutivo + size - 1
+    };
+  });
+
+  if (!range) {
+    throw new Error('No se pudo reservar el bloque de IDs');
+  }
+
+  return range;
 };
 
 // Negocio helpers

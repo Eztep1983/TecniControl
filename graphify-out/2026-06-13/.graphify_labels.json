@@ -40,10 +40,16 @@
   "38": "Business Config and Multi User",
   "39": "UI Select Menu component",
   "40": "Module table",
+  "41": "App Layout and Speech Provider",
   "42": "Module ContadorInput",
   "43": "Module AnimatedList",
+  "44": "Group page.tsx",
+  "45": "Module react-window.d",
+  "46": "Authentication and Users Management",
   "47": "Module logo",
+  "48": "Module Section",
   "49": "UI Dialogs and Forms",
+  "50": "Module logo",
   "51": "Module UpgradePrompt",
   "52": "Module AGENTS",
   "53": "Module not-found",
@@ -79,5 +85,10 @@
   "83": "Community 83",
   "84": "Community 84",
   "85": "Community 85",
-  "86": "Community 86"
+  "86": "Community 86",
+  "87": "Community 87",
+  "88": "Community 88",
+  "89": "Community 89",
+  "90": "Community 90",
+  "91": "Community 91"
 }

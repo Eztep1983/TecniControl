@@ -605,7 +605,7 @@ export default function TareasRepuestosPage() {
 
       {/* ── Contenido principal ── */}
       <main className="max-w-2xl mx-auto px-4 py-2 space-y-5 pb-16">
-        {isLoading ? (
+        {isLoading && tareas.length === 0 && piezas.length === 0 ? (
           <Skeleton />
         ) : (
           <>

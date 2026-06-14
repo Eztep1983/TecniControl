@@ -282,7 +282,7 @@ const Sidebar = React.forwardRef<
             data-sidebar="sidebar"
             data-mobile="true"
             className={cn(
-              "fixed top-0 left-0 z-50 flex h-screen w-[--sidebar-width] flex-col border-r bg-sidebar text-sidebar-foreground transition-transform duration-300 ease-in-out",
+              "fixed top-0 left-0 z-[200] flex h-screen w-[--sidebar-width] flex-col border-r bg-sidebar text-sidebar-foreground transition-transform duration-300 ease-in-out",
               openMobile ? "translate-x-0" : "-translate-x-full"
             )}
             style={

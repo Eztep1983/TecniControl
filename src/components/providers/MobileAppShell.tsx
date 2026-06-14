@@ -94,13 +94,13 @@ function useSlideAnimation(
 }
 
 export function MobileAppShell({ children }: { children: React.ReactNode }) {
-  const { activeView, slideDirection, isMobileNav } = useMobileNavigation();
+  const { activeView, slideDirection, isMobileNav, isModalOpenLocally, closeModal } = useMobileNavigation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [history, setHistory] = useState<AppView[]>([activeView]);
   
   const searchParams = useSearchParams();
   const router = useRouter();
-  const isModalCrearOrdenOpen = searchParams?.get("modal") === "crear-orden";
+  const isModalCrearOrdenOpen = isModalOpenLocally || searchParams?.get("modal") === "crear-orden";
 
   useEffect(() => {
     setHistory(prev => {
@@ -137,9 +137,9 @@ export function MobileAppShell({ children }: { children: React.ReactNode }) {
       <AnimatePresence>
         {isModalCrearOrdenOpen && (
           <GlobalFormularioMantenimiento
-            onClose={() => router.back()}
+            onClose={closeModal}
             onSuccess={() => {
-              router.back();
+              closeModal();
               // Asegurarse de que volvemos a órdenes si no estábamos ahí
               if (activeView !== "ordenes") {
                 setTimeout(() => router.push("/ordenes"), 300);

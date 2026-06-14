@@ -28,25 +28,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <>
       <NetworkStatusBanner />
-      <header id="main-header" data-navigation="header" className="hidden sm:flex sticky top-0 z-10 h-16 shrink-0 items-center gap-2 border-b bg-gray-800 px-4">
-        <SidebarTrigger className="-ml-1 text-gray-300 hover:text-white hover:bg-gray-700" />
-        <Separator orientation="vertical" className="mr-2 h-4 bg-gray-700" />
-        <div className="flex flex-1 items-center justify-between">
-          <Link 
-            href="/ordenes"
-            className="flex items-center hover:opacity-80 transition-opacity"
-          >
-            <div className="mr-2 flex aspect-square size-8 items-center justify-center rounded-lg overflow-hidden bg-black">
-              <img 
-                src={icono.src} 
-                alt="TecniControl" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <span className="text-xl font-bold text-blue-400">TecniControl</span>
-          </Link>
-        </div>
-      </header>
       <main className="flex flex-col flex-1 overflow-y-auto p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-6 lg:p-8 lg:pb-8 bg-gray-900">
         <div className="max-w-7xl mx-auto w-full flex flex-col flex-1 relative">
           {/* 
@@ -75,15 +56,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 if (loading) {
   return (
     <div className="flex flex-col min-h-screen bg-gray-900">
-      {/* Header skeleton */}
-      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b border-gray-800 bg-gray-800 px-4">
-        <div className="flex flex-1 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gray-700 animate-pulse" />
-            <div className="w-28 h-5 rounded-md bg-gray-700 animate-pulse" />
-          </div>
-        </div>
-      </header>
 
       {/* Dashboard content skeleton */}
       <div className="flex flex-col flex-1 p-4 pb-24 bg-gray-900">

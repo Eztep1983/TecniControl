@@ -62,11 +62,18 @@ import {
   memo,
 } from "react";
 import type { Cliente } from "@/types/orden";
-import { crearCliente, actualizarCliente } from "@/lib/multiuser-helpers";
+import { useClientesUsuario } from "@/hooks/useMultiUser";
 import { useAndroidBack } from "@/hooks/useAndroidBack";
 import { motion, AnimatePresence } from "motion/react";
 
 // ── Constantes ────────────────────────────────────────────────────────────────
+const safeRandomUUID = (): string => {
+  if (typeof window !== 'undefined' && window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return window.crypto.randomUUID();
+  }
+  return "dev_" + Math.random().toString(36).substring(2, 15) + "_" + Date.now();
+};
+
 const TIPO_OPTIONS = [
   "impresora",
   "fotocopiadora",
@@ -478,7 +485,7 @@ const DispositivoCard = memo(function DispositivoCard({
                       <ChevronRight className="w-4 h-4 text-gray-500 rotate-90" />
                     </button>
                   </DrawerTrigger>
-                  <DrawerContent className="bg-gray-950 border-gray-800 pb-8 z-[100]">
+                  <DrawerContent className="bg-gray-950 border-gray-800 pb-8">
                     <div className="max-w-md mx-auto w-full">
                       <DrawerHeader className="border-b border-gray-800 mb-2">
                         <DrawerTitle className="text-white text-center">Tipo de Dispositivo</DrawerTitle>
@@ -590,6 +597,7 @@ export const ClienteFormModal = memo(function ClienteFormModal({
 }: ClienteFormModalProps) {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { crearCliente, actualizarCliente } = useClientesUsuario();
   const isEditing = !!initialData?.id;
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -685,7 +693,7 @@ export const ClienteFormModal = memo(function ClienteFormModal({
           .filter((d) => d.tipo || d.marca)
           .map((d, i) => ({
             // FIX: crypto.randomUUID() evita colisión de IDs en el mismo loop
-            id: d.id ?? initialData?.dispositivos?.[i]?.id ?? crypto.randomUUID(),
+            id: d.id ?? initialData?.dispositivos?.[i]?.id ?? safeRandomUUID(),
             tipo: d.tipo ?? "",
             marca: d.marca ?? "",
             modelo: d.modelo ?? "",
@@ -708,7 +716,7 @@ export const ClienteFormModal = memo(function ClienteFormModal({
         };
 
         if (isEditing && initialData?.id) {
-          await actualizarCliente(initialData.id, payload, user.uid);
+          await actualizarCliente(initialData.id, payload);
           toast({
             title: "✓ Cliente actualizado",
             description: `${data.name} actualizado correctamente.`,
@@ -720,8 +728,7 @@ export const ClienteFormModal = memo(function ClienteFormModal({
           } as Cliente);
         } else {
           const newId = await crearCliente(
-            { ...payload, createdAt: new Date().toISOString() },
-            user.uid
+            { ...payload, createdAt: new Date().toISOString() }
           );
           toast({
             title: "✓ Cliente creado",

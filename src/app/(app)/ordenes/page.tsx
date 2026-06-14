@@ -275,6 +275,7 @@ export default function OrdenesDashboardPage() {
 function OrdenesDashboardContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { openModal } = useMobileNavigation()
 
   const { user, loading: authLoading } = useAuth()
   const queryClient = useQueryClient()
@@ -286,7 +287,6 @@ function OrdenesDashboardContent() {
   const { imprimirOrden, compartirOrden, descargarPDF, formatFecha, generarPDFBlob, generarHTML } =
     usePrintService({ negocio })
   const { prefetchOrdenes, prefetchClientes } = usePrefetchData()
-  const { pendingAction, consumePendingAction } = useMobileNavigation()
 
   const greetingData = useDashboardGreeting(negocio, user, estadisticas.totalOrdenes)
   const { hayBorrador, descartarBorrador, syncDraft } = useDraftBanner()
@@ -299,19 +299,18 @@ function OrdenesDashboardContent() {
   )
 
   const [view, setView] = useState<'dashboard' | 'welcome' | 'success' | 'form'>('dashboard')
-  const [isCreating, setIsCreating] = useState(false)
   const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenMantenimiento | null>(null)
   const isDashboardLoading = ordenesLoading || statsLoading || negocioLoading
 
   const handleCreateNuevaOrden = () => {
-    setIsCreating(true)
-    router.push('?modal=crear-orden', { scroll: false })
+    openModal()
   }
 
-  const isFormOpen = searchParams.get('modal') === 'crear-orden'
+  const { isModalOpenLocally } = useMobileNavigation()
+  const isFormOpen = isModalOpenLocally || searchParams.get('modal') === 'crear-orden'
+  
   useEffect(() => {
     if (!isFormOpen) {
-      setIsCreating(false)
       syncDraft()
     }
   }, [isFormOpen, syncDraft])
@@ -339,13 +338,6 @@ function OrdenesDashboardContent() {
       router.replace('/ordenes', { scroll: false })
     }
   }, [searchParams, router])
-
-  useEffect(() => {
-    if (pendingAction === 'open-nueva-orden') {
-      consumePendingAction()
-      router.push('?modal=crear-orden', { scroll: false })
-    }
-  }, [pendingAction, consumePendingAction, router])
 
   // ── Loading skeleton (auth initialising) ────────────────────────────────
   if (authLoading) {
@@ -453,7 +445,7 @@ function OrdenesDashboardContent() {
               {/* Se asume el logo estático en root, si falla usa Wrench como fallback */}
               <img src="/icono.png" alt="TecniControl" className="w-full h-full object-cover rounded-md" onError={(e) => e.currentTarget.style.display = 'none'} />
             </div>
-            <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest mt-1">TecniControl</span>
+            <span className="text-[12px] font-black text-blue-400 tracking-widest mt-1">TecniControl</span>
           </div>
         </div>
       </div>
@@ -464,18 +456,15 @@ function OrdenesDashboardContent() {
         <button
           type="button"
           onClick={handleCreateNuevaOrden}
-          disabled={isCreating}
           aria-label="Emitir nueva orden de mantenimiento"
-          aria-busy={isCreating}
           className={cn(
             "w-full bg-blue-600 text-white rounded-xl flex items-center justify-center gap-2 transition-all font-bold shadow-lg shadow-blue-900/20",
             "py-3 px-4",
-            "disabled:cursor-not-allowed disabled:opacity-70",
-            isCreating ? 'opacity-80' : 'hover:bg-blue-700 active:scale-95'
+            "hover:bg-blue-700 active:scale-95"
           )}
         >
           <Plus className="w-5 h-5" aria-hidden="true" />
-          {isCreating ? 'Creando...' : 'Nueva Orden'}
+          Nueva Orden
         </button>
 
         <OfflineSyncBanner />
@@ -497,18 +486,11 @@ function OrdenesDashboardContent() {
             Resumen
           </h2>
 
-          {isDashboardLoading ? (
-            <div className="space-y-6">
-              <div className="flex gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0" role="status" aria-label="Cargando estadísticas y recientes">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="snap-start shrink-0 w-32 h-24 rounded-2xl" />
-                ))}
-              </div>
-              <div className="grid gap-3">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-24 w-full rounded-xl" />
-                ))}
-              </div>
+          {statsLoading && estadisticas.totalOrdenes === 0 ? (
+            <div className="flex gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0" role="status" aria-label="Cargando estadísticas">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="snap-start shrink-0 w-32 h-24 rounded-2xl" />
+              ))}
             </div>
           ) : (
             <div
@@ -554,7 +536,13 @@ function OrdenesDashboardContent() {
             Recientes
           </h2>
 
-          {ordenesRecientes.length > 0 ? (
+          {ordenesLoading && ordenesRecientes.length === 0 ? (
+            <div className="grid gap-3" role="status" aria-label="Cargando órdenes recientes">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full rounded-xl" />
+              ))}
+            </div>
+          ) : ordenesRecientes.length > 0 ? (
             <div className="grid gap-3">
               {ordenesRecientes.map((o) => (
                 <OrdenCard

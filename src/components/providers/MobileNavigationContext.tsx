@@ -53,10 +53,14 @@ interface MobileNavigationContextValue {
   isMobileNav: boolean;
   /** Acción pendiente por ejecutar al montar una vista */
   pendingAction: PendingAction;
-  /** Disparar la apertura de nueva orden */
+  /** Disparar la apertura de nueva orden (Deprecated - Use openModal) */
   triggerNuevaOrden: () => void;
   /** Consumir la acción pendiente */
   consumePendingAction: () => void;
+  /** Estado local para evitar latencia de Next.js router */
+  isModalOpenLocally: boolean;
+  openModal: () => void;
+  closeModal: () => void;
 }
 
 const MobileNavigationContext = createContext<MobileNavigationContextValue>({
@@ -67,6 +71,9 @@ const MobileNavigationContext = createContext<MobileNavigationContextValue>({
   pendingAction: null,
   triggerNuevaOrden: () => {},
   consumePendingAction: () => {},
+  isModalOpenLocally: false,
+  openModal: () => {},
+  closeModal: () => {},
 });
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
@@ -84,6 +91,9 @@ export function MobileNavigationProvider({
   const [slideDirection, setSlideDirection] = useState(0);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const prevViewRef = useRef<AppView>(activeView);
+  
+  // Local state for modal to bypass Next.js latency
+  const [isModalOpenLocally, setIsModalOpenLocally] = useState(false);
 
   // Detectar si estamos en mobile
   useEffect(() => {
@@ -138,6 +148,13 @@ export function MobileNavigationProvider({
     if (!isMobileNav) return;
 
     const handlePopState = (e: PopStateEvent) => {
+      // Check if modal state was changed
+      if (!e.state?.modal && isModalOpenLocally) {
+        setIsModalOpenLocally(false);
+      } else if (e.state?.modal === "crear-orden" && !isModalOpenLocally) {
+        setIsModalOpenLocally(true);
+      }
+
       if (e.state?.mobileNav && e.state?.view) {
         const view = e.state.view as AppView;
         const prevIdx = TAB_ORDER.indexOf(activeView);
@@ -150,7 +167,21 @@ export function MobileNavigationProvider({
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [isMobileNav, activeView]);
+  }, [isMobileNav, activeView, isModalOpenLocally]);
+
+  const openModal = useCallback(() => {
+    setIsModalOpenLocally(true);
+    // Push state without reloading to trigger back button functionality
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set("modal", "crear-orden");
+    window.history.pushState({ mobileNav: true, view: activeView, modal: "crear-orden" }, "", currentUrl.toString());
+  }, [activeView]);
+
+  const closeModal = useCallback(() => {
+    setIsModalOpenLocally(false);
+    // Let the standard back button action take place or pop state manually
+    window.history.back();
+  }, []);
 
   const triggerNuevaOrden = useCallback(() => {
     setPendingAction("open-nueva-orden");
@@ -170,6 +201,9 @@ export function MobileNavigationProvider({
         pendingAction,
         triggerNuevaOrden,
         consumePendingAction,
+        isModalOpenLocally,
+        openModal,
+        closeModal,
       }}
     >
       {children}

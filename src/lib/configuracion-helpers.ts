@@ -62,9 +62,14 @@ export const obtenerTareasPredefinidas = async (
   // Migrar silenciosamente si hay datos en formato antiguo
   await migrarSiEsNecesario(uid)
 
+  const configSnap = await getDoc(configDocRef(uid))
+  const configData = configSnap.data()
+  const yaInicializado = configData?.migradoV2 === true || configData?.inicializado === true
+
   const snap = await getDocs(tareasCol(uid))
-  if (snap.empty) {
+  if (snap.empty && !yaInicializado) {
     await sembrarTareas(uid)
+    await setDoc(configDocRef(uid), { inicializado: true }, { merge: true })
     const snap2 = await getDocs(tareasCol(uid))
     return snap2.docs.map(d => ({ id: d.id, ...d.data() } as TareaPredefinida))
   }
@@ -74,9 +79,14 @@ export const obtenerTareasPredefinidas = async (
 export const obtenerPiezasPredefinidas = async (
   uid: string
 ): Promise<PiezaPredefinida[]> => {
+  const configSnap = await getDoc(configDocRef(uid))
+  const configData = configSnap.data()
+  const yaInicializado = configData?.migradoV2 === true || configData?.inicializadoPiezas === true
+
   const snap = await getDocs(piezasCol(uid))
-  if (snap.empty) {
+  if (snap.empty && !yaInicializado) {
     await sembrarPiezas(uid)
+    await setDoc(configDocRef(uid), { inicializadoPiezas: true }, { merge: true })
     const snap2 = await getDocs(piezasCol(uid))
     return snap2.docs.map(d => ({ id: d.id, ...d.data() } as PiezaPredefinida))
   }
