@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@capacitor-community/contacts':
+        specifier: ^7.2.0
+        version: 7.2.0(@capacitor/core@8.3.3)
       '@capacitor-community/file-opener':
         specifier: ^8.0.0
         version: 8.0.0(@capacitor/core@8.3.3)
@@ -249,6 +252,11 @@ packages:
   '@babel/runtime@7.29.2':
     resolution: {integrity: sha512-JiDShH45zKHWyGe4ZNVRrCjBz8Nh9TMmZG1kh4QTK8hCBTWBi8Da+i7s1fJw7/lYpM4ccepSNfqzZ/QvABBi5g==}
     engines: {node: '>=6.9.0'}
+
+  '@capacitor-community/contacts@7.2.0':
+    resolution: {integrity: sha512-s/DVHuhMYbIbkSCuZyx6+ZDIho2wuUdtcb+cre4igo5Fz26lkBlayRSo+tBBfJsYxLlrQX21Jy8rMmUCdz2GTQ==}
+    peerDependencies:
+      '@capacitor/core': '>=7.0.0'
 
   '@capacitor-community/file-opener@8.0.0':
     resolution: {integrity: sha512-kbVNxt4G45RHHeOqrE1Z0nT5iOOzmZ3WwQytpUtaIPzDTlmZxVEA3nJYEiOfGFp6msZO6QWHK3k0Qbv7hnBx+w==}
@@ -3939,6 +3947,10 @@ snapshots:
   '@babel/helper-validator-identifier@7.28.5': {}
 
   '@babel/runtime@7.29.2': {}
+
+  '@capacitor-community/contacts@7.2.0(@capacitor/core@8.3.3)':
+    dependencies:
+      '@capacitor/core': 8.3.3
 
   '@capacitor-community/file-opener@8.0.0(@capacitor/core@8.3.3)':
     dependencies:

@@ -39,12 +39,12 @@ import { useAndroidBack } from "@/hooks/useAndroidBack";
 // ─── Tipos de dispositivo predefinidos ────────────────────────────────────────
 
 const TIPO_OPTIONS = [
-  { value: "impresora",     label: "Impresora",     icon: Printer },
-  { value: "fotocopiadora", label: "Fotocopiadora", icon: Copy },
-  { value: "multifuncional",label: "Multifuncional",icon: Layers },
-  { value: "escaner",       label: "Escáner",       icon: ScanLine },
+  { value: "Impresora",     label: "Impresora",     icon: Printer },
+  { value: "Fotocopiadora", label: "Fotocopiadora", icon: Copy },
+  { value: "Multifuncional",label: "Multifuncional",icon: Layers },
+  { value: "Escaner",       label: "Escáner",       icon: ScanLine },
   { value: "Computadora",   label: "Computadora",   icon: Cpu },
-  { value: "personalizado", label: "Personalizado", icon: Plus },
+  { value: "Personalizado", label: "Personalizado", icon: Plus },
 ] as const;
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
@@ -63,6 +63,7 @@ type DispositivoFormValues = z.infer<typeof dispositivoSchema>;
 interface DispositivoFormModalProps {
   open: boolean;
   cliente: Cliente;
+  initialData?: Dispositivo | null;
   onClose: () => void;
   onSuccess: (clienteActualizado: Cliente, dispositivoNuevo: Dispositivo) => void;
 }
@@ -72,6 +73,7 @@ interface DispositivoFormModalProps {
 export function DispositivoFormModal({
   open,
   cliente,
+  initialData,
   onClose,
   onSuccess,
 }: DispositivoFormModalProps) {
@@ -95,12 +97,32 @@ export function DispositivoFormModal({
   // Reset al abrir
   useEffect(() => {
     if (open) {
-      form.reset({ tipo: "", marca: "", modelo: "", numeroSerie: "" });
-      setSelectedTile("");
-      setIsCustom(false);
-      setCustomTipoValue("");
+      if (initialData) {
+        form.reset({
+          tipo: initialData.tipo ?? "",
+          marca: initialData.marca ?? "",
+          modelo: initialData.modelo ?? "",
+          numeroSerie: initialData.numeroSerie ?? "",
+        });
+        
+        const isPredefined = TIPO_OPTIONS.some(t => t.value === initialData.tipo?.toLowerCase());
+        if (isPredefined) {
+          setSelectedTile(initialData.tipo.toLowerCase());
+          setIsCustom(false);
+          setCustomTipoValue("");
+        } else {
+          setSelectedTile("personalizado");
+          setIsCustom(true);
+          setCustomTipoValue(initialData.tipo ?? "");
+        }
+      } else {
+        form.reset({ tipo: "", marca: "", modelo: "", numeroSerie: "" });
+        setSelectedTile("");
+        setIsCustom(false);
+        setCustomTipoValue("");
+      }
     }
-  }, [open, form]);
+  }, [open, form, initialData]);
 
   // Foco automático en input custom
   useEffect(() => {
@@ -164,15 +186,22 @@ export function DispositivoFormModal({
     setIsLoading(true);
 
     try {
-      const nuevoDispositivo = {
+      const dispositivoParaGuardar = {
         ...data,
-        id: `${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        id: initialData?.id || `${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       };
 
-      const dispositivosActualizados = [
-        ...(cliente.dispositivos || []),
-        nuevoDispositivo,
-      ];
+      let dispositivosActualizados: Dispositivo[];
+      if (initialData?.id) {
+        dispositivosActualizados = (cliente.dispositivos || []).map(d => 
+          d.id === initialData.id ? (dispositivoParaGuardar as Dispositivo) : d
+        );
+      } else {
+        dispositivosActualizados = [
+          ...(cliente.dispositivos || []),
+          dispositivoParaGuardar as Dispositivo,
+        ];
+      }
 
       const payload = {
         ...cliente,
@@ -183,11 +212,11 @@ export function DispositivoFormModal({
       await actualizarCliente(cliente.id, payload, user.uid);
 
       toast({
-        title: "Dispositivo agregado",
-        description: `${data.marca} ${data.modelo ?? ""} añadido a ${cliente.name}.`,
+        title: initialData?.id ? "Dispositivo actualizado" : "Dispositivo agregado",
+        description: `${data.marca} ${data.modelo ?? ""} guardado en ${cliente.name}.`,
       });
 
-      onSuccess(payload as Cliente, nuevoDispositivo);
+      onSuccess(payload as Cliente, dispositivoParaGuardar as Dispositivo);
       onClose();
     } catch (error) {
       console.error("Error agregando dispositivo:", error);
@@ -246,18 +275,17 @@ export function DispositivoFormModal({
           <div className="w-9 h-1 rounded-full bg-white/20" />
         </div>
 
-        {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="px-5 pt-2 pb-4 flex-shrink-0">
           <div className="flex items-start justify-between">
             <div>
               <DialogTitle className="text-[17px] font-semibold tracking-tight text-white leading-tight">
-                Nuevo dispositivo
+                {initialData ? "Editar dispositivo" : "Nuevo dispositivo"}
               </DialogTitle>
               <p className="text-[13px] text-white/40 mt-0.5 font-medium">
                 {cliente.name}
               </p>
             </div>
-            {/* El cierre queda manejado por el componente `Dialog` padre; botón duplicado eliminado */}
+            {/* El cierre queda manejado por el componente `Dialog` padre */}
           </div>
         </div>
 
@@ -284,7 +312,7 @@ export function DispositivoFormModal({
                     <div className="grid grid-cols-3 gap-2.5">
                       {TIPO_OPTIONS.map(({ value, label, icon: Icon }) => {
                         const isSelected = selectedTile === value;
-                        const isPersonalized = value === "personalizado";
+                        const isPersonalized = value === "Personalizado";
 
                         return (
                           <button

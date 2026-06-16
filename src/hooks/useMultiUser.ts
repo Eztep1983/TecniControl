@@ -1,5 +1,7 @@
-// hooks/useMultiUser.ts
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery, keepPreviousData } from '@tanstack/react-query';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, onSnapshot, orderBy } from 'firebase/firestore';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useNetworkStatus } from './useNetworkStatus';
 import { useOfflineSync } from '@/components/providers/OfflineSyncProvider';
@@ -30,15 +32,40 @@ export const useClientesUsuario = () => {
   const { connected } = useNetworkStatus();
   const { enqueueConfig } = useOfflineSync();
 
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const q = query(
+      collection(db, 'clientes'),
+      where('userId', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, { includeMetadataChanges: true }, (snapshot: any) => {
+      const clientes = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      queryClient.setQueryData(['clientes', user.uid], clientes);
+    });
+
+    return () => unsubscribe();
+  }, [user?.uid, queryClient]);
+
   const queryResult = useQuery<Cliente[]>({
     queryKey: ['clientes', user?.uid],
-    queryFn: () => getClientesPorUsuario(user!.uid),
+    queryFn: async () => {
+      const cached = queryClient.getQueryData(['clientes', user!.uid]);
+      if (cached) return cached as Cliente[];
+
+      const q = query(collection(db, 'clientes'), where('userId', '==', user!.uid), orderBy('createdAt', 'desc'));
+      const snapshot: any = await getDocs(q);
+      const data = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      return data as Cliente[];
+    },
     enabled: !!user?.uid,
     staleTime: Infinity,
   });
 
   const refrescarClientes = () => {
-    queryClient.invalidateQueries({ queryKey: ['clientes', user?.uid] });
+    // Ya no hace nada, onSnapshot maneja todo.
   };
 
   // Mutación para crear cliente (online/offline)
@@ -214,7 +241,7 @@ export const useCrearOrden = () => {
       return { id, idPersonalizado, isOffline: false, ...ordenBase };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid, 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid] });
     },
   });
 };
@@ -307,109 +334,87 @@ export const useOrdenesRecientes = (limitCount: number = 5) => {
   });
 };
 
+import { performLocalSearch, paginateLocalOrders } from '@/lib/search-helpers';
+
 /**
- * ✅ Hook para Órdenes Infinitas
+ * ✅ Sincronización Global en Tiempo Real (Offline-First)
+ * Mantiene todas las órdenes del usuario en la memoria local (IndexedDB -> RAM).
+ * Costo: 0 lecturas en navegación (solo deltas en tiempo real).
  */
-export const useOrdenesInfinitas = (pageSize: number = 10, filtroTipo: string = 'todos') => {
+export const useSyncTodasLasOrdenes = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const query = useInfiniteQuery({
-    queryKey: ['ordenes', user?.uid, 'infinito', filtroTipo],
-    queryFn: ({ pageParam }) => getOrdenesPaginadasConFiltro(user!.uid, pageSize, pageParam as any, filtroTipo),
-    initialPageParam: null as any,
-    getNextPageParam: (lastPage) => lastPage.lastDoc || undefined,
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const q = query(
+      collection(db, 'ordenes'),
+      where('userId', '==', user.uid),
+      orderBy('fechaCreacion', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, { includeMetadataChanges: true }, (snapshot: any) => {
+      const ordenes = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      queryClient.setQueryData(['ordenes_completas', user.uid], ordenes);
+    });
+
+    return () => unsubscribe();
+  }, [user?.uid, queryClient]);
+
+  return useQuery({
+    queryKey: ['ordenes_completas', user?.uid],
+    queryFn: async () => {
+      const cached = queryClient.getQueryData(['ordenes_completas', user!.uid]);
+      if (cached) return cached as OrdenMantenimiento[];
+
+      const q = query(collection(db, 'ordenes'), where('userId', '==', user!.uid), orderBy('fechaCreacion', 'desc'));
+      const snapshot: any = await getDocs(q);
+      const data = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      return data as OrdenMantenimiento[];
+    },
+    staleTime: Infinity,
     enabled: !!user?.uid,
-    staleTime: 1000 * 60,
   });
-
-  const refrescarOrdenes = () => {
-    queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid] });
-  };
-
-  return { ...query, refrescarOrdenes };
 };
 
-import Fuse from 'fuse.js';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, collection, query, where, documentId, getDocs } from 'firebase/firestore';
+/**
+ * ✅ Hook para Órdenes Infinitas (Local Memory Pagination)
+ */
+export const useOrdenesInfinitas = (pageSize: number = 10, filtroTipo: string = 'todos') => {
+  const { user } = useAuth();
+  const { data: todasLasOrdenes = [], isLoading: isSyncing } = useSyncTodasLasOrdenes();
+
+  const query = useInfiniteQuery({
+    queryKey: ['ordenes_paginadas_local', user?.uid, filtroTipo, todasLasOrdenes.length], 
+    queryFn: ({ pageParam = 0 }) => {
+      return paginateLocalOrders(todasLasOrdenes, pageParam as number, pageSize, filtroTipo);
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    enabled: !!user?.uid && !isSyncing,
+    staleTime: Infinity,
+  });
+
+  return { ...query, isLoading: isSyncing || query.isLoading, refrescarOrdenes: () => {} };
+};
 
 /**
- * ✅ Hook Inteligente para Búsqueda (Opción C)
+ * ✅ Hook Inteligente para Búsqueda (Memoria Local)
  */
 export const useOrdenesBusqueda = (busqueda: string, filtroTipo: string = 'todos', enabled: boolean = true) => {
   const { user } = useAuth();
+  const { data: todasLasOrdenes = [] } = useSyncTodasLasOrdenes();
 
   return useQuery<OrdenMantenimiento[]>({
-    queryKey: ['ordenes', user?.uid, 'busquedaInteligente', busqueda, filtroTipo],
-    queryFn: async () => {
-      if (!user?.uid || !busqueda.trim()) return [];
-
-      // 1. Descargar el índice comprimido (1 sola lectura)
-      const searchIndexRef = doc(db, 'search_indices', user.uid);
-      let indexSnap = await getDoc(searchIndexRef);
-      
-      // AUTO-MIGRACIÓN SILENCIOSA
-      // Si el índice no existe (usuario antiguo), lo reconstruimos al vuelo la primera vez.
-      if (!indexSnap.exists()) {
-        const { rebuildSearchIndex } = await import('@/lib/multiuser-helpers');
-        await rebuildSearchIndex(user.uid);
-        indexSnap = await getDoc(searchIndexRef);
-        if (!indexSnap.exists()) return [];
-      }
-      
-      const indexData = indexSnap.data().ordenes || {};
-      const indexArray = Object.entries(indexData).map(([id, data]: [string, any]) => ({
-        id,
-        ...data
-      }));
-
-      // 2. Ejecutar Fuse.js en memoria local
-      const fuse = new Fuse(indexArray, {
-        keys: ['c', 'd', 'i', 't', 'p', 's'], // cliente, dispositivo, id, tipo, phone, serie
-        threshold: 0.3, // 0.0 es coincidencia exacta, 1.0 coincide con todo
-        ignoreLocation: true,
-      });
-
-      const resultados = fuse.search(busqueda.trim());
-      
-      // Filtrar por tipo si es necesario
-      let idsEncontrados = resultados.map(r => r.item.id);
-      if (filtroTipo !== 'todos') {
-        idsEncontrados = resultados
-          .filter(r => r.item.t === filtroTipo)
-          .map(r => r.item.id);
-      }
-
-      // Tomar solo los mejores 20 resultados
-      idsEncontrados = idsEncontrados.slice(0, 20);
-
-      if (idsEncontrados.length === 0) return [];
-
-      // 3. Descargar los documentos completos de esos 20 IDs (en chunks de 10 por límite de in)
-      const ordenesRef = collection(db, 'ordenes');
-      const chunks = [];
-      for (let i = 0; i < idsEncontrados.length; i += 10) {
-        chunks.push(idsEncontrados.slice(i, i + 10));
-      }
-
-      let ordenesCompletas: OrdenMantenimiento[] = [];
-      for (const chunk of chunks) {
-        const q = query(ordenesRef, where(documentId(), 'in', chunk));
-        const snap = await getDocs(q);
-        ordenesCompletas = [
-          ...ordenesCompletas,
-          ...snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as OrdenMantenimiento))
-        ];
-      }
-
-      // Mantener el orden de relevancia de Fuse
-      ordenesCompletas.sort((a, b) => idsEncontrados.indexOf(a.id!) - idsEncontrados.indexOf(b.id!));
-
-      return ordenesCompletas;
+    queryKey: ['ordenes_busqueda_local', user?.uid, busqueda, filtroTipo, todasLasOrdenes.length],
+    queryFn: () => {
+      if (!busqueda.trim() && filtroTipo === 'todos') return [];
+      return performLocalSearch(todasLasOrdenes, busqueda, filtroTipo, 50) as OrdenMantenimiento[];
     },
-    enabled: !!user?.uid && enabled && busqueda.trim().length > 0,
-    staleTime: 1000 * 60 * 5, // Cache local por 5 minutos
+    enabled: !!user?.uid && enabled && todasLasOrdenes.length > 0,
+    staleTime: Infinity,
+    placeholderData: keepPreviousData,
   });
 };
 

@@ -3,8 +3,9 @@
 import { useState, useCallback, useMemo, memo } from "react";
 import { ClientesDataTable } from "./ClientesDataTable";
 import { ClienteViewModal } from "@/components/clientes/ClienteViewModal";
-import { ClienteFormModal } from "@/components/clientes/ClienteFormModal";
+import { ClienteSimpleFormModal } from "@/components/clientes/ClienteSimpleFormModal";
 import { ClienteHistorialModal } from "@/components/clientes/ClienteHistorialModal";
+import { ImportarContactosModal } from "./ImportarContactosModal";
 import { Input } from "@/components/ui/basic/input";
 import { PlusCircle, User, Search, Users, Filter, RefreshCw, X } from "lucide-react";
 import type { Cliente } from "@/types/orden";
@@ -15,6 +16,8 @@ import { usePullToRefresh } from "@/hooks/clientes/usePullToRefresh";
 import { useHapticFeedback } from "@/hooks/clientes/useHapticFeedback";
 import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useDebounce } from "use-debounce";
+import { performLocalClientSearch } from "@/lib/search-helpers";
 
 const MODAL_ANIMATION_DURATION = 300;
 
@@ -62,11 +65,13 @@ export function ClientesList() {
   const { user } = useAuth();
   const { clientes, loading, error, refrescarClientes } = useClientesUsuario();
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch] = useDebounce(searchTerm, 300);
   const modal = useClienteModal();
   const haptic = useHapticFeedback();
 
   const [historialOpen, setHistorialOpen] = useState(false);
   const [selectedClienteHistorial, setSelectedClienteHistorial] = useState<Cliente | null>(null);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   // FIX: Tipado correcto del ref sin cast inseguro.
   // usePullToRefresh debe devolver RefObject<HTMLElement> o similar.
@@ -81,17 +86,8 @@ export function ClientesList() {
 
   // ── Filtrado ────────────────────────────────────────────────────────────
   const filteredClientes = useMemo(() => {
-    if (!searchTerm.trim()) return clientes;
-    const q = searchTerm.toLowerCase();
-    return clientes.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.email?.toLowerCase().includes(q) ||
-        c.phone?.includes(q) ||
-        // FIX: También buscar por cédula, útil en flujos latinoamericanos
-        c.cedula?.includes(q)
-    );
-  }, [clientes, searchTerm]);
+    return performLocalClientSearch(clientes, debouncedSearch, 5000) as Cliente[];
+  }, [clientes, debouncedSearch]);
 
   // ── Callbacks ───────────────────────────────────────────────────────────
   const handleDeleteConfirm = useCallback(
@@ -120,6 +116,16 @@ export function ClientesList() {
     haptic.impactLight();
     modal.openCreate();
   }, [haptic, modal]);
+
+  const openImport = useCallback(() => {
+    haptic.impactLight();
+    setImportModalOpen(true);
+  }, [haptic]);
+
+  const handleImportSuccess = useCallback(() => {
+    haptic.success();
+    refrescarClientes();
+  }, [haptic, refrescarClientes]);
 
   const openHistorial = useCallback(
     (cliente: Cliente) => {
@@ -199,7 +205,7 @@ export function ClientesList() {
         onClose={modal.close}
         onEdit={modal.switchToEdit}
       />
-      <ClienteFormModal
+      <ClienteSimpleFormModal
         open={modal.isCreate || modal.isEdit}
         initialData={modal.isEdit ? modal.cliente : null}
         onClose={modal.close}
@@ -210,6 +216,11 @@ export function ClientesList() {
         clienteId={selectedClienteHistorial?.id ?? ""}
         clienteNombre={selectedClienteHistorial?.name ?? ""}
         onClose={closeHistorial}
+      />
+      <ImportarContactosModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onSuccess={handleImportSuccess}
       />
 
       {/* Contenedor principal */}
@@ -278,6 +289,15 @@ export function ClientesList() {
                   </button>
                 )}
               </div>
+
+              <button
+                onClick={openImport}
+                className="flex items-center justify-center gap-2 px-4 rounded-xl bg-gray-800/60 hover:bg-gray-800 active:bg-gray-700/80 border border-gray-700/50 transition-all active:scale-95 text-sm font-medium flex-shrink-0 min-h-[48px] text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-700/50"
+                aria-label="Importar contactos"
+              >
+                <Users className="w-4 h-4 text-gray-400" aria-hidden="true" />
+                <span>Importar</span>
+              </button>
 
               <button
                 onClick={openCreate}

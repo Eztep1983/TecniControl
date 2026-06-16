@@ -11,6 +11,8 @@ import {
   IdCard,
   Monitor,
   Edit,
+  Trash2,
+  Plus,
   X,
   Cpu,
   History,
@@ -21,6 +23,11 @@ import { useAndroidBack } from "@/hooks/useAndroidBack";
 import { useMediaQuery } from "@/hooks/clientes/useMediaQuery";
 import { useSwipeToClose } from "@/hooks/clientes/useSwipeToClose";
 import { useHapticFeedback } from "@/hooks/clientes/useHapticFeedback";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useClientesUsuario } from "@/hooks/useMultiUser";
+import { useToast } from "@/hooks/use-toast";
+import { DispositivoFormModal } from "./DispositivoFormModal";
+import type { Dispositivo } from "@/types/orden";
 const ClienteHistorialModalLazy = lazy(() => import("./ClienteHistorialModal").then(m => ({ default: m.ClienteHistorialModal })));
 
 interface ClienteViewModalProps {
@@ -34,17 +41,29 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
   const isMobile = useMediaQuery("(max-width: 768px)");
   const haptic = useHapticFeedback();
   const [historialOpen, setHistorialOpen] = useState(false);
+  const { user } = useAuth();
+  const { actualizarCliente } = useClientesUsuario();
+  const { toast } = useToast();
+  
+  const [deviceModalOpen, setDeviceModalOpen] = useState(false);
+  const [editingDevice, setEditingDevice] = useState<Dispositivo | null>(null);
+  const [deleteDeviceOpen, setDeleteDeviceOpen] = useState(false);
+  const [deviceToDelete, setDeviceToDelete] = useState<Dispositivo | null>(null);
+  const [isDeletingDevice, setIsDeletingDevice] = useState(false);
+
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const { handleTouchStart, handleTouchMove, handleTouchEnd } = useSwipeToClose({
     onClose,
-    enabled: open && isMobile && !historialOpen,
+    enabled: open && isMobile && !historialOpen && !deviceModalOpen && !deleteDeviceOpen,
     threshold: 100,
     scrollRef: scrollRef as any,
   });
 
   useAndroidBack(open, () => {
-    if (historialOpen) setHistorialOpen(false);
+    if (deleteDeviceOpen) setDeleteDeviceOpen(false);
+    else if (deviceModalOpen) setDeviceModalOpen(false);
+    else if (historialOpen) setHistorialOpen(false);
     else onClose();
   });
 
@@ -57,6 +76,52 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
     haptic.selection();
     setHistorialOpen(true);
   }, [haptic]);
+
+  const handleEditDeviceClick = useCallback((device: Dispositivo) => {
+    haptic.selection();
+    setEditingDevice(device);
+    setDeviceModalOpen(true);
+  }, [haptic]);
+
+  const handleAddDeviceClick = useCallback(() => {
+    haptic.selection();
+    setEditingDevice(null);
+    setDeviceModalOpen(true);
+  }, [haptic]);
+
+  const handleDeleteDeviceClick = useCallback((device: Dispositivo) => {
+    haptic.impactMedium();
+    setDeviceToDelete(device);
+    setDeleteDeviceOpen(true);
+  }, [haptic]);
+
+  const handleDeleteDeviceConfirm = async () => {
+    if (!cliente || !deviceToDelete || !user?.uid) return;
+    setIsDeletingDevice(true);
+    try {
+      const remainingDevices = (cliente.dispositivos || []).filter(d => d.id !== deviceToDelete.id);
+      await actualizarCliente(cliente.id, {
+        ...cliente,
+        dispositivos: remainingDevices,
+        updatedAt: new Date().toISOString()
+      });
+      
+      toast({
+        title: "Dispositivo eliminado",
+        description: "El dispositivo se eliminó correctamente.",
+      });
+      setDeleteDeviceOpen(false);
+      setDeviceToDelete(null);
+    } catch (error) {
+      toast({
+        title: "Error al eliminar",
+        description: "No se pudo eliminar el dispositivo. Intenta de nuevo.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeletingDevice(false);
+    }
+  };
 
   if (!cliente) return null;
 
@@ -114,25 +179,43 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
       <section className="p-6">
         <div className="flex items-center justify-between mb-4">
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Dispositivos vinculados</p>
-          <div className="px-2 py-0.5 rounded-lg bg-gray-800 border border-gray-700">
-            <span className="text-[10px] font-black text-gray-400">
-              {cliente.dispositivos?.length ?? 0}
-            </span>
-          </div>
+          <button
+            onClick={handleAddDeviceClick}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-xs font-bold text-blue-400 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Añadir
+          </button>
         </div>
         {cliente.dispositivos && cliente.dispositivos.length > 0 ? (
           <div className="grid grid-cols-1 gap-3">
             {cliente.dispositivos.map((d, idx) => (
               <div key={d.id ?? idx} className="bg-gray-800/20 rounded-2xl border border-gray-700/30 p-4">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center">
-                    <Monitor className="w-5 h-5 text-blue-400" />
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center">
+                      <Monitor className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white">{d.marca} {d.modelo}</p>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-gray-700/50 text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
+                        {d.tipo}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">{d.marca} {d.modelo}</p>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-gray-700/50 text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
-                      {d.tipo}
-                    </span>
+                  <div className="flex items-center gap-1 bg-gray-900/40 rounded-lg border border-gray-700/30 p-1">
+                    <button
+                      onClick={() => handleEditDeviceClick(d)}
+                      className="w-8 h-8 rounded-md flex items-center justify-center text-gray-400 hover:bg-gray-700/50 hover:text-white transition-colors"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteDeviceClick(d)}
+                      className="w-8 h-8 rounded-md flex items-center justify-center text-gray-400 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -211,6 +294,49 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
     </Suspense>
   ) : null;
 
+  const modalsAdicionales = (
+    <>
+      <DispositivoFormModal
+        open={deviceModalOpen}
+        cliente={cliente}
+        initialData={editingDevice}
+        onClose={() => setDeviceModalOpen(false)}
+        onSuccess={() => setDeviceModalOpen(false)}
+      />
+
+      <Dialog 
+        open={deleteDeviceOpen} 
+        onOpenChange={(v) => !v && setDeleteDeviceOpen(false)}
+      >
+        <DialogContent className="w-[calc(100%-2rem)] max-w-sm mx-auto rounded-2xl bg-gray-800 border-gray-700 p-6">
+          <DialogHeader>
+            <DialogTitle className="text-white text-lg">
+              ¿Eliminar {deviceToDelete?.marca}?
+            </DialogTitle>
+            <DialogDescription className="text-gray-400 text-sm mt-2">
+              Esta acción no se puede deshacer. Se removerá este dispositivo del perfil de {cliente.name}. El historial de órdenes previo se mantendrá intacto.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 mt-4">
+            <button
+              onClick={() => setDeleteDeviceOpen(false)}
+              className="w-full h-12 rounded-xl bg-gray-700/60 hover:bg-gray-700 text-white text-sm font-medium order-2 sm:order-1 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleDeleteDeviceConfirm}
+              disabled={isDeletingDevice}
+              className="w-full h-12 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 text-sm font-medium order-1 sm:order-2 transition-colors flex items-center justify-center gap-2"
+            >
+              {isDeletingDevice ? "Eliminando..." : "Eliminar"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+
   if (isMobile) {
     return (
       <>
@@ -234,6 +360,7 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
           </SheetContent>
         </Sheet>
         {sharedModalContent}
+        {modalsAdicionales}
       </>
     );
   }
@@ -255,6 +382,7 @@ export function ClienteViewModal({ cliente, open, onClose, onEdit }: ClienteView
         </DialogContent>
       </Dialog>
       {sharedModalContent}
+      {modalsAdicionales}
     </>
   );
 }

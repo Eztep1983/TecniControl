@@ -19,16 +19,23 @@ import { MobileAppShell } from '@/components/providers/MobileAppShell'
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const { setOpenMobile } = useSidebar()
+  const mainRef = React.useRef<HTMLElement>(null)
 
-  // Cerrar sidebar en mobile cuando cambia la ruta
+  // Cerrar sidebar en mobile y hacer scroll to top cuando cambia la ruta
   useEffect(() => {
     setOpenMobile(false)
+    if (mainRef.current) {
+      mainRef.current.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior })
+    }
   }, [pathname, setOpenMobile])
 
   return (
     <>
       <NetworkStatusBanner />
-      <main className="flex flex-col flex-1 overflow-y-auto p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-6 lg:p-8 lg:pb-8 bg-gray-900">
+      <main 
+        ref={mainRef}
+        className="flex flex-col flex-1 overflow-y-auto p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-6 lg:p-8 lg:pb-8 bg-gray-900"
+      >
         <div className="max-w-7xl mx-auto w-full flex flex-col flex-1 relative">
           {/* 
             MobileAppShell intercepta la navegación en mobile renderizando

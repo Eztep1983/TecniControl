@@ -65,6 +65,8 @@ const ManagedView = memo(function ManagedView({
         top: 0,
         left: 0,
         width: "100%",
+        height: isActive ? "auto" : 0,
+        overflow: isActive ? "visible" : "hidden",
         opacity: isActive ? 1 : 0,
         pointerEvents: isActive ? "auto" : "none",
       }}
@@ -118,6 +120,12 @@ export function MobileAppShell({ children }: { children: React.ReactNode }) {
       const next = [activeView, ...prev.filter(v => v !== activeView)].slice(0, 3);
       return next;
     });
+    
+    // Resetear el scroll del contenedor principal al cambiar de tab en mobile
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
   }, [activeView]);
 
   useSlideAnimation(containerRef, activeView, slideDirection);

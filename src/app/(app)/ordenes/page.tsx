@@ -13,7 +13,8 @@ import {
   FileEdit,
   Package,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -133,6 +134,7 @@ const TIPO_COLORS: Record<string, string> = {
   correctivo: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
   diagnostico: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   instalacion: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  garantia: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
 }
 
 const getTipoColor = (tipo: string) =>
@@ -144,28 +146,38 @@ const StatCard = memo(
     value,
     label,
     colorClass = 'border-gray-700/50',
+    onClick,
   }: {
     icon: React.ElementType
     value: number
     label: string
     colorClass?: string
-  }) => (
-    <div
-      className={cn(
-        'snap-start shrink-0 w-32 bg-gray-800/40 border rounded-2xl p-4',
-        'flex flex-col items-center justify-center',
-        'transition-colors duration-150 cursor-default',
-        colorClass
-      )}
-      role="listitem"
-    >
-      <Icon className="w-5 h-5 text-gray-400 mb-1.5" aria-hidden="true" />
-      <span className="text-xl font-bold text-white tabular-nums">{value}</span>
-      <span className="text-[10px] uppercase tracking-wider text-gray-500 font-medium text-center leading-tight mt-0.5">
-        {label}
-      </span>
-    </div>
-  )
+    onClick?: () => void
+  }) => {
+    const Component = onClick ? 'button' : 'div'
+    
+    return (
+      <Component
+        onClick={onClick}
+        type={onClick ? "button" : undefined}
+        className={cn(
+          'snap-start shrink-0 w-32 bg-gray-800/40 border rounded-2xl p-4',
+          'flex flex-col items-center justify-center',
+          'transition-all duration-150',
+          onClick ? 'cursor-pointer hover:bg-gray-800/60 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400' : 'cursor-default',
+          colorClass
+        )}
+        role={onClick ? 'button' : 'listitem'}
+        aria-label={onClick ? `Ver órdenes de tipo ${label}` : undefined}
+      >
+        <Icon className="w-5 h-5 text-gray-400 mb-1.5" aria-hidden="true" />
+        <span className="text-xl font-bold text-white tabular-nums">{value}</span>
+        <span className="text-xs uppercase tracking-wider text-gray-400 font-medium text-center leading-tight mt-0.5">
+          {label}
+        </span>
+      </Component>
+    )
+  }
 )
 StatCard.displayName = 'StatCard'
 
@@ -178,7 +190,7 @@ const EmptyOrdenes = memo(
         <FileX className="w-6 h-6 text-gray-600" aria-hidden="true" />
       </div>
       <p className="text-sm font-medium text-gray-400">Sin órdenes recientes</p>
-      <p className="text-xs text-gray-600 mt-1">Las órdenes que crees aparecerán aquí.</p>
+      <p className="text-xs text-gray-500 mt-1">Las órdenes que crees aparecerán aquí.</p>
       <button
         type="button"
         onClick={onCreate}
@@ -229,7 +241,7 @@ const DraftBanner = memo(
                 <button
                   type="button"
                   onClick={() => setIsConfirming(true)}
-                  className="flex-1 sm:flex-none text-blue-500/80 bg-white/5 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="flex-1 sm:flex-none text-gray-400 bg-gray-800/80 border border-gray-700/50 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-400"
                   aria-label="Descartar orden en pausa"
                 >
                   Descartar
@@ -237,7 +249,7 @@ const DraftBanner = memo(
                 <button
                   type="button"
                   onClick={onResume}
-                  className="flex-1 sm:flex-none bg-blue-500 text-gray-900 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="flex-1 sm:flex-none bg-blue-600 text-white px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-md shadow-blue-900/20"
                   aria-label="Reanudar orden en pausa"
                 >
                   Reanudar
@@ -263,7 +275,7 @@ const DraftBanner = memo(
                 <button
                   type="button"
                   onClick={() => setIsConfirming(false)}
-                  className="flex-1 sm:flex-none text-gray-400 bg-gray-800 border border-gray-700 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  className="flex-1 sm:flex-none text-gray-400 bg-gray-800/80 border border-gray-700/50 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-400"
                 >
                   Cancelar
                 </button>
@@ -325,7 +337,7 @@ function OrdenesDashboardContent() {
     estadisticas.totalOrdenes
   )
 
-  const [view, setView] = useState<'dashboard' | 'welcome' | 'success' | 'form'>('dashboard')
+  const [view, setView] = useState<'dashboard' | 'welcome' | 'success'>('dashboard')
   const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenMantenimiento | null>(null)
   const isDashboardLoading = ordenesLoading || statsLoading || negocioLoading
 
@@ -333,8 +345,7 @@ function OrdenesDashboardContent() {
     openModal()
   }
 
-  const { isModalOpenLocally } = useMobileNavigation()
-  const isFormOpen = isModalOpenLocally || searchParams.get('modal') === 'crear-orden'
+  const isFormOpen = searchParams.get('modal') === 'crear-orden'
   
   useEffect(() => {
     if (!isFormOpen) {
@@ -349,8 +360,10 @@ function OrdenesDashboardContent() {
   }, [onboarding.showWelcome, onboarding.showSuccess])
 
   const refrescarDatos = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['ordenes', user?.uid] })
-  }, [queryClient, user?.uid])
+    queryClient.invalidateQueries({ queryKey: ['ordenes'] })
+    queryClient.invalidateQueries({ queryKey: ['estadisticas'] })
+    queryClient.invalidateQueries({ queryKey: ['negocio'] })
+  }, [queryClient])
 
   useEffect(() => {
     if (user?.uid) {
@@ -359,16 +372,19 @@ function OrdenesDashboardContent() {
     }
   }, [user?.uid, prefetchOrdenes, prefetchClientes])
 
-  useEffect(() => {
-    if (searchParams.get('nueva') === 'true') {
-      setView('form')
-      router.replace('/ordenes', { scroll: false })
-    }
-  }, [searchParams, router])
+  // El formulario ahora se abre vía search params o modal context, no usando view='form'
 
   // ── Se eliminó el skeleton gigante para permitir que la caché hidrate inmediatamente ──
 
-  // ── Not authenticated ────────────────────────────────────────────────────
+  // ── Not authenticated / Loading ──────────────────────────────────────────
+  if (authLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-4 min-h-[60vh]">
+        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+      </div>
+    )
+  }
+
   if (!user) {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
@@ -387,7 +403,7 @@ function OrdenesDashboardContent() {
       <WelcomeScreen
         onStartOnboarding={() => {
           onboarding.startOnboarding()
-          setView('form')
+          openModal()
         }}
         onSkip={() => {
           onboarding.skipOnboarding()
@@ -413,19 +429,16 @@ function OrdenesDashboardContent() {
   return (
     <div className="bg-transparent min-h-screen pb-safe">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-gray-900/95 border-b border-gray-800 pt-safe backdrop-blur-xl">
+      <div className=" top-0 z-40 bg-gray-900/95 border-b border-gray-800 pt-safe backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl overflow-hidden bg-white flex items-center justify-center p-0.5 shadow-inner shrink-0 border border-gray-800">
-              <img 
-                src="/icono.png" 
-                alt="TecniControl" 
-                className="w-full h-full object-cover rounded-[10px]" 
-                onError={(e) => e.currentTarget.style.display = 'none'} 
-              />
-            </div>
+            <BusinessAvatar
+              logoUrl={negocio?.logoUrl || '/icono.png'}
+              displayName={greetingData.title}
+              className="w-12 h-12 shadow-inner border border-gray-800 p-0.5 bg-white"
+            />
             <div className="min-w-0">
-              <h1 className="text-lg font-bold text-white truncate">{greetingData.title}</h1>
+              <h1 className="text-lg font-bold text-white truncate" title={greetingData.title}>{greetingData.title}</h1>
               <p className="text-xs uppercase tracking-wider text-gray-400 font-medium mt-0.5">
                 {greetingData.subtitle}
               </p>
@@ -441,11 +454,12 @@ function OrdenesDashboardContent() {
         <button
           type="button"
           onClick={handleCreateNuevaOrden}
+          disabled={isDashboardLoading}
           aria-label="Emitir nueva orden de mantenimiento"
           className={cn(
             "w-full bg-blue-600 text-white rounded-xl flex items-center justify-center gap-2 transition-all font-bold shadow-lg shadow-blue-900/20",
-            "py-4 px-4 min-h-[56px]",
-            "hover:bg-blue-700 active:scale-95"
+            "py-4 px-4 min-h-[56px] focus:outline-none focus:ring-2 focus:ring-blue-400",
+            isDashboardLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700 active:scale-95"
           )}
         >
           <Plus className="w-5 h-5" aria-hidden="true" />
@@ -453,12 +467,14 @@ function OrdenesDashboardContent() {
         </button>
 
         {/* Draft banner */}
-        {hayBorrador && (
-          <DraftBanner
-            onDiscard={descartarBorrador}
-            onResume={handleCreateNuevaOrden}
-          />
-        )}
+        <AnimatePresence>
+          {hayBorrador && (
+            <DraftBanner
+              onDiscard={descartarBorrador}
+              onResume={handleCreateNuevaOrden}
+            />
+          )}
+        </AnimatePresence>
 
         {/* Estadísticas */}
         <section aria-labelledby="resumen-heading">
@@ -471,50 +487,66 @@ function OrdenesDashboardContent() {
             </h2>
             <button 
               onClick={refrescarDatos} 
-              className="p-1.5 text-gray-500 hover:text-blue-400 rounded-lg hover:bg-gray-800 transition-colors"
-              disabled={isRefetching || statsLoading}
+              className="flex items-center justify-center min-w-[44px] min-h-[44px] text-gray-500 hover:text-blue-400 rounded-lg hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+              disabled={isRefetching || isDashboardLoading}
               aria-label="Actualizar datos"
             >
-              <RefreshCw className={cn("w-4 h-4", (isRefetching || statsLoading) && "animate-spin text-blue-400")} />
+              <RefreshCw className={cn("w-5 h-5", (isRefetching || isDashboardLoading) && "animate-spin text-blue-400")} />
             </button>
           </div>
 
           {statsLoading && estadisticas.totalOrdenes === 0 ? (
             <div className="flex gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0" role="status" aria-label="Cargando estadísticas">
-              {Array.from({ length: 5 }).map((_, i) => (
+              {Array.from({ length: 6 }).map((_, i) => (
                 <Skeleton key={i} className="snap-start shrink-0 w-32 h-24 rounded-2xl" />
               ))}
             </div>
           ) : (
             <div
-              className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 [mask-image:linear-gradient(to_right,black_80%,transparent)] scrollbar-none"
+              className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 [mask-image:linear-gradient(to_right,black_80%,transparent)] sm:[mask-image:none] scrollbar-none sm:scrollbar-auto snap-x snap-mandatory"
               role="list"
               aria-label="Estadísticas de actividad"
             >
-              <StatCard icon={ClipboardList} value={estadisticas.totalOrdenes} label="Total" />
+              <StatCard 
+                icon={ClipboardList} 
+                value={estadisticas.totalOrdenes} 
+                label="Total" 
+                onClick={() => router.push('/ordenes/mantenimiento')}
+              />
               <StatCard
                 icon={Shield}
                 value={estadisticas.preventivos}
                 label="Preventivos"
                 colorClass="border-green-500/20"
+                onClick={() => router.push('/ordenes/mantenimiento?tipo=preventivo')}
               />
               <StatCard
                 icon={Wrench}
                 value={estadisticas.correctivos}
                 label="Correctivos"
                 colorClass="border-orange-500/20"
+                onClick={() => router.push('/ordenes/mantenimiento?tipo=correctivo')}
               />
               <StatCard
                 icon={Stethoscope}
                 value={estadisticas.diagnosticos}
                 label="Diagnósticos"
                 colorClass="border-blue-500/20"
+                onClick={() => router.push('/ordenes/mantenimiento?tipo=diagnostico')}
               />
               <StatCard
                 icon={Package}
                 value={estadisticas.instalaciones}
                 label="Instalaciones"
                 colorClass="border-purple-500/20"
+                onClick={() => router.push('/ordenes/mantenimiento?tipo=instalacion')}
+              />
+              <StatCard
+                icon={Shield}
+                value={estadisticas.garantias || 0}
+                label="Garantías"
+                colorClass="border-amber-500/20"
+                onClick={() => router.push('/ordenes/mantenimiento?tipo=garantia')}
               />
             </div>
           )}
@@ -541,7 +573,7 @@ function OrdenesDashboardContent() {
               <p className="text-sm font-medium text-red-400">Error al cargar las órdenes</p>
               <button 
                 onClick={refrescarDatos} 
-                className="mt-3 px-4 py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg text-xs font-bold transition-all active:scale-95"
+                className="mt-3 px-4 py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg text-xs font-bold transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-400"
               >
                 Reintentar
               </button>
@@ -565,10 +597,10 @@ function OrdenesDashboardContent() {
             <EmptyOrdenes onCreate={handleCreateNuevaOrden} />
           )}
 
-          {estadisticas.totalOrdenes > 0 && (
+          {ordenesRecientes.length > 0 && (
             <Link
               href="/ordenes/mantenimiento"
-              className="mt-3 flex items-center justify-center w-full py-3 text-sm text-blue-400 bg-gray-800/30 rounded-xl border border-gray-700/50 hover:bg-gray-800/50 transition-colors"
+              className="mt-3 flex items-center justify-center w-full py-3 text-sm text-blue-400 bg-gray-800/30 rounded-xl border border-gray-700/50 hover:bg-gray-800/50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               Ver todo el historial
               <ArrowRight className="w-3.5 h-3.5 ml-2" aria-hidden="true" />

@@ -271,10 +271,14 @@
     const esMobileQuery = useMediaQuery('(max-width: 768px)')
     const esMobile = mounted ? esMobileQuery : false
 
-    // Manejar montaje para evitar hydration mismatch
+    // Manejar montaje y leer query params
     useEffect(() => {
       setMounted(true)
-    }, [])
+      const tipoParam = searchParams.get('tipo')
+      if (tipoParam) {
+        setFiltroTipo(tipoParam)
+      }
+    }, [searchParams])
 
     // Sentinel observer for infinite scroll
     useEffect(() => {
@@ -334,12 +338,16 @@
     // Obtener y filtrar órdenes de mantenimiento sin arrays intermedios redundantes
     const ordenes = useMemo(() => {
       if (isSearching) {
+        if (busquedaLoading && !busquedaData) {
+          const rawPages = infinitasData?.pages.flatMap(page => page.ordenes) || []
+          return rawPages as OrdenMantenimiento[]
+        }
         return (busquedaData || []) as OrdenMantenimiento[]
       } else {
         const rawPages = infinitasData?.pages.flatMap(page => page.ordenes) || []
         return rawPages as OrdenMantenimiento[]
       }
-    }, [isSearching, busquedaData, infinitasData])
+    }, [isSearching, busquedaData, infinitasData, busquedaLoading])
 
 
 
@@ -546,7 +554,7 @@
                       autoCorrect="off"
                       autoCapitalize="off"
                       spellCheck="false"
-                      placeholder="Buscar por cliente, ID, dispositivo..."
+                      placeholder="Buscar por cliente, mes, dispositivo, id..."
                       value={busqueda}
                       onChange={(e) => setBusqueda(e.target.value)}
                       className="w-full min-h-[48px] pl-9 pr-4 py-2.5 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"

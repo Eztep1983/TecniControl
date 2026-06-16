@@ -24,6 +24,7 @@ import {
   IdCard,
   History,
   Edit,
+  Monitor,
 } from "lucide-react";
 import type { Cliente } from "@/types/orden";
 import { useToast } from "@/hooks/use-toast";
@@ -89,11 +90,12 @@ const ClienteCard = memo(function ClienteCard({
       className={cn(
         "relative bg-gray-800/40 rounded-2xl border border-gray-700/50 transition-all duration-200 overflow-hidden",
         isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100",
-        "group hover:bg-gray-800/60 hover:border-gray-600/50"
+        "group hover:bg-gray-800/60 hover:border-gray-600/50 flex flex-col sm:flex-row"
       )}
     >
+      {/* Información del Cliente (Tappable para ver detalle) */}
       <div 
-        className="relative p-5 cursor-pointer flex flex-col gap-4"
+        className="flex-1 flex items-center p-4 gap-4 cursor-pointer"
         onClick={handleView}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -101,82 +103,64 @@ const ClienteCard = memo(function ClienteCard({
             handleView();
           }
         }}
-        role="button"
-        tabIndex={0}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-blue-600/20">
-                <User className="w-6 h-6 text-blue-400" aria-hidden="true" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-bold text-white text-base leading-tight truncate group-hover:text-blue-400 transition-colors">
-                  {client.name}
-                </h3>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <IdCard className="w-3.5 h-3.5 text-gray-500" />
-                  <span className="text-xs font-medium text-gray-400">{client.cedula}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2 mt-4">
-              {client.phone && (
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-900/40 border border-gray-700/30">
-                  <div className="w-7 h-7 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-3.5 h-3.5 text-green-400" />
-                  </div>
-                  <span className="text-xs text-gray-300 font-medium truncate">{client.phone}</span>
-                </div>
-              )}
-              {client.email && (
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-900/40 border border-gray-700/30">
-                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-3.5 h-3.5 text-blue-400" />
-                  </div>
-                  <span className="text-xs text-gray-300 font-medium truncate">{client.email}</span>
-                </div>
-              )}
-              {client.address && (
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-900/40 border border-gray-700/30">
-                  <div className="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-3.5 h-3.5 text-purple-400" />
-                  </div>
-                  <span className="text-xs text-gray-300 font-medium truncate">{client.address}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <button
-            onClick={handleDeleteConfirmButton}
-            className={cn(
-              "min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-colors",
-              !isMobile && "opacity-0 group-hover:opacity-100"
+        <div className="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-blue-600/20">
+          <User className="w-6 h-6 text-blue-400" aria-hidden="true" />
+        </div>
+        <div className="flex-1 min-w-0 pr-2">
+          <h3 className="font-bold text-white text-base leading-tight truncate group-hover:text-blue-400 transition-colors">
+            {client.name}
+          </h3>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs font-medium text-gray-400">
+            {client.cedula && (
+              <span className="flex items-center gap-1">
+                <IdCard className="w-3.5 h-3.5" />
+                {client.cedula}
+              </span>
             )}
-            aria-label="Eliminar cliente"
-          >
-            <Trash2 className="w-5 h-5" />
-          </button>
+            {client.phone && (
+              <span className="flex items-center gap-1">
+                <Phone className="w-3.5 h-3.5" />
+                {client.phone}
+              </span>
+            )}
+            <span className="flex items-center gap-1 text-blue-400/80 bg-blue-500/10 px-1.5 py-0.5 rounded-md">
+              <Monitor className="w-3 h-3" />
+              {client.dispositivos?.length ?? 0} {client.dispositivos?.length === 1 ? 'Disp.' : 'Disp.'}
+            </span>
+          </div>
         </div>
+        <div className="text-gray-500 group-hover:text-blue-400 transition-colors flex flex-col items-center justify-center">
+          <ChevronRight className="w-5 h-5" />
+        </div>
+      </div>
 
-        <div className="flex gap-2 mt-2">
-          <button
-            onClick={handleHistorial}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gray-700/30 hover:bg-gray-700/50 active:bg-gray-700/60 border border-gray-700/50 text-xs font-bold text-gray-300 transition-all active:scale-[0.97]"
-          >
-            <History className="w-4 h-4" />
-            Historial
-          </button>
-          <button
-            onClick={handleEdit}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 active:bg-blue-500/30 border border-blue-500/20 text-xs font-bold text-blue-400 transition-all active:scale-[0.97]"
-          >
-            <Edit className="w-4 h-4" />
-            Editar
-          </button>
-        </div>
+      {/* Botones de Acción */}
+      <div className="flex items-center gap-1.5 p-3 sm:p-4 bg-gray-900/30 sm:bg-transparent border-t border-gray-700/30 sm:border-t-0 sm:border-l sm:ml-auto">
+        <button
+          onClick={handleHistorial}
+          className="flex-1 sm:flex-none min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-gray-700/30 hover:bg-gray-700/50 border border-gray-700/50 text-gray-300 transition-colors px-3"
+          aria-label="Ver historial"
+        >
+          <History className="w-4 h-4" />
+          <span className="text-xs font-bold sm:hidden">Historial</span>
+        </button>
+        <button
+          onClick={handleEdit}
+          className="flex-1 sm:flex-none min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 transition-colors px-3"
+          aria-label="Editar cliente"
+        >
+          <Edit className="w-4 h-4" />
+          <span className="text-xs font-bold sm:hidden">Editar</span>
+        </button>
+        <button
+          onClick={handleDeleteConfirmButton}
+          className="flex-1 sm:flex-none min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 transition-colors px-3"
+          aria-label="Eliminar cliente"
+        >
+          <Trash2 className="w-4 h-4" />
+          <span className="text-xs font-bold sm:hidden">Eliminar</span>
+        </button>
       </div>
     </div>
   );
@@ -361,11 +345,17 @@ export const ClientesDataTable = memo(function ClientesDataTable({
   const handleEditStable = useCallback((c: Cliente) => onEdit(c), [onEdit]);
   const handleHistorialStable = useCallback((c: Cliente) => onHistorial(c), [onHistorial]);
 
+
+  // 1. Resetear paginación al buscar/filtrar
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [data.length]);
+
   const totalPages = Math.max(1, Math.ceil(data.length / itemsPerPage));
   const safePage = currentPage > totalPages ? totalPages : currentPage;
 
   useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(totalPages);
+    if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
   }, [currentPage, totalPages]);
   
   const paginatedClientes = useMemo(() => {
@@ -382,23 +372,29 @@ export const ClientesDataTable = memo(function ClientesDataTable({
   const handleDeleteConfirm = useCallback(async () => {
     if (!clienteToDelete) return;
     setIsDeleting(true);
+    const idToRemove = clienteToDelete;
+    
+    // Iniciar animación ANTES de borrar en Firebase
+    setExitingIds((prev) => ({ ...prev, [idToRemove]: true }));
+
+    // Esperar a que la tarjeta haga el fade-out (220ms)
+    await new Promise(resolve => setTimeout(resolve, 220));
+
+    if (!isMounted.current) return;
+
     try {
-      await onDeleteConfirm(clienteToDelete);
+      // Eliminar de Firebase
+      await onDeleteConfirm(idToRemove);
 
-      const idToRemove = clienteToDelete;
-      setExitingIds((prev) => ({ ...prev, [idToRemove]: true }));
+      setExitingIds((prev) => {
+        const next = { ...prev };
+        delete next[idToRemove];
+        return next;
+      });
 
-      setTimeout(() => {
-        if (!isMounted.current) return;
-        setExitingIds((prev) => {
-          const next = { ...prev };
-          delete next[idToRemove];
-          return next;
-        });
-        if (paginatedClientes.length === 1 && currentPage > 1) {
-          setCurrentPage((p) => p - 1);
-        }
-      }, 220);
+      if (paginatedClientes.length === 1 && currentPage > 1) {
+        setCurrentPage((p) => p - 1);
+      }
 
       toast({ title: "Cliente eliminado", description: "Eliminado correctamente." });
       setIsDeleting(false);
@@ -409,6 +405,12 @@ export const ClientesDataTable = memo(function ClientesDataTable({
         title: "Error al eliminar",
         description: error instanceof Error ? error.message : "No se pudo eliminar.",
         variant: "destructive",
+      });
+      // Revertir animación si falló
+      setExitingIds((prev) => {
+        const next = { ...prev };
+        delete next[idToRemove];
+        return next;
       });
       setIsDeleting(false);
     }
@@ -436,7 +438,7 @@ export const ClientesDataTable = memo(function ClientesDataTable({
   );
 
   return (
-    <div className="space-y-4 pb-24 sm:pb-8">
+    <div className="space-y-6 pb-8">
       <Dialog 
         open={deleteDialogOpen} 
         onOpenChange={(open) => {
@@ -451,7 +453,7 @@ export const ClientesDataTable = memo(function ClientesDataTable({
             </DialogTitle>
             <DialogDescription className="text-gray-400 text-sm">
               Esta acción no se puede deshacer. Las órdenes asociadas se conservarán
-              pero perderás acceso a la información del cliente.
+              pero perderás acceso a la información del cliente y dispositivos.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col gap-2 mt-2">
@@ -479,45 +481,18 @@ export const ClientesDataTable = memo(function ClientesDataTable({
         </DialogContent>
       </Dialog>
 
-      <div
-        className="bg-gradient-to-br from-blue-400/8 to-blue-900/15 rounded-2xl border border-blue-500/15 px-4 py-3 flex items-center gap-3"
-        role="status"
-        aria-live="polite"
-        aria-label={`Total de clientes: ${totalGlobal ?? data.length}`}
-      >
-        <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center flex-shrink-0">
-          <Users className="w-5 h-5 text-blue-400" aria-hidden="true" />
-        </div>
-        <div>
-          <p className="text-[10px] text-gray-500 font-medium uppercase tracking-widest leading-tight">
-            Total de Clientes
-          </p>
-          <CountUp
-            from={0}
-            to={Math.max(totalGlobal ?? 0, data.length)}
-            direction="up"
-            duration={1}
-            className="text-2xl font-bold text-white leading-tight"
-            delay={0}
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-col items-center justify-center gap-1 mb-6 mt-6">
-        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-none">
-          {totalGlobal && data.length !== totalGlobal ? "Resultados Filtrados" : "Mostrando"}
-        </p>
-        <p className="text-xs text-gray-300 font-medium" aria-live="polite">
+      <div className="flex items-center justify-between px-2">
+        <p className="text-xs text-gray-400 font-medium" aria-live="polite">
           {data.length === 0
             ? "Sin resultados"
-            : `${(currentPage - 1) * itemsPerPage + 1} a ${Math.min(
+            : `Mostrando ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(
                 currentPage * itemsPerPage,
                 data.length
-              )} de ${data.length}`}
+              )} de ${totalGlobal && data.length !== totalGlobal ? `${data.length} (filtrados)` : data.length} clientes`}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-3 px-0.5" role="list" aria-label="Lista de clientes">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3" role="list" aria-label="Lista de clientes">
         {paginatedClientes.map((client) => (
           <div key={client.id} role="listitem">
             <ClienteCard
