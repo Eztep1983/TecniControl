@@ -1,7 +1,7 @@
 {
   "capacitor.config.ts": {
-    "mtime": 1781567048.015446,
-    "ast_hash": "a17512d00d616524e1199b685ff5f605",
+    "mtime": 1781629384.8064647,
+    "ast_hash": "4212af3745ac7ee1009a364c9c19f85f",
     "semantic_hash": ""
   },
   "components.json": {
@@ -20,8 +20,8 @@
     "semantic_hash": "5cc7eeb7adb6a339114eab9841127244"
   },
   "package.json": {
-    "mtime": 1781571076.1689863,
-    "ast_hash": "9cefd78b993677b2ca3d2dc3f97dd49c",
+    "mtime": 1781651814.0191674,
+    "ast_hash": "6e375666191d7d413ab81dcd6d768f34",
     "semantic_hash": ""
   },
   "postcss.config.mjs": {
@@ -40,14 +40,14 @@
     "semantic_hash": "f870d84a47f950de9e430d2c0fc615ef"
   },
   "src/app/(app)/configuracion/page.tsx": {
-    "mtime": 1781573707.925383,
+    "mtime": 1781643488.2810433,
     "ast_hash": "34c3394c8117e14d80e69e897d7f6ce3",
     "semantic_hash": ""
   },
   "src/app/(app)/layout.tsx": {
-    "mtime": 1781390270.398372,
-    "ast_hash": "d12e88515df86a6b564d068599f9ea04",
-    "semantic_hash": "d12e88515df86a6b564d068599f9ea04"
+    "mtime": 1781646128.768775,
+    "ast_hash": "1ca528f436b8ef75b45994a9f48f232d",
+    "semantic_hash": ""
   },
   "src/app/(app)/ordenes/mantenimiento/formulario.tsx": {
     "mtime": 1781463180.3057425,
@@ -55,13 +55,13 @@
     "semantic_hash": ""
   },
   "src/app/(app)/ordenes/mantenimiento/page.tsx": {
-    "mtime": 1781571194.7996275,
-    "ast_hash": "becd3b54ba7c421776593dbbc2b8f6cb",
+    "mtime": 1781650734.8295312,
+    "ast_hash": "4d2c755b045c37627948e9abcf35c304",
     "semantic_hash": ""
   },
   "src/app/(app)/ordenes/page.tsx": {
-    "mtime": 1781543075.3454711,
-    "ast_hash": "0717aa9cc4d5de6c8768456f849f096f",
+    "mtime": 1781650729.5507557,
+    "ast_hash": "a953daf2f17acf1bb93980cc37c5b958",
     "semantic_hash": ""
   },
   "src/app/(app)/page.tsx": {
@@ -124,11 +124,6 @@
     "ast_hash": "b34958722ffd908fe281f8c305ec90dc",
     "semantic_hash": "b34958722ffd908fe281f8c305ec90dc"
   },
-  "src/components/clientes/ClienteFormModal.tsx": {
-    "mtime": 1781397742.1203492,
-    "ast_hash": "d0eb3a636fdcc043859ac007b228c953",
-    "semantic_hash": ""
-  },
   "src/components/clientes/ClienteHistorialModal.tsx": {
     "mtime": 1781467963.3983488,
     "ast_hash": "f75973e4e0ceab494aa0007d5bd6e0be",
@@ -140,23 +135,23 @@
     "semantic_hash": ""
   },
   "src/components/clientes/ClienteViewModal.tsx": {
-    "mtime": 1780608515.619705,
-    "ast_hash": "b7544f58055c53ac249852e36fbdc59c",
-    "semantic_hash": "b7544f58055c53ac249852e36fbdc59c"
+    "mtime": 1781644876.963156,
+    "ast_hash": "4de8a67b7f7dd911c35127b9c7609576",
+    "semantic_hash": ""
   },
   "src/components/clientes/ClientesDataTable.tsx": {
-    "mtime": 1781570153.417534,
-    "ast_hash": "e78cc2f7c12706959be781d9d3acfcb2",
+    "mtime": 1781646441.9347665,
+    "ast_hash": "004579bfb16412b96c8ada37f3517c35",
     "semantic_hash": ""
   },
   "src/components/clientes/ClientesList.tsx": {
-    "mtime": 1781570343.9719577,
-    "ast_hash": "e0667f8aca3761a627e49326a2c18f9c",
+    "mtime": 1781651919.9258955,
+    "ast_hash": "839fab1eb8613726a4cfcd4d902b3d7e",
     "semantic_hash": ""
   },
   "src/components/clientes/DispositivoFormModal.tsx": {
-    "mtime": 1781472157.4902275,
-    "ast_hash": "389ead8b607610e6f78bbb26d0be0eac",
+    "mtime": 1781645624.4983265,
+    "ast_hash": "588fa56db41c64996edd1a4391679bd4",
     "semantic_hash": ""
   },
   "src/components/configuracion/CuentaYSeguridad.tsx": {
@@ -265,8 +260,8 @@
     "semantic_hash": "ac275a0e4f417b589fd188da1aaf7566"
   },
   "src/components/providers/MobileAppShell.tsx": {
-    "mtime": 1781573802.5164661,
-    "ast_hash": "03b79a7ba2f309e7f0d9ff1a9fd784be",
+    "mtime": 1781646328.1039994,
+    "ast_hash": "7d9f2cb0c41fa8b2eec1357ab41e6084",
     "semantic_hash": ""
   },
   "src/components/providers/MobileNavigationContext.tsx": {
@@ -620,8 +615,8 @@
     "semantic_hash": "8c34b6f968764e08e1b483cf5648581c"
   },
   "src/hooks/useMultiUser.ts": {
-    "mtime": 1781572587.231486,
-    "ast_hash": "017f5e9aa6ee99305f8e78db8fec5462",
+    "mtime": 1781642672.047403,
+    "ast_hash": "991464809da28bd0917935adef367df0",
     "semantic_hash": ""
   },
   "src/hooks/useNegocio.ts": {
@@ -700,8 +695,8 @@
     "semantic_hash": "f1537b39a3b3f166db3b192df040a779"
   },
   "src/lib/multiuser-helpers.ts": {
-    "mtime": 1781571223.531575,
-    "ast_hash": "aa38d46d53de82b8c199d65ae0bc2860",
+    "mtime": 1781641547.0740101,
+    "ast_hash": "855de1d596cbb6071fa6863b41393006",
     "semantic_hash": ""
   },
   "src/lib/navigation-config.ts": {
@@ -884,9 +879,19 @@
     "ast_hash": "f37fc48640a218db0dfd54f5364b163d",
     "semantic_hash": ""
   },
-  "auditoriaClientes.md": {
-    "mtime": 1781568061.174423,
-    "ast_hash": "51a35cce8a1a0c7bdd9e7f2812752ff9",
+  "src/components/clientes/ImportarContactosModal.tsx": {
+    "mtime": 1781651914.8425252,
+    "ast_hash": "c6c8e86f03be61f8426f74b90c8db14a",
+    "semantic_hash": ""
+  },
+  "src/lib/search-helpers.ts": {
+    "mtime": 1781642630.2517493,
+    "ast_hash": "7d1e5ddc7fa342a062510903db4f433a",
+    "semantic_hash": ""
+  },
+  "tests/offline-search.test.ts": {
+    "mtime": 1781642652.2252638,
+    "ast_hash": "ce4d9e87e0750d703e9f5078bc993c19",
     "semantic_hash": ""
   }
 }
