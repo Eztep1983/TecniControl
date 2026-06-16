@@ -59,8 +59,17 @@ const ManagedView = memo(function ManagedView({
 
   return (
     <div
-      style={{ display: isActive ? "block" : "none" }}
+      style={{
+        position: isActive ? "relative" : "absolute",
+        visibility: isActive ? "visible" : "hidden",
+        top: 0,
+        left: 0,
+        width: "100%",
+        opacity: isActive ? 1 : 0,
+        pointerEvents: isActive ? "auto" : "none",
+      }}
       aria-hidden={!isActive}
+      className={isActive ? "z-10" : "z-0"}
     >
       <Component />
     </div>
@@ -138,16 +147,21 @@ export function MobileAppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <motion.div
-        drag="x"
+        drag={TAB_ORDER.includes(activeView) ? "x" : false}
         dragDirectionLock
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.08}
         onDragEnd={handleDragEnd}
         className="w-full touch-pan-y"
+        style={{
+          willChange: "transform",
+          WebkitBackfaceVisibility: "hidden",
+          backfaceVisibility: "hidden",
+        } as React.CSSProperties}
       >
         <div
           ref={containerRef}
-          className="w-full"
+          className="w-full relative"
           style={{
             willChange: "transform, opacity",
             WebkitBackfaceVisibility: "hidden",

@@ -78,14 +78,14 @@ const CLS_CARD = cn(
 
 const CLS_BTN_PRIMARY = cn(
   'flex flex-1 items-center justify-center gap-1.5',
-  'min-h-[38px] rounded-xl',
+  'min-h-[44px] rounded-xl',
   'text-[12px] font-medium text-gray-200',
   'bg-white/[0.08]',
   'transition-colors hover:bg-white/[0.12] active:bg-white/[0.15]',
 )
 
 const CLS_BTN_SECONDARY = cn(
-  'flex items-center justify-center w-[38px] h-[38px] rounded-xl',
+  'flex items-center justify-center w-[44px] h-[44px] rounded-xl',
   'bg-white/[0.05] border border-white/[0.07]',
   'text-gray-500',
   'transition-colors hover:bg-white/[0.09] hover:text-gray-300 active:bg-white/[0.12]',

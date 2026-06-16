@@ -261,6 +261,17 @@ service cloud.firestore {
       allow delete: if isOwner(userId);
     }
 
+    // ── search_indices ────────────────────────────────────────────────────────
+    //  • El documento ID es el mismo UID del técnico.
+    //  • Solo el propietario puede acceder a su índice de búsqueda.
+
+    match /search_indices/{userId} {
+      allow read:   if isOwner(userId);
+      allow create: if isOwner(userId) && isOptionalMap('ordenes');
+      allow update: if isOwner(userId) && isOptionalMap('ordenes');
+      allow delete: if isOwner(userId);
+    }
+
     // ── contadores ────────────────────────────────────────────────────────────
     //  Hay DOS tipos de documentos en esta colección:
     //

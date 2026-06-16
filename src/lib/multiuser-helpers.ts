@@ -63,7 +63,7 @@ export const getEstadisticasPorUsuario = async (userId: string) => {
     };
   }
 };
-import { Cliente, Orden, Negocio, ContadorU } from '@/types/orden';
+import { Cliente, Orden, Negocio, ContadorU, OrdenMantenimiento } from '@/types/orden';
 import {
   sanitizeClientePayload,
   sanitizeNegocioPayload,
@@ -295,7 +295,7 @@ export const crearOrden = async (orden: Omit<Orden, 'id'>, userId: string): Prom
   }
 };
 
-export const actualizarOrden = async (ordenId: string, orden: Partial<Orden>, userId: string): Promise<void> => {
+export const actualizarOrden = async (ordenId: string, orden: Partial<OrdenMantenimiento>, userId: string): Promise<void> => {
   try {
     const ordenRef = doc(db, 'ordenes', ordenId);
     const ordenActualizada = sanitizeOrdenPayload({
@@ -304,6 +304,25 @@ export const actualizarOrden = async (ordenId: string, orden: Partial<Orden>, us
     });
 
     await updateDoc(ordenRef, ordenActualizada);
+
+    // Actualizar índice de búsqueda si cambian campos clave
+    if (orden.cliente || orden.dispositivo || orden.tipoMantenimiento || orden.idPersonalizado) {
+      const snap = await getDoc(ordenRef);
+      if (snap.exists()) {
+        const full = snap.data() as OrdenMantenimiento;
+        const searchIndexRef = doc(db, 'search_indices', userId);
+        await setDoc(searchIndexRef, {
+          ordenes: {
+            [ordenId]: {
+              i: full.idPersonalizado || '',
+              c: full.cliente?.name || '',
+              d: `${full.dispositivo?.marca || ''} ${full.dispositivo?.modelo || ''}`.trim(),
+              t: full.tipoMantenimiento || ''
+            }
+          }
+        }, { merge: true });
+      }
+    }
   } catch (error) {
     console.error('Error actualizando orden:', error);
     throw error;
@@ -364,6 +383,19 @@ export const crearOrdenAtomica = async (
 
     // 3. Escribir documento en la transacción
     transaction.set(nuevaOrdenRef, ordenCompleta);
+
+    // 4. Actualizar índice de búsqueda
+    const searchIndexRef = doc(db, 'search_indices', userId);
+    transaction.set(searchIndexRef, {
+      ordenes: {
+        [nuevaOrdenRef.id]: {
+          i: idPersonalizado,
+          c: ordenCompleta.cliente?.name || '',
+          d: `${ordenCompleta.dispositivo?.marca || ''} ${ordenCompleta.dispositivo?.modelo || ''}`.trim(),
+          t: ordenCompleta.tipoMantenimiento || ''
+        }
+      }
+    }, { merge: true });
   });
 
   return { id: nuevaOrdenRef.id, idPersonalizado };
@@ -610,5 +642,35 @@ export const verificarPermisoUsuario = async (documentId: string, userId: string
   } catch (error) {
     console.error('Error verificando permisos:', error);
     return false;
+  }
+};
+
+/**
+ * Reconstruye el índice de búsqueda completo para un usuario.
+ * Útil para migraciones o sincronización forzada.
+ */
+export const rebuildSearchIndex = async (userId: string): Promise<void> => {
+  try {
+    const ordenesRef = collection(db, 'ordenes');
+    const q = query(ordenesRef, where('userId', '==', userId));
+    const snap = await getDocs(q);
+    
+    const ordenes: Record<string, any> = {};
+    snap.docs.forEach(docItem => {
+      const full = docItem.data() as OrdenMantenimiento;
+      ordenes[docItem.id] = {
+        i: full.idPersonalizado || '',
+        c: full.cliente?.name || '',
+        d: `${full.dispositivo?.marca || ''} ${full.dispositivo?.modelo || ''}`.trim(),
+        t: full.tipoMantenimiento || ''
+      };
+    });
+
+    const searchIndexRef = doc(db, 'search_indices', userId);
+    await setDoc(searchIndexRef, { ordenes }, { merge: true });
+    
+    console.log(`Índice reconstruido para ${userId} con ${snap.size} órdenes.`);
+  } catch (error) {
+    console.error('Error reconstruyendo índice de búsqueda:', error);
   }
 };

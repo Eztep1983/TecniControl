@@ -37,7 +37,7 @@ function StatusMessage({ status }: { status: PageStatus }) {
       : 'from-sky-500/10 via-sky-500/10 to-transparent border-sky-500/30 text-sky-200'
 
   return (
-    <div className={`mb-6 rounded-3xl border ${color} bg-slate-950/70 p-4 shadow-xl shadow-slate-950/40`}>
+    <div className={`mb-6 rounded-2xl border ${color} bg-gray-950/70 p-4 shadow-xl shadow-gray-950/40`}>
       <p className="text-sm font-medium">{status.message}</p>
     </div>
   )
@@ -225,7 +225,6 @@ export default function ConfiguracionPage() {
   const handleInputChange = (field: keyof Negocio, value: string) => {
     setNegocio(prev => ({ ...prev, [field]: value }));
   };
-
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center">
@@ -241,44 +240,48 @@ export default function ConfiguracionPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 pb-safe rounded-lg">
-      <div className="max-w-5xl mx-auto rounded-lg">
-        {/* Header */}
-        <div className="mb-8 rounded-lg">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-slate-900/80 ring-1 ring-inset ring-sky-500/20 rounded-3xl shadow-[0_12px_40px_-24px_rgba(56,189,248,0.9)]">
+    <div className="bg-transparent min-h-screen pb-safe">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-40 bg-gray-900/95 border-b border-gray-800 pt-safe backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-gray-900/80 ring-1 ring-inset ring-sky-500/20 rounded-xl shadow-[0_12px_40px_-24px_rgba(56,189,248,0.9)]">
               <Settings className="w-6 h-6 text-sky-300" />
             </div>
             <div>
               <h1 className="text-3xl font-semibold text-white">Configuración</h1>
-              <p className="text-slate-400 text-sm mt-1">Administra la información de tu negocio</p>
+              <p className="text-gray-400 text-sm mt-1">Administra la información de tu negocio</p>
             </div>
           </div>
-          {status.type && <StatusMessage status={status} />}
         </div>
+      </div>
+
+      {/* Main Content Wrapper */}
+      <div className="max-w-7xl mx-auto px-4 py-5 space-y-6">
+        {status.type && <StatusMessage status={status} />}
 
         {/* Tabs */}
         <Tabs defaultValue="negocio" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-[520px] mb-8 rounded-full bg-slate-900/90 border border-white/10 p-1 shadow-lg shadow-slate-950/30">
-            <TabsTrigger value="negocio" className="data-[state=active]:bg-sky-500 data-[state=active]:text-slate-950 text-slate-400 rounded-full transition-all duration-200">
+          <TabsList className="grid w-full grid-cols-2 max-w-[520px] mb-8 rounded-2xl bg-gray-900/90 border border-white/10 p-1 shadow-lg shadow-gray-950/30">
+            <TabsTrigger value="negocio" className="data-[state=active]:bg-sky-500 data-[state=active]:text-gray-950 text-gray-400 rounded-2xl transition-all duration-200">
               Mi Negocio
             </TabsTrigger>
-            <TabsTrigger value="cuenta" className="data-[state=active]:bg-sky-500 data-[state=active]:text-slate-950 text-slate-400 rounded-full transition-all duration-200">
+            <TabsTrigger value="cuenta" className="data-[state=active]:bg-sky-500 data-[state=active]:text-gray-950 text-gray-400 rounded-2xl transition-all duration-200">
               Cuenta y Seguridad
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="negocio" className="space-y-6">
             {/* Información del Negocio */}
-            <Card className="bg-slate-950/70 border border-white/10 mb-6 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.8)] transition-all hover:border-sky-500/30">
-          <CardHeader className="border-b border-white/10 bg-slate-950/80 rounded-full">
+            <Card className="bg-gray-950/70 border border-white/10 mb-6 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.8)] transition-all hover:border-sky-500/30">
+          <CardHeader className="border-b border-white/10 bg-gray-950/80 rounded-2xl">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-white flex items-center gap-2 text-xl">
                   <Building className="w-5 h-5 text-blue-400" />
                   Información del Negocio
                 </CardTitle>
-                <CardDescription className="text-slate-400 mt-1">
+                <CardDescription className="text-gray-400 mt-1">
                   Datos principales que aparecerán en tus ordenes generadas
                 </CardDescription>
               </div>
@@ -318,7 +321,7 @@ export default function ConfiguracionPage() {
                 <div className="flex-1 space-y-2">
                   <label 
                     htmlFor="business-logo" 
-                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900/80 hover:bg-slate-900 border border-white/10 rounded-2xl text-sm text-slate-200 transition-all duration-200 hover:border-sky-500/50 hover:text-white shadow-sm shadow-slate-950/20"
+                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-gray-900/80 hover:bg-gray-900 border border-white/10 rounded-2xl text-sm text-gray-200 transition-all duration-200 hover:border-sky-500/50 hover:text-white shadow-sm shadow-gray-950/20"
                   >
                     <Upload className="w-4 h-4" />
                     {uploading ? 'Subiendo...' : negocio.logoUrl ? 'Cambiar Logo' : 'Subir Logo'}
@@ -331,7 +334,7 @@ export default function ConfiguracionPage() {
                     disabled={uploading}
                     className="hidden"
                   />
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-gray-400">
                     Formatos: JPG, PNG, WebP, SVG. Tamaño recomendado: 400x400px
                   </p>
                 </div>
@@ -350,7 +353,7 @@ export default function ConfiguracionPage() {
                   id="business-name" 
                   value={negocio.nombre}
                   onChange={(e) => handleInputChange('nombre', e.target.value)}
-                  className="bg-slate-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
+                  className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                   placeholder="Ej: TecniControl S.A.S"
                 />
               </div>
@@ -362,7 +365,7 @@ export default function ConfiguracionPage() {
                   id="business-nit" 
                   value={negocio.nit}
                   onChange={(e) => handleInputChange('nit', e.target.value)}
-                  className="bg-slate-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
+                  className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                   placeholder="123456789-0"
                 />
               </div>
@@ -377,7 +380,7 @@ export default function ConfiguracionPage() {
                   id="business-phone" 
                   value={negocio.telefono}
                   onChange={(e) => handleInputChange('telefono', e.target.value)}
-                  className="bg-slate-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
+                  className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                   placeholder="+57 300 123 4567"
                 />
               </div>
@@ -390,7 +393,7 @@ export default function ConfiguracionPage() {
                   type="email"
                   value={negocio.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="bg-slate-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
+                  className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                   placeholder="contacto@empresa.com"
                 />
               </div>
@@ -404,7 +407,7 @@ export default function ConfiguracionPage() {
                 id="business-address" 
                 value={negocio.direccion}
                 onChange={(e) => handleInputChange('direccion', e.target.value)}
-                className="bg-slate-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
+                className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                 placeholder="Calle 123 #45-67, Ciudad"
               />
             </div>
@@ -421,7 +424,7 @@ export default function ConfiguracionPage() {
                 <Button 
                   onClick={guardarCambios} 
                   disabled={saving}
-                  className="bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-slate-950 shadow-xl shadow-sky-500/20 px-6 transition-all hover:shadow-sky-500/30"
+                  className="bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-gray-950 shadow-xl shadow-sky-500/20 px-6 transition-all hover:shadow-sky-500/30"
                 >
                   {saving ? (
                     <>

@@ -330,17 +330,86 @@ export const useOrdenesInfinitas = (pageSize: number = 10, filtroTipo: string = 
   return { ...query, refrescarOrdenes };
 };
 
+import Fuse from 'fuse.js';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, collection, query, where, documentId, getDocs } from 'firebase/firestore';
+
 /**
- * ✅ Hook para Búsqueda
+ * ✅ Hook Inteligente para Búsqueda (Opción C)
  */
-export const useOrdenesBusqueda = (filtroTipo: string = 'todos', enabled: boolean = true) => {
+export const useOrdenesBusqueda = (busqueda: string, filtroTipo: string = 'todos', enabled: boolean = true) => {
   const { user } = useAuth();
 
   return useQuery<OrdenMantenimiento[]>({
-    queryKey: ['ordenes', user?.uid, 'busqueda', filtroTipo],
-    queryFn: () => getTodasLasOrdenesConFiltro(user!.uid, filtroTipo) as Promise<OrdenMantenimiento[]>,
-    enabled: !!user?.uid && enabled,
-    staleTime: Infinity,
+    queryKey: ['ordenes', user?.uid, 'busquedaInteligente', busqueda, filtroTipo],
+    queryFn: async () => {
+      if (!user?.uid || !busqueda.trim()) return [];
+
+      // 1. Descargar el índice comprimido (1 sola lectura)
+      const searchIndexRef = doc(db, 'search_indices', user.uid);
+      let indexSnap = await getDoc(searchIndexRef);
+      
+      // AUTO-MIGRACIÓN SILENCIOSA
+      // Si el índice no existe (usuario antiguo), lo reconstruimos al vuelo la primera vez.
+      if (!indexSnap.exists()) {
+        const { rebuildSearchIndex } = await import('@/lib/multiuser-helpers');
+        await rebuildSearchIndex(user.uid);
+        indexSnap = await getDoc(searchIndexRef);
+        if (!indexSnap.exists()) return [];
+      }
+      
+      const indexData = indexSnap.data().ordenes || {};
+      const indexArray = Object.entries(indexData).map(([id, data]: [string, any]) => ({
+        id,
+        ...data
+      }));
+
+      // 2. Ejecutar Fuse.js en memoria local
+      const fuse = new Fuse(indexArray, {
+        keys: ['c', 'd', 'i', 't', 'p', 's'], // cliente, dispositivo, id, tipo, phone, serie
+        threshold: 0.3, // 0.0 es coincidencia exacta, 1.0 coincide con todo
+        ignoreLocation: true,
+      });
+
+      const resultados = fuse.search(busqueda.trim());
+      
+      // Filtrar por tipo si es necesario
+      let idsEncontrados = resultados.map(r => r.item.id);
+      if (filtroTipo !== 'todos') {
+        idsEncontrados = resultados
+          .filter(r => r.item.t === filtroTipo)
+          .map(r => r.item.id);
+      }
+
+      // Tomar solo los mejores 20 resultados
+      idsEncontrados = idsEncontrados.slice(0, 20);
+
+      if (idsEncontrados.length === 0) return [];
+
+      // 3. Descargar los documentos completos de esos 20 IDs (en chunks de 10 por límite de in)
+      const ordenesRef = collection(db, 'ordenes');
+      const chunks = [];
+      for (let i = 0; i < idsEncontrados.length; i += 10) {
+        chunks.push(idsEncontrados.slice(i, i + 10));
+      }
+
+      let ordenesCompletas: OrdenMantenimiento[] = [];
+      for (const chunk of chunks) {
+        const q = query(ordenesRef, where(documentId(), 'in', chunk));
+        const snap = await getDocs(q);
+        ordenesCompletas = [
+          ...ordenesCompletas,
+          ...snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as OrdenMantenimiento))
+        ];
+      }
+
+      // Mantener el orden de relevancia de Fuse
+      ordenesCompletas.sort((a, b) => idsEncontrados.indexOf(a.id!) - idsEncontrados.indexOf(b.id!));
+
+      return ordenesCompletas;
+    },
+    enabled: !!user?.uid && enabled && busqueda.trim().length > 0,
+    staleTime: 1000 * 60 * 5, // Cache local por 5 minutos
   });
 };
 

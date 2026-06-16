@@ -342,16 +342,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         try {
           const isNewLogin = getCachedUid() !== firebaseUser.uid
-          const updatedProfile = await syncUserDocument(firebaseUser, isNewLogin)
           
+          // 🔥 DESBLOQUEAR LA UI INMEDIATAMENTE
           setCachedUid(firebaseUser.uid)
           setUser(firebaseUser)
-          setUserProfile(updatedProfile)
           lastActivityRef.current = Date.now()
           setError(null)
           setLoading(false)
+
+          // ⏳ Tarea pesada de Firestore en segundo plano
+          syncUserDocument(firebaseUser, isNewLogin)
+            .then(updatedProfile => {
+              setUserProfile(updatedProfile)
+            })
+            .catch(async (err: any) => {
+              logger.error('Error in background auth sync:', err)
+              // Si falla por seguridad (ej. device locked o permisos), revertir sesión
+              if (err.message?.includes('DEVICE_LOCKED') || err.message?.includes('ERROR_DE_PERMISOS')) {
+                setCachedUid(null)
+                await signOut(auth)
+                setUser(null)
+                setError(err.message)
+              }
+            })
         } catch (err: any) {
-          logger.error('Error in auth state listener:', err)
+          logger.error('Error in auth state listener setup:', err)
           setCachedUid(null)
           await signOut(auth)
           setUser(null)

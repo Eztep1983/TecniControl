@@ -50,9 +50,9 @@
     "semantic_hash": "d12e88515df86a6b564d068599f9ea04"
   },
   "src/app/(app)/ordenes/mantenimiento/formulario.tsx": {
-    "mtime": 1781392791.2202523,
-    "ast_hash": "3c98ddc2422e54ff6e6d1bb4642a7540",
-    "semantic_hash": "3c98ddc2422e54ff6e6d1bb4642a7540"
+    "mtime": 1781463180.3057425,
+    "ast_hash": "a9f4493eb7c6b7f2086d9ee094579e9f",
+    "semantic_hash": ""
   },
   "src/app/(app)/ordenes/mantenimiento/page.tsx": {
     "mtime": 1781373400.491513,
@@ -60,8 +60,8 @@
     "semantic_hash": "94efd519ea624df5016b6779a7f973ea"
   },
   "src/app/(app)/ordenes/page.tsx": {
-    "mtime": 1781457875.9538803,
-    "ast_hash": "2cb1d8481bfd830ec9bf76fa0ce3d029",
+    "mtime": 1781471209.3140295,
+    "ast_hash": "3bff355152bbdbc18fef2ad79878e5c5",
     "semantic_hash": ""
   },
   "src/app/(app)/page.tsx": {
@@ -130,9 +130,9 @@
     "semantic_hash": ""
   },
   "src/components/clientes/ClienteHistorialModal.tsx": {
-    "mtime": 1780522505.22076,
-    "ast_hash": "0b78b82cd58c050dbdd2bafe410feacd",
-    "semantic_hash": "0b78b82cd58c050dbdd2bafe410feacd"
+    "mtime": 1781467963.3983488,
+    "ast_hash": "f75973e4e0ceab494aa0007d5bd6e0be",
+    "semantic_hash": ""
   },
   "src/components/clientes/ClienteSimpleFormModal.tsx": {
     "mtime": 1781397223.1748712,
@@ -145,9 +145,9 @@
     "semantic_hash": "b7544f58055c53ac249852e36fbdc59c"
   },
   "src/components/clientes/ClientesDataTable.tsx": {
-    "mtime": 1779553356.1855214,
-    "ast_hash": "9c5dd168afc2b7e48dc8a690fd59a56a",
-    "semantic_hash": "9c5dd168afc2b7e48dc8a690fd59a56a"
+    "mtime": 1781469127.364003,
+    "ast_hash": "936a0f8c7843888d78239a9ba1f50a22",
+    "semantic_hash": ""
   },
   "src/components/clientes/ClientesList.tsx": {
     "mtime": 1781390033.8169205,
@@ -265,13 +265,13 @@
     "semantic_hash": "ac275a0e4f417b589fd188da1aaf7566"
   },
   "src/components/providers/MobileAppShell.tsx": {
-    "mtime": 1781399244.6780827,
-    "ast_hash": "c521bce924828928cbd11b3b538ab3ef",
+    "mtime": 1781466863.1243932,
+    "ast_hash": "aa686049e6b6f33b4e3170af64c3538c",
     "semantic_hash": ""
   },
   "src/components/providers/MobileNavigationContext.tsx": {
-    "mtime": 1781399188.1000867,
-    "ast_hash": "521d46e9ebc5e5a76fcaa0686b03a080",
+    "mtime": 1781458307.6333487,
+    "ast_hash": "21a8cd0b9d1904d86770d6b70adefbda",
     "semantic_hash": ""
   },
   "src/components/providers/OfflineSyncProvider.tsx": {
@@ -290,8 +290,8 @@
     "semantic_hash": "fb80ee677746a37397a0e2ef62e5fe97"
   },
   "src/components/shadcnui/mobile-nav.tsx": {
-    "mtime": 1781399193.8997664,
-    "ast_hash": "8a550dcef9213641252060a681f1baab",
+    "mtime": 1781469713.1366549,
+    "ast_hash": "e56718220bf062c8ee2c16f15619843a",
     "semantic_hash": ""
   },
   "src/components/tareas-repuestos/ModalPieza.tsx": {
@@ -320,9 +320,9 @@
     "semantic_hash": "6a4a19410563791f99f3cec52da02e01"
   },
   "src/components/ui/Modal.tsx": {
-    "mtime": 1781220894.1227098,
-    "ast_hash": "6849a55e6f61f9954a75c4204d160b2e",
-    "semantic_hash": "6849a55e6f61f9954a75c4204d160b2e"
+    "mtime": 1781467851.52218,
+    "ast_hash": "8142a2aa56b971043a510d7c7aa189a4",
+    "semantic_hash": ""
   },
   "src/components/ui/NetworkStatusBanner.tsx": {
     "mtime": 1778271591.7467277,

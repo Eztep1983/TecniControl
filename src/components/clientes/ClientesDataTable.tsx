@@ -26,8 +26,6 @@ import {
   Edit,
 } from "lucide-react";
 import type { Cliente } from "@/types/orden";
-import { deleteDoc, doc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import CountUp from "../ui/CountUp";
 import { haptic } from "@/hooks/clientes/useHapticFeedback";
@@ -97,6 +95,12 @@ const ClienteCard = memo(function ClienteCard({
       <div 
         className="relative p-5 cursor-pointer flex flex-col gap-4"
         onClick={handleView}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleView();
+          }
+        }}
         role="button"
         tabIndex={0}
       >
@@ -148,7 +152,7 @@ const ClienteCard = memo(function ClienteCard({
           <button
             onClick={handleDeleteConfirmButton}
             className={cn(
-              "p-2 rounded-xl hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-colors",
+              "min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-colors",
               !isMobile && "opacity-0 group-hover:opacity-100"
             )}
             aria-label="Eliminar cliente"
@@ -218,7 +222,7 @@ const Pagination = memo(function Pagination({
 
   if (isMobile) {
     return (
-      <div className="sticky bottom-6 left-0 right-0 z-20 px-4 mt-8 pointer-events-none">
+      <div className="sticky bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-20 px-4 mt-8 pointer-events-none">
         <nav
           aria-label="Paginación móvil"
           className="mx-auto max-w-[280px] flex items-center justify-between bg-gray-900/80 border border-gray-700/50 rounded-2xl p-1.5 shadow-2xl shadow-black/60 ring-1 ring-white/10 pointer-events-auto transition-transform active:scale-[0.98]"
@@ -319,7 +323,7 @@ const Pagination = memo(function Pagination({
 interface ClientesDataTableProps {
   data: Cliente[];
   totalGlobal?: number | null;
-  onDelete: (id: string) => void;
+  onDeleteConfirm: (id: string) => Promise<void>;
   onView: (c: Cliente) => void;
   onEdit: (c: Cliente) => void;
   onHistorial: (c: Cliente) => void;
@@ -329,13 +333,19 @@ interface ClientesDataTableProps {
 export const ClientesDataTable = memo(function ClientesDataTable({
   data,
   totalGlobal,
-  onDelete,
+  onDeleteConfirm,
   onView,
   onEdit,
   onHistorial,
 }: ClientesDataTableProps) {
   const { toast } = useToast();
-  const scrollSentinelRef = useRef<HTMLDivElement>(null);
+  
+  const isMounted = useRef(true);
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const isMobileSm = useMediaQuery("(max-width: 640px)");
@@ -373,13 +383,13 @@ export const ClientesDataTable = memo(function ClientesDataTable({
     if (!clienteToDelete) return;
     setIsDeleting(true);
     try {
-      await deleteDoc(doc(db, "clientes", clienteToDelete));
+      await onDeleteConfirm(clienteToDelete);
 
       const idToRemove = clienteToDelete;
       setExitingIds((prev) => ({ ...prev, [idToRemove]: true }));
 
       setTimeout(() => {
-        onDelete(idToRemove);
+        if (!isMounted.current) return;
         setExitingIds((prev) => {
           const next = { ...prev };
           delete next[idToRemove];
@@ -391,18 +401,18 @@ export const ClientesDataTable = memo(function ClientesDataTable({
       }, 220);
 
       toast({ title: "Cliente eliminado", description: "Eliminado correctamente." });
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setClienteToDelete(null);
     } catch (error) {
       toast({
         title: "Error al eliminar",
         description: error instanceof Error ? error.message : "No se pudo eliminar.",
         variant: "destructive",
       });
-    } finally {
       setIsDeleting(false);
-      setDeleteDialogOpen(false);
-      setClienteToDelete(null);
     }
-  }, [clienteToDelete, currentPage, onDelete, paginatedClientes.length, toast]);
+  }, [clienteToDelete, currentPage, onDeleteConfirm, paginatedClientes.length, toast]);
 
   const handleDeleteCancel = useCallback(() => {
     haptic.selection();
@@ -415,7 +425,7 @@ export const ClientesDataTable = memo(function ClientesDataTable({
       if (page < 1 || page > totalPages) return;
       haptic.selection();
       setCurrentPage(page);
-      scrollSentinelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     },
     [totalPages]
   );
@@ -427,9 +437,13 @@ export const ClientesDataTable = memo(function ClientesDataTable({
 
   return (
     <div className="space-y-4 pb-24 sm:pb-8">
-      <div ref={scrollSentinelRef} aria-hidden="true" />
-
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <Dialog 
+        open={deleteDialogOpen} 
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setClienteToDelete(null);
+        }}
+      >
         <DialogContent className="w-[calc(100%-2rem)] max-w-sm mx-auto rounded-2xl bg-gray-800 border-gray-700">
           <DialogHeader>
             <DialogTitle className="text-white text-lg">
@@ -489,60 +503,35 @@ export const ClientesDataTable = memo(function ClientesDataTable({
         </div>
       </div>
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col gap-0.5">
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-none">
-              {totalGlobal && data.length !== totalGlobal ? "Resultados Filtrados" : "Mostrando"}
-            </p>
-            <p className="text-xs text-gray-300 font-medium" aria-live="polite">
-              {data.length === 0
-                ? "Sin resultados"
-                : `${(currentPage - 1) * itemsPerPage + 1} a ${Math.min(
-                    currentPage * itemsPerPage,
-                    data.length
-                  )} de ${data.length}`}
-            </p>
-          </div>
-        </div>
-
-        {data.length > 0 && (
-          <div className="h-1.5 w-full bg-gray-800/50 rounded-full overflow-hidden border border-gray-700/20 shadow-inner">
-            <div
-              className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.3)] transition-all duration-500 ease-out"
-              style={{
-                width: `${data.length > 0 ? Math.min(100, (Math.min(currentPage * itemsPerPage, data.length) / data.length) * 100) : 0}%`,
-              }}
-            />
-          </div>
-        )}
+      <div className="flex flex-col items-center justify-center gap-1 mb-6 mt-6">
+        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-none">
+          {totalGlobal && data.length !== totalGlobal ? "Resultados Filtrados" : "Mostrando"}
+        </p>
+        <p className="text-xs text-gray-300 font-medium" aria-live="polite">
+          {data.length === 0
+            ? "Sin resultados"
+            : `${(currentPage - 1) * itemsPerPage + 1} a ${Math.min(
+                currentPage * itemsPerPage,
+                data.length
+              )} de ${data.length}`}
+        </p>
       </div>
 
-      {paginatedClientes.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 pb-3 px-0.5" role="list" aria-label="Lista de clientes">
-          {paginatedClientes.map((client) => (
-            <div key={client.id} role="listitem">
-              <ClienteCard
-                client={client}
-                isExiting={!!exitingIds[client.id!]}
-                isMobile={isMobile}
-                onView={handleViewStable}
-                onEdit={handleEditStable}
-                onDeleteClick={handleDeleteClick}
-                onHistorial={handleHistorialStable}
-              />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="bg-gray-800/30 rounded-2xl border border-gray-700/40 p-12 text-center">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gray-700/30 flex items-center justify-center">
-            <Users className="w-7 h-7 text-gray-600" aria-hidden="true" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-3 px-0.5" role="list" aria-label="Lista de clientes">
+        {paginatedClientes.map((client) => (
+          <div key={client.id} role="listitem">
+            <ClienteCard
+              client={client}
+              isExiting={!!exitingIds[client.id!]}
+              isMobile={isMobile}
+              onView={handleViewStable}
+              onEdit={handleEditStable}
+              onDeleteClick={handleDeleteClick}
+              onHistorial={handleHistorialStable}
+            />
           </div>
-          <h3 className="text-sm font-medium text-gray-400 mb-1">Sin clientes registrados</h3>
-          <p className="text-xs text-gray-500">Comienza agregando tu primer cliente</p>
-        </div>
-      )}
+        ))}
+      </div>
 
       {totalPages > 1 && (
         <Pagination

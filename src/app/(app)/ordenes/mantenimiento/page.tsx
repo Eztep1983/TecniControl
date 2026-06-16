@@ -3,7 +3,7 @@
   'use client'
   import { useState, useMemo, useCallback, useEffect, memo, useRef } from 'react'
   import { OrdenMantenimiento } from '@/types/orden'
-  import { Plus, Search, Eye, ArrowLeft, Wrench, Filter, ChevronDown, ChevronUp, X, Loader2, FileEdit } from 'lucide-react'
+  import { Search, Eye, ArrowLeft, Wrench, Filter, ChevronDown, ChevronUp, X, Loader2 } from 'lucide-react'
   import Link from 'next/link'
   import { useAuth } from '@/components/auth/AuthProvider'
   import { useEstadisticasUsuario } from '@/hooks/useMultiUser'
@@ -92,11 +92,9 @@
   // Componente de estado vacío
   const EmptyState = ({
     hasFilters,
-    onCreateNew,
     onClearFilters,
   }: {
     hasFilters: boolean;
-    onCreateNew: () => void;
     onClearFilters?: () => void;
   }) => (
     <div className="flex flex-col items-center justify-center py-12 px-4">
@@ -120,15 +118,7 @@
           Limpiar filtros
         </button>
       ) : (
-        !hasFilters && (
-          <button
-            onClick={onCreateNew}
-            className="flex items-center gap-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-blue-500/20"
-          >
-            <Plus className="w-4 h-4" />
-            Nueva orden
-          </button>
-        )
+        null
       )}
     </div>
   )
@@ -236,8 +226,6 @@
     
     // Solo 'lista' para la vista local, ya que 'formulario' ahora es global
     const [vista, setVista] = useState<'lista'>('lista')
-    const [hayBorrador, setHayBorrador] = useState(false)
-    const [confirmandoDescarte, setConfirmandoDescarte] = useState(false)
     const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenMantenimiento | null>(null)
     const [mostrarFiltros, setMostrarFiltros] = useState(false)
     const [aplicandoFiltro, setAplicandoFiltro] = useState(false)
@@ -264,12 +252,12 @@
       refrescarOrdenes
     } = useOrdenesInfinitas(10, filtroTipo)
 
-    // Hook para cargar todo (cuando hay búsqueda)
+    // Hook para búsqueda inteligente (cuando hay texto)
     const {
       data: busquedaData,
       isLoading: busquedaLoading,
       error: busquedaError
-    } = useOrdenesBusqueda(filtroTipo, isSearching)
+    } = useOrdenesBusqueda(debouncedBusqueda, filtroTipo, isSearching)
 
     const ordenesLoading = isSearching ? busquedaLoading : infinitasLoading
     const error = isSearching ? busquedaError : infinitasError
@@ -327,22 +315,6 @@
         consumePendingAction();
       }
     }, [pendingAction, consumePendingAction, router]);
-
-    // Efecto para checar si hay un borrador guardado (y volver a checar si volvemos del formulario)
-    const isFormOpen = searchParams?.get('modal') === 'crear-orden'
-    useEffect(() => {
-      if (!isFormOpen) {
-        // Small timeout to ensure safeLocalStorage is ready
-        const checkDraft = setTimeout(() => {
-          if (safeLocalStorage.getItem('draft_mantenimiento')) {
-            setHayBorrador(true)
-          } else {
-            setHayBorrador(false)
-          }
-        }, 500)
-        return () => clearTimeout(checkDraft)
-      }
-    }, [isFormOpen])
 
     // Cerrar dropdown de filtros al hacer clic fuera
     useEffect(() => {
@@ -428,6 +400,13 @@
     }, [])
 
     const ordenesFiltradas = useMemo(() => {
+      // Si estamos en modo búsqueda inteligente, el hook useOrdenesBusqueda (Fuse.js)
+      // ya devuelve los datos filtrados y ordenados por relevancia. No debemos
+      // filtrarlos manualmente aquí o romperíamos la tolerancia a errores.
+      if (isSearching) {
+        return ordenes
+      }
+
       const tokens = normalize(debouncedBusqueda).split(/\s+/).filter(Boolean)
       
       const filtered = ordenes.map(orden => {
@@ -445,11 +424,6 @@
 
       // Aplicar ordenamiento
       return filtered.sort((a, b) => {
-        // Si hay búsqueda y las relevancias son significativamente distintas, priorizar relevancia
-        if (debouncedBusqueda && Math.abs(b.relevance - a.relevance) > 5) {
-          return b.relevance - a.relevance
-        }
-
         const itemA = a.orden
         const itemB = b.orden
         
@@ -464,7 +438,6 @@
           valB = `${itemB.dispositivo?.marca || ''} ${itemB.dispositivo?.modelo || ''}`
         }
 
-        // Helper para normalizar valores de comparación
         const toComp = (v: any) => {
           if (v instanceof Date) return v.getTime()
           if (v && typeof v === 'object' && 'seconds' in v) return v.seconds * 1000 + (v.nanoseconds || 0) / 1000000
@@ -478,7 +451,6 @@
         if (compA < compB) return sortConfig.direction === 'asc' ? -1 : 1
         if (compA > compB) return sortConfig.direction === 'asc' ? 1 : -1
         
-        // Si hay empate en el criterio principal, usar fecha desc como secundario
         if (sortConfig.key !== 'fechaCreacion') {
           const dateA = toComp(itemA.fechaCreacion)
           const dateB = toComp(itemB.fechaCreacion)
@@ -487,7 +459,7 @@
 
         return 0
       }).map(item => item.orden)
-    }, [ordenes, debouncedBusqueda, filtroTipo, sortConfig, calculateRelevance])
+    }, [ordenes, isSearching, debouncedBusqueda, filtroTipo, sortConfig, calculateRelevance])
 
     const hasActiveFilters = busqueda !== '' || filtroTipo !== 'todos'
     
@@ -496,21 +468,46 @@
     const mostrarCargando = authLoading || (!!user && ordenesLoadingInicial)
 
     return (
-      <div className="min-h-screen bg-gray-900 p-3 sm:p-4 lg:p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="bg-transparent min-h-screen pb-safe">
+        {/* Sticky Header extracted to the top */}
+        <div className="sticky top-0 z-40 bg-gray-900/95 border-b border-gray-800 pt-safe backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/ordenes"
+                prefetch={false}
+                className="text-blue-400 hover:text-blue-300 transition-colors p-2 -ml-2 rounded-full hover:bg-gray-800 flex-shrink-0"
+                aria-label="Volver a órdenes"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Link>
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="bg-blue-500/20 p-2 rounded-lg flex-shrink-0">
+                  <Wrench className="w-5 h-5 text-blue-400" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-lg font-bold text-white truncate">
+                    Historial de Órdenes
+                  </h1>
+                  <p className="text-gray-400 text-xs truncate">
+                    {globalStats?.totalOrdenes > 0 
+                      ? `${globalStats.totalOrdenes} órdenes registradas` 
+                      : 'Gestión de órdenes de servicio'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-5 space-y-6">
           {mostrarCargando ? (
-            <div className="flex flex-1 flex-col p-4 sm:p-8">
-              <div className="max-w-7xl mx-auto w-full space-y-6">
-                <div className="flex justify-between items-center">
-                  <Skeleton className="h-8 w-48 sm:w-64 bg-gray-700/50" />
-                  <Skeleton className="h-10 w-28 sm:w-32 bg-gray-700/50" />
-                </div>
-                <Skeleton className="h-12 sm:h-14 w-full bg-gray-700/50 rounded-xl" />
-                <div className="space-y-3 sm:space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-20 sm:h-24 w-full bg-gray-700/50 rounded-xl" />
-                  ))}
-                </div>
+            <div className="flex flex-1 flex-col w-full space-y-6">
+              <Skeleton className="h-[48px] w-full bg-gray-700/50 rounded-xl" />
+              <div className="space-y-3 sm:space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-24 w-full bg-gray-700/50 rounded-xl" />
+                ))}
               </div>
             </div>
           ) : error ? (
@@ -536,117 +533,8 @@
             </div>
           ) : (
             <>
-              {/* Header */}
-              <div className="mb-4 sm:mb-6">
-                <div className="flex flex-col gap-3 sm:gap-4">
-                  <div className="flex items-center justify-between">
-                    <Link
-                      href="/ordenes"
-                      prefetch={false}
-                      className="text-blue-400 hover:text-blue-300 transition-colors p-2 -ml-2 rounded-full hover:bg-gray-800 flex-shrink-0"
-                      aria-label="Volver a órdenes"
-                    >
-                      <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-                    </Link>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-                      <div className="bg-blue-500/20 p-2.5 rounded-lg flex-shrink-0">
-                        <Wrench className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
-                      </div>
-                      <div className="min-w-0">
-                        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
-                          Historial de Órdenes
-                        </h1>
-                        <p className="text-gray-400 text-xs sm:text-sm mt-1">
-                          {globalStats.totalOrdenes > 0 
-                            ? `${globalStats.totalOrdenes} órdenes registradas` 
-                            : 'Gestión de órdenes de servicio'}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <button
-                  onClick={() => router.push('?modal=crear-orden', { scroll: false })}
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 text-sm sm:text-base w-full sm:w-auto"
-                    >
-                      <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span>Nueva orden</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Banner de Borrador Pendiente */}
-              {hayBorrador && (
-                <div
-                  role="status"
-                  aria-live="polite"
-                  className="bg-blue-500/10 border border-blue-500/20 px-4 py-3 rounded-xl flex flex-col sm:flex-row sm:items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 mb-4 sm:mb-6"
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <FileEdit className="w-4 h-4 text-blue-400 shrink-0" aria-hidden="true" />
-                    <span className="text-xs text-blue-300 truncate">
-                      {confirmandoDescarte ? '¿Seguro que deseas descartar la orden?' : 'Orden en pausa detectada'}
-                    </span>
-                  </div>
-                  
-                  <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-                    {confirmandoDescarte ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setConfirmandoDescarte(false)
-                            triggerHaptics('light')
-                          }}
-                          className="flex-1 sm:flex-none text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:bg-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                        >
-                          Cancelar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            safeLocalStorage.removeItem('draft_mantenimiento')
-                            setHayBorrador(false)
-                            setConfirmandoDescarte(false)
-                            triggerHaptics('medium')
-                          }}
-                          className="flex-1 sm:flex-none bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-400"
-                        >
-                          Descartar
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setConfirmandoDescarte(true)
-                            triggerHaptics('light')
-                          }}
-                          className="flex-1 sm:flex-none text-blue-500/80 bg-white/5 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                          aria-label="Descartar orden en pausa"
-                        >
-                          Descartar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => router.push('?modal=crear-orden', { scroll: false })}
-                          className="flex-1 sm:flex-none bg-blue-500 text-gray-900 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                          aria-label="Reanudar orden en pausa"
-                        >
-                          Reanudar
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-
                 {/* Barra de búsqueda y filtros */}
-                <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-3 sm:p-4 mb-4 sm:mb-6">
+                <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-3 sm:p-4">
                   <div className="flex flex-col sm:flex-row gap-3">
                   {/* Búsqueda */}
                   <div className="relative flex-1">
@@ -661,7 +549,7 @@
                       placeholder="Buscar por cliente, ID, dispositivo..."
                       value={busqueda}
                       onChange={(e) => setBusqueda(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
+                      className="w-full min-h-[48px] pl-9 pr-4 py-2.5 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
                       aria-label="Buscar órdenes"
                     />
                     {busqueda && (
@@ -680,7 +568,7 @@
                     <Sheet open={mostrarFiltros} onOpenChange={setMostrarFiltros}>
                       <SheetTrigger asChild>
                         <button
-                          className={`w-full sm:w-auto bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 px-4 py-2.5 rounded-lg flex items-center justify-between sm:justify-center gap-2 transition-colors border text-sm ${
+                          className={`w-full sm:w-auto min-h-[48px] bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 px-4 py-2.5 rounded-lg flex items-center justify-between sm:justify-center gap-2 transition-colors border text-sm ${
                             filtroTipo !== 'todos' ? 'border-blue-500/50' : 'border-gray-600/50'
                           }`}
                           disabled={aplicandoFiltro}
@@ -744,7 +632,7 @@
                     <div className="relative" data-filtro-dropdown>
                       <button
                         onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                        className={`w-full sm:w-auto bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 px-4 py-2.5 rounded-lg flex items-center justify-between sm:justify-center gap-2 transition-colors border text-sm ${
+                        className={`w-full sm:w-auto min-h-[48px] bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 px-4 py-2.5 rounded-lg flex items-center justify-between sm:justify-center gap-2 transition-colors border text-sm ${
                           filtroTipo !== 'todos' ? 'border-blue-500/50' : 'border-gray-600/50'
                         }`}
                         aria-expanded={mostrarFiltros}
@@ -832,7 +720,7 @@
               </div>
 
               {/* Contenido principal */}
-              <div className={`bg-gray-800/50 rounded-xl border border-gray-700/50 overflow-hidden transition-opacity duration-300 ${aplicandoFiltro ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+              <div className={`overflow-visible transition-opacity duration-300 ${aplicandoFiltro ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                 {/* Estado de carga */}
                 {ordenesLoading && ordenes.length === 0 ? (
                   esMobile ? (
@@ -901,7 +789,6 @@
                 ) : ordenesFiltradas.length === 0 ? (
                   <EmptyState
                     hasFilters={hasActiveFilters}
-                    onCreateNew={() => router.push('?modal=crear-orden', { scroll: false })}
                     onClearFilters={limpiarFiltros}
                   />
                 ) : (

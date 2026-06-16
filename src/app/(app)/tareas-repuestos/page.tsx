@@ -67,7 +67,7 @@ const Toast = ({ toast, onClose }: { toast: ToastData; onClose: () => void }) =>
   const styles = {
     success: 'bg-blue-600/95 border-blue-500/50',
     error:   'bg-red-600/95 border-red-500/50',
-    info:    'bg-slate-800/95 border-slate-700/50',
+    info:    'bg-gray-800/95 border-gray-700/50',
   }
   const Icon = toast.type === 'success' ? CheckCircle : toast.type === 'error' ? AlertCircle : Info
 
@@ -122,7 +122,7 @@ const SearchInput = ({
   placeholder: string
 }) => (
   <div className="relative">
-    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+    <Search className="absolute left-3.5 top-1/2 -trangray-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
     <input
       type="search"
       value={value}
@@ -130,8 +130,8 @@ const SearchInput = ({
       placeholder={placeholder}
       className="
         w-full min-h-[48px] pl-10 pr-9 py-3
-        bg-slate-800/70 border border-slate-700/60 rounded-2xl
-        text-white placeholder-slate-500 text-sm
+        bg-gray-800/70 border border-gray-700/60 rounded-2xl
+        text-white placeholder-gray-500 text-sm
         focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-transparent
         transition-all
       "
@@ -143,7 +143,7 @@ const SearchInput = ({
       <button
         onClick={() => onChange('')}
         type="button"
-        className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-white active:text-white touch-manipulation"
+        className="absolute right-2.5 top-1/2 -trangray-y-1/2 p-1.5 text-gray-400 hover:text-white active:text-white touch-manipulation"
         aria-label="Limpiar"
       >
         <X className="w-4 h-4" />
@@ -165,12 +165,12 @@ const StatChip = ({
   colorClass: string
   Icon: React.ComponentType<{ className?: string }>
 }) => (
-  <div className="shrink-0 bg-slate-800/50 border border-slate-700/40 rounded-2xl p-3 min-w-[100px] flex-1">
+  <div className="shrink-0 bg-gray-800/50 border border-gray-700/40 rounded-2xl p-3 min-w-[100px] flex-1">
     <div className="flex items-center gap-1.5 mb-0.5">
       <Icon className={`w-3.5 h-3.5 ${colorClass}`} />
       <span className={`text-xl font-bold leading-none ${colorClass}`}>{value}</span>
     </div>
-    <span className="text-xs text-slate-400 leading-tight">{label}</span>
+    <span className="text-xs text-gray-400 leading-tight">{label}</span>
   </div>
 )
 
@@ -187,10 +187,10 @@ const TareaItem = memo(({
 }) => (
   <div
     className="
-      bg-slate-800/70 rounded-2xl px-4 py-3.5
-      border border-slate-700/40
+      bg-gray-800/70 rounded-2xl px-4 py-3.5
+      border border-gray-700/40
       flex items-center justify-between gap-3
-      transition-colors hover:bg-slate-800
+      transition-colors hover:bg-gray-800
     "
   >
     <div className="flex-1 min-w-0">
@@ -199,7 +199,7 @@ const TareaItem = memo(({
       </p>
       <div className="flex flex-wrap gap-1.5 mt-2">
         <TipoChip tipo={tarea.tipo} />
-        <span className="text-xs px-2 py-0.5 bg-slate-700/70 text-slate-400 rounded-full border border-slate-600/40">
+        <span className="text-xs px-2 py-0.5 bg-gray-700/70 text-gray-400 rounded-full border border-gray-600/40">
           {tarea.categoria}
         </span>
       </div>
@@ -251,17 +251,17 @@ const PiezaItem = memo(({
 }) => (
   <div
     className="
-      bg-slate-800/70 rounded-2xl px-4 py-3.5
-      border border-slate-700/40
+      bg-gray-800/70 rounded-2xl px-4 py-3.5
+      border border-gray-700/40
       flex items-center justify-between gap-3
-      transition-colors hover:bg-slate-800
+      transition-colors hover:bg-gray-800
     "
   >
     <div className="flex-1 min-w-0">
       <p className="text-white font-medium text-sm leading-snug truncate">
         {pieza.nombre}
       </p>
-      <span className="text-xs text-slate-400 mt-1 inline-block">
+      <span className="text-xs text-gray-400 mt-1 inline-block">
         {pieza.categoria}
       </span>
     </div>
@@ -328,11 +328,11 @@ const EmptyState = ({
   description: string
 }) => (
   <div className="flex flex-col items-center justify-center py-10 text-center">
-    <div className="bg-slate-800/50 p-5 rounded-full mb-4">
-      <Icon className="w-9 h-9 text-slate-500" />
+    <div className="bg-gray-800/50 p-5 rounded-full mb-4">
+      <Icon className="w-9 h-9 text-gray-500" />
     </div>
-    <p className="text-slate-300 font-medium">{title}</p>
-    <p className="text-slate-500 text-sm mt-1 max-w-[200px] leading-relaxed">{description}</p>
+    <p className="text-gray-300 font-medium">{title}</p>
+    <p className="text-gray-500 text-sm mt-1 max-w-[200px] leading-relaxed">{description}</p>
   </div>
 )
 
@@ -342,13 +342,13 @@ const Skeleton = () => (
   <div className="animate-pulse space-y-4 p-4">
     <div className="flex gap-3 overflow-hidden pb-1">
       {[1, 2, 3, 4, 5].map(i => (
-        <div key={i} className="h-16 w-24 bg-slate-800/60 rounded-2xl shrink-0" />
+        <div key={i} className="h-16 w-24 bg-gray-800/60 rounded-2xl shrink-0" />
       ))}
     </div>
-    <div className="h-12 bg-slate-800/60 rounded-xl" />
-    <div className="h-12 bg-slate-800/60 rounded-xl" />
+    <div className="h-12 bg-gray-800/60 rounded-xl" />
+    <div className="h-12 bg-gray-800/60 rounded-xl" />
     {[1, 2, 3].map(i => (
-      <div key={i} className="h-20 bg-slate-800/60 rounded-xl" />
+      <div key={i} className="h-20 bg-gray-800/60 rounded-xl" />
     ))}
   </div>
 )
@@ -551,7 +551,7 @@ export default function TareasRepuestosPage() {
 
   if (!user) return (
     <div className="flex flex-1 items-center justify-center">
-      <p className="text-slate-400 text-sm">Debes iniciar sesión para continuar</p>
+      <p className="text-gray-400 text-sm">Debes iniciar sesión para continuar</p>
     </div>
   )
 
@@ -563,7 +563,7 @@ export default function TareasRepuestosPage() {
       <header
         className="
           sticky top-0 z-40
-          bg-gray-900/90 border-b border-slate-800/60
+          bg-gray-900/90 border-b border-gray-800/60
           -mx-4 -mt-4 px-4 py-3.5 mb-4
           sm:-mx-6 sm:-mt-6 sm:px-6
           lg:-mx-8 lg:-mt-8 lg:px-8
@@ -634,7 +634,7 @@ export default function TareasRepuestosPage() {
             </div>
 
             {/* Tabs (Contraste aumentado e inactivo rebajado) */}
-            <div className="flex bg-slate-800/60 rounded-2xl p-1.5 border border-slate-700/40 shadow-sm">
+            <div className="flex bg-gray-800/60 rounded-2xl p-1.5 border border-gray-700/40 shadow-sm">
               {(
                 [
                   { key: 'tareas', label: 'Tareas',    Icon: ListChecks, active: 'bg-blue-500/35 text-white font-semibold shadow-sm' },
@@ -650,7 +650,7 @@ export default function TareasRepuestosPage() {
                     flex-1 flex items-center justify-center gap-2
                     min-h-[44px] rounded-xl text-sm
                     transition-all touch-manipulation select-none
-                    ${tab === key ? active : 'text-slate-500 hover:text-slate-300 active:text-slate-250'}
+                    ${tab === key ? active : 'text-gray-500 hover:text-gray-300 active:text-gray-250'}
                   `}
                 >
                   <Icon className="w-4 h-4" />
@@ -661,11 +661,11 @@ export default function TareasRepuestosPage() {
 
             {/* ── Panel Tareas (Con Animación animate-in fade-in) ── */}
             {tab === 'tareas' && (
-              <section className="bg-slate-800/40 rounded-2xl border border-slate-700/40 overflow-hidden animate-in fade-in duration-200">
-                <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-700/40">
+              <section className="bg-gray-800/40 rounded-2xl border border-gray-700/40 overflow-hidden animate-in fade-in duration-200">
+                <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-700/40">
                   <h2 className="text-white font-semibold text-sm">
                     Tareas predefinidas
-                    <span className="text-slate-500 font-normal ml-1.5">
+                    <span className="text-gray-500 font-normal ml-1.5">
                       ({tareasFiltradas.length})
                     </span>
                   </h2>
@@ -740,11 +740,11 @@ export default function TareasRepuestosPage() {
 
             {/* ── Panel Piezas (Con Animación animate-in fade-in) ── */}
             {tab === 'piezas' && (
-              <section className="bg-slate-800/40 rounded-2xl border border-slate-700/40 overflow-hidden animate-in fade-in duration-200">
-                <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-700/40">
+              <section className="bg-gray-800/40 rounded-2xl border border-gray-700/40 overflow-hidden animate-in fade-in duration-200">
+                <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-700/40">
                   <h2 className="text-white font-semibold text-sm">
                     Repuestos predefinidos
-                    <span className="text-slate-500 font-normal ml-1.5">
+                    <span className="text-gray-500 font-normal ml-1.5">
                       ({piezasFiltradas.length})
                     </span>
                   </h2>
@@ -845,7 +845,7 @@ export default function TareasRepuestosPage() {
         title="Confirmar eliminación"
       >
         <div className="space-y-4">
-          <p className="text-sm text-slate-300 leading-relaxed">
+          <p className="text-sm text-gray-300 leading-relaxed">
             ¿Estás seguro de que deseas eliminar esta tarea predefinida? Esta acción no se puede deshacer.
           </p>
           <div className="flex flex-col gap-3 pt-2">
@@ -871,7 +871,7 @@ export default function TareasRepuestosPage() {
               type="button"
               className="
                 w-full min-h-[50px] rounded-2xl font-bold text-sm
-                text-slate-400 active:bg-slate-800 touch-manipulation transition-all
+                text-gray-400 active:bg-gray-800 touch-manipulation transition-all
               "
             >
               Cancelar
@@ -886,7 +886,7 @@ export default function TareasRepuestosPage() {
         title="Confirmar eliminación"
       >
         <div className="space-y-4">
-          <p className="text-sm text-slate-300 leading-relaxed">
+          <p className="text-sm text-gray-300 leading-relaxed">
             ¿Estás seguro de que deseas eliminar este repuesto predefinido? Esta acción no se puede deshacer.
           </p>
           <div className="flex flex-col gap-3 pt-2">
@@ -912,7 +912,7 @@ export default function TareasRepuestosPage() {
               type="button"
               className="
                 w-full min-h-[50px] rounded-2xl font-bold text-sm
-                text-slate-400 active:bg-slate-800 touch-manipulation transition-all
+                text-gray-400 active:bg-gray-800 touch-manipulation transition-all
               "
             >
               Cancelar

@@ -13,6 +13,10 @@ import { useClientesUsuario } from "@/hooks/useMultiUser";
 import { useClienteModal } from "@/hooks/clientes/useClienteModal";
 import { usePullToRefresh } from "@/hooks/clientes/usePullToRefresh";
 import { useHapticFeedback } from "@/hooks/clientes/useHapticFeedback";
+import { deleteDoc, doc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+
+const MODAL_ANIMATION_DURATION = 300;
 
 // ── Skeleton ───────────────────────────────────────────────────────────────
 const ClientesSkeleton = memo(function ClientesSkeleton() {
@@ -90,11 +94,10 @@ export function ClientesList() {
   }, [clientes, searchTerm]);
 
   // ── Callbacks ───────────────────────────────────────────────────────────
-  const handleDelete = useCallback(
-    (_id: string) => {
+  const handleDeleteConfirm = useCallback(
+    async (id: string) => {
       haptic.impactMedium();
-      // FIX: Se pasa el id pero refrescarClientes sincroniza el estado global.
-      // No es necesario usar el id aquí si el hook ya actualiza la lista.
+      await deleteDoc(doc(db, 'clientes', id));
       refrescarClientes();
     },
     [haptic, refrescarClientes]
@@ -131,7 +134,7 @@ export function ClientesList() {
     setHistorialOpen(false);
     // FIX: Limpiar el cliente seleccionado con delay para evitar flash de UI vacía
     // mientras el modal cierra con su animación.
-    setTimeout(() => setSelectedClienteHistorial(null), 300);
+    setTimeout(() => setSelectedClienteHistorial(null), MODAL_ANIMATION_DURATION);
   }, []);
 
   // ── Estados derivados ───────────────────────────────────────────────────
@@ -175,7 +178,7 @@ export function ClientesList() {
           <h2 className="text-base font-semibold text-white mb-1">Error al Cargar</h2>
           <p className="text-sm text-gray-400 mb-5">{error}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={refrescarClientes}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 text-sm font-medium transition-colors active:scale-95 min-h-[44px]"
           >
             <RefreshCw className="w-4 h-4" aria-hidden="true" />
@@ -212,174 +215,142 @@ export function ClientesList() {
       {/* Contenedor principal */}
       <div
         ref={containerRef}
-        className="bg-gray-900"
+        className="bg-transparent min-h-screen pb-safe"
+        style={{ touchAction: 'pan-y' }}
       >
-        <div className="w-full p-3 sm:p-4 md:p-6 max-w-7xl mx-auto">
-          <div className="bg-gray-800/40 rounded-2xl border border-gray-700/50 overflow-hidden">
-
-            {/* Header */}
-            <header className="px-4 py-3 sm:px-5 sm:py-4 border-b border-gray-700/50 bg-gray-800/60">
-              <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
-                <div
-                  className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0"
-                  aria-hidden="true"
-                >
-                  <Users className="w-4.5 h-4.5 text-blue-400" />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <h1 className="text-sm font-semibold text-white leading-tight">
-                    Mis Clientes
-                  </h1>
-                  {/* FIX: aria-live para que los lectores de pantalla anuncien cambios
-                      en el conteo cuando el filtro cambia */}
-                  <p
-                    className="text-xs text-gray-500 leading-tight mt-0.5"
-                    aria-live="polite"
-                    aria-atomic="true"
-                  >
-                    {loading
-                      ? "Cargando…"
-                      : `${filteredClientes.length} de ${clientes.length} ${
-                          clientes.length === 1 ? "cliente" : "clientes"
-                        }`}
-                  </p>
-                </div>
-
-                {/* Búsqueda desktop */}
-                <div className="relative hidden sm:block w-52 lg:w-64 flex-shrink-0">
-                  <label htmlFor="search-desktop" className="sr-only">
-                    Buscar clientes
-                  </label>
-                  <Search
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none"
-                    aria-hidden="true"
-                  />
-                  <Input
-                    id="search-desktop"
-                    type="search"
-                    placeholder="Buscar…"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-8 pr-8 h-9 text-sm bg-gray-700/40 border-gray-600/50 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-lg"
-                    // FIX: autoComplete off para que los autocompletados del browser
-                    // no interfieran con la búsqueda en campo controlado
-                    autoComplete="off"
-                  />
-                  {searchTerm && (
-                    <button
-                      onClick={clearSearch}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-600/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
-                      aria-label="Limpiar búsqueda"
-                    >
-                      <X className="w-3.5 h-3.5 text-gray-500" aria-hidden="true" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Botón nuevo cliente */}
-                <button
-                  onClick={openCreate}
-                  className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/30 transition-all active:scale-95 text-sm font-medium flex-shrink-0 min-h-[44px] min-w-[44px] text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
-                  aria-label="Crear nuevo cliente"
-                >
-                  <PlusCircle className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden xs:inline">Crear cliente</span>
-                  <span className="inline xs:hidden" aria-hidden="true">Nuevo</span>
-                </button>
+        {/* Header */}
+        <div className="sticky top-0 z-40 bg-gray-900/95 border-b border-gray-800 pt-safe backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            
+            <div className="flex items-center gap-3">
+              <div
+                className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0"
+                aria-hidden="true"
+              >
+                <Users className="w-5 h-5 text-blue-400" />
               </div>
 
-              {/* Búsqueda móvil */}
-              <div className="relative mt-3 sm:hidden">
-                <label htmlFor="search-mobile" className="sr-only">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-base font-semibold text-white leading-tight">
+                  Mis Clientes
+                </h1>
+                <p
+                  className="text-sm text-gray-500 leading-tight mt-0.5"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {loading
+                    ? "Cargando…"
+                    : `${filteredClientes.length} de ${clientes.length} ${
+                        clientes.length === 1 ? "cliente" : "clientes"
+                      }`}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:w-72">
+                <label htmlFor="search-input" className="sr-only">
                   Buscar clientes
                 </label>
                 <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none"
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
                   aria-hidden="true"
                 />
                 <Input
-                  id="search-mobile"
+                  id="search-input"
                   type="search"
-                  placeholder="Buscar cliente…"
+                  placeholder="Buscar clientes…"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-10 py-2.5 text-sm bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-lg"
+                  className="w-full pl-10 pr-10 min-h-[48px] text-sm bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-xl transition-all"
                   autoComplete="off"
-                  // FIX: inputMode="search" activa el teclado de búsqueda en iOS
                   inputMode="search"
-                  // FIX: enterKeyHint muestra "buscar" en el teclado virtual iOS/Android
                   enterKeyHint="search"
                 />
                 {searchTerm && (
                   <button
                     onClick={clearSearch}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-600/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-700/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 transition-colors"
                     aria-label="Limpiar búsqueda"
                   >
-                    <X className="w-4 h-4 text-gray-500" aria-hidden="true" />
+                    <X className="w-4 h-4 text-gray-400" aria-hidden="true" />
                   </button>
                 )}
               </div>
-            </header>
 
-            {/* Contenido */}
-            <main className="p-4 sm:p-5">
-              {loading && clientes.length === 0 && <ClientesSkeleton />}
+              <button
+                onClick={openCreate}
+                className="flex items-center justify-center gap-2 px-4 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/30 transition-all active:scale-95 text-sm font-medium flex-shrink-0 min-h-[48px] text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+                aria-label="Crear nuevo cliente"
+              >
+                <PlusCircle className="w-5 h-5" aria-hidden="true" />
+                <span className="hidden sm:inline">Nuevo Cliente</span>
+                <span className="inline sm:hidden" aria-hidden="true">Nuevo</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
-              {isEmpty && (
-                <div className="text-center py-14 px-4" role="status">
-                  <div className="w-20 h-20 bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-10 h-10 text-gray-600" aria-hidden="true" />
-                  </div>
-                  <h2 className="text-base font-semibold text-white mb-2">
-                    ¡Comienza tu gestión!
-                  </h2>
-                  <p className="text-sm text-gray-400 mb-6 max-w-xs mx-auto">
-                    Agrega tu primer cliente para gestionar dispositivos y órdenes.
-                  </p>
-                  <button
-                    onClick={openCreate}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 rounded-xl text-blue-400 font-medium transition-all active:scale-95 min-h-[44px]"
-                  >
-                    <PlusCircle className="w-4 h-4" aria-hidden="true" />
-                    Crear Primer Cliente
-                  </button>
+        {/* Contenido */}
+        <div className="max-w-7xl mx-auto px-4 py-5 space-y-6">
+          <main>
+            {loading && clientes.length === 0 && <ClientesSkeleton />}
+
+            {isEmpty && (
+              <div className="text-center py-14 px-4 bg-gray-800/40 rounded-3xl border border-gray-700/50" role="status">
+                <div className="w-20 h-20 bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-10 h-10 text-gray-600" aria-hidden="true" />
                 </div>
-              )}
+                <h2 className="text-base font-semibold text-white mb-2">
+                  ¡Comienza tu gestión!
+                </h2>
+                <p className="text-sm text-gray-400 mb-6 max-w-xs mx-auto">
+                  Agrega tu primer cliente para gestionar dispositivos y órdenes.
+                </p>
+                <button
+                  onClick={openCreate}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 rounded-xl text-blue-400 font-medium transition-all active:scale-95 min-h-[48px]"
+                >
+                  <PlusCircle className="w-5 h-5" aria-hidden="true" />
+                  Crear Primer Cliente
+                </button>
+              </div>
+            )}
 
-              {isFiltered && (
-                <div className="text-center py-14 px-4" role="status">
-                  <div className="w-20 h-20 bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Filter className="w-10 h-10 text-gray-600" aria-hidden="true" />
-                  </div>
-                  <h2 className="text-sm font-medium text-gray-300 mb-1">Sin resultados</h2>
-                  <p className="text-sm text-gray-500 mb-6">
-                    No encontramos clientes que coincidan con{" "}
-                    <strong className="text-gray-400">"{searchTerm}"</strong>.
-                  </p>
-                  <button
-                    onClick={clearSearch}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-700/40 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-colors active:scale-95 min-h-[44px]"
-                  >
-                    <X className="w-4 h-4" aria-hidden="true" />
-                    Limpiar búsqueda
-                  </button>
+            {isFiltered && (
+              <div className="text-center py-14 px-4 bg-gray-800/40 rounded-3xl border border-gray-700/50" role="status">
+                <div className="w-20 h-20 bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Filter className="w-10 h-10 text-gray-600" aria-hidden="true" />
                 </div>
-              )}
+                <h2 className="text-sm font-medium text-gray-300 mb-1">Sin resultados</h2>
+                <p className="text-sm text-gray-500 mb-6">
+                  No encontramos clientes que coincidan con{" "}
+                  <strong className="text-gray-400">"{searchTerm.length > 30 ? searchTerm.slice(0, 30) + '...' : searchTerm}"</strong>.
+                </p>
+                <button
+                  onClick={clearSearch}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-700/40 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-colors active:scale-95 min-h-[48px]"
+                >
+                  <X className="w-5 h-5" aria-hidden="true" />
+                  Limpiar búsqueda
+                </button>
+              </div>
+            )}
 
-              {showTable && (
+            {showTable && (
+              <div className="overflow-visible">
                 <ClientesDataTable
                   data={filteredClientes}
                   totalGlobal={clientes.length}
-                  onDelete={handleDelete}
+                  onDeleteConfirm={handleDeleteConfirm}
                   onView={modal.openView}
                   onEdit={modal.openEdit}
                   onHistorial={openHistorial}
                 />
-              )}
-            </main>
-          </div>
+              </div>
+            )}
+          </main>
         </div>
       </div>
     </>

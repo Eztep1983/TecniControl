@@ -366,37 +366,7 @@ function OrdenesDashboardContent() {
     }
   }, [searchParams, router])
 
-  // ── Loading skeleton (auth initialising) ────────────────────────────────
-  if (authLoading) {
-    return (
-      <div className="bg-transparent min-h-screen pb-safe">
-        <div className="bg-gray-900 border-b border-gray-800 pt-safe">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <div className="flex items-center gap-3">
-              <Skeleton className="w-12 h-12 rounded-xl shrink-0" />
-              <div className="space-y-2 flex-1">
-                <Skeleton className="h-4 w-40 rounded-md" />
-                <Skeleton className="h-3 w-24 rounded-md" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 py-5 space-y-6">
-          <Skeleton className="h-11 w-full rounded-xl" />
-          <div className="flex gap-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="snap-start shrink-0 w-32 h-24 rounded-2xl" />
-            ))}
-          </div>
-          <div className="grid gap-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full rounded-xl" />
-            ))}
-          </div>
-        </div>
-      </div>
-    )
-  }
+  // ── Se eliminó el skeleton gigante para permitir que la caché hidrate inmediatamente ──
 
   // ── Not authenticated ────────────────────────────────────────────────────
   if (!user) {

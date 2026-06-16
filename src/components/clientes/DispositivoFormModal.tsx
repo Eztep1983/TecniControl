@@ -22,7 +22,6 @@ import {
   Plus,
   Loader2,
   CheckCircle2,
-  ChevronDown,
   Hash,
   Cpu,
   Tag,
@@ -234,7 +233,9 @@ export function DispositivoFormModal({
           bottom: 0,
           left: 0,
           right: 0,
-          transform: "none",
+          transform: open ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.95)',
+          opacity: open ? 1 : 0,
+          transition: 'transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms cubic-bezier(0.16, 1, 0.3, 1)',
           width: "100%",
           maxWidth: "100%",
           margin: 0,
@@ -256,22 +257,7 @@ export function DispositivoFormModal({
                 {cliente.name}
               </p>
             </div>
-            {/* Botón cerrar — estilo iOS */}
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isLoading}
-              aria-label="Cerrar"
-              className={[
-                "w-[30px] h-[30px] rounded-full",
-                "bg-white/10 hover:bg-white/15 active:bg-white/20",
-                "flex items-center justify-center",
-                "transition-colors duration-150",
-                "disabled:opacity-30 mt-0.5",
-              ].join(" ")}
-            >
-              <ChevronDown className="w-4 h-4 text-white/70" />
-            </button>
+            {/* El cierre queda manejado por el componente `Dialog` padre; botón duplicado eliminado */}
           </div>
         </div>
 
