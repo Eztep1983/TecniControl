@@ -23,7 +23,7 @@ import {
   Users,
   IdCard,
   History,
-  Edit,
+  Plus,
   Monitor,
 } from "lucide-react";
 import type { Cliente } from "@/types/orden";
@@ -32,6 +32,7 @@ import CountUp from "../ui/CountUp";
 import { haptic } from "@/hooks/clientes/useHapticFeedback";
 import { useMediaQuery } from "@/hooks/clientes/useMediaQuery";
 import { cn } from "@/lib/utils";
+import { useMobileNavigation } from "@/components/providers/MobileNavigationContext";
 
 // ── Tarjeta individual ───────────────────────────────────────────────────────
 interface ClienteCardProps {
@@ -39,8 +40,6 @@ interface ClienteCardProps {
   isExiting: boolean;
   isMobile: boolean;
   onView: (c: Cliente) => void;
-  onEdit: (c: Cliente) => void;
-  onDeleteClick: (id: string) => void;
   onHistorial: (c: Cliente) => void;
 }
 
@@ -49,22 +48,25 @@ const ClienteCard = memo(function ClienteCard({
   isExiting,
   isMobile,
   onView,
-  onEdit,
-  onDeleteClick,
   onHistorial,
 }: ClienteCardProps) {
+  const { openModal } = useMobileNavigation();
+
   const handleView = useCallback(() => {
     haptic.selection();
     onView(client);
   }, [client, onView]);
 
-  const handleEdit = useCallback(
+  const handleEmitirOrden = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       haptic.impactLight();
-      onEdit(client);
+      openModal();
+      const url = new URL(window.location.href);
+      url.searchParams.set("clienteId", client.id!);
+      window.history.replaceState(window.history.state, "", url.toString());
     },
-    [client, onEdit]
+    [client, openModal]
   );
 
   const handleHistorial = useCallback(
@@ -74,15 +76,6 @@ const ClienteCard = memo(function ClienteCard({
       onHistorial(client);
     },
     [client, onHistorial]
-  );
-
-  const handleDeleteConfirmButton = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      haptic.impactMedium();
-      onDeleteClick(client.id!);
-    },
-    [client.id, onDeleteClick]
   );
 
   return (
@@ -138,28 +131,20 @@ const ClienteCard = memo(function ClienteCard({
       {/* Botones de Acción */}
       <div className="flex items-center gap-1.5 p-3 sm:p-4 bg-gray-900/30 sm:bg-transparent border-t border-gray-700/30 sm:border-t-0 sm:border-l sm:ml-auto">
         <button
+          onClick={handleEmitirOrden}
+          className="flex-1 sm:flex-none min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 transition-colors px-3"
+          aria-label="Emitir orden"
+        >
+          <Plus className="w-4 h-4" />
+          <span className="text-xs font-bold sm:hidden">Emitir Orden</span>
+        </button>
+        <button
           onClick={handleHistorial}
           className="flex-1 sm:flex-none min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-gray-700/30 hover:bg-gray-700/50 border border-gray-700/50 text-gray-300 transition-colors px-3"
           aria-label="Ver historial"
         >
           <History className="w-4 h-4" />
           <span className="text-xs font-bold sm:hidden">Historial</span>
-        </button>
-        <button
-          onClick={handleEdit}
-          className="flex-1 sm:flex-none min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 transition-colors px-3"
-          aria-label="Editar cliente"
-        >
-          <Edit className="w-4 h-4" />
-          <span className="text-xs font-bold sm:hidden">Editar</span>
-        </button>
-        <button
-          onClick={handleDeleteConfirmButton}
-          className="flex-1 sm:flex-none min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 transition-colors px-3"
-          aria-label="Eliminar cliente"
-        >
-          <Trash2 className="w-4 h-4" />
-          <span className="text-xs font-bold sm:hidden">Eliminar</span>
         </button>
       </div>
     </div>
@@ -307,9 +292,7 @@ const Pagination = memo(function Pagination({
 interface ClientesDataTableProps {
   data: Cliente[];
   totalGlobal?: number | null;
-  onDeleteConfirm: (id: string) => Promise<void>;
   onView: (c: Cliente) => void;
-  onEdit: (c: Cliente) => void;
   onHistorial: (c: Cliente) => void;
 }
 
@@ -317,9 +300,7 @@ interface ClientesDataTableProps {
 export const ClientesDataTable = memo(function ClientesDataTable({
   data,
   totalGlobal,
-  onDeleteConfirm,
   onView,
-  onEdit,
   onHistorial,
 }: ClientesDataTableProps) {
   const { toast } = useToast();
@@ -336,13 +317,8 @@ export const ClientesDataTable = memo(function ClientesDataTable({
   
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [clienteToDelete, setClienteToDelete] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [exitingIds, setExitingIds] = useState<Record<string, boolean>>({});
 
   const handleViewStable = useCallback((c: Cliente) => onView(c), [onView]);
-  const handleEditStable = useCallback((c: Cliente) => onEdit(c), [onEdit]);
   const handleHistorialStable = useCallback((c: Cliente) => onHistorial(c), [onHistorial]);
 
 
@@ -363,65 +339,6 @@ export const ClientesDataTable = memo(function ClientesDataTable({
     return data.slice(start, start + itemsPerPage);
   }, [safePage, data, itemsPerPage]);
 
-  const handleDeleteClick = useCallback((id: string) => {
-    haptic.impactMedium();
-    setClienteToDelete(id);
-    setDeleteDialogOpen(true);
-  }, []);
-
-  const handleDeleteConfirm = useCallback(async () => {
-    if (!clienteToDelete) return;
-    setIsDeleting(true);
-    const idToRemove = clienteToDelete;
-    
-    // Iniciar animación ANTES de borrar en Firebase
-    setExitingIds((prev) => ({ ...prev, [idToRemove]: true }));
-
-    // Esperar a que la tarjeta haga el fade-out (220ms)
-    await new Promise(resolve => setTimeout(resolve, 220));
-
-    if (!isMounted.current) return;
-
-    try {
-      // Eliminar de Firebase
-      await onDeleteConfirm(idToRemove);
-
-      setExitingIds((prev) => {
-        const next = { ...prev };
-        delete next[idToRemove];
-        return next;
-      });
-
-      if (paginatedClientes.length === 1 && currentPage > 1) {
-        setCurrentPage((p) => p - 1);
-      }
-
-      toast({ title: "Cliente eliminado", description: "Eliminado correctamente." });
-      setIsDeleting(false);
-      setDeleteDialogOpen(false);
-      setClienteToDelete(null);
-    } catch (error) {
-      toast({
-        title: "Error al eliminar",
-        description: error instanceof Error ? error.message : "No se pudo eliminar.",
-        variant: "destructive",
-      });
-      // Revertir animación si falló
-      setExitingIds((prev) => {
-        const next = { ...prev };
-        delete next[idToRemove];
-        return next;
-      });
-      setIsDeleting(false);
-    }
-  }, [clienteToDelete, currentPage, onDeleteConfirm, paginatedClientes.length, toast]);
-
-  const handleDeleteCancel = useCallback(() => {
-    haptic.selection();
-    setDeleteDialogOpen(false);
-    setClienteToDelete(null);
-  }, []);
-
   const goToPage = useCallback(
     (page: number) => {
       if (page < 1 || page > totalPages) return;
@@ -432,55 +349,8 @@ export const ClientesDataTable = memo(function ClientesDataTable({
     [totalPages]
   );
 
-  const clienteNombreAEliminar = useMemo(
-    () => data.find((c) => c.id === clienteToDelete)?.name ?? "este cliente",
-    [data, clienteToDelete]
-  );
-
   return (
     <div className="space-y-6 pb-8">
-      <Dialog 
-        open={deleteDialogOpen} 
-        onOpenChange={(open) => {
-          setDeleteDialogOpen(open);
-          if (!open) setClienteToDelete(null);
-        }}
-      >
-        <DialogContent className="w-[calc(100%-2rem)] max-w-sm mx-auto rounded-2xl bg-gray-800 border-gray-700">
-          <DialogHeader>
-            <DialogTitle className="text-white text-lg">
-              ¿Eliminar a {clienteNombreAEliminar}?
-            </DialogTitle>
-            <DialogDescription className="text-gray-400 text-sm">
-              Esta acción no se puede deshacer. Las órdenes asociadas se conservarán
-              pero perderás acceso a la información del cliente y dispositivos.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex flex-col gap-2 mt-2">
-            <Button
-              onClick={handleDeleteCancel}
-              className="w-full h-12 rounded-xl bg-gray-700/60 hover:bg-gray-700 text-white text-sm font-medium order-2 sm:order-1"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleDeleteConfirm}
-              disabled={isDeleting}
-              className="w-full h-12 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 text-sm font-medium order-1 sm:order-2"
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-                  Eliminando…
-                </>
-              ) : (
-                "Eliminar"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       <div className="flex items-center justify-between px-2">
         <p className="text-xs text-gray-400 font-medium" aria-live="polite">
           {data.length === 0
@@ -497,11 +367,9 @@ export const ClientesDataTable = memo(function ClientesDataTable({
           <div key={client.id} role="listitem">
             <ClienteCard
               client={client}
-              isExiting={!!exitingIds[client.id!]}
+              isExiting={false}
               isMobile={isMobile}
               onView={handleViewStable}
-              onEdit={handleEditStable}
-              onDeleteClick={handleDeleteClick}
               onHistorial={handleHistorialStable}
             />
           </div>

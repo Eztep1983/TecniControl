@@ -622,7 +622,7 @@
                                 className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors text-sm font-medium ${
                                   filtroTipo === option.value
                                     ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                    : 'text-gray-300 hover:bg-gray-850/50 border border-transparent'
+                                    : 'text-gray-300 hover:bg-gray-800/50 border border-transparent'
                                 }`}
                                 disabled={aplicandoFiltro}
                               >

@@ -56,7 +56,7 @@ export function registrarIdMapeado(userId: string, tempId: string, realId: strin
     if (queue && Array.isArray(queue)) {
       const updatedQueue = queue.map((op: QueueOperation) => {
         if (op.entity === 'cliente') {
-          if (op.type === 'update' && op.payload.id === tempId) {
+          if ((op.type === 'update' || op.type === 'delete') && op.payload.id === tempId) {
             return {
               ...op,
               payload: {

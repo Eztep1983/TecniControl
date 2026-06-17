@@ -3067,7 +3067,7 @@
       "label": "ClienteRowProps",
       "file_type": "code",
       "source_file": "src/components/forms/ClienteSelector.tsx",
-      "source_location": "L320",
+      "source_location": "L315",
       "_origin": "ast",
       "id": "forms_clienteselector_clienterowprops",
       "community": 38,
@@ -3077,7 +3077,7 @@
       "label": "ClienteRow",
       "file_type": "code",
       "source_file": "src/components/forms/ClienteSelector.tsx",
-      "source_location": "L328",
+      "source_location": "L323",
       "_origin": "ast",
       "id": "forms_clienteselector_clienterow",
       "community": 38,
@@ -3087,7 +3087,7 @@
       "label": "EmptySearch()",
       "file_type": "code",
       "source_file": "src/components/forms/ClienteSelector.tsx",
-      "source_location": "L371",
+      "source_location": "L366",
       "_origin": "ast",
       "id": "forms_clienteselector_emptysearch",
       "community": 38,
@@ -3097,7 +3097,7 @@
       "label": "EmptyClientes()",
       "file_type": "code",
       "source_file": "src/components/forms/ClienteSelector.tsx",
-      "source_location": "L392",
+      "source_location": "L387",
       "_origin": "ast",
       "id": "forms_clienteselector_emptyclientes",
       "community": 38,
@@ -3110,7 +3110,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "forms_contadorinput",
-      "community": 23,
+      "community": 17,
       "norm_label": "contadorinput.tsx"
     },
     {
@@ -3120,7 +3120,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "forms_contadorinput_contador",
-      "community": 23,
+      "community": 17,
       "norm_label": "contador"
     },
     {
@@ -3130,7 +3130,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "forms_contadorinput_contadorinputprops",
-      "community": 23,
+      "community": 17,
       "norm_label": "contadorinputprops"
     },
     {
@@ -3140,7 +3140,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "forms_contadorinput_tipos_contador",
-      "community": 23,
+      "community": 17,
       "norm_label": "tipos_contador"
     },
     {
@@ -3150,7 +3150,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "forms_contadorinput_contadorinput",
-      "community": 23,
+      "community": 17,
       "norm_label": "contadorinput"
     },
     {
@@ -3450,7 +3450,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "forms_garantiainput",
-      "community": 17,
+      "community": 23,
       "norm_label": "garantiainput.tsx"
     },
     {
@@ -3460,7 +3460,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "forms_garantiainput_garantiainputprops",
-      "community": 17,
+      "community": 23,
       "norm_label": "garantiainputprops"
     },
     {
@@ -3470,7 +3470,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "forms_garantiainput_garantiainput",
-      "community": 17,
+      "community": 23,
       "norm_label": "garantiainput()"
     },
     {
@@ -18973,9 +18973,9 @@
       "source_file": "src/components/clientes/ClientesDataTable.tsx",
       "source_location": "L35",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "clientes_clientesdatatable",
-      "target": "providers_mobilenavigationcontext"
+      "target": "providers_mobilenavigationcontext",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -18984,9 +18984,9 @@
       "source_file": "src/components/clientes/ClientesDataTable.tsx",
       "source_location": "L35",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "clientes_clientesdatatable",
-      "target": "providers_mobilenavigationcontext_usemobilenavigation"
+      "target": "providers_mobilenavigationcontext_usemobilenavigation",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",

@@ -55,8 +55,8 @@
     "semantic_hash": ""
   },
   "src/app/(app)/ordenes/mantenimiento/page.tsx": {
-    "mtime": 1781732759.7158005,
-    "ast_hash": "e072abcaa8458585abc198a48718e074",
+    "mtime": 1781650734.8295312,
+    "ast_hash": "4d2c755b045c37627948e9abcf35c304",
     "semantic_hash": ""
   },
   "src/app/(app)/ordenes/page.tsx": {
@@ -90,9 +90,9 @@
     "semantic_hash": "896f5e9391c765e612acf859ef9df78f"
   },
   "src/app/login/page.tsx": {
-    "mtime": 1781732762.8865714,
-    "ast_hash": "14c160852e15c126367690820ce00d01",
-    "semantic_hash": ""
+    "mtime": 1781124654.6216762,
+    "ast_hash": "63fc41dd80c409195007acb57972f1f2",
+    "semantic_hash": "63fc41dd80c409195007acb57972f1f2"
   },
   "src/app/not-found.tsx": {
     "mtime": 1779483153.6053436,
@@ -130,13 +130,13 @@
     "semantic_hash": ""
   },
   "src/components/clientes/ClienteSimpleFormModal.tsx": {
-    "mtime": 1781733469.3960626,
-    "ast_hash": "5f01391cc0065e0f382bc744f34fda84",
+    "mtime": 1781472157.4902275,
+    "ast_hash": "cd9e4b45780fb4e0c5191e807cb48958",
     "semantic_hash": ""
   },
   "src/components/clientes/ClienteViewModal.tsx": {
-    "mtime": 1781733686.8577864,
-    "ast_hash": "308cabd542e4c61e3d3961e726ef1652",
+    "mtime": 1781730606.9991455,
+    "ast_hash": "ccab8a42522a62854516ee21e56cd41d",
     "semantic_hash": ""
   },
   "src/components/clientes/ClientesDataTable.tsx": {
@@ -145,8 +145,8 @@
     "semantic_hash": ""
   },
   "src/components/clientes/ClientesList.tsx": {
-    "mtime": 1781732725.195045,
-    "ast_hash": "0c87e540e78edd3e746544115907214d",
+    "mtime": 1781730506.826935,
+    "ast_hash": "9559453b136e27d8fe4d1590def0ab40",
     "semantic_hash": ""
   },
   "src/components/clientes/DispositivoFormModal.tsx": {
@@ -160,8 +160,8 @@
     "semantic_hash": "6feb3156216c30a31ffb0efec55765c7"
   },
   "src/components/forms/ClienteSelector.tsx": {
-    "mtime": 1781732753.514259,
-    "ast_hash": "50f62992d5efb6d55ba17922b6670311",
+    "mtime": 1781730635.9138417,
+    "ast_hash": "13b3a6374b1f635be0e787b6e35eb567",
     "semantic_hash": ""
   },
   "src/components/forms/ContadorInput.tsx": {
@@ -615,8 +615,8 @@
     "semantic_hash": "8c34b6f968764e08e1b483cf5648581c"
   },
   "src/hooks/useMultiUser.ts": {
-    "mtime": 1781732666.4504104,
-    "ast_hash": "37c8b57e18f7feed4365e7d179ba4dc8",
+    "mtime": 1781716259.0243452,
+    "ast_hash": "70ace0a6057d04219af1e8907c2721ea",
     "semantic_hash": ""
   },
   "src/hooks/useNegocio.ts": {

@@ -326,8 +326,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logger.log('Setting up auth state listener')
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      logger.log('Auth state changed:', firebaseUser ? `User: ${firebaseUser.uid}` : 'No user')
-
       if (firebaseUser) {
         const validation = validateUser(firebaseUser)
         if (!validation.valid) {

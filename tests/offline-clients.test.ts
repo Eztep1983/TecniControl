@@ -146,4 +146,121 @@ describe('Offline Clients Mapping & Propagation', () => {
     expect(deserialized.clienteId).toBe(realId);
     expect(deserialized.cliente.id).toBe(realId);
   });
+
+  it('debe propagar el ID real a las operaciones de eliminación en la cola de configuración', () => {
+    const tempId = 'client_temp_555';
+    const realId = 'client_real_666';
+
+    // Cola de config con una operación de eliminación del cliente temporal
+    const mockQueue = [
+      {
+        id: 'op_2',
+        type: 'delete',
+        entity: 'cliente' as const,
+        payload: { id: tempId },
+        userId,
+        timestamp: Date.now(),
+        retries: 0
+      }
+    ];
+
+    localStorage.setItem('tec_offline_queue_config', JSON.stringify(mockQueue));
+
+    registrarIdMapeado(userId, tempId, realId);
+
+    // Leer la cola de config actualizada
+    const updatedRaw = localStorage.getItem('tec_offline_queue_config');
+    const updatedQueue = JSON.parse(updatedRaw!);
+
+    expect(updatedQueue[0].payload.id).toBe(realId);
+  });
+
+  it('debe simular la coalescencia de una actualización en una creación pendiente', () => {
+    const tempId = 'client_temp_777';
+    let queue = [
+      {
+        id: 'op_create',
+        type: 'create' as const,
+        entity: 'cliente' as const,
+        payload: { tempId, name: 'Juan', phone: '123' } as any,
+        userId,
+        timestamp: Date.now(),
+        retries: 0
+      }
+    ];
+
+    const opUpdate = {
+      type: 'update' as const,
+      entity: 'cliente' as const,
+      payload: { id: tempId, phone: '456', address: 'Calle 1' },
+      userId
+    };
+
+    const targetId = opUpdate.payload.id;
+    let mergedIntoCreate = false;
+    queue = queue.map(item => {
+      if (item.entity === 'cliente' && item.type === 'create' && item.payload.tempId === targetId) {
+        mergedIntoCreate = true;
+        return {
+          ...item,
+          payload: {
+            ...item.payload,
+            ...opUpdate.payload,
+            tempId: targetId
+          }
+        };
+      }
+      return item;
+    });
+
+    expect(mergedIntoCreate).toBe(true);
+    expect(queue.length).toBe(1);
+    expect((queue[0].payload as any).name).toBe('Juan');
+    expect((queue[0].payload as any).phone).toBe('456');
+    expect((queue[0].payload as any).address).toBe('Calle 1');
+  });
+
+  it('debe simular la coalescencia de múltiples actualizaciones', () => {
+    const clientId = 'client_real_555';
+    let queue = [
+      {
+        id: 'op_update_1',
+        type: 'update' as const,
+        entity: 'cliente' as const,
+        payload: { id: clientId, name: 'Juan original', phone: '123' } as any,
+        userId,
+        timestamp: Date.now(),
+        retries: 0
+      }
+    ];
+
+    const opUpdate2 = {
+      type: 'update' as const,
+      entity: 'cliente' as const,
+      payload: { id: clientId, phone: '789', address: 'Avenida 2' },
+      userId
+    };
+
+    const targetId = opUpdate2.payload.id;
+    let mergedIntoUpdate = false;
+    queue = queue.map(item => {
+      if (item.entity === 'cliente' && item.type === 'update' && item.payload.id === targetId) {
+        mergedIntoUpdate = true;
+        return {
+          ...item,
+          payload: {
+            ...item.payload,
+            ...opUpdate2.payload
+          }
+        };
+      }
+      return item;
+    });
+
+    expect(mergedIntoUpdate).toBe(true);
+    expect(queue.length).toBe(1);
+    expect((queue[0].payload as any).name).toBe('Juan original');
+    expect((queue[0].payload as any).phone).toBe('789');
+    expect((queue[0].payload as any).address).toBe('Avenida 2');
+  });
 });

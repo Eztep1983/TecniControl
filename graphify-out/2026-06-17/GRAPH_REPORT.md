@@ -1,11 +1,11 @@
 # Graph Report - TecniControl  (2026-06-17)
 
 ## Corpus Check
-- 168 files · ~375,078 words
+- 168 files · ~375,013 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1133 nodes · 2220 edges · 70 communities (49 shown, 21 thin omitted)
+- 1133 nodes · 2220 edges · 70 communities (50 shown, 20 thin omitted)
 - Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 108 edges (avg confidence: 0.88)
 - Token cost: 0 input · 0 output
 
@@ -105,7 +105,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (70 total, 21 thin omitted)
+## Communities (70 total, 20 thin omitted)
 
 ### Community 0 - "Capacitor and Core Dependencies"
 Cohesion: 0.03
@@ -171,6 +171,10 @@ Nodes (53): inter, metadata, RootLayout(), AuthContext, AuthContextType, AuthPro
 Cohesion: 0.14
 Nodes (17): Form, FormControl, FormDescription, FormField(), FormFieldContext, FormFieldContextValue, FormItem, FormItemContext (+9 more)
 
+### Community 17 - "Sidebar Navigation"
+Cohesion: 0.40
+Nodes (4): Contador, ContadorInput, ContadorInputProps, TIPOS_CONTADOR
+
 ### Community 18 - "UI Dialogs and Forms"
 Cohesion: 0.11
 Nodes (25): useKeyboardVisible(), useEstadisticasUsuario(), useScrollAware(), AppView, getPathByView(), getRouteByPath(), RouteConfig, ROUTES (+17 more)
@@ -192,8 +196,8 @@ Cohesion: 0.19
 Nodes (9): useOrdenesBusqueda(), useOrdenesInfinitas(), useSyncTodasLasOrdenes(), buildSearchableText(), formatFechaPure(), getTipoLabel(), Highlight, OrdenesMantenimientoPage() (+1 more)
 
 ### Community 23 - "Navigation and Keyboard Hooks"
-Cohesion: 0.10
-Nodes (20): Contador, ContadorInput, ContadorInputProps, TIPOS_CONTADOR, Garantia Info, Garantia Input, useCrearOrden(), usePersistentReducer() (+12 more)
+Cohesion: 0.11
+Nodes (17): GarantiaInputProps, Garantia Info, Garantia Input, useCrearOrden(), usePersistentReducer(), FormAction, FormStep, FormularioMantenimiento() (+9 more)
 
 ### Community 24 - "Module components"
 Cohesion: 0.11
@@ -274,7 +278,7 @@ Nodes (3): FixedSizeList, FixedSizeListProps, ListChildComponentProps
 ## Knowledge Gaps
 - **481 isolated node(s):** `config`, `$schema`, `style`, `rsc`, `tsx` (+476 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **21 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **20 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_

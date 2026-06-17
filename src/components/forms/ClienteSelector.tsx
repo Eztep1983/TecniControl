@@ -6,7 +6,7 @@ import {
   HardDrive, Clock, AlertCircle, ChevronDown,
   CheckCircle2, ArrowRight
 } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState, memo } from 'react'
+import { useCallback, useEffect, useRef, useState, memo, useMemo } from 'react'
 import { ClienteViewModal } from '../clientes/ClienteViewModal'
 import { ClienteSimpleFormModal } from '../clientes/ClienteSimpleFormModal'
 import { useClienteModal } from '@/hooks/clientes/useClienteModal'
@@ -36,6 +36,11 @@ const ClienteSelector = memo(function ClienteSelector({
   // Cuántos resultados de búsqueda mostrar
   const [visiblesEnBusqueda, setVisiblesEnBusqueda] = useState(INITIAL_VISIBLE)
   const modal = useClienteModal()
+
+  const activeCliente = useMemo(() => {
+    if (!modal.cliente) return null;
+    return clientes.find((c) => c.id === modal.cliente!.id) || modal.cliente;
+  }, [clientes, modal.cliente]);
 
   const clientesValidos = Array.isArray(clientes) ? clientes : []
 
@@ -92,13 +97,12 @@ const ClienteSelector = memo(function ClienteSelector({
       <>
         <ClienteViewModal
           open={modal.isView}
-          cliente={modal.cliente}
+          cliente={activeCliente}
           onClose={modal.close}
-          onEdit={modal.switchToEdit}
         />
         <ClienteSimpleFormModal
-          open={modal.isCreate || modal.isEdit}
-          initialData={modal.isEdit ? modal.cliente : null}
+          open={modal.isCreate}
+          initialData={null}
           onClose={modal.close}
           onSuccess={handleSuccess}
         />
@@ -179,13 +183,12 @@ const ClienteSelector = memo(function ClienteSelector({
     <>
       <ClienteViewModal
         open={modal.isView}
-        cliente={modal.cliente}
+        cliente={activeCliente}
         onClose={modal.close}
-        onEdit={modal.switchToEdit}
       />
       <ClienteSimpleFormModal
-        open={modal.isCreate || modal.isEdit}
-        initialData={modal.isEdit ? modal.cliente : null}
+        open={modal.isCreate}
+        initialData={null}
         onClose={modal.close}
         onSuccess={handleSuccess}
       />

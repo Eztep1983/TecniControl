@@ -14,8 +14,6 @@ import { useClientesUsuario } from "@/hooks/useMultiUser";
 import { useClienteModal } from "@/hooks/clientes/useClienteModal";
 import { usePullToRefresh } from "@/hooks/clientes/usePullToRefresh";
 import { useHapticFeedback } from "@/hooks/clientes/useHapticFeedback";
-import { deleteDoc, doc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { useDebounce } from "use-debounce";
 import { performLocalClientSearch } from "@/lib/search-helpers";
 
@@ -63,7 +61,7 @@ const ClientesSkeleton = memo(function ClientesSkeleton() {
 // ── Componente principal ───────────────────────────────────────────────────
 export function ClientesList() {
   const { user } = useAuth();
-  const { clientes, loading, error, refrescarClientes } = useClientesUsuario();
+  const { clientes, loading, error, refrescarClientes, eliminarCliente } = useClientesUsuario();
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch] = useDebounce(searchTerm, 300);
   const modal = useClienteModal();
@@ -89,15 +87,12 @@ export function ClientesList() {
     return performLocalClientSearch(clientes, debouncedSearch, 5000) as Cliente[];
   }, [clientes, debouncedSearch]);
 
+  const activeCliente = useMemo(() => {
+    if (!modal.cliente) return null;
+    return clientes.find((c) => c.id === modal.cliente!.id) || modal.cliente;
+  }, [clientes, modal.cliente]);
+
   // ── Callbacks ───────────────────────────────────────────────────────────
-  const handleDeleteConfirm = useCallback(
-    async (id: string) => {
-      haptic.impactMedium();
-      await deleteDoc(doc(db, 'clientes', id));
-      refrescarClientes();
-    },
-    [haptic, refrescarClientes]
-  );
 
   const handleSuccess = useCallback(
     (_cliente: Cliente) => {
@@ -201,13 +196,12 @@ export function ClientesList() {
       {/* Modales */}
       <ClienteViewModal
         open={modal.isView}
-        cliente={modal.cliente}
+        cliente={activeCliente}
         onClose={modal.close}
-        onEdit={modal.switchToEdit}
       />
       <ClienteSimpleFormModal
-        open={modal.isCreate || modal.isEdit}
-        initialData={modal.isEdit ? modal.cliente : null}
+        open={modal.isCreate}
+        initialData={null}
         onClose={modal.close}
         onSuccess={handleSuccess}
       />
@@ -363,9 +357,7 @@ export function ClientesList() {
                 <ClientesDataTable
                   data={filteredClientes}
                   totalGlobal={clientes.length}
-                  onDeleteConfirm={handleDeleteConfirm}
                   onView={modal.openView}
-                  onEdit={modal.openEdit}
                   onHistorial={openHistorial}
                 />
               </div>

@@ -2,6 +2,7 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo, useReducer, useRef } from 'react'
 import { OrdenMantenimiento, Cliente, Dispositivo } from '@/types/orden'
+import { useSearchParams } from 'next/navigation'
 import { createPortal } from 'react-dom';
 import {
   ArrowLeft, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench,
@@ -504,6 +505,10 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
   const { mutateAsync: crearOrdenMutate } = useCrearOrden()
   const { enqueueOrder } = useOfflineOrderQueue()
   const { clientes: hookClientes } = useClientesUsuario()
+  const searchParams = useSearchParams()
+  const queryClienteId = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('clienteId')
+    : (searchParams ? searchParams.get('clienteId') : null)
   const [hintExpanded, setHintExpanded] = useState(false)
   // ordenCreada es estado LOCAL (no persistente) para que clearPersistence() no lo borre
   const [ordenCreada, setOrdenCreada] = useState<OrdenMantenimiento | null>(null)
@@ -567,6 +572,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
     document.addEventListener('focusin', handleFocus);
     return () => document.removeEventListener('focusin', handleFocus);
   }, []);
+
+
 
   // Handler para evitar submit accidental con el teclado (Enter/Buscar/Enviar)
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -786,6 +793,16 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
       dispatch({ type: 'SET_HIGHEST_STEP_COMPLETED', payload: 0 })
     }
   }, [state.highestStepCompleted])
+
+  // Pre-select client from search params on mount or when clientId changes
+  useEffect(() => {
+    if (queryClienteId && hookClientes.length > 0) {
+      const matched = hookClientes.find(c => c.id === queryClienteId);
+      if (matched && state.clienteSeleccionado?.id !== queryClienteId) {
+        handleSeleccionarCliente(matched);
+      }
+    }
+  }, [queryClienteId, hookClientes, state.clienteSeleccionado?.id, handleSeleccionarCliente]);
 
   // Handlers de Dispositivo
   const handleSeleccionarDispositivo = useCallback((dispositivo: Dispositivo) => {

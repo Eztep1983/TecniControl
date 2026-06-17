@@ -42,15 +42,15 @@ const formSchema = z.object({
     .optional()
     .or(z.literal(""))
     .refine(
-      (val) => !val || (val.length >= 4 && /^[0-9A-Za-z-]+$/.test(val)),
-      { message: "Mínimo 4 caracteres (letras, números y guiones)" }
+      (val) => !val || (val.length >= 3 && /^[0-9A-Za-z.\s-]+$/.test(val)),
+      { message: "Mínimo 3 caracteres (letras, números, puntos, espacios y guiones)" }
     ),
   email: z.string().email({ message: "Email inválido" }).optional().or(z.literal("")),
   phone: z
     .string()
     .optional()
     .or(z.literal(""))
-    .refine((val) => !val || val.length >= 8, { message: "Teléfono muy corto (mínimo 8 caracteres)" }),
+    .refine((val) => !val || val.length >= 7, { message: "Teléfono muy corto (mínimo 7 caracteres)" }),
   address: z.string().optional().or(z.literal("")),
 });
 

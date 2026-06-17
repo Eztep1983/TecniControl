@@ -18,7 +18,8 @@ import {
   getOrdenesPaginadas,
   getNegocioPorUsuario,
   crearCliente,
-  actualizarCliente
+  actualizarCliente as actualizarClienteHelper,
+  eliminarCliente as eliminarClienteHelper
 } from '@/lib/multiuser-helpers';
 import { obtenerSiguienteIdDePool, saveLocalIdPool } from '@/lib/id-pool-helper';
 
@@ -119,7 +120,7 @@ export const useClientesUsuario = () => {
   // Mutación para actualizar cliente (online/offline)
   const actualizarClienteMutation = useMutation({
     mutationFn: async ({ id, clienteData }: { id: string; clienteData: Partial<Cliente> }) => {
-      await actualizarCliente(id, clienteData, user!.uid);
+      await actualizarClienteHelper(id, clienteData, user!.uid);
     },
     onSuccess: () => {
       refrescarClientes();
@@ -134,7 +135,7 @@ export const useClientesUsuario = () => {
       updatedAt: nowStr
     };
 
-    if (!connected) {
+    if (!connected || id.startsWith('client_temp_')) {
       // Optimistic update
       await queryClient.cancelQueries({ queryKey: ['clientes', userId] });
       queryClient.setQueryData<Cliente[]>(['clientes', userId], old =>
@@ -153,13 +154,46 @@ export const useClientesUsuario = () => {
     }
   };
 
+  // Mutación para eliminar cliente (online/offline)
+  const eliminarClienteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await eliminarClienteHelper(id, user!.uid);
+    },
+    onSuccess: () => {
+      refrescarClientes();
+    }
+  });
+
+  const eliminarClienteFn = async (id: string): Promise<void> => {
+    const userId = user!.uid;
+
+    if (!connected || id.startsWith('client_temp_')) {
+      // Optimistic update: remove from React Query cache
+      await queryClient.cancelQueries({ queryKey: ['clientes', userId] });
+      queryClient.setQueryData<Cliente[]>(['clientes', userId], old =>
+        (old ?? []).filter(c => c.id !== id)
+      );
+
+      // Encolar offline
+      enqueueConfig({
+        type: 'delete',
+        entity: 'cliente',
+        payload: { id },
+        userId
+      });
+    } else {
+      await eliminarClienteMutation.mutateAsync(id);
+    }
+  };
+
   return { 
     clientes: queryResult.data || [], 
     loading: queryResult.isLoading, 
     error: queryResult.error ? 'Error al cargar los clientes' : null,
     refrescarClientes,
     crearCliente: crearClienteFn,
-    actualizarCliente: actualizarClienteFn
+    actualizarCliente: actualizarClienteFn,
+    eliminarCliente: eliminarClienteFn
   };
 };
 

@@ -407,7 +407,7 @@ export default function LoginPage() {
                         {/* Mode selection tabs */}
                         {mode === 'login' && (
                           <div className="flex bg-slate-100 dark:bg-gray-900 p-1 rounded-xl">
-                            <div className="flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-gray-850 text-blue-600 dark:text-blue-400 shadow-sm text-center">
+                            <div className="flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm text-center">
                               Iniciar Sesión
                             </div>
                           </div>

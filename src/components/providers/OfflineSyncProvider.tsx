@@ -89,6 +89,10 @@ async function executeConfigOperation(op: QueueOperation): Promise<void> {
       const { id, ...clienteData } = payload
       const realId = obtenerIdReal(userId, id)
       await multiuserHelpers.actualizarCliente(realId, clienteData, userId)
+    } else if (type === 'delete') {
+      const { id } = payload
+      const realId = obtenerIdReal(userId, id)
+      await multiuserHelpers.eliminarCliente(realId, userId)
     }
   }
 }
@@ -367,6 +371,94 @@ export const OfflineSyncProvider: React.FC<{ children: React.ReactNode }> = ({ c
       const decrypted = decryptData(raw, op.userId)
       if (decrypted && Array.isArray(decrypted)) queue = decrypted
     }
+
+    // Optimization A: Coalescing enqueued operations to save Firebase writes
+    if (op.entity === 'cliente') {
+      const targetId = op.payload.id || op.payload.tempId;
+
+      if (op.type === 'update' && typeof targetId === 'string') {
+        // 1. Check if there is a pending 'create' operation in the queue for this client.
+        // If found, merge the fields from this update directly into the creation payload.
+        let mergedIntoCreate = false;
+        queue = queue.map(item => {
+          if (item.entity === 'cliente' && item.type === 'create' && item.payload.tempId === targetId) {
+            mergedIntoCreate = true;
+            return {
+              ...item,
+              payload: {
+                ...item.payload,
+                ...op.payload,
+                tempId: targetId // preserve tempId
+              }
+            };
+          }
+          return item;
+        });
+
+        if (mergedIntoCreate) {
+          const encrypted = encryptData(queue, op.userId);
+          localStorage.setItem(CONFIG_STORAGE_KEY, encrypted);
+          setConfigPendingCount(queue.length);
+          return; // Skip enqueuing the update!
+        }
+
+        // 2. Check if there is a pending 'update' operation in the queue for this client.
+        // If found, merge the fields of the new update into the existing enqueued update.
+        let mergedIntoUpdate = false;
+        queue = queue.map(item => {
+          if (item.entity === 'cliente' && item.type === 'update' && item.payload.id === targetId) {
+            mergedIntoUpdate = true;
+            return {
+              ...item,
+              payload: {
+                ...item.payload,
+                ...op.payload
+              }
+            };
+          }
+          return item;
+        });
+
+        if (mergedIntoUpdate) {
+          const encrypted = encryptData(queue, op.userId);
+          localStorage.setItem(CONFIG_STORAGE_KEY, encrypted);
+          setConfigPendingCount(queue.length);
+          return; // Skip enqueuing the update!
+        }
+      }
+
+      if (op.type === 'delete' && typeof targetId === 'string') {
+        // If this is a client created offline (starts with 'client_temp_')
+        if (targetId.startsWith('client_temp_')) {
+          const initialLength = queue.length;
+          queue = queue.filter(item => {
+            if (item.entity === 'cliente') {
+              if (item.type === 'create' && item.payload.tempId === targetId) return false;
+              if (item.type === 'update' && item.payload.id === targetId) return false;
+            }
+            return true;
+          });
+          // If we actually removed the creation operation, it means it was never synced.
+          // We cancel the deletion enqueuing entirely (mutual cancellation).
+          if (queue.length < initialLength) {
+            const encrypted = encryptData(queue, op.userId);
+            localStorage.setItem(CONFIG_STORAGE_KEY, encrypted);
+            setConfigPendingCount(queue.length);
+            return;
+          }
+        } else {
+          // If this is a client with a real ID, remove any pending updates from the queue
+          // because deleting the client renders those updates obsolete.
+          queue = queue.filter(item => {
+            if (item.entity === 'cliente' && item.type === 'update' && item.payload.id === targetId) {
+              return false;
+            }
+            return true;
+          });
+        }
+      }
+    }
+
     const item: QueueOperation = {
       ...op,
       id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,

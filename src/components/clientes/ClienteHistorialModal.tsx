@@ -8,8 +8,8 @@ import { useOrdenesCliente } from "@/hooks/clientes/useOrdenesCliente";
 import { useAndroidBack } from "@/hooks/useAndroidBack";
 import { haptic } from "@/hooks/clientes/useHapticFeedback";
 import { useSwipeToClose } from "@/hooks/clientes/useSwipeToClose";
-import { Calendar, ClipboardList, RefreshCw, X, ChevronRight, PlusCircle } from "lucide-react";
-import Link from "next/link";
+import { Calendar, ClipboardList, RefreshCw, X, ChevronRight, PlusCircle, CloudOff } from "lucide-react";
+import { useMobileNavigation } from "@/components/providers/MobileNavigationContext";
 import type { Orden } from "@/types/orden";
 import { useNegocioUsuario } from "@/hooks/useMultiUser";
 import { usePrintService } from "@/components/mantenimiento/PrintService";
@@ -29,7 +29,7 @@ interface ClienteHistorialModalProps {
   open: boolean;
   clienteId: string;
   clienteNombre: string;
-  onClose: () => void;
+  onClose: (shouldCloseParent?: boolean) => void;
 }
 
 // ── Constantes de Optimización ─────────────────────────────────────────────
@@ -76,6 +76,12 @@ const OrdenItem = memo(({
           )}>
             {orden.tipoMantenimiento || 'Servicio'}
           </span>
+          {(orden as any).isOfflinePending && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+              <CloudOff className="w-3 h-3" />
+              Pendiente
+            </span>
+          )}
         </div>
 
         <h4 className="font-bold text-white text-sm truncate group-hover:text-blue-400 transition-colors">
@@ -133,6 +139,7 @@ interface HistorialContentProps {
   handleRefresh: () => void;
   clienteId: string;
   onClose: () => void;
+  onCrearOrdenClick: () => void;
 }
 
 const HistorialContent = memo(function HistorialContent({
@@ -145,6 +152,7 @@ const HistorialContent = memo(function HistorialContent({
   handleRefresh,
   clienteId,
   onClose,
+  onCrearOrdenClick,
 }: HistorialContentProps) {
   if (loading) {
     return (
@@ -182,14 +190,13 @@ const HistorialContent = memo(function HistorialContent({
         <p className="text-sm text-gray-400 mb-6 max-w-xs mx-auto">
           Este cliente aún no tiene órdenes de servicio.
         </p>
-        <Link
-          href={`/ordenes/nueva?clienteId=${clienteId}`}
-          onClick={onClose}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 rounded-xl text-blue-400 font-medium transition-colors"
+        <button
+          onClick={onCrearOrdenClick}
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 rounded-xl text-blue-400 font-medium transition-all active:scale-95"
         >
           <PlusCircle className="w-4 h-4" />
           Crear primera orden
-        </Link>
+        </button>
       </div>
     );
   }
@@ -257,6 +264,7 @@ export function ClienteHistorialModal({
   onClose,
 }: ClienteHistorialModalProps) {
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { openModal } = useMobileNavigation();
 
   const { ordenes, loading, error, refrescar } = useOrdenesCliente(clienteId);
   const [selectedOrden, setSelectedOrden] = useState<Orden | null>(null);
@@ -297,6 +305,20 @@ export function ClienteHistorialModal({
     haptic.impactLight();
     refrescar();
   }, [refrescar]);
+
+  const handleCrearOrdenClick = useCallback(() => {
+    haptic.impactLight();
+    onClose(true);
+
+    // Esperar a que los modales se cierren y useAndroidBack limpie el historial para evitar cierres instantáneos
+    setTimeout(() => {
+      openModal();
+      // Añadir el parámetro clienteId a la URL sin recargar
+      const url = new URL(window.location.href);
+      url.searchParams.set("clienteId", clienteId);
+      window.history.replaceState(window.history.state, "", url.toString());
+    }, 200);
+  }, [onClose, openModal, clienteId]);
 
   // FIX #2: stopPropagation estable para evitar que el swipe-to-close
   // interfiera con el scroll interno cuando hay una orden abierta.
@@ -351,6 +373,7 @@ export function ClienteHistorialModal({
             handleRefresh={handleRefresh}
             clienteId={clienteId}
             onClose={onClose}
+            onCrearOrdenClick={handleCrearOrdenClick}
           />
         </div>
       </Modal>

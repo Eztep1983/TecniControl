@@ -10,6 +10,7 @@ import {
   setDoc, 
   updateDoc, 
   addDoc,
+  deleteDoc,
   orderBy,
   limit,
   startAfter,
@@ -120,6 +121,16 @@ export const actualizarCliente = async (clienteId: string, cliente: Partial<Clie
     await updateDoc(clienteRef, clienteActualizado);
   } catch (error) {
     console.error('Error actualizando cliente:', error);
+    throw error;
+  }
+};
+
+export const eliminarCliente = async (clienteId: string, userId: string): Promise<void> => {
+  try {
+    const clienteRef = doc(db, 'clientes', clienteId);
+    await deleteDoc(clienteRef);
+  } catch (error) {
+    console.error('Error eliminando cliente:', error);
     throw error;
   }
 };
