@@ -225,6 +225,8 @@ export const sanitizeOrdenPayload = (input: any): Partial<OrdenMantenimiento> =>
   setIfDefined(cleaned, 'firmaCliente', cleanString(input.firmaCliente))
   setIfDefined(cleaned, 'nombreFirmante', cleanString(input.nombreFirmante))
   setIfDefined(cleaned, 'validacionCliente', cleanBoolean(input.validacionCliente))
+  setIfDefined(cleaned, 'nombreReceptor', cleanString(input.nombreReceptor))
+  setIfDefined(cleaned, 'cedulaReceptor', cleanString(input.cedulaReceptor))
   // tempId no se debe subir a Firestore (campo estrictamente local/offline)
 
   setIfDefined(cleaned, 'createdAt', parseDateLike(input.createdAt))

@@ -1,7 +1,7 @@
 'use client'
 import React, { useCallback } from 'react'
 import { OrdenMantenimiento } from '@/types/orden'
-import { Printer, Share2, Download } from 'lucide-react'
+import { Printer, Share2, Download, User } from 'lucide-react'
 import { deobfuscateSignature } from '@/lib/signature-utils'
 
 interface PrintServiceProps {
@@ -291,21 +291,23 @@ const generarContenidoHTML = (
     </div>
 
     <div class="signatures">
+      ${orden.firmaCliente ? `
       <div class="signature-box">
         <div class="signature-area">
-          ${orden.firmaCliente
-            ? `<img src="${deobfuscateSignature(orden.firmaCliente)}" alt="Firma Cliente" class="signature-img">`
-            : '<div style="color:#9ca3af; font-size:10px;">Firma No Registrada</div>'
-          }
+          <img src="${deobfuscateSignature(orden.firmaCliente)}" alt="Firma Cliente" class="signature-img">
         </div>
         <div class="signature-line"></div>
-        <div class="signature-name">${escapeHTML(orden.nombreFirmante || orden.cliente?.name) || 'Cliente'}</div>
-        ${orden.firmaCliente ? `<div class="signature-role">NIT: ${escapeHTML(orden.cliente?.cedula) || 'Identificación no disponible'}</div>` : ''}
+        <div class="signature-name">${escapeHTML(orden.nombreReceptor || orden.nombreFirmante || orden.cliente?.name) || 'Cliente'}</div>
+        ${orden.cedulaReceptor 
+          ? `<div class="signature-role">Cédula: ${escapeHTML(orden.cedulaReceptor)}</div>` 
+          : `<div class="signature-role">NIT: ${escapeHTML(orden.cliente?.cedula) || 'Identificación no disponible'}</div>`
+        }
         <div class="signature-role">Firma del Cliente</div>
       </div>
+      ` : ''}
       <div class="signature-box">
         <div class="signature-area" style="align-items: flex-end; padding-bottom: 5px;">
-          <span style="font-size:12px; font-weight:700; color:#333;">${escapeHTML(negocio?.nombre) || 'Técnico Autorizado'}</span>
+          <span style="font-size:12px; font-weight:700; color:#333;">${escapeHTML(negocio?.nombre || 'Técnico Autorizado')}</span>
         </div>
         <div class="signature-line"></div>
         <div class="signature-name">Técnico Responsable</div>

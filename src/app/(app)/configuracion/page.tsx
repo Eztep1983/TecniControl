@@ -78,7 +78,16 @@ export default function ConfiguracionPage() {
       // Si ya tenemos datos del negocio desde el hook, los usamos
       if (hookNegocio) {
         if (isSubscribed) {
-          setNegocio(hookNegocio as NegocioConUsuario);
+          setNegocio({
+            id: hookNegocio.id,
+            userId: user.uid,
+            nombre: hookNegocio.nombre || '',
+            direccion: hookNegocio.direccion || '',
+            telefono: hookNegocio.telefono || '',
+            email: hookNegocio.email || '',
+            nit: hookNegocio.nit || '',
+            logoUrl: hookNegocio.logoUrl || ''
+          });
           setLoading(false);
         }
         return;
@@ -92,9 +101,19 @@ export default function ConfiguracionPage() {
         if (!isSubscribed) return;
 
         if (negocioDoc.exists()) {
-          setNegocio({ id: negocioDoc.id, ...negocioDoc.data() } as NegocioConUsuario);
+          const data = negocioDoc.data();
+          setNegocio({
+            id: negocioDoc.id,
+            userId: user.uid,
+            nombre: data.nombre || '',
+            direccion: data.direccion || '',
+            telefono: data.telefono || '',
+            email: data.email || '',
+            nit: data.nit || '',
+            logoUrl: data.logoUrl || ''
+          });
         } else {
-          // El negocio no existe en Firestore, crearlo por defecto
+          // El negocio no existe en Firestore, inicializar en el estado por defecto sin escribir a Firestore
           const negocioDefault: NegocioConUsuario = {
             id: user.uid,
             userId: user.uid,
@@ -105,7 +124,6 @@ export default function ConfiguracionPage() {
             nit: '',
             logoUrl: ''
           };
-          await setDoc(negocioRef, negocioDefault);
           setNegocio(negocioDefault);
         }
       } catch (error) {
@@ -205,10 +223,10 @@ export default function ConfiguracionPage() {
       setSaved(false);
       setStatus({ type: 'info', message: 'Guardando cambios...' });
       const negocioRef = doc(db, 'negocios', user.uid);
-      await updateDoc(negocioRef, {
+      await setDoc(negocioRef, {
         ...negocio,
         updatedAt: new Date()
-      });
+      }, { merge: true });
       
       setSaved(true);
       setStatus({ type: 'success', message: 'Configuración guardada correctamente.' });
@@ -351,7 +369,7 @@ export default function ConfiguracionPage() {
                 </Label>
                 <Input 
                   id="business-name" 
-                  value={negocio.nombre}
+                  value={negocio.nombre || ''}
                   onChange={(e) => handleInputChange('nombre', e.target.value)}
                   className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                   placeholder="Ej: TecniControl S.A.S"
@@ -363,10 +381,13 @@ export default function ConfiguracionPage() {
                 </Label>
                 <Input 
                   id="business-nit" 
-                  value={negocio.nit}
-                  onChange={(e) => handleInputChange('nit', e.target.value)}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={negocio.nit || ''}
+                  onChange={(e) => handleInputChange('nit', e.target.value.replace(/\D/g, ''))}
                   className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
-                  placeholder="123456789-0"
+                  placeholder="Ej: 123456789"
                 />
               </div>
             </div>
@@ -378,10 +399,13 @@ export default function ConfiguracionPage() {
                 </Label>
                 <Input 
                   id="business-phone" 
-                  value={negocio.telefono}
-                  onChange={(e) => handleInputChange('telefono', e.target.value)}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={negocio.telefono || ''}
+                  onChange={(e) => handleInputChange('telefono', e.target.value.replace(/\D/g, ''))}
                   className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
-                  placeholder="+57 300 123 4567"
+                  placeholder="Ej: 3001234567"
                 />
               </div>
               <div className="space-y-2">
@@ -391,7 +415,7 @@ export default function ConfiguracionPage() {
                 <Input 
                   id="business-email" 
                   type="email"
-                  value={negocio.email}
+                  value={negocio.email || ''}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                   placeholder="contacto@empresa.com"
@@ -405,7 +429,7 @@ export default function ConfiguracionPage() {
               </Label>
               <Input 
                 id="business-address" 
-                value={negocio.direccion}
+                value={negocio.direccion || ''}
                 onChange={(e) => handleInputChange('direccion', e.target.value)}
                 className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                 placeholder="Calle 123 #45-67, Ciudad"

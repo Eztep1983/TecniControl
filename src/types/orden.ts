@@ -86,6 +86,8 @@ export interface OrdenMantenimiento {
   firmaCliente?: string;
   nombreFirmante?: string;
   validacionCliente?: boolean;
+  nombreReceptor?: string;
+  cedulaReceptor?: string;
   tempId?: TempOrderId; // ID temporal para deduplicación
 
   createdAt?: Date;
@@ -152,6 +154,8 @@ export interface SerializableOrdenPayload {
   firmaCliente?: string
   nombreFirmante?: string
   validacionCliente?: boolean
+  nombreReceptor?: string
+  cedulaReceptor?: string
   idPersonalizado?: string
   tempId?: TempOrderId
   horaCreacion: string

@@ -1010,7 +1010,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "package_devdependencies",
-      "community": 13,
+      "community": 43,
       "norm_label": "devdependencies"
     },
     {
@@ -1020,7 +1020,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "package_devdependencies_capacitor_assets",
-      "community": 13,
+      "community": 43,
       "norm_label": "@capacitor/assets"
     },
     {
@@ -1030,7 +1030,7 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "package_devdependencies_types_crypto_js",
-      "community": 13,
+      "community": 43,
       "norm_label": "@types/crypto-js"
     },
     {
@@ -1040,7 +1040,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "package_devdependencies_types_node",
-      "community": 13,
+      "community": 43,
       "norm_label": "@types/node"
     },
     {
@@ -1050,7 +1050,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "package_devdependencies_types_react",
-      "community": 13,
+      "community": 43,
       "norm_label": "@types/react"
     },
     {
@@ -1060,7 +1060,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "package_devdependencies_types_react_dom",
-      "community": 13,
+      "community": 43,
       "norm_label": "@types/react-dom"
     },
     {
@@ -1070,7 +1070,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "package_devdependencies_postcss",
-      "community": 13,
+      "community": 43,
       "norm_label": "postcss"
     },
     {
@@ -1080,7 +1080,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "package_devdependencies_tailwindcss",
-      "community": 13,
+      "community": 43,
       "norm_label": "tailwindcss"
     },
     {
@@ -1090,7 +1090,7 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "package_devdependencies_typescript",
-      "community": 13,
+      "community": 43,
       "norm_label": "typescript"
     },
     {
@@ -1100,7 +1100,7 @@
       "source_location": "L90",
       "_origin": "ast",
       "id": "package_devdependencies_vitest",
-      "community": 13,
+      "community": 43,
       "norm_label": "vitest"
     },
     {
@@ -1520,7 +1520,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "clientes_page",
-      "community": 35,
+      "community": 16,
       "norm_label": "page.tsx"
     },
     {
@@ -1530,7 +1530,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "clientes_page_clientespage",
-      "community": 35,
+      "community": 31,
       "norm_label": "clientespage()"
     },
     {
@@ -1550,7 +1550,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "configuracion_page_negocioconusuario",
-      "community": 14,
+      "community": 21,
       "norm_label": "negocioconusuario"
     },
     {
@@ -1590,7 +1590,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "configuracion_page_configuracionpage",
-      "community": 12,
+      "community": 31,
       "norm_label": "configuracionpage()"
     },
     {
@@ -1600,7 +1600,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_app_layout_tsx_app_layout",
-      "community": 10,
+      "community": 2,
       "norm_label": "layout.tsx"
     },
     {
@@ -1610,7 +1610,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "app_layout_layoutcontent",
-      "community": 10,
+      "community": 2,
       "norm_label": "layoutcontent()"
     },
     {
@@ -1620,7 +1620,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "app_layout_applayout",
-      "community": 10,
+      "community": 2,
       "norm_label": "applayout()"
     },
     {
@@ -1687,7 +1687,7 @@
       "label": "FormAction",
       "file_type": "code",
       "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
-      "source_location": "L144",
+      "source_location": "L146",
       "_origin": "ast",
       "id": "mantenimiento_formulario_formaction",
       "community": 23,
@@ -1697,7 +1697,7 @@
       "label": "initialState",
       "file_type": "code",
       "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
-      "source_location": "L185",
+      "source_location": "L189",
       "_origin": "ast",
       "id": "mantenimiento_formulario_initialstate",
       "community": 23,
@@ -1707,7 +1707,7 @@
       "label": "formReducer()",
       "file_type": "code",
       "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
-      "source_location": "L220",
+      "source_location": "L226",
       "_origin": "ast",
       "id": "mantenimiento_formulario_formreducer",
       "community": 23,
@@ -1717,7 +1717,7 @@
       "label": "STEPS_CONFIG",
       "file_type": "code",
       "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
-      "source_location": "L488",
+      "source_location": "L504",
       "_origin": "ast",
       "id": "mantenimiento_formulario_steps_config",
       "community": 23,
@@ -1727,7 +1727,7 @@
       "label": "FormularioMantenimiento()",
       "file_type": "code",
       "source_file": "src/app/(app)/ordenes/mantenimiento/formulario.tsx",
-      "source_location": "L500",
+      "source_location": "L516",
       "_origin": "ast",
       "id": "mantenimiento_formulario_formulariomantenimiento",
       "community": 23,
@@ -1740,7 +1740,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "mantenimiento_page",
-      "community": 22,
+      "community": 31,
       "norm_label": "page.tsx"
     },
     {
@@ -1750,7 +1750,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "mantenimiento_page_safelocalstorage",
-      "community": 22,
+      "community": 31,
       "norm_label": "safelocalstorage"
     },
     {
@@ -1760,7 +1760,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "mantenimiento_page_gettipocolor",
-      "community": 22,
+      "community": 31,
       "norm_label": "gettipocolor()"
     },
     {
@@ -1770,7 +1770,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "mantenimiento_page_gettipolabel",
-      "community": 22,
+      "community": 31,
       "norm_label": "gettipolabel()"
     },
     {
@@ -1780,7 +1780,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "mantenimiento_page_filterchip",
-      "community": 22,
+      "community": 31,
       "norm_label": "filterchip()"
     },
     {
@@ -1790,7 +1790,7 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "mantenimiento_page_emptystate",
-      "community": 22,
+      "community": 31,
       "norm_label": "emptystate()"
     },
     {
@@ -1800,7 +1800,7 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "mantenimiento_page_normalize",
-      "community": 22,
+      "community": 31,
       "norm_label": "normalize()"
     },
     {
@@ -1810,7 +1810,7 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "mantenimiento_page_formatfechapure",
-      "community": 22,
+      "community": 31,
       "norm_label": "formatfechapure()"
     },
     {
@@ -1820,7 +1820,7 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "mantenimiento_page_buildsearchabletext",
-      "community": 22,
+      "community": 31,
       "norm_label": "buildsearchabletext()"
     },
     {
@@ -1830,7 +1830,7 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "mantenimiento_page_highlight",
-      "community": 22,
+      "community": 31,
       "norm_label": "highlight"
     },
     {
@@ -1840,7 +1840,7 @@
       "source_location": "L195",
       "_origin": "ast",
       "id": "mantenimiento_page_triggerhaptics",
-      "community": 22,
+      "community": 31,
       "norm_label": "triggerhaptics()"
     },
     {
@@ -1850,7 +1850,7 @@
       "source_location": "L218",
       "_origin": "ast",
       "id": "mantenimiento_page_ordenesmantenimientopage",
-      "community": 22,
+      "community": 31,
       "norm_label": "ordenesmantenimientopage()"
     },
     {
@@ -1870,7 +1870,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "ordenes_page_getinitials",
-      "community": 31,
+      "community": 10,
       "norm_label": "getinitials()"
     },
     {
@@ -2130,7 +2130,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_layout_tsx_app_layout",
-      "community": 14,
+      "community": 31,
       "norm_label": "layout.tsx"
     },
     {
@@ -2140,7 +2140,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "app_layout_inter",
-      "community": 14,
+      "community": 31,
       "norm_label": "inter"
     },
     {
@@ -2150,7 +2150,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "app_layout_metadata",
-      "community": 14,
+      "community": 31,
       "norm_label": "metadata"
     },
     {
@@ -2160,7 +2160,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "app_layout_rootlayout",
-      "community": 14,
+      "community": 31,
       "norm_label": "rootlayout()"
     },
     {
@@ -2230,7 +2230,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "login_page_loginpage",
-      "community": 12,
+      "community": 31,
       "norm_label": "loginpage()"
     },
     {
@@ -2260,7 +2260,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "auth_authguard",
-      "community": 12,
+      "community": 31,
       "norm_label": "authguard.tsx"
     },
     {
@@ -2270,7 +2270,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "auth_authguard_authguardprops",
-      "community": 12,
+      "community": 31,
       "norm_label": "authguardprops"
     },
     {
@@ -2280,7 +2280,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "auth_authguard_public_routes",
-      "community": 12,
+      "community": 31,
       "norm_label": "public_routes"
     },
     {
@@ -2290,7 +2290,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "auth_authguard_authguard",
-      "community": 12,
+      "community": 31,
       "norm_label": "authguard()"
     },
     {
@@ -2300,97 +2300,97 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "auth_authprovider",
-      "community": 14,
+      "community": 31,
       "norm_label": "authprovider.tsx"
     },
     {
       "label": "SECURITY_CONFIG",
       "file_type": "code",
       "source_file": "src/components/auth/AuthProvider.tsx",
-      "source_location": "L23",
+      "source_location": "L25",
       "_origin": "ast",
       "id": "auth_authprovider_security_config",
-      "community": 14,
+      "community": 31,
       "norm_label": "security_config"
     },
     {
       "label": "logger",
       "file_type": "code",
       "source_file": "src/components/auth/AuthProvider.tsx",
-      "source_location": "L32",
+      "source_location": "L34",
       "_origin": "ast",
       "id": "auth_authprovider_logger",
-      "community": 14,
+      "community": 31,
       "norm_label": "logger"
     },
     {
       "label": "getCachedUid()",
       "file_type": "code",
       "source_file": "src/components/auth/AuthProvider.tsx",
-      "source_location": "L41",
+      "source_location": "L43",
       "_origin": "ast",
       "id": "auth_authprovider_getcacheduid",
-      "community": 14,
+      "community": 31,
       "norm_label": "getcacheduid()"
     },
     {
       "label": "setCachedUid()",
       "file_type": "code",
       "source_file": "src/components/auth/AuthProvider.tsx",
-      "source_location": "L50",
+      "source_location": "L52",
       "_origin": "ast",
       "id": "auth_authprovider_setcacheduid",
-      "community": 14,
+      "community": 31,
       "norm_label": "setcacheduid()"
     },
     {
       "label": "AuthContextType",
       "file_type": "code",
       "source_file": "src/components/auth/AuthProvider.tsx",
-      "source_location": "L63",
+      "source_location": "L67",
       "_origin": "ast",
       "id": "auth_authprovider_authcontexttype",
-      "community": 14,
+      "community": 31,
       "norm_label": "authcontexttype"
     },
     {
       "label": "UserDocument",
       "file_type": "code",
       "source_file": "src/components/auth/AuthProvider.tsx",
-      "source_location": "L76",
+      "source_location": "L80",
       "_origin": "ast",
       "id": "auth_authprovider_userdocument",
-      "community": 14,
+      "community": 31,
       "norm_label": "userdocument"
     },
     {
       "label": "AuthContext",
       "file_type": "code",
       "source_file": "src/components/auth/AuthProvider.tsx",
-      "source_location": "L92",
+      "source_location": "L96",
       "_origin": "ast",
       "id": "auth_authprovider_authcontext",
-      "community": 14,
+      "community": 31,
       "norm_label": "authcontext"
     },
     {
       "label": "useAuth()",
       "file_type": "code",
       "source_file": "src/components/auth/AuthProvider.tsx",
-      "source_location": "L105",
+      "source_location": "L109",
       "_origin": "ast",
       "id": "auth_authprovider_useauth",
-      "community": 12,
+      "community": 31,
       "norm_label": "useauth()"
     },
     {
       "label": "AuthProvider()",
       "file_type": "code",
       "source_file": "src/components/auth/AuthProvider.tsx",
-      "source_location": "L107",
+      "source_location": "L111",
       "_origin": "ast",
       "id": "auth_authprovider_authprovider",
-      "community": 14,
+      "community": 31,
       "norm_label": "authprovider()"
     },
     {
@@ -2400,7 +2400,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "auth_speechprovider",
-      "community": 10,
+      "community": 2,
       "norm_label": "speechprovider.tsx"
     },
     {
@@ -2410,7 +2410,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "auth_speechprovider_speechcontexttype",
-      "community": 10,
+      "community": 2,
       "norm_label": "speechcontexttype"
     },
     {
@@ -2420,7 +2420,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "auth_speechprovider_speechcontext",
-      "community": 10,
+      "community": 2,
       "norm_label": "speechcontext"
     },
     {
@@ -2430,7 +2430,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "auth_speechprovider_speechprovider",
-      "community": 10,
+      "community": 2,
       "norm_label": "speechprovider()"
     },
     {
@@ -2440,7 +2440,7 @@
       "source_location": "L240",
       "_origin": "ast",
       "id": "auth_speechprovider_usespeech",
-      "community": 10,
+      "community": 2,
       "norm_label": "usespeech()"
     },
     {
@@ -2450,7 +2450,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "auth_userprofile",
-      "community": 31,
+      "community": 10,
       "norm_label": "userprofile.tsx"
     },
     {
@@ -2460,7 +2460,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "auth_userprofile_userprofile",
-      "community": 31,
+      "community": 10,
       "norm_label": "userprofile()"
     },
     {
@@ -2470,7 +2470,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "business_headersnegocio",
-      "community": 14,
+      "community": 21,
       "norm_label": "headersnegocio.tsx"
     },
     {
@@ -2480,7 +2480,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "business_headersnegocio_negocioheaderprops",
-      "community": 14,
+      "community": 21,
       "norm_label": "negocioheaderprops"
     },
     {
@@ -2490,7 +2490,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "business_headersnegocio_negocioheader",
-      "community": 14,
+      "community": 21,
       "norm_label": "negocioheader()"
     },
     {
@@ -2590,7 +2590,7 @@
       "source_location": "L260",
       "_origin": "ast",
       "id": "clientes_clientehistorialmodal_clientehistorialmodal",
-      "community": 35,
+      "community": 27,
       "norm_label": "clientehistorialmodal()"
     },
     {
@@ -2640,7 +2640,7 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "clientes_clientesimpleformmodal_clientesimpleformmodal",
-      "community": 35,
+      "community": 15,
       "norm_label": "clientesimpleformmodal()"
     },
     {
@@ -2680,7 +2680,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "clientes_clienteviewmodal_clienteviewmodal",
-      "community": 35,
+      "community": 16,
       "norm_label": "clienteviewmodal()"
     },
     {
@@ -2690,7 +2690,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "clientes_clientesdatatable",
-      "community": 27,
+      "community": 33,
       "norm_label": "clientesdatatable.tsx"
     },
     {
@@ -2710,7 +2710,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "clientes_clientesdatatable_clientecard",
-      "community": 27,
+      "community": 33,
       "norm_label": "clientecard"
     },
     {
@@ -2720,7 +2720,7 @@
       "source_location": "L155",
       "_origin": "ast",
       "id": "clientes_clientesdatatable_paginationprops",
-      "community": 27,
+      "community": 33,
       "norm_label": "paginationprops"
     },
     {
@@ -2730,7 +2730,7 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "clientes_clientesdatatable_pagination",
-      "community": 27,
+      "community": 33,
       "norm_label": "pagination"
     },
     {
@@ -2740,7 +2740,7 @@
       "source_location": "L292",
       "_origin": "ast",
       "id": "clientes_clientesdatatable_clientesdatatableprops",
-      "community": 27,
+      "community": 33,
       "norm_label": "clientesdatatableprops"
     },
     {
@@ -2750,7 +2750,7 @@
       "source_location": "L300",
       "_origin": "ast",
       "id": "clientes_clientesdatatable_clientesdatatable",
-      "community": 27,
+      "community": 16,
       "norm_label": "clientesdatatable"
     },
     {
@@ -2760,7 +2760,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "clientes_clienteslist",
-      "community": 35,
+      "community": 16,
       "norm_label": "clienteslist.tsx"
     },
     {
@@ -2770,7 +2770,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "clientes_clienteslist_clientesskeleton",
-      "community": 35,
+      "community": 16,
       "norm_label": "clientesskeleton"
     },
     {
@@ -2780,7 +2780,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "clientes_clienteslist_clienteslist",
-      "community": 35,
+      "community": 16,
       "norm_label": "clienteslist()"
     },
     {
@@ -2830,7 +2830,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "clientes_dispositivoformmodal_dispositivoformmodalprops",
-      "community": 26,
+      "community": 38,
       "norm_label": "dispositivoformmodalprops"
     },
     {
@@ -2850,7 +2850,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "clientes_importarcontactosmodal",
-      "community": 35,
+      "community": 15,
       "norm_label": "importarcontactosmodal.tsx"
     },
     {
@@ -2860,7 +2860,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "clientes_importarcontactosmodal_mock_contacts",
-      "community": 35,
+      "community": 15,
       "norm_label": "mock_contacts"
     },
     {
@@ -2870,7 +2870,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "clientes_importarcontactosmodal_importarcontactosmodalprops",
-      "community": 35,
+      "community": 15,
       "norm_label": "importarcontactosmodalprops"
     },
     {
@@ -2880,7 +2880,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "clientes_importarcontactosmodal_importarcontactosmodal",
-      "community": 35,
+      "community": 15,
       "norm_label": "importarcontactosmodal()"
     },
     {
@@ -3060,7 +3060,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "forms_clienteselector_clienteselector",
-      "community": 38,
+      "community": 26,
       "norm_label": "clienteselector"
     },
     {
@@ -3110,7 +3110,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "forms_contadorinput",
-      "community": 23,
+      "community": 40,
       "norm_label": "contadorinput.tsx"
     },
     {
@@ -3120,7 +3120,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "forms_contadorinput_contador",
-      "community": 23,
+      "community": 40,
       "norm_label": "contador"
     },
     {
@@ -3130,7 +3130,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "forms_contadorinput_contadorinputprops",
-      "community": 23,
+      "community": 40,
       "norm_label": "contadorinputprops"
     },
     {
@@ -3140,7 +3140,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "forms_contadorinput_tipos_contador",
-      "community": 23,
+      "community": 40,
       "norm_label": "tipos_contador"
     },
     {
@@ -3150,7 +3150,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "forms_contadorinput_contadorinput",
-      "community": 23,
+      "community": 40,
       "norm_label": "contadorinput"
     },
     {
@@ -3300,7 +3300,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "forms_dispositivoselector_dispositivoselectorprops",
-      "community": 26,
+      "community": 38,
       "norm_label": "dispositivoselectorprops"
     },
     {
@@ -3450,7 +3450,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "forms_garantiainput",
-      "community": 17,
+      "community": 41,
       "norm_label": "garantiainput.tsx"
     },
     {
@@ -3460,7 +3460,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "forms_garantiainput_garantiainputprops",
-      "community": 17,
+      "community": 41,
       "norm_label": "garantiainputprops"
     },
     {
@@ -3470,7 +3470,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "forms_garantiainput_garantiainput",
-      "community": 17,
+      "community": 41,
       "norm_label": "garantiainput()"
     },
     {
@@ -3620,7 +3620,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "forms_piezasinput",
-      "community": 29,
+      "community": 36,
       "norm_label": "piezasinput.tsx"
     },
     {
@@ -3630,7 +3630,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "forms_piezasinput_pieza",
-      "community": 29,
+      "community": 36,
       "norm_label": "pieza"
     },
     {
@@ -3640,7 +3640,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "forms_piezasinput_piezasinputprops",
-      "community": 29,
+      "community": 36,
       "norm_label": "piezasinputprops"
     },
     {
@@ -3650,7 +3650,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "forms_piezasinput_selectorcantidad",
-      "community": 29,
+      "community": 36,
       "norm_label": "selectorcantidad"
     },
     {
@@ -3690,7 +3690,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "forms_tareasinput",
-      "community": 29,
+      "community": 36,
       "norm_label": "tareasinput.tsx"
     },
     {
@@ -3700,7 +3700,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "forms_tareasinput_tareasinputprops",
-      "community": 29,
+      "community": 36,
       "norm_label": "tareasinputprops"
     },
     {
@@ -3837,7 +3837,7 @@
       "label": "ModalOrden()",
       "file_type": "code",
       "source_file": "src/components/mantenimiento/ModalOrden.tsx",
-      "source_location": "L725",
+      "source_location": "L735",
       "_origin": "ast",
       "id": "mantenimiento_modalorden_modalorden",
       "community": 25,
@@ -3860,7 +3860,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "mantenimiento_ordencard_ordencardprops",
-      "community": 30,
+      "community": 3,
       "norm_label": "ordencardprops"
     },
     {
@@ -4067,7 +4067,7 @@
       "label": "usePrintService()",
       "file_type": "code",
       "source_file": "src/components/mantenimiento/PrintService.tsx",
-      "source_location": "L343",
+      "source_location": "L345",
       "_origin": "ast",
       "id": "mantenimiento_printservice_useprintservice",
       "community": 23,
@@ -4077,7 +4077,7 @@
       "label": "PrintButtonProps",
       "file_type": "code",
       "source_file": "src/components/mantenimiento/PrintService.tsx",
-      "source_location": "L729",
+      "source_location": "L731",
       "_origin": "ast",
       "id": "mantenimiento_printservice_printbuttonprops",
       "community": 30,
@@ -4087,7 +4087,7 @@
       "label": "PrintButton()",
       "file_type": "code",
       "source_file": "src/components/mantenimiento/PrintService.tsx",
-      "source_location": "L735",
+      "source_location": "L737",
       "_origin": "ast",
       "id": "mantenimiento_printservice_printbutton",
       "community": 30,
@@ -4097,7 +4097,7 @@
       "label": "ShareButtonProps",
       "file_type": "code",
       "source_file": "src/components/mantenimiento/PrintService.tsx",
-      "source_location": "L773",
+      "source_location": "L775",
       "_origin": "ast",
       "id": "mantenimiento_printservice_sharebuttonprops",
       "community": 30,
@@ -4107,7 +4107,7 @@
       "label": "ShareButton()",
       "file_type": "code",
       "source_file": "src/components/mantenimiento/PrintService.tsx",
-      "source_location": "L779",
+      "source_location": "L781",
       "_origin": "ast",
       "id": "mantenimiento_printservice_sharebutton",
       "community": 30,
@@ -4117,7 +4117,7 @@
       "label": "DownloadButtonProps",
       "file_type": "code",
       "source_file": "src/components/mantenimiento/PrintService.tsx",
-      "source_location": "L817",
+      "source_location": "L819",
       "_origin": "ast",
       "id": "mantenimiento_printservice_downloadbuttonprops",
       "community": 30,
@@ -4127,7 +4127,7 @@
       "label": "DownloadButton()",
       "file_type": "code",
       "source_file": "src/components/mantenimiento/PrintService.tsx",
-      "source_location": "L823",
+      "source_location": "L825",
       "_origin": "ast",
       "id": "mantenimiento_printservice_downloadbutton",
       "community": 30,
@@ -4230,7 +4230,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "providers_capacitorprovider",
-      "community": 14,
+      "community": 31,
       "norm_label": "capacitorprovider.tsx"
     },
     {
@@ -4240,7 +4240,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "providers_capacitorprovider_capacitorprovider",
-      "community": 14,
+      "community": 31,
       "norm_label": "capacitorprovider()"
     },
     {
@@ -4250,7 +4250,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "providers_firestoresyncprovider",
-      "community": 14,
+      "community": 31,
       "norm_label": "firestoresyncprovider.tsx"
     },
     {
@@ -4260,7 +4260,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "providers_firestoresyncprovider_firestoresyncprovider",
-      "community": 14,
+      "community": 31,
       "norm_label": "firestoresyncprovider()"
     },
     {
@@ -4400,7 +4400,7 @@
       "source_location": "L215",
       "_origin": "ast",
       "id": "providers_mobilenavigationcontext_usemobilenavigation",
-      "community": 35,
+      "community": 27,
       "norm_label": "usemobilenavigation()"
     },
     {
@@ -4460,7 +4460,7 @@
       "source_location": "L175",
       "_origin": "ast",
       "id": "providers_offlinesyncprovider_offlinesyncprovider",
-      "community": 2,
+      "community": 34,
       "norm_label": "offlinesyncprovider()"
     },
     {
@@ -4470,7 +4470,7 @@
       "source_location": "L533",
       "_origin": "ast",
       "id": "providers_offlinesyncprovider_useofflinesync",
-      "community": 48,
+      "community": 22,
       "norm_label": "useofflinesync()"
     },
     {
@@ -4480,7 +4480,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "providers_queryprovider",
-      "community": 14,
+      "community": 31,
       "norm_label": "queryprovider.tsx"
     },
     {
@@ -4490,7 +4490,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "providers_queryprovider_queryprovider",
-      "community": 14,
+      "community": 31,
       "norm_label": "queryprovider()"
     },
     {
@@ -4500,7 +4500,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "shadcnui_app_sidebar",
-      "community": 10,
+      "community": 2,
       "norm_label": "app-sidebar.tsx"
     },
     {
@@ -4510,7 +4510,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "shadcnui_app_sidebar_navigation",
-      "community": 10,
+      "community": 2,
       "norm_label": "navigation"
     },
     {
@@ -4520,7 +4520,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "shadcnui_app_sidebar_secondarynavigation",
-      "community": 10,
+      "community": 2,
       "norm_label": "secondarynavigation"
     },
     {
@@ -4530,7 +4530,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "shadcnui_app_sidebar_appsidebar",
-      "community": 10,
+      "community": 2,
       "norm_label": "appsidebar()"
     },
     {
@@ -4610,7 +4610,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tareas_repuestos_modalpieza",
-      "community": 48,
+      "community": 35,
       "norm_label": "modalpieza.tsx"
     },
     {
@@ -4620,7 +4620,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "tareas_repuestos_modalpieza_formpieza",
-      "community": 48,
+      "community": 35,
       "norm_label": "formpieza"
     },
     {
@@ -4630,7 +4630,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "tareas_repuestos_modalpieza_form_pieza_vacio",
-      "community": 48,
+      "community": 35,
       "norm_label": "form_pieza_vacio"
     },
     {
@@ -4640,7 +4640,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "tareas_repuestos_modalpieza_colorstyles",
-      "community": 48,
+      "community": 35,
       "norm_label": "colorstyles"
     },
     {
@@ -4650,7 +4650,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "tareas_repuestos_modalpieza_formulariopieza",
-      "community": 48,
+      "community": 35,
       "norm_label": "formulariopieza"
     },
     {
@@ -4660,7 +4660,7 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "tareas_repuestos_modalpieza_modalpiezaprops",
-      "community": 48,
+      "community": 35,
       "norm_label": "modalpiezaprops"
     },
     {
@@ -4830,7 +4830,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_countup",
-      "community": 27,
+      "community": 33,
       "norm_label": "countup.tsx"
     },
     {
@@ -4840,7 +4840,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "ui_countup_countupprops",
-      "community": 27,
+      "community": 33,
       "norm_label": "countupprops"
     },
     {
@@ -4850,7 +4850,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "ui_countup_countup",
-      "community": 27,
+      "community": 33,
       "norm_label": "countup()"
     },
     {
@@ -4860,7 +4860,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_modal",
-      "community": 48,
+      "community": 15,
       "norm_label": "modal.tsx"
     },
     {
@@ -4880,7 +4880,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "ui_modal_modalprops",
-      "community": 48,
+      "community": 15,
       "norm_label": "modalprops"
     },
     {
@@ -4900,7 +4900,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_networkstatusbanner",
-      "community": 48,
+      "community": 22,
       "norm_label": "networkstatusbanner.tsx"
     },
     {
@@ -4910,7 +4910,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "ui_networkstatusbanner_networkstatusbanner",
-      "community": 48,
+      "community": 22,
       "norm_label": "networkstatusbanner()"
     },
     {
@@ -4920,7 +4920,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_offlinesyncbanner",
-      "community": 48,
+      "community": 22,
       "norm_label": "offlinesyncbanner.tsx"
     },
     {
@@ -4930,7 +4930,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "ui_offlinesyncbanner_offlinesyncbanner",
-      "community": 48,
+      "community": 22,
       "norm_label": "offlinesyncbanner()"
     },
     {
@@ -4940,7 +4940,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_pagetransition",
-      "community": 10,
+      "community": 2,
       "norm_label": "pagetransition.tsx"
     },
     {
@@ -4950,7 +4950,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "ui_pagetransition_tab_order",
-      "community": 10,
+      "community": 2,
       "norm_label": "tab_order"
     },
     {
@@ -4960,7 +4960,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "ui_pagetransition_gettabindex",
-      "community": 10,
+      "community": 2,
       "norm_label": "gettabindex()"
     },
     {
@@ -4970,7 +4970,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "ui_pagetransition_pagetransition",
-      "community": 10,
+      "community": 2,
       "norm_label": "pagetransition()"
     },
     {
@@ -5220,7 +5220,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "basic_avatar",
-      "community": 31,
+      "community": 10,
       "norm_label": "avatar.tsx"
     },
     {
@@ -5230,7 +5230,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "basic_avatar_avatar",
-      "community": 31,
+      "community": 10,
       "norm_label": "avatar"
     },
     {
@@ -5240,7 +5240,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "basic_avatar_avatarimage",
-      "community": 31,
+      "community": 10,
       "norm_label": "avatarimage"
     },
     {
@@ -5250,7 +5250,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "basic_avatar_avatarfallback",
-      "community": 31,
+      "community": 10,
       "norm_label": "avatarfallback"
     },
     {
@@ -5440,7 +5440,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "basic_checkbox",
-      "community": 35,
+      "community": 4,
       "norm_label": "checkbox.tsx"
     },
     {
@@ -5450,7 +5450,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "basic_checkbox_checkbox",
-      "community": 35,
+      "community": 4,
       "norm_label": "checkbox"
     },
     {
@@ -5470,7 +5470,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "basic_dialog",
-      "community": 27,
+      "community": 33,
       "norm_label": "dialog.tsx"
     },
     {
@@ -5480,7 +5480,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "basic_dialog_dialogoverlay",
-      "community": 27,
+      "community": 33,
       "norm_label": "dialogoverlay"
     },
     {
@@ -5490,7 +5490,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "basic_dialog_dialogcontent",
-      "community": 27,
+      "community": 15,
       "norm_label": "dialogcontent"
     },
     {
@@ -5500,7 +5500,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "basic_dialog_dialogheader",
-      "community": 27,
+      "community": 33,
       "norm_label": "dialogheader()"
     },
     {
@@ -5510,7 +5510,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "basic_dialog_dialogfooter",
-      "community": 27,
+      "community": 33,
       "norm_label": "dialogfooter()"
     },
     {
@@ -5520,7 +5520,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "basic_dialog_dialogtitle",
-      "community": 27,
+      "community": 15,
       "norm_label": "dialogtitle"
     },
     {
@@ -5530,7 +5530,7 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "basic_dialog_dialogdescription",
-      "community": 27,
+      "community": 33,
       "norm_label": "dialogdescription"
     },
     {
@@ -5540,7 +5540,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "basic_dropdown_menu",
-      "community": 31,
+      "community": 10,
       "norm_label": "dropdown-menu.tsx"
     },
     {
@@ -5550,7 +5550,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "basic_dropdown_menu_dropdownmenusubtrigger",
-      "community": 31,
+      "community": 10,
       "norm_label": "dropdownmenusubtrigger"
     },
     {
@@ -5560,7 +5560,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "basic_dropdown_menu_dropdownmenusubcontent",
-      "community": 31,
+      "community": 10,
       "norm_label": "dropdownmenusubcontent"
     },
     {
@@ -5570,7 +5570,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "basic_dropdown_menu_dropdownmenucontent",
-      "community": 31,
+      "community": 10,
       "norm_label": "dropdownmenucontent"
     },
     {
@@ -5580,7 +5580,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "basic_dropdown_menu_dropdownmenuitem",
-      "community": 31,
+      "community": 10,
       "norm_label": "dropdownmenuitem"
     },
     {
@@ -5590,7 +5590,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "basic_dropdown_menu_dropdownmenucheckboxitem",
-      "community": 31,
+      "community": 10,
       "norm_label": "dropdownmenucheckboxitem"
     },
     {
@@ -5600,7 +5600,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "basic_dropdown_menu_dropdownmenuradioitem",
-      "community": 31,
+      "community": 10,
       "norm_label": "dropdownmenuradioitem"
     },
     {
@@ -5610,7 +5610,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "basic_dropdown_menu_dropdownmenulabel",
-      "community": 31,
+      "community": 10,
       "norm_label": "dropdownmenulabel"
     },
     {
@@ -5620,7 +5620,7 @@
       "source_location": "L159",
       "_origin": "ast",
       "id": "basic_dropdown_menu_dropdownmenuseparator",
-      "community": 31,
+      "community": 10,
       "norm_label": "dropdownmenuseparator"
     },
     {
@@ -5630,7 +5630,7 @@
       "source_location": "L171",
       "_origin": "ast",
       "id": "basic_dropdown_menu_dropdownmenushortcut",
-      "community": 31,
+      "community": 10,
       "norm_label": "dropdownmenushortcut()"
     },
     {
@@ -5760,7 +5760,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "basic_input",
-      "community": 9,
+      "community": 15,
       "norm_label": "input.tsx"
     },
     {
@@ -5770,7 +5770,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "basic_input_input",
-      "community": 9,
+      "community": 15,
       "norm_label": "input"
     },
     {
@@ -6160,7 +6160,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "basic_separator",
-      "community": 4,
+      "community": 5,
       "norm_label": "separator.tsx"
     },
     {
@@ -6170,7 +6170,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "basic_separator_separator",
-      "community": 4,
+      "community": 5,
       "norm_label": "separator"
     },
     {
@@ -6180,7 +6180,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "basic_sheet",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheet.tsx"
     },
     {
@@ -6190,7 +6190,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "basic_sheet_sheetoverlay",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheetoverlay"
     },
     {
@@ -6200,7 +6200,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "basic_sheet_sheetvariants",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheetvariants"
     },
     {
@@ -6210,7 +6210,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "basic_sheet_sheetcontentprops",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheetcontentprops"
     },
     {
@@ -6220,7 +6220,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "basic_sheet_sheetcontent",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheetcontent"
     },
     {
@@ -6230,7 +6230,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "basic_sheet_sheetheader",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheetheader()"
     },
     {
@@ -6240,7 +6240,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "basic_sheet_sheetfooter",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheetfooter()"
     },
     {
@@ -6250,7 +6250,7 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "basic_sheet_sheettitle",
-      "community": 4,
+      "community": 27,
       "norm_label": "sheettitle"
     },
     {
@@ -6260,7 +6260,7 @@
       "source_location": "L121",
       "_origin": "ast",
       "id": "basic_sheet_sheetdescription",
-      "community": 4,
+      "community": 27,
       "norm_label": "sheetdescription"
     },
     {
@@ -6600,7 +6600,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "basic_table",
-      "community": 47,
+      "community": 4,
       "norm_label": "table.tsx"
     },
     {
@@ -6610,7 +6610,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "basic_table_table",
-      "community": 47,
+      "community": 4,
       "norm_label": "table"
     },
     {
@@ -6620,7 +6620,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "basic_table_tableheader",
-      "community": 47,
+      "community": 4,
       "norm_label": "tableheader"
     },
     {
@@ -6630,7 +6630,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "basic_table_tablebody",
-      "community": 47,
+      "community": 4,
       "norm_label": "tablebody"
     },
     {
@@ -6640,7 +6640,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "basic_table_tablefooter",
-      "community": 47,
+      "community": 4,
       "norm_label": "tablefooter"
     },
     {
@@ -6650,7 +6650,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "basic_table_tablerow",
-      "community": 47,
+      "community": 4,
       "norm_label": "tablerow"
     },
     {
@@ -6660,7 +6660,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "basic_table_tablehead",
-      "community": 47,
+      "community": 4,
       "norm_label": "tablehead"
     },
     {
@@ -6670,7 +6670,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "basic_table_tablecell",
-      "community": 47,
+      "community": 4,
       "norm_label": "tablecell"
     },
     {
@@ -6680,7 +6680,7 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "basic_table_tablecaption",
-      "community": 47,
+      "community": 4,
       "norm_label": "tablecaption"
     },
     {
@@ -6870,7 +6870,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "basic_tooltip",
-      "community": 49,
+      "community": 4,
       "norm_label": "tooltip.tsx"
     },
     {
@@ -6880,7 +6880,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "basic_tooltip_tooltipcontent",
-      "community": 49,
+      "community": 4,
       "norm_label": "tooltipcontent"
     },
     {
@@ -6930,7 +6930,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_drawer",
-      "community": 29,
+      "community": 4,
       "norm_label": "drawer.tsx"
     },
     {
@@ -6940,7 +6940,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "ui_drawer_drawer",
-      "community": 29,
+      "community": 36,
       "norm_label": "drawer()"
     },
     {
@@ -6950,7 +6950,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "ui_drawer_draweroverlay",
-      "community": 29,
+      "community": 4,
       "norm_label": "draweroverlay"
     },
     {
@@ -6960,7 +6960,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "ui_drawer_drawercontent",
-      "community": 29,
+      "community": 36,
       "norm_label": "drawercontent"
     },
     {
@@ -6970,7 +6970,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "ui_drawer_drawerheader",
-      "community": 29,
+      "community": 4,
       "norm_label": "drawerheader()"
     },
     {
@@ -6980,7 +6980,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "ui_drawer_drawerfooter",
-      "community": 29,
+      "community": 4,
       "norm_label": "drawerfooter()"
     },
     {
@@ -6990,7 +6990,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "ui_drawer_drawertitle",
-      "community": 29,
+      "community": 4,
       "norm_label": "drawertitle"
     },
     {
@@ -7000,7 +7000,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "ui_drawer_drawerdescription",
-      "community": 29,
+      "community": 4,
       "norm_label": "drawerdescription"
     },
     {
@@ -7030,7 +7030,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_separator",
-      "community": 4,
+      "community": 2,
       "norm_label": "separator.tsx"
     },
     {
@@ -7040,7 +7040,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "ui_separator_separator",
-      "community": 4,
+      "community": 2,
       "norm_label": "separator"
     },
     {
@@ -7050,7 +7050,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_sheet",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheet.tsx"
     },
     {
@@ -7060,7 +7060,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "ui_sheet_sheetoverlay",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheetoverlay"
     },
     {
@@ -7070,7 +7070,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "ui_sheet_sheetvariants",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheetvariants"
     },
     {
@@ -7080,7 +7080,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "ui_sheet_sheetcontentprops",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheetcontentprops"
     },
     {
@@ -7090,7 +7090,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "ui_sheet_sheetcontent",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheetcontent"
     },
     {
@@ -7100,7 +7100,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "ui_sheet_sheetheader",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheetheader()"
     },
     {
@@ -7110,7 +7110,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "ui_sheet_sheetfooter",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheetfooter()"
     },
     {
@@ -7120,7 +7120,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "ui_sheet_sheettitle",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheettitle"
     },
     {
@@ -7130,7 +7130,7 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "ui_sheet_sheetdescription",
-      "community": 4,
+      "community": 17,
       "norm_label": "sheetdescription"
     },
     {
@@ -7170,7 +7170,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "ui_sidebar_usesidebar",
-      "community": 10,
+      "community": 2,
       "norm_label": "usesidebar()"
     },
     {
@@ -7440,7 +7440,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_tooltip",
-      "community": 49,
+      "community": 29,
       "norm_label": "tooltip.tsx"
     },
     {
@@ -7450,7 +7450,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "ui_tooltip_tooltipcontent",
-      "community": 49,
+      "community": 29,
       "norm_label": "tooltipcontent"
     },
     {
@@ -7460,7 +7460,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_useapplifecycle",
-      "community": 12,
+      "community": 31,
       "norm_label": "useapplifecycle.ts"
     },
     {
@@ -7470,7 +7470,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "components_useapplifecycle_useapplifecycle",
-      "community": 12,
+      "community": 31,
       "norm_label": "useapplifecycle()"
     },
     {
@@ -7640,7 +7640,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "clientes_useordenescliente_useordenescliente",
-      "community": 12,
+      "community": 27,
       "norm_label": "useordenescliente()"
     },
     {
@@ -7650,7 +7650,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "clientes_usepulltorefresh",
-      "community": 35,
+      "community": 16,
       "norm_label": "usepulltorefresh.ts"
     },
     {
@@ -7660,7 +7660,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "clientes_usepulltorefresh_usepulltorefreshoptions",
-      "community": 35,
+      "community": 16,
       "norm_label": "usepulltorefreshoptions"
     },
     {
@@ -7670,7 +7670,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "clientes_usepulltorefresh_usepulltorefresh",
-      "community": 35,
+      "community": 16,
       "norm_label": "usepulltorefresh()"
     },
     {
@@ -7700,7 +7700,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "clientes_useswipetoclose_useswipetoclose",
-      "community": 35,
+      "community": 27,
       "norm_label": "useswipetoclose()"
     },
     {
@@ -8030,7 +8030,7 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "hooks_use_toast_usetoast",
-      "community": 8,
+      "community": 15,
       "norm_label": "usetoast()"
     },
     {
@@ -8040,7 +8040,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useandroidback",
-      "community": 35,
+      "community": 15,
       "norm_label": "useandroidback.ts"
     },
     {
@@ -8050,7 +8050,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "hooks_useandroidback_useandroidback",
-      "community": 35,
+      "community": 15,
       "norm_label": "useandroidback()"
     },
     {
@@ -8090,7 +8090,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "hooks_usemultiuser_useclientesusuario",
-      "community": 35,
+      "community": 15,
       "norm_label": "useclientesusuario()"
     },
     {
@@ -8100,7 +8100,7 @@
       "source_location": "L203",
       "_origin": "ast",
       "id": "hooks_usemultiuser_useordenesusuario",
-      "community": 21,
+      "community": 31,
       "norm_label": "useordenesusuario()"
     },
     {
@@ -8120,7 +8120,7 @@
       "source_location": "L286",
       "_origin": "ast",
       "id": "hooks_usemultiuser_usenegociousuario",
-      "community": 12,
+      "community": 27,
       "norm_label": "usenegociousuario()"
     },
     {
@@ -8140,7 +8140,7 @@
       "source_location": "L331",
       "_origin": "ast",
       "id": "hooks_usemultiuser_useprefetchdata",
-      "community": 10,
+      "community": 2,
       "norm_label": "useprefetchdata()"
     },
     {
@@ -8160,7 +8160,7 @@
       "source_location": "L378",
       "_origin": "ast",
       "id": "hooks_usemultiuser_usesynctodaslasordenes",
-      "community": 22,
+      "community": 31,
       "norm_label": "usesynctodaslasordenes()"
     },
     {
@@ -8170,7 +8170,7 @@
       "source_location": "L418",
       "_origin": "ast",
       "id": "hooks_usemultiuser_useordenesinfinitas",
-      "community": 22,
+      "community": 31,
       "norm_label": "useordenesinfinitas()"
     },
     {
@@ -8180,7 +8180,7 @@
       "source_location": "L439",
       "_origin": "ast",
       "id": "hooks_usemultiuser_useordenesbusqueda",
-      "community": 22,
+      "community": 31,
       "norm_label": "useordenesbusqueda()"
     },
     {
@@ -8200,7 +8200,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usenegocio",
-      "community": 14,
+      "community": 31,
       "norm_label": "usenegocio.ts"
     },
     {
@@ -8210,7 +8210,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "hooks_usenegocio_usenegocio",
-      "community": 12,
+      "community": 31,
       "norm_label": "usenegocio()"
     },
     {
@@ -8220,7 +8220,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usenetworkstatus",
-      "community": 48,
+      "community": 22,
       "norm_label": "usenetworkstatus.ts"
     },
     {
@@ -8230,7 +8230,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "hooks_usenetworkstatus_usenetworkstatus",
-      "community": 48,
+      "community": 22,
       "norm_label": "usenetworkstatus()"
     },
     {
@@ -8240,7 +8240,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useofflineorderqueue",
-      "community": 48,
+      "community": 22,
       "norm_label": "useofflineorderqueue.ts"
     },
     {
@@ -8250,7 +8250,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "hooks_useofflineorderqueue_useofflineorderqueue",
-      "community": 48,
+      "community": 22,
       "norm_label": "useofflineorderqueue()"
     },
     {
@@ -8260,7 +8260,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useofflinequeue",
-      "community": 48,
+      "community": 22,
       "norm_label": "useofflinequeue.ts"
     },
     {
@@ -8270,7 +8270,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "hooks_useofflinequeue_useofflinequeue",
-      "community": 48,
+      "community": 22,
       "norm_label": "useofflinequeue()"
     },
     {
@@ -8337,7 +8337,7 @@
       "label": "useSignatureCanvas()",
       "file_type": "code",
       "source_file": "src/hooks/useSignatureCanvas.ts",
-      "source_location": "L11",
+      "source_location": "L13",
       "_origin": "ast",
       "id": "hooks_usesignaturecanvas_usesignaturecanvas",
       "community": 39,
@@ -8350,7 +8350,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usetareasypiezas",
-      "community": 48,
+      "community": 22,
       "norm_label": "usetareasypiezas.ts"
     },
     {
@@ -8360,7 +8360,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "hooks_usetareasypiezas_querykeys",
-      "community": 48,
+      "community": 22,
       "norm_label": "querykeys"
     },
     {
@@ -8380,7 +8380,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useuserdata",
-      "community": 14,
+      "community": 31,
       "norm_label": "useuserdata.ts"
     },
     {
@@ -8390,7 +8390,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "hooks_useuserdata_userdata",
-      "community": 14,
+      "community": 31,
       "norm_label": "userdata"
     },
     {
@@ -8400,7 +8400,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "hooks_useuserdata_useuserdata",
-      "community": 14,
+      "community": 31,
       "norm_label": "useuserdata()"
     },
     {
@@ -8410,7 +8410,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_configuracion_helpers",
-      "community": 2,
+      "community": 34,
       "norm_label": "configuracion-helpers.ts"
     },
     {
@@ -8420,7 +8420,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_tareapredefinida",
-      "community": 48,
+      "community": 22,
       "norm_label": "tareapredefinida"
     },
     {
@@ -8430,7 +8430,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_piezapredefinida",
-      "community": 48,
+      "community": 35,
       "norm_label": "piezapredefinida"
     },
     {
@@ -8440,7 +8440,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_tareascol",
-      "community": 2,
+      "community": 34,
       "norm_label": "tareascol()"
     },
     {
@@ -8450,7 +8450,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_piezascol",
-      "community": 2,
+      "community": 34,
       "norm_label": "piezascol()"
     },
     {
@@ -8460,7 +8460,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_tareadocref",
-      "community": 2,
+      "community": 34,
       "norm_label": "tareadocref()"
     },
     {
@@ -8470,7 +8470,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_piezadocref",
-      "community": 2,
+      "community": 34,
       "norm_label": "piezadocref()"
     },
     {
@@ -8480,7 +8480,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_configdocref",
-      "community": 2,
+      "community": 34,
       "norm_label": "configdocref()"
     },
     {
@@ -8490,7 +8490,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_obtenertareaspredefinidas",
-      "community": 2,
+      "community": 34,
       "norm_label": "obtenertareaspredefinidas()"
     },
     {
@@ -8500,7 +8500,7 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_obtenerpiezaspredefinidas",
-      "community": 2,
+      "community": 34,
       "norm_label": "obtenerpiezaspredefinidas()"
     },
     {
@@ -8510,7 +8510,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_creartarea",
-      "community": 2,
+      "community": 34,
       "norm_label": "creartarea()"
     },
     {
@@ -8520,7 +8520,7 @@
       "source_location": "L116",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_actualizartarea",
-      "community": 2,
+      "community": 34,
       "norm_label": "actualizartarea()"
     },
     {
@@ -8530,7 +8530,7 @@
       "source_location": "L129",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_eliminartarea",
-      "community": 2,
+      "community": 34,
       "norm_label": "eliminartarea()"
     },
     {
@@ -8540,7 +8540,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_crearpieza",
-      "community": 2,
+      "community": 34,
       "norm_label": "crearpieza()"
     },
     {
@@ -8550,7 +8550,7 @@
       "source_location": "L151",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_actualizarpieza",
-      "community": 2,
+      "community": 34,
       "norm_label": "actualizarpieza()"
     },
     {
@@ -8560,7 +8560,7 @@
       "source_location": "L164",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_eliminarpieza",
-      "community": 2,
+      "community": 34,
       "norm_label": "eliminarpieza()"
     },
     {
@@ -8570,7 +8570,7 @@
       "source_location": "L170",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_migrarsiesnecesario",
-      "community": 2,
+      "community": 34,
       "norm_label": "migrarsiesnecesario()"
     },
     {
@@ -8580,7 +8580,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_sembrartareas",
-      "community": 2,
+      "community": 34,
       "norm_label": "sembrartareas()"
     },
     {
@@ -8590,7 +8590,7 @@
       "source_location": "L233",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_sembrarpiezas",
-      "community": 2,
+      "community": 34,
       "norm_label": "sembrarpiezas()"
     },
     {
@@ -8600,7 +8600,7 @@
       "source_location": "L246",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_tareas_default",
-      "community": 2,
+      "community": 34,
       "norm_label": "tareas_default"
     },
     {
@@ -8610,7 +8610,7 @@
       "source_location": "L267",
       "_origin": "ast",
       "id": "lib_configuracion_helpers_piezas_default",
-      "community": 2,
+      "community": 34,
       "norm_label": "piezas_default"
     },
     {
@@ -8620,7 +8620,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_dal",
-      "community": 14,
+      "community": 31,
       "norm_label": "dal.ts"
     },
     {
@@ -8630,7 +8630,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "lib_dal_getuser",
-      "community": 14,
+      "community": 31,
       "norm_label": "getuser()"
     },
     {
@@ -8640,8 +8640,28 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "lib_dal_verifyrole",
-      "community": 14,
+      "community": 31,
       "norm_label": "verifyrole()"
+    },
+    {
+      "label": "device-helpers.ts",
+      "file_type": "code",
+      "source_file": "src/lib/device-helpers.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "lib_device_helpers",
+      "community": 31,
+      "norm_label": "device-helpers.ts"
+    },
+    {
+      "label": "getLocalDeviceId()",
+      "file_type": "code",
+      "source_file": "src/lib/device-helpers.ts",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "lib_device_helpers_getlocaldeviceid",
+      "community": 31,
+      "norm_label": "getlocaldeviceid()"
     },
     {
       "label": "encryption-utils.ts",
@@ -8680,7 +8700,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_firebase_utils",
-      "community": 14,
+      "community": 31,
       "norm_label": "firebase-utils.ts"
     },
     {
@@ -8690,7 +8710,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "lib_firebase_utils_obtenerproximonumeroorden",
-      "community": 14,
+      "community": 31,
       "norm_label": "obtenerproximonumeroorden()"
     },
     {
@@ -8700,7 +8720,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "lib_firebase_utils_formatearidorden",
-      "community": 14,
+      "community": 31,
       "norm_label": "formatearidorden()"
     },
     {
@@ -8710,7 +8730,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "lib_firebase_utils_validaridordenunico",
-      "community": 14,
+      "community": 31,
       "norm_label": "validaridordenunico()"
     },
     {
@@ -8720,7 +8740,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_firebase",
-      "community": 14,
+      "community": 31,
       "norm_label": "firebase.ts"
     },
     {
@@ -8730,7 +8750,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "lib_firebase_firebaseconfig",
-      "community": 14,
+      "community": 31,
       "norm_label": "firebaseconfig"
     },
     {
@@ -8740,7 +8760,7 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "lib_firebase_auth",
-      "community": 14,
+      "community": 31,
       "norm_label": "auth"
     },
     {
@@ -8750,7 +8770,7 @@
       "source_location": "L124",
       "_origin": "ast",
       "id": "lib_firebase_db",
-      "community": 14,
+      "community": 31,
       "norm_label": "db"
     },
     {
@@ -8760,7 +8780,7 @@
       "source_location": "L150",
       "_origin": "ast",
       "id": "lib_firebase_storage",
-      "community": 14,
+      "community": 31,
       "norm_label": "storage"
     },
     {
@@ -8887,20 +8907,20 @@
       "label": "sanitizeTareaPayload()",
       "file_type": "code",
       "source_file": "src/lib/firestore-sanitizers.ts",
-      "source_location": "L236",
+      "source_location": "L238",
       "_origin": "ast",
       "id": "lib_firestore_sanitizers_sanitizetareapayload",
-      "community": 2,
+      "community": 34,
       "norm_label": "sanitizetareapayload()"
     },
     {
       "label": "sanitizePiezaPayload()",
       "file_type": "code",
       "source_file": "src/lib/firestore-sanitizers.ts",
-      "source_location": "L252",
+      "source_location": "L254",
       "_origin": "ast",
       "id": "lib_firestore_sanitizers_sanitizepiezapayload",
-      "community": 2,
+      "community": 34,
       "norm_label": "sanitizepiezapayload()"
     },
     {
@@ -8910,7 +8930,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_id_pool_helper",
-      "community": 21,
+      "community": 14,
       "norm_label": "id-pool-helper.ts"
     },
     {
@@ -8920,7 +8940,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "lib_id_pool_helper_idpoolrange",
-      "community": 21,
+      "community": 14,
       "norm_label": "idpoolrange"
     },
     {
@@ -8930,7 +8950,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "lib_id_pool_helper_formatidpersonalizado",
-      "community": 21,
+      "community": 14,
       "norm_label": "formatidpersonalizado()"
     },
     {
@@ -8940,7 +8960,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "lib_id_pool_helper_getlocalidpool",
-      "community": 21,
+      "community": 14,
       "norm_label": "getlocalidpool()"
     },
     {
@@ -8950,7 +8970,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "lib_id_pool_helper_savelocalidpool",
-      "community": 21,
+      "community": 14,
       "norm_label": "savelocalidpool()"
     },
     {
@@ -8960,7 +8980,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "lib_id_pool_helper_clearlocalidpool",
-      "community": 21,
+      "community": 14,
       "norm_label": "clearlocalidpool()"
     },
     {
@@ -8970,7 +8990,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "lib_id_pool_helper_obtenersiguienteiddepool",
-      "community": 21,
+      "community": 14,
       "norm_label": "obtenersiguienteiddepool()"
     },
     {
@@ -9020,7 +9040,7 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "lib_multiuser_helpers_actualizarcliente",
-      "community": 15,
+      "community": 21,
       "norm_label": "actualizarcliente()"
     },
     {
@@ -9447,7 +9467,7 @@
       "label": "deserializeOrdenPayload()",
       "file_type": "code",
       "source_file": "src/lib/orden-serializer.ts",
-      "source_location": "L68",
+      "source_location": "L70",
       "_origin": "ast",
       "id": "lib_orden_serializer_deserializeordenpayload",
       "community": 14,
@@ -9600,7 +9620,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "types_orden",
-      "community": 14,
+      "community": 38,
       "norm_label": "orden.ts"
     },
     {
@@ -9610,7 +9630,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "types_orden_dispositivo",
-      "community": 26,
+      "community": 38,
       "norm_label": "dispositivo"
     },
     {
@@ -9630,7 +9650,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "types_orden_ordenbase",
-      "community": 14,
+      "community": 38,
       "norm_label": "ordenbase"
     },
     {
@@ -9640,7 +9660,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "types_orden_contadoru",
-      "community": 14,
+      "community": 21,
       "norm_label": "contadoru"
     },
     {
@@ -9650,7 +9670,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "types_orden_contador",
-      "community": 14,
+      "community": 38,
       "norm_label": "contador"
     },
     {
@@ -9667,27 +9687,27 @@
       "label": "Negocio",
       "file_type": "code",
       "source_file": "src/types/orden.ts",
-      "source_location": "L95",
+      "source_location": "L97",
       "_origin": "ast",
       "id": "types_orden_negocio",
-      "community": 14,
+      "community": 21,
       "norm_label": "negocio"
     },
     {
       "label": "Orden",
       "file_type": "code",
       "source_file": "src/types/orden.ts",
-      "source_location": "L109",
+      "source_location": "L111",
       "_origin": "ast",
       "id": "types_orden_orden",
-      "community": 14,
+      "community": 38,
       "norm_label": "orden"
     },
     {
       "label": "TempOrderId",
       "file_type": "code",
       "source_file": "src/types/orden.ts",
-      "source_location": "L112",
+      "source_location": "L114",
       "_origin": "ast",
       "id": "types_orden_temporderid",
       "community": 14,
@@ -9697,17 +9717,17 @@
       "label": "OrderSyncStatus",
       "file_type": "code",
       "source_file": "src/types/orden.ts",
-      "source_location": "L115",
+      "source_location": "L117",
       "_origin": "ast",
       "id": "types_orden_ordersyncstatus",
-      "community": 14,
+      "community": 38,
       "norm_label": "ordersyncstatus"
     },
     {
       "label": "SerializableOrdenPayload",
       "file_type": "code",
       "source_file": "src/types/orden.ts",
-      "source_location": "L118",
+      "source_location": "L120",
       "_origin": "ast",
       "id": "types_orden_serializableordenpayload",
       "community": 14,
@@ -9717,7 +9737,7 @@
       "label": "PendingOrderQueueItem",
       "file_type": "code",
       "source_file": "src/types/orden.ts",
-      "source_location": "L164",
+      "source_location": "L168",
       "_origin": "ast",
       "id": "types_orden_pendingorderqueueitem",
       "community": 14,
@@ -9780,7 +9800,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_config_helpers_test",
-      "community": 2,
+      "community": 13,
       "norm_label": "config-helpers.test.ts"
     },
     {
@@ -9790,7 +9810,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "tests_config_helpers_test_mockgetdoc",
-      "community": 2,
+      "community": 13,
       "norm_label": "mockgetdoc"
     },
     {
@@ -9800,7 +9820,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "tests_config_helpers_test_mockgetdocs",
-      "community": 2,
+      "community": 13,
       "norm_label": "mockgetdocs"
     },
     {
@@ -9810,7 +9830,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "tests_config_helpers_test_mocksetdoc",
-      "community": 2,
+      "community": 13,
       "norm_label": "mocksetdoc"
     },
     {
@@ -9820,7 +9840,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "tests_config_helpers_test_mockcommit",
-      "community": 2,
+      "community": 13,
       "norm_label": "mockcommit"
     },
     {
@@ -9830,7 +9850,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "tests_config_helpers_test_mockbatchset",
-      "community": 2,
+      "community": 13,
       "norm_label": "mockbatchset"
     },
     {
@@ -9840,7 +9860,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_id_pool_test",
-      "community": 21,
+      "community": 14,
       "norm_label": "id-pool.test.ts"
     },
     {
@@ -9850,7 +9870,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "tests_id_pool_test_store",
-      "community": 21,
+      "community": 14,
       "norm_label": "store"
     },
     {
@@ -9860,7 +9880,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "tests_id_pool_test_mocktransaction",
-      "community": 21,
+      "community": 14,
       "norm_label": "mocktransaction"
     },
     {
@@ -9902,6 +9922,16 @@
       "id": "tests_offline_search_test_mockorders",
       "community": 21,
       "norm_label": "mockorders"
+    },
+    {
+      "label": "single-device.test.ts",
+      "file_type": "code",
+      "source_file": "tests/single-device.test.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "tests_single_device_test",
+      "community": 31,
+      "norm_label": "single-device.test.ts"
     },
     {
       "label": "tsconfig.json",
@@ -10154,6 +10184,416 @@
       "norm_label": "graphify"
     },
     {
+      "label": "LEGAL.md",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "legal",
+      "community": 12,
+      "norm_label": "legal.md"
+    },
+    {
+      "label": "DOCUMENTO LEGAL DE TECNICONTROL: T\u00c9RMINOS Y CONDICIONES & POL\u00cdTICA DE PRIVACIDAD",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "legal_documento_legal_de_tecnicontrol_t\u00e9rminos_y_condiciones_pol\u00edtica_de_privacidad",
+      "community": 12,
+      "norm_label": "documento legal de tecnicontrol: terminos y condiciones & politica de privacidad"
+    },
+    {
+      "label": "PARTE I: T\u00c9RMINOS Y CONDICIONES DE SERVICIO",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "community": 12,
+      "norm_label": "parte i: terminos y condiciones de servicio"
+    },
+    {
+      "label": "1. Identificaci\u00f3n del Proveedor Tecnol\u00f3gico y Relaci\u00f3n Contractual",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "legal_1_identificaci\u00f3n_del_proveedor_tecnol\u00f3gico_y_relaci\u00f3n_contractual",
+      "community": 12,
+      "norm_label": "1. identificacion del proveedor tecnologico y relacion contractual"
+    },
+    {
+      "label": "2. Descripci\u00f3n de las Funcionalidades de la Aplicaci\u00f3n",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "legal_2_descripci\u00f3n_de_las_funcionalidades_de_la_aplicaci\u00f3n",
+      "community": 12,
+      "norm_label": "2. descripcion de las funcionalidades de la aplicacion"
+    },
+    {
+      "label": "3. Cuentas de Usuario, Seguridad y Dispositivo \u00danico",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "legal_3_cuentas_de_usuario_seguridad_y_dispositivo_\u00fanico",
+      "community": 12,
+      "norm_label": "3. cuentas de usuario, seguridad y dispositivo unico"
+    },
+    {
+      "label": "3.1. Pol\u00edtica de Eliminaci\u00f3n de Cuenta",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "legal_3_1_pol\u00edtica_de_eliminaci\u00f3n_de_cuenta",
+      "community": 12,
+      "norm_label": "3.1. politica de eliminacion de cuenta"
+    },
+    {
+      "label": "4. Roles y Permisos en la Plataforma",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L42",
+      "_origin": "ast",
+      "id": "legal_4_roles_y_permisos_en_la_plataforma",
+      "community": 12,
+      "norm_label": "4. roles y permisos en la plataforma"
+    },
+    {
+      "label": "5. Licencia de Uso y Propiedad Intelectual",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "legal_5_licencia_de_uso_y_propiedad_intelectual",
+      "community": 12,
+      "norm_label": "5. licencia de uso y propiedad intelectual"
+    },
+    {
+      "label": "6. Usos Prohibidos",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "legal_6_usos_prohibidos",
+      "community": 12,
+      "norm_label": "6. usos prohibidos"
+    },
+    {
+      "label": "7. Evidencias y Firma Digitalizada",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L60",
+      "_origin": "ast",
+      "id": "legal_7_evidencias_y_firma_digitalizada",
+      "community": 12,
+      "norm_label": "7. evidencias y firma digitalizada"
+    },
+    {
+      "label": "8. Disponibilidad, Mantenimiento y Acuerdo de Nivel de Servicio (SLA)",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L64",
+      "_origin": "ast",
+      "id": "legal_8_disponibilidad_mantenimiento_y_acuerdo_de_nivel_de_servicio_sla",
+      "community": 12,
+      "norm_label": "8. disponibilidad, mantenimiento y acuerdo de nivel de servicio (sla)"
+    },
+    {
+      "label": "8.1. Copias de Seguridad y Recuperaci\u00f3n de Datos",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L69",
+      "_origin": "ast",
+      "id": "legal_8_1_copias_de_seguridad_y_recuperaci\u00f3n_de_datos",
+      "community": 12,
+      "norm_label": "8.1. copias de seguridad y recuperacion de datos"
+    },
+    {
+      "label": "9. Suscripciones, Pagos y Facturaci\u00f3n",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L74",
+      "_origin": "ast",
+      "id": "legal_9_suscripciones_pagos_y_facturaci\u00f3n",
+      "community": 12,
+      "norm_label": "9. suscripciones, pagos y facturacion"
+    },
+    {
+      "label": "10. Limitaci\u00f3n de Responsabilidad",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L79",
+      "_origin": "ast",
+      "id": "legal_10_limitaci\u00f3n_de_responsabilidad",
+      "community": 12,
+      "norm_label": "10. limitacion de responsabilidad"
+    },
+    {
+      "label": "10.1. Cl\u00e1usula de Fuerza Mayor",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L83",
+      "_origin": "ast",
+      "id": "legal_10_1_cl\u00e1usula_de_fuerza_mayor",
+      "community": 12,
+      "norm_label": "10.1. clausula de fuerza mayor"
+    },
+    {
+      "label": "11. Titularidad y Portabilidad de los Datos",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L91",
+      "_origin": "ast",
+      "id": "legal_11_titularidad_y_portabilidad_de_los_datos",
+      "community": 12,
+      "norm_label": "11. titularidad y portabilidad de los datos"
+    },
+    {
+      "label": "12. Servicios de Terceros y Canales de Comunicaci\u00f3n",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L95",
+      "_origin": "ast",
+      "id": "legal_12_servicios_de_terceros_y_canales_de_comunicaci\u00f3n",
+      "community": 12,
+      "norm_label": "12. servicios de terceros y canales de comunicacion"
+    },
+    {
+      "label": "13. Herramientas Automatizadas y Futuras Integraciones de IA",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L99",
+      "_origin": "ast",
+      "id": "legal_13_herramientas_automatizadas_y_futuras_integraciones_de_ia",
+      "community": 12,
+      "norm_label": "13. herramientas automatizadas y futuras integraciones de ia"
+    },
+    {
+      "label": "14. Ley Aplicable y Jurisdicci\u00f3n",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L103",
+      "_origin": "ast",
+      "id": "legal_14_ley_aplicable_y_jurisdicci\u00f3n",
+      "community": 12,
+      "norm_label": "14. ley aplicable y jurisdiccion"
+    },
+    {
+      "label": "PARTE II: POL\u00cdTICA DE TRATAMIENTO DE DATOS PERSONALES (Habeas Data)",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L108",
+      "_origin": "ast",
+      "id": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "community": 12,
+      "norm_label": "parte ii: politica de tratamiento de datos personales (habeas data)"
+    },
+    {
+      "label": "1. Roles en el Tratamiento de Datos (Ley 1581)",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L112",
+      "_origin": "ast",
+      "id": "legal_1_roles_en_el_tratamiento_de_datos_ley_1581",
+      "community": 12,
+      "norm_label": "1. roles en el tratamiento de datos (ley 1581)"
+    },
+    {
+      "label": "2. Categor\u00edas de Datos Recolectados",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L117",
+      "_origin": "ast",
+      "id": "legal_2_categor\u00edas_de_datos_recolectados",
+      "community": 12,
+      "norm_label": "2. categorias de datos recolectados"
+    },
+    {
+      "label": "A. Datos del Usuario Profesional (T\u00e9cnico / Administrador)",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L120",
+      "_origin": "ast",
+      "id": "legal_a_datos_del_usuario_profesional_t\u00e9cnico_administrador",
+      "community": 12,
+      "norm_label": "a. datos del usuario profesional (tecnico / administrador)"
+    },
+    {
+      "label": "B. Datos del Cliente Final (Suministrados por el T\u00e9cnico)",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L125",
+      "_origin": "ast",
+      "id": "legal_b_datos_del_cliente_final_suministrados_por_el_t\u00e9cnico",
+      "community": 12,
+      "norm_label": "b. datos del cliente final (suministrados por el tecnico)"
+    },
+    {
+      "label": "C. Datos Sensibles y Biom\u00e9tricos",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L129",
+      "_origin": "ast",
+      "id": "legal_c_datos_sensibles_y_biom\u00e9tricos",
+      "community": 12,
+      "norm_label": "c. datos sensibles y biometricos"
+    },
+    {
+      "label": "3. Finalidad del Tratamiento de los Datos",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L133",
+      "_origin": "ast",
+      "id": "legal_3_finalidad_del_tratamiento_de_los_datos",
+      "community": 12,
+      "norm_label": "3. finalidad del tratamiento de los datos"
+    },
+    {
+      "label": "4. Consentimiento y Autorizaci\u00f3n del Titular",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L143",
+      "_origin": "ast",
+      "id": "legal_4_consentimiento_y_autorizaci\u00f3n_del_titular",
+      "community": 12,
+      "norm_label": "4. consentimiento y autorizacion del titular"
+    },
+    {
+      "label": "5. Derechos de los Titulares de los Datos",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L147",
+      "_origin": "ast",
+      "id": "legal_5_derechos_de_los_titulares_de_los_datos",
+      "community": 12,
+      "norm_label": "5. derechos de los titulares de los datos"
+    },
+    {
+      "label": "6. Procedimiento para Ejercer los Derechos de Habeas Data",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L156",
+      "_origin": "ast",
+      "id": "legal_6_procedimiento_para_ejercer_los_derechos_de_habeas_data",
+      "community": 12,
+      "norm_label": "6. procedimiento para ejercer los derechos de habeas data"
+    },
+    {
+      "label": "7. Medidas de Seguridad de la Informaci\u00f3n",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L164",
+      "_origin": "ast",
+      "id": "legal_7_medidas_de_seguridad_de_la_informaci\u00f3n",
+      "community": 12,
+      "norm_label": "7. medidas de seguridad de la informacion"
+    },
+    {
+      "label": "8. Permisos de Hardware del Dispositivo (M\u00f3vil y Web)",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L171",
+      "_origin": "ast",
+      "id": "legal_8_permisos_de_hardware_del_dispositivo_m\u00f3vil_y_web",
+      "community": 12,
+      "norm_label": "8. permisos de hardware del dispositivo (movil y web)"
+    },
+    {
+      "label": "9. Geolocalizaci\u00f3n",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L178",
+      "_origin": "ast",
+      "id": "legal_9_geolocalizaci\u00f3n",
+      "community": 12,
+      "norm_label": "9. geolocalizacion"
+    },
+    {
+      "label": "10. Compartici\u00f3n con Terceros y Transferencia Internacional de Datos",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L182",
+      "_origin": "ast",
+      "id": "legal_10_compartici\u00f3n_con_terceros_y_transferencia_internacional_de_datos",
+      "community": 12,
+      "norm_label": "10. comparticion con terceros y transferencia internacional de datos"
+    },
+    {
+      "label": "11. Cookies, Anal\u00edtica y Monitoreo de Rendimiento",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L186",
+      "_origin": "ast",
+      "id": "legal_11_cookies_anal\u00edtica_y_monitoreo_de_rendimiento",
+      "community": 12,
+      "norm_label": "11. cookies, analitica y monitoreo de rendimiento"
+    },
+    {
+      "label": "12. Gesti\u00f3n de Incidentes y Brechas de Seguridad",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L193",
+      "_origin": "ast",
+      "id": "legal_12_gesti\u00f3n_de_incidentes_y_brechas_de_seguridad",
+      "community": 12,
+      "norm_label": "12. gestion de incidentes y brechas de seguridad"
+    },
+    {
+      "label": "13. Tiempo de Conservaci\u00f3n de los Datos",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L197",
+      "_origin": "ast",
+      "id": "legal_13_tiempo_de_conservaci\u00f3n_de_los_datos",
+      "community": 12,
+      "norm_label": "13. tiempo de conservacion de los datos"
+    },
+    {
+      "label": "14. Enlaces a Sitios de Terceros y WebView",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L201",
+      "_origin": "ast",
+      "id": "legal_14_enlaces_a_sitios_de_terceros_y_webview",
+      "community": 12,
+      "norm_label": "14. enlaces a sitios de terceros y webview"
+    },
+    {
+      "label": "15. Menores de Edad",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L204",
+      "_origin": "ast",
+      "id": "legal_15_menores_de_edad",
+      "community": 12,
+      "norm_label": "15. menores de edad"
+    },
+    {
+      "label": "16. Vigencia y Modificaciones de la Pol\u00edtica",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L207",
+      "_origin": "ast",
+      "id": "legal_16_vigencia_y_modificaciones_de_la_pol\u00edtica",
+      "community": 12,
+      "norm_label": "16. vigencia y modificaciones de la politica"
+    },
+    {
+      "label": "DATOS DE CONTACTO Y SOPORTE LEGAL",
+      "file_type": "document",
+      "source_file": "LEGAL.md",
+      "source_location": "L213",
+      "_origin": "ast",
+      "id": "legal_datos_de_contacto_y_soporte_legal",
+      "community": 12,
+      "norm_label": "datos de contacto y soporte legal"
+    },
+    {
       "label": "README.md",
       "file_type": "document",
       "source_file": "README.md",
@@ -10162,156 +10602,6 @@
       "id": "readme",
       "community": 81,
       "norm_label": "readme.md"
-    },
-    {
-      "label": "optimal.md",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "optimal",
-      "community": 34,
-      "norm_label": "optimal.md"
-    },
-    {
-      "label": "ROL Y MENTALIDAD",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "optimal_rol_y_mentalidad",
-      "community": 34,
-      "norm_label": "rol y mentalidad"
-    },
-    {
-      "label": "PASO 1 \u2014 RECEPCI\u00d3N DEL C\u00d3DIGO",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L7",
-      "_origin": "ast",
-      "id": "optimal_paso_1_recepci\u00f3n_del_c\u00f3digo",
-      "community": 34,
-      "norm_label": "paso 1 \u2014 recepcion del codigo"
-    },
-    {
-      "label": "PASO 2 \u2014 ESTRUCTURA DEL AN\u00c1LISIS",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L23",
-      "_origin": "ast",
-      "id": "optimal_paso_2_estructura_del_an\u00e1lisis",
-      "community": 34,
-      "norm_label": "paso 2 \u2014 estructura del analisis"
-    },
-    {
-      "label": "1. FICHA T\u00c9CNICA DEL PROYECTO",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L29",
-      "_origin": "ast",
-      "id": "optimal_1_ficha_t\u00e9cnica_del_proyecto",
-      "community": 34,
-      "norm_label": "1. ficha tecnica del proyecto"
-    },
-    {
-      "label": "2. DIAGN\u00d3STICO R\u00c1PIDO",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L43",
-      "_origin": "ast",
-      "id": "optimal_2_diagn\u00f3stico_r\u00e1pido",
-      "community": 34,
-      "norm_label": "2. diagnostico rapido"
-    },
-    {
-      "label": "3. AN\u00c1LISIS T\u00c9CNICO \u2014 LO QUE EL C\u00d3DIGO REVELA",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L53",
-      "_origin": "ast",
-      "id": "optimal_3_an\u00e1lisis_t\u00e9cnico_lo_que_el_c\u00f3digo_revela",
-      "community": 34,
-      "norm_label": "3. analisis tecnico \u2014 lo que el codigo revela"
-    },
-    {
-      "label": "4. EXPERIENCIA DE USO \u2014 DESDE EL C\u00d3DIGO",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L85",
-      "_origin": "ast",
-      "id": "optimal_4_experiencia_de_uso_desde_el_c\u00f3digo",
-      "community": 34,
-      "norm_label": "4. experiencia de uso \u2014 desde el codigo"
-    },
-    {
-      "label": "5. FIT CON EL MERCADO COLOMBIANO \u2014 LECTURA T\u00c9CNICA",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L95",
-      "_origin": "ast",
-      "id": "optimal_5_fit_con_el_mercado_colombiano_lectura_t\u00e9cnica",
-      "community": 34,
-      "norm_label": "5. fit con el mercado colombiano \u2014 lectura tecnica"
-    },
-    {
-      "label": "6. NO NEGOCIABLES \u2014 LO QUE BLOQUEA EL LANZAMIENTO",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L119",
-      "_origin": "ast",
-      "id": "optimal_6_no_negociables_lo_que_bloquea_el_lanzamiento",
-      "community": 34,
-      "norm_label": "6. no negociables \u2014 lo que bloquea el lanzamiento"
-    },
-    {
-      "label": "7. QU\u00c9 QUITAR \u2014 SCOPE CREEP DETECTADO EN EL C\u00d3DIGO",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L132",
-      "_origin": "ast",
-      "id": "optimal_7_qu\u00e9_quitar_scope_creep_detectado_en_el_c\u00f3digo",
-      "community": 34,
-      "norm_label": "7. que quitar \u2014 scope creep detectado en el codigo"
-    },
-    {
-      "label": "8. RESUMEN DE \u00c1REAS DE MEJORA PRIORITARIAS",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L144",
-      "_origin": "ast",
-      "id": "optimal_8_resumen_de_\u00e1reas_de_mejora_prioritarias",
-      "community": 34,
-      "norm_label": "8. resumen de areas de mejora prioritarias"
-    },
-    {
-      "label": "9. VEREDICTO FINAL",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L158",
-      "_origin": "ast",
-      "id": "optimal_9_veredicto_final",
-      "community": 34,
-      "norm_label": "9. veredicto final"
-    },
-    {
-      "label": "REGLAS DE CONDUCTA",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L167",
-      "_origin": "ast",
-      "id": "optimal_reglas_de_conducta",
-      "community": 34,
-      "norm_label": "reglas de conducta"
-    },
-    {
-      "label": "ESPECTATIVA",
-      "file_type": "document",
-      "source_file": "optimal.md",
-      "source_location": "L178",
-      "_origin": "ast",
-      "id": "optimal_espectativa",
-      "community": 34,
-      "norm_label": "espectativa"
     },
     {
       "label": "rules.md",
@@ -11069,7 +11359,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 29,
+      "community": 36,
       "norm_label": "tareasinput",
       "id": "forms_tareasinput_tareasinput"
     },
@@ -11082,7 +11372,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 14,
+      "community": 31,
       "norm_label": "capacitor error interception",
       "id": "providers_capacitorprovider_capacitor_error_interception"
     },
@@ -11264,7 +11554,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 34,
       "norm_label": "usetareasypiezas",
       "id": "hooks_usetareaseypiezas_usetareaseypiezas"
     },
@@ -16354,6 +16644,50 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L22",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_authprovider",
+      "target": "hooks_use_toast"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L22",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_authprovider",
+      "target": "hooks_use_toast_usetoast"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_authprovider",
+      "target": "lib_device_helpers"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_authprovider",
+      "target": "lib_device_helpers_getlocaldeviceid"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/auth/AuthProvider.tsx",
       "source_location": "L20",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -17030,6 +17364,17 @@
       "weight": 1.0,
       "source": "providers_offlinesyncprovider_offlinesyncprovider",
       "target": "auth_authprovider_useauth"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/auth/AuthProvider.tsx",
+      "source_location": "L117",
+      "weight": 1.0,
+      "source": "auth_authprovider_authprovider",
+      "target": "hooks_use_toast_usetoast"
     },
     {
       "relation": "contains",
@@ -31335,6 +31680,38 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "src/lib/device-helpers.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "lib_device_helpers",
+      "target": "lib_device_helpers_getlocaldeviceid"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/single-device.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_single_device_test",
+      "target": "lib_device_helpers"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/single-device.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_single_device_test",
+      "target": "lib_device_helpers_getlocaldeviceid"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "src/lib/encryption-utils.ts",
       "source_location": "L34",
       "weight": 1.0,
@@ -33940,142 +34317,402 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
-      "source_location": "L178",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "optimal",
-      "target": "optimal_espectativa"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "optimal",
-      "target": "optimal_paso_1_recepci\u00f3n_del_c\u00f3digo"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "optimal",
-      "target": "optimal_paso_2_estructura_del_an\u00e1lisis"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
-      "source_location": "L167",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "optimal",
-      "target": "optimal_reglas_de_conducta"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
+      "source_file": "LEGAL.md",
       "source_location": "L1",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "optimal",
-      "target": "optimal_rol_y_mentalidad"
+      "source": "legal",
+      "target": "legal_documento_legal_de_tecnicontrol_t\u00e9rminos_y_condiciones_pol\u00edtica_de_privacidad"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
-      "source_location": "L29",
+      "source_file": "LEGAL.md",
+      "source_location": "L8",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "optimal_paso_2_estructura_del_an\u00e1lisis",
-      "target": "optimal_1_ficha_t\u00e9cnica_del_proyecto"
+      "source": "legal",
+      "target": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
-      "source_location": "L43",
+      "source_file": "LEGAL.md",
+      "source_location": "L75",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "optimal_paso_2_estructura_del_an\u00e1lisis",
-      "target": "optimal_2_diagn\u00f3stico_r\u00e1pido"
+      "source": "legal",
+      "target": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
-      "source_location": "L53",
+      "source_file": "LEGAL.md",
+      "source_location": "L66",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "optimal_paso_2_estructura_del_an\u00e1lisis",
-      "target": "optimal_3_an\u00e1lisis_t\u00e9cnico_lo_que_el_c\u00f3digo_revela"
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_10_limitaci\u00f3n_de_responsabilidad"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
-      "source_location": "L85",
+      "source_file": "LEGAL.md",
+      "source_location": "L91",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "optimal_paso_2_estructura_del_an\u00e1lisis",
-      "target": "optimal_4_experiencia_de_uso_desde_el_c\u00f3digo"
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_11_titularidad_y_portabilidad_de_los_datos"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
+      "source_file": "LEGAL.md",
       "source_location": "L95",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "optimal_paso_2_estructura_del_an\u00e1lisis",
-      "target": "optimal_5_fit_con_el_mercado_colombiano_lectura_t\u00e9cnica"
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_12_servicios_de_terceros_y_canales_de_comunicaci\u00f3n"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
-      "source_location": "L119",
+      "source_file": "LEGAL.md",
+      "source_location": "L99",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "optimal_paso_2_estructura_del_an\u00e1lisis",
-      "target": "optimal_6_no_negociables_lo_que_bloquea_el_lanzamiento"
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_13_herramientas_automatizadas_y_futuras_integraciones_de_ia"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
-      "source_location": "L132",
+      "source_file": "LEGAL.md",
+      "source_location": "L103",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "optimal_paso_2_estructura_del_an\u00e1lisis",
-      "target": "optimal_7_qu\u00e9_quitar_scope_creep_detectado_en_el_c\u00f3digo"
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_14_ley_aplicable_y_jurisdicci\u00f3n"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
-      "source_location": "L144",
+      "source_file": "LEGAL.md",
+      "source_location": "L12",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "optimal_paso_2_estructura_del_an\u00e1lisis",
-      "target": "optimal_8_resumen_de_\u00e1reas_de_mejora_prioritarias"
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_1_identificaci\u00f3n_del_proveedor_tecnol\u00f3gico_y_relaci\u00f3n_contractual"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "optimal.md",
-      "source_location": "L158",
+      "source_file": "LEGAL.md",
+      "source_location": "L17",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "optimal_paso_2_estructura_del_an\u00e1lisis",
-      "target": "optimal_9_veredicto_final"
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_2_descripci\u00f3n_de_las_funcionalidades_de_la_aplicaci\u00f3n"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_3_cuentas_de_usuario_seguridad_y_dispositivo_\u00fanico"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L35",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_4_roles_y_permisos_en_la_plataforma"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L41",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_5_licencia_de_uso_y_propiedad_intelectual"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L45",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_6_usos_prohibidos"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L60",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_7_evidencias_y_firma_digitalizada"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L64",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_8_disponibilidad_mantenimiento_y_acuerdo_de_nivel_de_servicio_sla"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L61",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_i_t\u00e9rminos_y_condiciones_de_servicio",
+      "target": "legal_9_suscripciones_pagos_y_facturaci\u00f3n"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L35",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_3_cuentas_de_usuario_seguridad_y_dispositivo_\u00fanico",
+      "target": "legal_3_1_pol\u00edtica_de_eliminaci\u00f3n_de_cuenta"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L69",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_8_disponibilidad_mantenimiento_y_acuerdo_de_nivel_de_servicio_sla",
+      "target": "legal_8_1_copias_de_seguridad_y_recuperaci\u00f3n_de_datos"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L83",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_10_limitaci\u00f3n_de_responsabilidad",
+      "target": "legal_10_1_cl\u00e1usula_de_fuerza_mayor"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L147",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_10_compartici\u00f3n_con_terceros_y_transferencia_internacional_de_datos"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L186",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_11_cookies_anal\u00edtica_y_monitoreo_de_rendimiento"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L193",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_12_gesti\u00f3n_de_incidentes_y_brechas_de_seguridad"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L197",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_13_tiempo_de_conservaci\u00f3n_de_los_datos"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L201",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_14_enlaces_a_sitios_de_terceros_y_webview"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L204",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_15_menores_de_edad"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L207",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_16_vigencia_y_modificaciones_de_la_pol\u00edtica"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_1_roles_en_el_tratamiento_de_datos_ley_1581"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L84",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_2_categor\u00edas_de_datos_recolectados"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L99",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_3_finalidad_del_tratamiento_de_los_datos"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L108",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_4_consentimiento_y_autorizaci\u00f3n_del_titular"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L112",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_5_derechos_de_los_titulares_de_los_datos"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L121",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_6_procedimiento_para_ejercer_los_derechos_de_habeas_data"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L129",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_7_medidas_de_seguridad_de_la_informaci\u00f3n"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L136",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_8_permisos_de_hardware_del_dispositivo_m\u00f3vil_y_web"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L143",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_parte_ii_pol\u00edtica_de_tratamiento_de_datos_personales_habeas_data",
+      "target": "legal_9_geolocalizaci\u00f3n"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L87",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_2_categor\u00edas_de_datos_recolectados",
+      "target": "legal_a_datos_del_usuario_profesional_t\u00e9cnico_administrador"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L92",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_2_categor\u00edas_de_datos_recolectados",
+      "target": "legal_b_datos_del_cliente_final_suministrados_por_el_t\u00e9cnico"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L96",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_2_categor\u00edas_de_datos_recolectados",
+      "target": "legal_c_datos_sensibles_y_biom\u00e9tricos"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "LEGAL.md",
+      "source_location": "L213",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "legal_16_vigencia_y_modificaciones_de_la_pol\u00edtica",
+      "target": "legal_datos_de_contacto_y_soporte_legal"
     },
     {
       "relation": "contains",
@@ -34769,5 +35406,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "116b193980543e6fe3dc24081ef633b994a0101d"
+  "built_at_commit": "9349715878959f027aa073893a6a0cac992d7f9a"
 }

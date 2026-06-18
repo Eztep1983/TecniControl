@@ -72,6 +72,8 @@ export default function FirmaInput({
 
   const showFirmaError = signatureState.habilitada && !signatureState.firma
   const showValidacionError = signatureState.habilitada && !signatureState.validada
+  const showNombreError = signatureState.habilitada && !signatureState.nombreReceptor?.trim()
+  const showCedulaError = signatureState.habilitada && !signatureState.cedulaReceptor?.trim()
 
   return (
     <div className="space-y-6">
@@ -138,6 +140,57 @@ export default function FirmaInput({
 
         {signatureState.habilitada ? (
           <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+            {/* Campos del Receptor */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-800/40 p-4 border border-gray-700/30 rounded-2xl">
+              <div className="space-y-1.5">
+                <label htmlFor="nombreReceptor" className="block text-sm font-medium text-gray-300">
+                  Nombre Completo del Receptor *
+                </label>
+                <input
+                  type="text"
+                  id="nombreReceptor"
+                  value={signatureState.nombreReceptor || ''}
+                  onChange={(e) => onChange({ ...signatureState, nombreReceptor: e.target.value })}
+                  placeholder="Ej. Juan Pérez"
+                  className={`w-full px-4 py-3 bg-gray-900/60 border rounded-xl text-white focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 outline-none ${
+                    showNombreError ? 'border-red-500/50 focus:border-red-500/50' : 'border-gray-700/50'
+                  }`}
+                />
+                {showNombreError && (
+                  <p className="text-xs text-red-400 flex items-center gap-1.5 mt-1 animate-in fade-in slide-in-from-top-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    El nombre del receptor es obligatorio.
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="cedulaReceptor" className="block text-sm font-medium text-gray-300">
+                  Cédula del Receptor *
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  id="cedulaReceptor"
+                  value={signatureState.cedulaReceptor || ''}
+                  onChange={(e) => {
+                    const cleanValue = e.target.value.replace(/\D/g, '')
+                    onChange({ ...signatureState, cedulaReceptor: cleanValue })
+                  }}
+                  placeholder="Ej. 123456789"
+                  className={`w-full px-4 py-3 bg-gray-900/60 border rounded-xl text-white focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 outline-none ${
+                    showCedulaError ? 'border-red-500/50 focus:border-red-500/50' : 'border-gray-700/50'
+                  }`}
+                />
+                {showCedulaError && (
+                  <p className="text-xs text-red-400 flex items-center gap-1.5 mt-1 animate-in fade-in slide-in-from-top-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    La cédula del receptor es obligatoria.
+                  </p>
+                )}
+              </div>
+            </div>
+
             {/* Lienzo de firma */}
             <div>
               <div className="flex justify-between items-center mb-2">
@@ -209,7 +262,7 @@ export default function FirmaInput({
                     <Info className="w-4 h-4 text-blue-400" />
                   </div>
                   <p className="text-sm font-medium">
-                    Para que esta firma sea válida legalmente debe ser firmada por el cliente asociado a esta orden.
+                    Para que esta firma sea válida debe ser firmada por el cliente o el receptor relacionado al cliente/empresa en esta orden.
                   </p>
                 </div>
               </div>
@@ -310,7 +363,7 @@ export default function FirmaInput({
                 Firma opcional
               </h4>
               <p className="text-sm text-gray-400 leading-relaxed">
-                  La firma confirma que el cliente recibió el equipo y acepta las condiciones del servicio. Actívala para que la orden quede validada legalmente.
+                  La firma confirma que el cliente recibió el equipo y acepta las condiciones del servicio. Actívala para que la orden quede validada.
               </p>
             </div>
           </div>

@@ -327,9 +327,17 @@ export default function ResumenMantenimiento({
                   loading="lazy"
                 />
               </div>
-              <div className="text-center">
-                <p className="text-sm text-gray-400">Responsable de recepción:</p>
-                <p className="text-base font-semibold text-white">{state.clienteSeleccionado?.name || 'Cliente'}</p>
+              <div className="space-y-3 text-center bg-black/20 p-4 rounded-xl border border-gray-800">
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">Responsable de recepción</p>
+                  <p className="text-base font-semibold text-white">{state.nombreReceptor || state.clienteSeleccionado?.name || 'Cliente'}</p>
+                </div>
+                {state.cedulaReceptor && (
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider mb-0.5 font-medium">Cédula del Receptor</p>
+                    <p className="text-sm font-semibold text-gray-300">{state.cedulaReceptor}</p>
+                  </div>
+                )}
               </div>
               <div className="flex items-center justify-center gap-2 text-green-400 text-sm bg-green-400/10 px-4 py-2 rounded-full">
                 <CheckCircle className="w-4 h-4" />

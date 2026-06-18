@@ -52,6 +52,8 @@ export function serializeOrden(
     firmaCliente: orden.firmaCliente,
     nombreFirmante: orden.nombreFirmante,
     validacionCliente: orden.validacionCliente,
+    nombreReceptor: orden.nombreReceptor,
+    cedulaReceptor: orden.cedulaReceptor,
     idPersonalizado: orden.idPersonalizado,
     tempId: tempId || (orden as any).tempId,
     horaCreacion: orden.horaCreacion,

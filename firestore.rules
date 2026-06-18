@@ -118,7 +118,7 @@ service cloud.firestore {
                   'instalacionRecomendaciones',
                   'instalacionRecomendacionesDetalle', 'instalacionConfiguracion',
                   'instalacionConfiguracionTipos', 'firmaCliente',
-                  'nombreFirmante', 'validacionCliente', 'createdAt', 'updatedAt'
+                  'nombreFirmante', 'validacionCliente', 'nombreReceptor', 'cedulaReceptor', 'createdAt', 'updatedAt'
                 ])
              && isOptionalString('id')
              && request.resource.data.tipo == 'mantenimiento'
@@ -144,6 +144,8 @@ service cloud.firestore {
              && isOptionalList('instalacionConfiguracionTipos')
              && isOptionalString('firmaCliente')
              && isOptionalString('nombreFirmante')
+             && isOptionalString('nombreReceptor')
+             && isOptionalString('cedulaReceptor')
              && isOptionalBool('garantiaHabilitada')
              && isOptionalBool('instalacionRecomendaciones')
              && isOptionalBool('instalacionConfiguracion')
@@ -151,7 +153,7 @@ service cloud.firestore {
     }
 
     function validTareaPayload() {
-      return request.resource.data.keays().hasOnly(['nombre', 'tipo', 'categoria', 'creadoEn', 'actualizadoEn'])
+      return request.resource.data.keys().hasOnly(['nombre', 'tipo', 'categoria', 'creadoEn', 'actualizadoEn'])
              && isNonEmptyString('nombre')
              && request.resource.data.tipo in ['preventivo', 'correctivo', 'ambos']
              && isNonEmptyString('categoria')
@@ -176,9 +178,7 @@ service cloud.firestore {
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null && request.auth.uid == userId
                     // Impedir que el usuario cambie su propio rol, UID o plan (usando diff para mayor robustez)
-                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid', 'plan'])
-                    // Lógica de Device Binding: Si ya tiene un deviceId, no puede cambiarlo
-                    && (!('deviceId' in resource.data) || request.resource.data.deviceId == resource.data.deviceId);
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid', 'plan']);
       allow delete: if false;
     }
 
@@ -238,7 +238,7 @@ service cloud.firestore {
                             'instalacionRecomendaciones',
                             'instalacionRecomendacionesDetalle', 'instalacionConfiguracion',
                             'instalacionConfiguracionTipos', 'firmaCliente',
-                            'nombreFirmante', 'validacionCliente', 'createdAt', 'updatedAt'
+                            'nombreFirmante', 'validacionCliente', 'nombreReceptor', 'cedulaReceptor', 'createdAt', 'updatedAt'
                           ])
                        && isOptionalString('id')
                        && request.resource.data.tipo == 'mantenimiento'

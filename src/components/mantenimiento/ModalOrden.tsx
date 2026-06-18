@@ -678,12 +678,22 @@ const DetailView = memo(({
                   className="w-28 h-16 object-contain"
                 />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Firmante</p>
-                <p className="text-base font-black text-white leading-tight truncate">
-                  {orden.nombreFirmante || orden.cliente.name}
-                </p>
-                <div className="flex items-center gap-1.5 mt-2.5 text-emerald-400">
+              <div className="flex-1 min-w-0 space-y-2">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">Firmante / Receptor</p>
+                  <p className="text-base font-black text-white leading-tight truncate">
+                    {orden.nombreReceptor || orden.nombreFirmante || orden.cliente.name}
+                  </p>
+                </div>
+                {orden.cedulaReceptor && (
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">Cédula del Receptor</p>
+                    <p className="text-sm font-bold text-gray-300">
+                      {orden.cedulaReceptor}
+                    </p>
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5 text-emerald-400">
                   <CheckCircle className="w-4 h-4" />
                   <span className="text-xs font-bold uppercase tracking-tight">Validada</span>
                 </div>

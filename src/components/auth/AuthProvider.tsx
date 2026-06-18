@@ -18,7 +18,9 @@ import {
 import { Capacitor } from '@capacitor/core'
 import { Device } from '@capacitor/device'
 import { auth, db } from '@/lib/firebase'
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from 'firebase/firestore'
+import { useToast } from "@/hooks/use-toast"
+import { getLocalDeviceId } from '@/lib/device-helpers'
 
 const SECURITY_CONFIG = {
   allowedDomains: null as string[] | null,
@@ -59,6 +61,8 @@ const setCachedUid = (uid: string | null) => {
     // ignore
   }
 }
+
+
 
 interface AuthContextType {
   user: User | null
@@ -110,6 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const lastActivityRef = useRef<number>(Date.now())
+  const { toast } = useToast()
 
   const clearError = useCallback(() => setError(null), [])
 
@@ -141,12 +146,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const userRef = doc(db, 'users', firebaseUser.uid)
     
-      // Obtener el ID del dispositivo si estamos en una plataforma nativa
-      let currentDeviceId = 'web-browser'
-      if (Capacitor.isNativePlatform()) {
-        const info = await Device.getId()
-        currentDeviceId = info.identifier
-      }
+      // Obtener el ID del dispositivo
+      const currentDeviceId = await getLocalDeviceId()
 
       const baseData = {
         email: firebaseUser.email,
@@ -185,9 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           lastActivity: serverTimestamp(),
         }
 
-        if (Capacitor.isNativePlatform()) {
-          createData.deviceId = currentDeviceId
-        }
+        createData.deviceId = currentDeviceId
 
         await setDoc(userRef, createData, { merge: true })
         logger.log('Perfil de usuario creado para nuevo usuario')
@@ -196,29 +195,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const userData = userDoc.data() as UserDocument
 
-      if (Capacitor.isNativePlatform() && userData.deviceId && userData.deviceId !== currentDeviceId) {
-        logger.warn('Device mismatch detected!', { stored: userData.deviceId, current: currentDeviceId })
-        throw new Error('DEVICE_LOCKED')
+      let lastActivityTime = 0;
+      if (userData.lastActivity) {
+        if (typeof userData.lastActivity.seconds === 'number') {
+          lastActivityTime = userData.lastActivity.seconds * 1000;
+        } else if (userData.lastActivity instanceof Date) {
+          lastActivityTime = userData.lastActivity.getTime();
+        } else if (typeof userData.lastActivity.toDate === 'function') {
+          lastActivityTime = userData.lastActivity.toDate().getTime();
+        } else {
+          const parsed = Date.parse(String(userData.lastActivity));
+          if (!isNaN(parsed)) {
+            lastActivityTime = parsed;
+          } else if (typeof userData.lastActivity === 'number') {
+            lastActivityTime = userData.lastActivity;
+          }
+        }
+      }
+
+      const sixHoursInMs = 6 * 60 * 60 * 1000;
+      const timeDifference = Date.now() - lastActivityTime;
+      const shouldUpdate = isNewLogin === true || userData.deviceId !== currentDeviceId || timeDifference > sixHoursInMs;
+
+      if (!shouldUpdate) {
+        logger.log('Skipping Firestore sync: activity within 6h and same device.')
+        return { ...userData, plan: userData.plan || 'free' } as UserDocument;
       }
 
       const updateData: any = {
         ...baseData,
+        deviceId: currentDeviceId,
         lastLogin: serverTimestamp(),
         lastActivity: serverTimestamp(),
       }
 
-      if (!userData.deviceId && Capacitor.isNativePlatform()) {
-        updateData.deviceId = currentDeviceId
-        logger.log('Binding device for newly authorized user:', currentDeviceId)
-      }
-
       if (isNewLogin) {
         await setDoc(userRef, updateData, { merge: true })
-        logger.log('User document updated on login')
+        logger.log('User document updated on login with new deviceId')
+        return { ...userData, ...updateData, plan: userData.plan || 'free' } as UserDocument
       } else {
-        await setDoc(userRef, { lastActivity: serverTimestamp() }, { merge: true })
+        const partialUpdate = { lastActivity: serverTimestamp(), deviceId: currentDeviceId }
+        await setDoc(userRef, partialUpdate, { merge: true })
+        logger.log('User document updated with lastActivity and deviceId')
+        return { ...userData, ...partialUpdate, plan: userData.plan || 'free' } as UserDocument
       }
-      return { ...userData, ...updateData, plan: userData.plan || 'free' } as UserDocument
     } catch (error: any) {
       logger.error('Error syncing user document:', error)
       throw error
@@ -324,8 +344,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     logger.log('Setting up auth state listener')
+    let unsubscribeDoc: (() => void) | null = null;
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (unsubscribeDoc) {
+        unsubscribeDoc();
+        unsubscribeDoc = null;
+      }
+
       if (firebaseUser) {
         const validation = validateUser(firebaseUser)
         if (!validation.valid) {
@@ -350,13 +376,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           // ⏳ Tarea pesada de Firestore en segundo plano
           syncUserDocument(firebaseUser, isNewLogin)
-            .then(updatedProfile => {
-              setUserProfile(updatedProfile)
+            .then(async (syncedProfile) => {
+              setUserProfile(syncedProfile);
+
+              if (unsubscribeDoc) {
+                unsubscribeDoc();
+                unsubscribeDoc = null;
+              }
+
+              // Configurar onSnapshot para escuchar cambios en tiempo real
+              const userRef = doc(db, 'users', firebaseUser.uid)
+              unsubscribeDoc = onSnapshot(userRef, async (snapshot) => {
+                if (snapshot.exists()) {
+                  const data = snapshot.data() as UserDocument;
+                  const localDeviceId = await getLocalDeviceId();
+                  
+                  if (data.deviceId && data.deviceId !== localDeviceId) {
+                    logger.warn('Session taken over by another device');
+                    toast({
+                      title: "Sesión Cerrada",
+                      description: "Has iniciado sesión en otro dispositivo. Por favor inicia sesión nuevamente en este dispositivo si deseas usarlo.",
+                      variant: "destructive"
+                    });
+                    
+                    setCachedUid(null);
+                    await signOut(auth);
+                    setUser(null);
+                    setUserProfile(null);
+                    setError("Sesión cerrada por inicio en otro dispositivo.");
+                  } else {
+                    setUserProfile(data);
+                  }
+                }
+              });
             })
             .catch(async (err: any) => {
               logger.error('Error in background auth sync:', err)
-              // Si falla por seguridad (ej. device locked o permisos), revertir sesión
-              if (err.message?.includes('DEVICE_LOCKED') || err.message?.includes('ERROR_DE_PERMISOS')) {
+              if (err.message?.includes('ERROR_DE_PERMISOS')) {
                 setCachedUid(null)
                 await signOut(auth)
                 setUser(null)
@@ -381,9 +437,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       logger.log('🧹 Cleaning up auth listener')
-      unsubscribe()
+      if (unsubscribeDoc) unsubscribeDoc();
+      unsubscribeAuth()
     }
-  }, [validateUser, syncUserDocument])
+  }, [validateUser, syncUserDocument, toast])
 
   // ✅ FIX 3: logout envuelto en useCallback por la misma razón que signInWithGoogle.
   // Sin esto, el objeto `value` del contexto cambia en cada render y todos los

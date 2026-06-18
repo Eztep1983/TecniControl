@@ -136,6 +136,8 @@ export interface FormState {
   firmaHabilitada: boolean
   firmaCliente: string | null
   validacionCliente: boolean
+  nombreReceptor: string
+  cedulaReceptor: string
 
   // Éxito
   ordenCreada?: OrdenMantenimiento
@@ -179,6 +181,8 @@ type FormAction =
   | { type: 'ADD_INSTALACION_CONFIGURACION_PERSONALIZADA'; payload: string }
   | { type: 'SET_FIRMA_CLIENTE'; payload: string | null }
   | { type: 'SET_VALIDACION_CLIENTE'; payload: boolean }
+  | { type: 'SET_NOMBRE_RECEPTOR'; payload: string }
+  | { type: 'SET_CEDULA_RECEPTOR'; payload: string }
   | { type: 'TOGGLE_FIRMA_HABILITADA' }
   | { type: 'SET_ONBOARDING_DATA'; payload: { cliente: Cliente; dispositivo: Dispositivo } }
 
@@ -215,6 +219,8 @@ const initialState: FormState = {
   firmaHabilitada: false, // Por defecto apagado
   firmaCliente: null,
   validacionCliente: false,
+  nombreReceptor: '',
+  cedulaReceptor: '',
 }
 
 function formReducer(state: FormState, action: FormAction): FormState {
@@ -408,6 +414,8 @@ function formReducer(state: FormState, action: FormAction): FormState {
         garantiaHabilitada: false,
         garantiaReferenciaId: '',
         garantiaMotivo: '',
+        nombreReceptor: '',
+        cedulaReceptor: '',
       }
 
     case 'SET_INSTALACION_RECOMENDACIONES':
@@ -438,6 +446,12 @@ function formReducer(state: FormState, action: FormAction): FormState {
 
     case 'SET_VALIDACION_CLIENTE':
       return { ...state, validacionCliente: action.payload }
+
+    case 'SET_NOMBRE_RECEPTOR':
+      return { ...state, nombreReceptor: action.payload }
+
+    case 'SET_CEDULA_RECEPTOR':
+      return { ...state, cedulaReceptor: action.payload }
 
     case 'TOGGLE_FIRMA_HABILITADA':
       return {
@@ -476,6 +490,8 @@ function formReducer(state: FormState, action: FormAction): FormState {
         firmaHabilitada: true,
         firmaCliente: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
         validacionCliente: true,
+        nombreReceptor: 'Juan Pérez',
+        cedulaReceptor: '1234567890',
         highestStepCompleted: 6
       }
 
@@ -695,10 +711,15 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
     4: () => true, // garantia
     5: () => { // firma
       if (!state.firmaHabilitada) return true;
-      return state.validacionCliente && !!state.firmaCliente;
+      return (
+        state.validacionCliente &&
+        !!state.firmaCliente &&
+        !!state.nombreReceptor?.trim() &&
+        !!state.cedulaReceptor?.trim()
+      );
     },
     6: () => true, // resumen
-  }), [state.clienteSeleccionado, state.dispositivoSeleccionado, state.tipoMantenimiento, state.observacionesIniciales, state.pruebasRealizadas, state.diagnosticoFinal, state.tareasSeleccionadas, state.tareasPersonalizadas, state.instalacionConfiguracion, state.instalacionRecomendaciones, state.garantiaHabilitada, state.firmaHabilitada, state.validacionCliente, state.firmaCliente])
+  }), [state.clienteSeleccionado, state.dispositivoSeleccionado, state.tipoMantenimiento, state.observacionesIniciales, state.pruebasRealizadas, state.diagnosticoFinal, state.tareasSeleccionadas, state.tareasPersonalizadas, state.instalacionConfiguracion, state.instalacionRecomendaciones, state.garantiaHabilitada, state.firmaHabilitada, state.validacionCliente, state.firmaCliente, state.nombreReceptor, state.cedulaReceptor])
 
   // Verifica si un paso específico es accesible
   const isStepAccessible = useCallback((stepIndex: number) => {
@@ -952,8 +973,10 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
       }
 
       nuevaOrden.firmaCliente = state.firmaHabilitada ? state.firmaCliente : null;
-      nuevaOrden.nombreFirmante = state.firmaHabilitada ? (state.clienteSeleccionado?.name || 'Cliente') : null;
+      nuevaOrden.nombreFirmante = state.firmaHabilitada ? (state.nombreReceptor || state.clienteSeleccionado?.name || 'Cliente') : null;
       nuevaOrden.validacionCliente = state.firmaHabilitada ? state.validacionCliente : false;
+      nuevaOrden.nombreReceptor = state.firmaHabilitada ? state.nombreReceptor.trim() : null;
+      nuevaOrden.cedulaReceptor = state.firmaHabilitada ? state.cedulaReceptor.trim() : null;
 
       Object.keys(nuevaOrden).forEach(key => {
         if (nuevaOrden[key] === undefined) delete nuevaOrden[key];
@@ -1261,7 +1284,9 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
             signatureState={{
               habilitada: state.firmaHabilitada,
               firma: state.firmaCliente,
-              validada: state.validacionCliente
+              validada: state.validacionCliente,
+              nombreReceptor: state.nombreReceptor,
+              cedulaReceptor: state.cedulaReceptor
             }}
             onChange={(newState) => {
               // Si el estado de habilitada cambió, aseguramos que se sincronice con el dispatch
@@ -1270,6 +1295,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
               }
               dispatch({ type: 'SET_FIRMA_CLIENTE', payload: newState.firma })
               dispatch({ type: 'SET_VALIDACION_CLIENTE', payload: newState.validada })
+              dispatch({ type: 'SET_NOMBRE_RECEPTOR', payload: newState.nombreReceptor ?? '' })
+              dispatch({ type: 'SET_CEDULA_RECEPTOR', payload: newState.cedulaReceptor ?? '' })
             }}
           />
         )
@@ -1336,6 +1363,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
       case 'firma':
         if (state.firmaHabilitada) {
           if (!state.firmaCliente) return 'Falta la firma del cliente';
+          if (!state.nombreReceptor?.trim()) return 'Falta el nombre completo del receptor';
+          if (!state.cedulaReceptor?.trim()) return 'Falta la cédula del receptor';
           if (!state.validacionCliente) return 'Acepta los términos para continuar';
         }
         return 'Firma requerida';
@@ -1536,8 +1565,10 @@ export default function FormularioMantenimiento({ onClose, onSuccess, isOnboardi
               {state.currentStep === 'firma' && (
                 !state.firmaHabilitada ? 'Firma opcional desactivada' :
                 !state.firmaCliente ? 'Falta la firma del cliente' :
+                !state.nombreReceptor?.trim() ? 'Falta el nombre completo del receptor' :
+                !state.cedulaReceptor?.trim() ? 'Falta la cédula del receptor' :
                 !state.validacionCliente ? 'Debe aceptar los términos para continuar' :
-                'Firma y términos completados'
+                'Firma, datos y términos completados'
               )}
             </p>
           </div>

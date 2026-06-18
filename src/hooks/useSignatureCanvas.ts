@@ -6,6 +6,8 @@ export interface SignatureState {
   habilitada: boolean
   firma: string | null
   validada: boolean
+  nombreReceptor?: string
+  cedulaReceptor?: string
 }
 
 export function useSignatureCanvas(
