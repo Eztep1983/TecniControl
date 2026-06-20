@@ -2,7 +2,7 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo, useReducer, useRef } from 'react'
 import { OrdenMantenimiento, Cliente, Dispositivo } from '@/types/orden'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { createPortal } from 'react-dom';
 import {
   ArrowLeft, ChevronRight, ChevronLeft, CheckCircle, Users, Wrench,
@@ -11,10 +11,12 @@ import {
   X
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
+import OnboardingSuccess from '@/components/onboarding/OnboardingSuccess'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { useCrearOrden, useClientesUsuario } from '@/hooks/useMultiUser'
+import { useClientesUsuario, useCompletarOnboarding } from '@/hooks/useMultiUser'
 import { useNegocio } from '@/hooks/useNegocio'
-import { usePrintService } from '@/components/mantenimiento/PrintService'
+import { PrintServiceProps, usePrintService } from '../mantenimiento/PrintService'
+import { PDFPreviewView } from '../mantenimiento/ModalOrden'
 
 // Componentes importados
 import ClienteSelector from '@/components/forms/ClienteSelector'
@@ -28,10 +30,9 @@ import { usePersistentReducer } from '@/hooks/usePersistentReducer'
 import { useKeyboardVisible } from '@/hooks/useKeyboardVisible'
 import { useOfflineOrderQueue } from '@/hooks/useOfflineOrderQueue'
 
-interface FormularioMantenimientoProps {
+interface OnboardingFormProps {
   onClose: (stepsToPop?: number) => void
   onSuccess: (stepsToPop?: number) => void
-  isOnboarding?: boolean
 }
 
 const ONBOARDING_HINTS: Record<FormStep, { title: string, hint: React.ReactNode, icon: any }> = {
@@ -61,7 +62,7 @@ const ONBOARDING_HINTS: Record<FormStep, { title: string, hint: React.ReactNode,
     hint: <span>Configura cuánto tiempo de garantía ofreces. El sistema calculará automáticamente la fecha de vencimiento y la incluirá en el PDF profesional.</span>
   },
   firma: {
-    title: "Validacion del Cliente",
+    title: "Validación del Cliente",
     icon: <PenLine className="w-5 h-5" />,
     hint: <span>Tus clientes pueden firmar directamente en tu pantalla. Esto da validez al servicio y asegura que el cliente esté conforme con el trabajo.</span>
   },
@@ -184,15 +185,37 @@ type FormAction =
   | { type: 'SET_NOMBRE_RECEPTOR'; payload: string }
   | { type: 'SET_CEDULA_RECEPTOR'; payload: string }
   | { type: 'TOGGLE_FIRMA_HABILITADA' }
+  | { type: 'SET_ONBOARDING_DATA'; payload: { cliente: Cliente; dispositivo: Dispositivo } }
 
 const initialState: FormState = {
   currentStep: 'cliente',
   loading: false,
-  highestStepCompleted: 0, // Solo el paso 0 (cliente) está inicialmente "permitido"
-  clienteSeleccionado: null,
-  dispositivoSeleccionado: null,
-  tipoMantenimiento: '',
-  tareasSeleccionadas: [],
+  highestStepCompleted: 6, // Permite saltar pasos en onboarding
+  clienteSeleccionado: {
+    id: 'test_cliente',
+    name: 'Juan Pérez (Cliente de Prueba)',
+    email: 'juan@ejemplo.com',
+    phone: '555-0123',
+    address: 'Av. Siempre Viva 123',
+    tipo: 'persona',
+    userId: 'test',
+    cedula: '1234567890',
+    dispositivos: []
+  } as unknown as Cliente,
+  dispositivoSeleccionado: {
+    id: 'test_dispositivo',
+    type: 'computadora',
+    tipo: 'computadora',
+    brand: 'TechBrand',
+    marca: 'TechBrand',
+    model: 'ProBook X200',
+    modelo: 'ProBook X200',
+    serialNumber: 'SN-987654321',
+    numeroSerie: 'SN-987654321',
+    clienteId: 'test_cliente',
+  } as unknown as Dispositivo,
+  tipoMantenimiento: 'preventivo',
+  tareasSeleccionadas: ['Limpieza interna', 'Revisión general'],
   tareasPersonalizadas: [''],
   mostrarTareasPredefinidas: true,
   piezasUsadas: [],
@@ -202,9 +225,9 @@ const initialState: FormState = {
   contadorMaquina: undefined,
   garantiaReferenciaId: '',
   garantiaMotivo: '',
-  garantiaHabilitada: false,
-  garantiaDescripcion: '',
-  garantiaTiempoDesde: '',
+  garantiaHabilitada: true,
+  garantiaDescripcion: 'Garantía de servicio técnico',
+  garantiaTiempoDesde: new Date().toISOString().split('T')[0],
   garantiaTiempoHasta: '',
   mesesGarantia: 3,
   contador: null,
@@ -215,11 +238,11 @@ const initialState: FormState = {
   instalacionConfiguracionTipos: [],
   instalacionConfiguracionPersonalizada: '',
   mantenimientoColecciones: {},
-  firmaHabilitada: false, // Por defecto apagado
-  firmaCliente: null,
-  validacionCliente: false,
-  nombreReceptor: '',
-  cedulaReceptor: '',
+  firmaHabilitada: true,
+  firmaCliente: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  validacionCliente: true,
+  nombreReceptor: 'Juan Pérez',
+  cedulaReceptor: '1234567890',
 }
 
 function formReducer(state: FormState, action: FormAction): FormState {
@@ -458,6 +481,44 @@ function formReducer(state: FormState, action: FormAction): FormState {
         firmaHabilitada: !state.firmaHabilitada
       }
 
+    case 'SET_ONBOARDING_DATA':
+      const onboardingMantenimientoData = {
+        tareasSeleccionadas: [],
+        tareasPersonalizadas: [''],
+        piezasUsadas: [],
+        observacionesIniciales: '',
+        pruebasRealizadas: '',
+        diagnosticoFinal: '',
+        instalacionRecomendaciones: false,
+        instalacionRecomendacionesDetalle: '',
+        instalacionConfiguracion: false,
+        instalacionConfiguracionTipos: [],
+        garantiaReferenciaId: '',
+        garantiaMotivo: '',
+      };
+      return {
+        ...state,
+        clienteSeleccionado: action.payload.cliente,
+        dispositivoSeleccionado: action.payload.dispositivo,
+        tipoMantenimiento: 'preventivo',
+        tareasSeleccionadas: onboardingMantenimientoData.tareasSeleccionadas,
+        tareasPersonalizadas: onboardingMantenimientoData.tareasPersonalizadas,
+        piezasUsadas: onboardingMantenimientoData.piezasUsadas,
+        mantenimientoColecciones: {
+          ...state.mantenimientoColecciones,
+          preventivo: onboardingMantenimientoData
+        },
+        garantiaHabilitada: true,
+        garantiaDescripcion: 'Garantía de servicio técnico',
+        mesesGarantia: 3,
+        firmaHabilitada: true,
+        firmaCliente: '',
+        validacionCliente: false,
+        nombreReceptor: '',
+        cedulaReceptor: '',
+        highestStepCompleted: 1
+      }
+
     default:
       return state
   }
@@ -476,15 +537,15 @@ const STEPS_CONFIG = [
 
 
 
-export default function FormularioMantenimiento({ onClose, onSuccess }: FormularioMantenimientoProps) {
+export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormProps) {
   const { user } = useAuth()
   const { negocio } = useNegocio()
   const isKeyboardVisible = useKeyboardVisible()
-  const { imprimirOrden, compartirOrden } = usePrintService({ negocio })
-  const { mutateAsync: crearOrdenMutate } = useCrearOrden()
-  const { enqueueOrder } = useOfflineOrderQueue()
+  const { mutate: markOnboardingCompleted } = useCompletarOnboarding()
+  const { imprimirOrden, compartirOrden, generarPDFBlob, generarHTML } = usePrintService({ negocio })
   const { clientes: hookClientes } = useClientesUsuario()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const queryClienteId = typeof window !== 'undefined'
     ? new URLSearchParams(window.location.search).get('clienteId')
     : (searchParams ? searchParams.get('clienteId') : null)
@@ -495,12 +556,8 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   // Ref para manejar el botón de atrás en Android y evitar cerrar el modal
   const stepsPushed = useRef(0)
 
-  const [state, dispatch, clearPersistence] = usePersistentReducer(
-    'draft_mantenimiento',
-    formReducer,
-    initialState,
-    useCallback((savedState: FormState) => ({ ...savedState, loading: false, ordenCreada: undefined }), [])
-  )
+  const [state, dispatch] = useReducer(formReducer, initialState)
+  const clearPersistence = useCallback(() => {}, [])
 
   // ============================================================================
   // EFFECTS
@@ -571,7 +628,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
 
   // Handler para gestos de Swipe (Navegación Táctil)
   const onDragEnd = (event: any, info: any) => {
-    const threshold = 50; // Píéxeles mínimos para considerar el swipe
+    const threshold = 50; // Píxeles mínimos para considerar el swipe
     if (info.offset.x < -threshold) {
       // Swipe a la izquierda -> Siguiente
       if (canProceedToNextStep()) nextStep();
@@ -580,6 +637,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       prevStep();
     }
   };
+  // Eliminar inyección dinámica, ya lo hicimos en initialState
 
   // Inicializar fecha de garantía solo si está vacía
   useEffect(() => {
@@ -902,72 +960,25 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
         if (nuevaOrden[key] === undefined) delete nuevaOrden[key];
       });
 
-      // ── Verificar conectividad REAL antes de intentar Firestore ──────────────
-      // navigator.onLine es poco confiable en Android (siempre true con WiFi sin internet).
-      // Usamos Capacitor Network.getStatus() que consulta el hardware real.
-      let isReallyOnline = navigator.onLine;
-      try {
-        const { Network } = await import('@capacitor/network');
-        const netStatus = await Network.getStatus();
-        isReallyOnline = netStatus.connected;
-      } catch {
-        // Plugin no disponible (web/emulador), usar navigator.onLine
-      }
-
-      if (!isReallyOnline) {
-        // ── RUTA OFFLINE: encolar directamente, sin tocar Firestore ─────────────
-        // Esto evita que runTransaction cuelgue indefinidamente en Android.
-        const ordenBase = {
+      // RUTA MOCK: Solo simulamos la creación para el Onboarding
+      setTimeout(() => {
+        const mockOrdenFinal = {
           ...nuevaOrden,
-          userId: user!.uid,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          idPersonalizado: 'OSER-ONBOARDING',
+          isOffline: true,
         };
-        const { tempId, idPersonalizado } = enqueueOrder(ordenBase, user!.uid);
-        const ordenOffline = { ...ordenBase, id: tempId, idPersonalizado, isOffline: true };
 
         clearPersistence();
-        setOrdenCreada(ordenOffline as any);
-      } else {
-        // ── RUTA ONLINE: intentar Firestore, con fallback a cola si falla ────────
-        try {
-          const resultado = await crearOrdenMutate(nuevaOrden);
-
-          const ordenFinal = resultado ?? {
-            ...nuevaOrden,
-            idPersonalizado: 'OSER-TEMP-' + Date.now(),
-            isOffline: true,
-          };
-          if (!ordenFinal.idPersonalizado) {
-            ordenFinal.idPersonalizado = ordenFinal.id || ('OSER-TEMP-' + Date.now());
-          }
-
-          clearPersistence();
-          setOrdenCreada(ordenFinal as OrdenMantenimiento);
-        } catch (error) {
-          console.warn('Fallo intento online (posible micro-corte), reintentando vía cola offline...', error);
-          
-          const ordenBase = {
-            ...nuevaOrden,
-            userId: user!.uid,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-          const { tempId, idPersonalizado } = enqueueOrder(ordenBase, user!.uid);
-          const ordenOffline = { ...ordenBase, id: tempId, idPersonalizado, isOffline: true };
-
-          clearPersistence();
-          setOrdenCreada(ordenOffline as any);
-        }
-      }
+        setOrdenCreada(mockOrdenFinal as any);
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }, 1500);
 
     } catch (error) {
-      console.error('Error creando orden:', error);
-      alert('Error al crear la orden: ' + (error instanceof Error ? error.message : 'Error desconocido'));
-    } finally {
+      console.error('Error creando orden mock:', error);
+      alert('Error simulando la orden.');
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [user?.uid, state, crearOrdenMutate]);
+  }, [user?.uid, state, clearPersistence]);
 
   // ============================================================================
   // UTILIDADES MEMOIZADAS
@@ -1214,12 +1225,73 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
         )
 
       case 'resumen':
+        const todasLasTareas = [
+          ...state.tareasSeleccionadas,
+          ...state.tareasPersonalizadas.filter((t: string) => t.trim())
+        ];
+
+        const mockOrden: any = {
+          idPersonalizado: 'OSER-ONBOARDING',
+          tipo: 'mantenimiento',
+          horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          fechaCreacion: new Date(),
+          cliente: state.clienteSeleccionado,
+          clienteId: state.clienteSeleccionado?.id,
+          dispositivo: state.dispositivoSeleccionado,
+          dispositivoId: state.dispositivoSeleccionado?.id,
+          tipoMantenimiento: state.tipoMantenimiento,
+          tareasRealizadas: todasLasTareas,
+          piezasUsadas: state.piezasUsadas,
+          userId: user?.uid || 'test',
+          firmaCliente: state.firmaHabilitada ? state.firmaCliente : null,
+          nombreFirmante: state.firmaHabilitada ? (state.nombreReceptor || state.clienteSeleccionado?.name || 'Cliente') : null,
+          validacionCliente: state.firmaHabilitada ? state.validacionCliente : false,
+          nombreReceptor: state.firmaHabilitada ? state.nombreReceptor : null,
+          cedulaReceptor: state.firmaHabilitada ? state.cedulaReceptor : null,
+          garantiaHabilitada: state.garantiaHabilitada,
+          garantiaDescripcion: state.garantiaHabilitada ? state.garantiaDescripcion : 'No aplica',
+          garantiaTiempoDesde: state.garantiaHabilitada && state.garantiaTiempoDesde ? new Date(state.garantiaTiempoDesde) : null,
+          garantiaTiempoHasta: state.garantiaHabilitada && state.garantiaTiempoHasta ? new Date(state.garantiaTiempoHasta) : null,
+        };
+
+        if (state.tipoMantenimiento === 'diagnostico') {
+          mockOrden.observacionesIniciales = state.observacionesIniciales;
+          mockOrden.pruebasRealizadas = state.pruebasRealizadas;
+          mockOrden.diagnosticoFinal = state.diagnosticoFinal;
+          if (state.contadorMaquina !== undefined) mockOrden.contadorMaquina = state.contadorMaquina;
+        }
+
+        if (state.tipoMantenimiento === 'instalacion') {
+          mockOrden.instalacionRecomendaciones = state.instalacionRecomendaciones;
+          mockOrden.instalacionRecomendacionesDetalle = state.instalacionRecomendacionesDetalle;
+          mockOrden.instalacionConfiguracion = state.instalacionConfiguracion;
+          mockOrden.instalacionConfiguracionTipos = state.instalacionConfiguracionTipos;
+        }
+
+        if (state.tipoMantenimiento === 'garantia') {
+          mockOrden.garantiaReferenciaId = state.garantiaReferenciaId;
+          mockOrden.garantiaMotivo = state.garantiaMotivo;
+        }
+
+        if (state.mostrarContador && state.contador) {
+          mockOrden.contador = {
+            tipo: state.contador.tipo,
+            valor: state.contador.valor || 0,
+            fechaRegistro: new Date(state.contador.fechaRegistro),
+            unidadPersonalizada: state.contador.unidadPersonalizada,
+            notas: state.contador.notas
+          };
+        }
+
         return (
-          <ResumenMantenimiento
-            state={state}
-            tipoMantenimientoLabel={getTipoMantenimientoLabel}
-            tipoMantenimientoColor={getTipoMantenimientoColor}
-          />
+          <div className="w-full h-[500px] border border-white/10 rounded-2xl overflow-hidden relative">
+            <PDFPreviewView 
+              orden={mockOrden} 
+              onBack={() => dispatch({ type: 'SET_CURRENT_STEP', payload: 'firma' })} 
+              generarPDFBlob={generarPDFBlob} 
+              generarHTML={generarHTML} 
+            />
+          </div>
         )
     }
   }
@@ -1336,6 +1408,29 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
           onSubmit={handleSubmit}
           onKeyDown={handleKeyDown}
         >
+          <motion.div
+            drag
+            dragConstraints={{ left: -100, right: 100, top: -200, bottom: 200 }}
+            dragElastic={0.2}
+            className="fixed z-50 bottom-28 right-4 max-w-[300px] pointer-events-auto cursor-grab active:cursor-grabbing"
+          >
+            <div className="bg-blue-900/95 text-white p-4 rounded-2xl shadow-2xl backdrop-blur-md border border-blue-500/30">
+              <div className="flex items-start gap-3">
+                <div className="bg-blue-500/20 p-2 rounded-xl shrink-0 mt-0.5 border border-blue-500/30">
+                  {ONBOARDING_HINTS[state.currentStep]?.icon || <Sparkles className="w-5 h-5 text-blue-300" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-bold text-sm tracking-tight text-blue-200 mb-1">
+                    {ONBOARDING_HINTS[state.currentStep]?.title || 'Onboarding'}
+                  </h4>
+                  <p className="text-xs text-blue-100/70 leading-relaxed">
+                    {ONBOARDING_HINTS[state.currentStep]?.hint || 'Completa la orden para terminar el onboarding.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
           <AnimatePresence mode="wait">
             <motion.div
               key={state.currentStep}
@@ -1374,49 +1469,44 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
           </button>
 
           {state.currentStep === 'resumen' ? (
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full max-w-sm mx-auto">
               <button
                 type="button"
                 onClick={() => onClose(stepsPushed.current + 1)}
-                disabled={state.loading}
-                className="h-12 px-5 text-base font-medium text-gray-300 bg-gray-800 rounded-xl hover:bg-gray-700 disabled:opacity-50 transition-all active:scale-95 touch-manipulation"
+                className="h-12 px-5 text-base font-medium text-gray-300 bg-gray-800 rounded-xl hover:bg-gray-700 transition-all active:scale-95 touch-manipulation"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 form="mantenimiento-form"
-                disabled={state.loading}
-                className="flex items-center justify-center h-12 px-6 text-base font-bold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 shadow-lg shadow-blue-600/30 touch-manipulation"
+                className="flex-1 flex items-center justify-center h-12 px-6 text-base font-bold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl hover:from-emerald-700 hover:to-emerald-600 transition-all active:scale-95 shadow-lg shadow-emerald-600/30 touch-manipulation"
               >
-                {state.loading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Guardando...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-5 h-5 mr-2" />
-                    Crear Orden
-                  </>
-                )}
+                <CheckCircle className="w-5 h-5 mr-2" />
+                Completar Tour
               </button>
             </div>
           ) : (
-            <button type="button" onClick={nextStep} disabled={!canProceedToNextStep()}
-              className={`flex items-center justify-center h-12 min-w-[100px] px-6 rounded-xl text-base font-bold transition-all
-                ${!canProceedToNextStep()
-                  ? 'bg-blue-600/40 text-blue-200 border border-blue-800/50'
-                  : 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
-                } touch-manipulation`}>
-              {!canProceedToNextStep() 
-                ? <><LockIcon className="w-4 h-4 mr-2" /><span>Siguiente</span></>
-                : <><span>{`Ir a ${nextStepName}`}</span><ChevronRight className="w-5 h-5 ml-2" /></>
-              }
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => goToStep('resumen')}
+                className="flex items-center justify-center h-12 px-4 rounded-xl text-sm font-bold bg-blue-900/30 text-blue-400 hover:bg-blue-900/50 transition-all touch-manipulation whitespace-nowrap border border-blue-500/20"
+              >
+                Saltar a Resumen
+              </button>
+              <button type="button" onClick={nextStep} disabled={!canProceedToNextStep()}
+                className={`flex items-center justify-center h-12 min-w-[100px] px-6 rounded-xl text-base font-bold transition-all
+                  ${!canProceedToNextStep()
+                    ? 'bg-blue-600/40 text-blue-200 border border-blue-800/50'
+                    : 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
+                  } touch-manipulation`}>
+                {!canProceedToNextStep() 
+                  ? <><LockIcon className="w-4 h-4 mr-2" /><span>Siguiente</span></>
+                  : <><span>{`Ir a ${nextStepName}`}</span><ChevronRight className="w-5 h-5 ml-2" /></>
+                }
+              </button>
+            </div>
           )}
         </div>
 
@@ -1446,70 +1536,31 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       {/* Pantalla de Éxito Premium - usa estado LOCAL para no depender del reducer persistente */}
       {ordenCreada &&
         createPortal(
-          <AnimatePresence>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/95 p-4"
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                className="bg-gray-900 border border-gray-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative"
-              >
-                <div className="p-8 flex flex-col items-center text-center">
-                  <motion.div
-                    initial={{ scale: 0, rotate: -45 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: "spring", damping: 12, delay: 0.2 }}
-                    className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-blue-600/40"
-                  >
-                    <Check className="w-10 h-10 text-white stroke-[3px]" />
-                  </motion.div>
-
-                  <h2 className="text-2xl font-bold text-white mb-2">¡Orden Generada!</h2>
-                  <p className="text-gray-400 mb-4">
-                    La orden <span className="text-blue-400 font-mono">#{ordenCreada.idPersonalizado}</span> ha sido registrada correctamente.
-                  </p>
-
-                  {(ordenCreada as any).isOffline && (
-                    <div className="bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs py-2 px-3 rounded-lg mb-6 flex flex-col items-center justify-center gap-1 w-full">
-                      <div className="flex items-center gap-1.5 font-bold">
-                        <CloudOff className="w-3.5 h-3.5" />
-                        <span>Guardada Localmente</span>
-                      </div>
-                      <span className="text-[10px] text-amber-500/80">Se sincronizará al tener conexión.</span>
-                    </div>
-                  )}
-
-                  <div className="w-full space-y-3">
-                    <button
-                      onClick={() => compartirOrden(ordenCreada)}
-                      className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center gap-3 font-bold transition-all active:scale-95 shadow-lg shadow-blue-600/30 touch-manipulation"
-                    >
-                      <Share2 className="w-5 h-5" />
-                      Compartir Orden
-                    </button>
-                    <button
-                      onClick={() => {
-                        onSuccess(stepsPushed.current + 1);
-                      }}
-                      className="w-full h-12 mt-4 text-gray-400 hover:text-white font-medium transition-colors touch-manipulation"
-                    >
-                      Volver
-                    </button>
-                  </div>
-                </div>
-
-                {/* Decoración premium */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-600 to-transparent opacity-50" />
-              </motion.div>
-            </motion.div>
-          </AnimatePresence>,
+          <div className="fixed inset-0 z-[100]">
+            <OnboardingSuccess 
+              onFinish={(path?: string) => {
+                markOnboardingCompleted();
+                
+                // Pop the modal manually without calling onSuccess/onClose from props
+                // which would trigger the timeout and redirect back to /ordenes
+                window.history.go(-(stepsPushed.current + 1));
+                
+                if (path) {
+                  setTimeout(() => {
+                    router.push(path);
+                  }, 150);
+                } else {
+                  setTimeout(() => {
+                    router.replace('/ordenes', { scroll: false });
+                  }, 150);
+                }
+              }}
+            />
+          </div>,
           document.body
-        )
-      }
+        )}
     </motion.div>
   )
 }
+
+

@@ -8,7 +8,7 @@ import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
 
 interface OnboardingSuccessProps {
-  onFinish: () => void;
+  onFinish: (path?: string) => void;
 }
 
 export default function OnboardingSuccess({ onFinish }: OnboardingSuccessProps) {
@@ -27,8 +27,7 @@ export default function OnboardingSuccess({ onFinish }: OnboardingSuccessProps) 
   }, []);
 
   const handleNextStep = (path: string) => {
-    onFinish();
-    router.push(path);
+    onFinish(path);
   };
 
   if (!mounted) return null;
@@ -62,31 +61,26 @@ export default function OnboardingSuccess({ onFinish }: OnboardingSuccessProps) 
             <p className="text-gray-400 text-base mb-10 max-w-sm mx-auto">
               Has completado el recorrido inicial. Tu primera orden de prueba ha sido generada con éxito.
             </p>
-              <NextStepCard 
-                icon={<Building2 className="w-5 h-5" />}
-                title="Personaliza tu negocio"
-                description="Agrega tu logo y datos de contacto para los PDFs."
+            <div className="space-y-4">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => handleNextStep('/configuracion')}
-              />
-            <div className="grid grid-cols-1 gap-3 mb-10">
-              <br/>
-              <NextStepCard 
-                icon={<UserPlus className="w-5 h-5" />}
-                title="Registra un cliente real"
-                description="Comienza a organizar tu base de datos hoy mismo."
-                onClick={() => handleNextStep('/clientes')}
-              />
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white p-4 rounded-[1rem] flex items-center justify-center space-x-3 transition-all shadow-xl shadow-blue-600/20 group touch-manipulation"
+              >
+                <Building2 className="w-5 h-5" />
+                <span className="text-lg font-bold">Personaliza tu negocio</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+              
+              <button
+                type="button"
+                onClick={() => onFinish()}
+                className="w-full text-gray-500 hover:text-gray-300 py-3 text-sm font-medium transition-colors"
+              >
+                Explorar por mi cuenta
+              </button>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={onFinish}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-500 hover:to-blue-500 text-white p-5 rounded-[1.25rem] flex items-center justify-center space-x-3 transition-all shadow-xl shadow-blue-600/20 group touch-manipulation"
-            >
-              <LayoutDashboard className="w-5 h-5" />
-              <span className="text-lg font-bold">Ir a mi Panel Principal</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
           </div>
         </div>
       </AnimatedContent>

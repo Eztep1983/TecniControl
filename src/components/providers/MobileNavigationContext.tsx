@@ -58,7 +58,8 @@ interface MobileNavigationContextValue {
   /** Consumir la acción pendiente */
   consumePendingAction: () => void;
   isModalOpenLocally: boolean;
-  openModal: () => void;
+  isOnboardingLocally: boolean;
+  openModal: (options?: { onboarding?: boolean }) => void;
   closeModal: (stepsToPop?: number) => void;
 }
 
@@ -71,6 +72,7 @@ const MobileNavigationContext = createContext<MobileNavigationContextValue>({
   triggerNuevaOrden: () => {},
   consumePendingAction: () => {},
   isModalOpenLocally: false,
+  isOnboardingLocally: false,
   openModal: () => {},
   closeModal: () => {},
 });
@@ -93,6 +95,7 @@ export function MobileNavigationProvider({
   
   // Local state for modal to bypass Next.js latency
   const [isModalOpenLocally, setIsModalOpenLocally] = useState(false);
+  const [isOnboardingLocally, setIsOnboardingLocally] = useState(false);
 
   // Detectar si estamos en mobile
   useEffect(() => {
@@ -150,8 +153,10 @@ export function MobileNavigationProvider({
       // Check if modal state was changed
       if (!e.state?.modal && isModalOpenLocally) {
         setIsModalOpenLocally(false);
+        setIsOnboardingLocally(false);
       } else if (e.state?.modal === "crear-orden" && !isModalOpenLocally) {
         setIsModalOpenLocally(true);
+        setIsOnboardingLocally(e.state?.onboarding === true || e.state?.onboarding === "true");
       }
 
       if (e.state?.mobileNav && e.state?.view) {
@@ -168,16 +173,32 @@ export function MobileNavigationProvider({
     return () => window.removeEventListener("popstate", handlePopState);
   }, [isMobileNav, activeView, isModalOpenLocally]);
 
-  const openModal = useCallback(() => {
+  const openModal = useCallback((options?: { onboarding?: boolean }) => {
     setIsModalOpenLocally(true);
+    setIsOnboardingLocally(!!options?.onboarding);
     // Push state without reloading to trigger back button functionality
     const currentUrl = new URL(window.location.href);
     currentUrl.searchParams.set("modal", "crear-orden");
-    window.history.pushState({ mobileNav: true, view: activeView, modal: "crear-orden" }, "", currentUrl.toString());
+    if (options?.onboarding) {
+      currentUrl.searchParams.set("onboarding", "true");
+    } else {
+      currentUrl.searchParams.delete("onboarding");
+    }
+    window.history.pushState(
+      {
+        mobileNav: true,
+        view: activeView,
+        modal: "crear-orden",
+        onboarding: options?.onboarding,
+      },
+      "",
+      currentUrl.toString()
+    );
   }, [activeView]);
 
   const closeModal = useCallback((stepsToPop: number = 1) => {
     setIsModalOpenLocally(false);
+    setIsOnboardingLocally(false);
     // Let the standard back button action take place or pop state manually
     window.history.go(-stepsToPop);
   }, []);
@@ -201,6 +222,7 @@ export function MobileNavigationProvider({
         triggerNuevaOrden,
         consumePendingAction,
         isModalOpenLocally,
+        isOnboardingLocally,
         openModal,
         closeModal,
       }}

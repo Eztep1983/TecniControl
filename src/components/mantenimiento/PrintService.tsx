@@ -4,7 +4,7 @@ import { OrdenMantenimiento } from '@/types/orden'
 import { Printer, Share2, Download, User } from 'lucide-react'
 import { deobfuscateSignature } from '@/lib/signature-utils'
 
-interface PrintServiceProps {
+export interface PrintServiceProps {
   negocio: any
 }
 
@@ -15,7 +15,7 @@ interface PrintServiceProps {
 const isCapacitor = (): boolean =>
   typeof window !== 'undefined' && !!(window as any).Capacitor
 
-const isNativePlatform = (): boolean => {
+export const isNativePlatform = (): boolean => {
   const cap = (window as any).Capacitor
   return isCapacitor() && cap?.getPlatform?.() !== 'web'
 }
@@ -121,7 +121,7 @@ const generarContenidoHTML = (
         ${negocio?.logoUrl 
           ? `<img src="${negocio.logoUrl}" alt="Logo" class="negocio-logo" crossorigin="anonymous">` 
           : `<div class="negocio-logo" style="background:#f3f4f6; display:flex; align-items:center; justify-content:center; border:1px dashed #ccc;">
-              <span style="color:#999; font-size:10px;">Sin Logo</span>
+              <span style="color:#999; font-size:10px;">TU LOGO</span>
              </div>`
         }
         <div class="negocio-details">

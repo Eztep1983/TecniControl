@@ -14,7 +14,8 @@ import {
   Package,
   RefreshCw,
   AlertTriangle,
-  Loader2
+  Loader2,
+  Sparkles
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -30,8 +31,6 @@ import ModalOrden from '@/components/mantenimiento/ModalOrden'
 import OrdenCard from '@/components/mantenimiento/OrdenCard'
 import { OfflineSyncBanner } from '@/components/ui/OfflineSyncBanner'
 import { usePrintService } from '@/components/mantenimiento/PrintService'
-import WelcomeScreen from '@/components/onboarding/WelcomeScreen'
-import OnboardingSuccess from '@/components/onboarding/OnboardingSuccess'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
@@ -39,6 +38,8 @@ import { useDashboardGreeting } from '@/hooks/ordenes/useDashboardGreeting'
 import { useDraftBanner } from '@/hooks/ordenes/useDraftBanner'
 import { useOnboardingFlow } from '@/hooks/ordenes/useOnboardingFlow'
 import { useMobileNavigation } from '@/components/providers/MobileNavigationContext'
+import OnboardingSuccess from '@/components/onboarding/OnboardingSuccess'
+import WelcomeScreen from '@/components/onboarding/WelcomeScreen'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -189,8 +190,10 @@ const EmptyOrdenes = memo(
       <div className="w-12 h-12 rounded-xl bg-gray-800/60 border border-gray-700/50 flex items-center justify-center mb-3">
         <FileX className="w-6 h-6 text-gray-600" aria-hidden="true" />
       </div>
-      <p className="text-sm font-medium text-gray-400">Sin órdenes recientes</p>
-      <p className="text-xs text-gray-500 mt-1">Las órdenes que crees aparecerán aquí.</p>
+      <p className="text-sm font-medium text-white">Sin órdenes recientes</p>
+      <p className="text-xs text-gray-400 mt-1">
+        Las órdenes que crees aparecerán aquí.
+      </p>
       <button
         type="button"
         onClick={onCreate}
@@ -338,8 +341,11 @@ function OrdenesDashboardContent() {
   )
 
   const [view, setView] = useState<'dashboard' | 'welcome' | 'success'>('dashboard')
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false)
   const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenMantenimiento | null>(null)
   const isDashboardLoading = ordenesLoading || statsLoading || negocioLoading
+
+  const isOnboardingActive = negocio && !negocio.onboardingCompleted;
 
   const handleCreateNuevaOrden = () => {
     openModal()
@@ -353,11 +359,7 @@ function OrdenesDashboardContent() {
     }
   }, [isFormOpen, syncDraft])
 
-  // Only switch to onboarding views — never overwrite 'form' view
-  useEffect(() => {
-    if (onboarding.showWelcome) setView('welcome')
-    else if (onboarding.showSuccess) setView('success')
-  }, [onboarding.showWelcome, onboarding.showSuccess])
+  // No automatic full-screen redirects for welcome/success views to allow progressive dashboard onboarding
 
   const refrescarDatos = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['ordenes'] })
@@ -397,31 +399,17 @@ function OrdenesDashboardContent() {
     )
   }
 
-  // ── Onboarding views ─────────────────────────────────────────────────────
-  if (view === 'welcome')
-    return (
-      <WelcomeScreen
-        onStartOnboarding={() => {
-          onboarding.startOnboarding()
-          openModal()
-        }}
-        onSkip={() => {
-          onboarding.skipOnboarding()
-          setView('dashboard')
-        }}
-      />
-    )
-
-  if (view === 'success')
+  // Onboarding views removed in favor of progressive dashboard checklist
+  if (showSuccessScreen) {
     return (
       <OnboardingSuccess
         onFinish={() => {
-          onboarding.closeSuccess()
-          setView('dashboard')
-          refrescarDatos()
+          setShowSuccessScreen(false);
+          onboarding.skipOnboarding();
         }}
       />
     )
+  }
 
   // (Formulario ahora es manejado de manera global a través de Search Params)
 
@@ -621,6 +609,19 @@ function OrdenesDashboardContent() {
           generarHTML={generarHTML}
         />
       )}
+
+      {/* Welcome Modal */}
+      <AnimatePresence>
+        {onboarding.showWelcome && (
+          <WelcomeScreen 
+            onStartOnboarding={() => {
+              onboarding.startOnboarding();
+              openModal({ onboarding: true });
+            }}
+            onSkip={onboarding.skipOnboarding}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

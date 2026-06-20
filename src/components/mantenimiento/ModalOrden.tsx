@@ -168,6 +168,7 @@ const ActionBtn = memo(({
   };
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
       className={cn(
@@ -196,7 +197,7 @@ type PreviewState =
   | { status: "ready-native" }
   | { status: "error"; message: string; raw: unknown };
 
-const PDFPreviewView = memo(({
+export const PDFPreviewView = memo(({
   orden,
   onBack,
   onPrint,
@@ -207,7 +208,7 @@ const PDFPreviewView = memo(({
 }: {
   orden: OrdenMantenimiento;
   onBack: () => void;
-  onPrint: (orden: OrdenMantenimiento) => void;
+  onPrint?: (orden: OrdenMantenimiento) => void;
   onShare?: (orden: OrdenMantenimiento) => void;
   onDownload?: (orden: OrdenMantenimiento) => void;
   generarPDFBlob: (orden: OrdenMantenimiento) => Promise<Blob>;
@@ -264,7 +265,7 @@ const PDFPreviewView = memo(({
   }, [orden, generarPDFBlob, generarHTML, native, attemptCount]);
 
   const handleShare = useCallback(() => onShare?.(orden), [onShare, orden]);
-  const handlePrint = useCallback(() => onPrint(orden), [onPrint, orden]);
+  const handlePrint = useCallback(() => onPrint?.(orden), [onPrint, orden]);
   const handleDownload = useCallback(() => onDownload?.(orden), [onDownload, orden]);
   const handleRetry = useCallback(() => setAttemptCount(prev => prev + 1), []);
 
@@ -272,15 +273,18 @@ const PDFPreviewView = memo(({
     <footer className="px-5 pb-8 pt-3 bg-gray-950/80 border-t border-white/5 flex-shrink-0">
       <div className={cn(
         "grid gap-2",
-        onShare && onDownload ? "grid-cols-3" : onShare || onDownload ? "grid-cols-2" : "grid-cols-1"
+        onShare && onDownload && onPrint ? "grid-cols-3" : (onShare && onDownload) || (onShare && onPrint) || (onDownload && onPrint) ? "grid-cols-2" : "grid-cols-1"
       )}>
         {onShare && (
           <ActionBtn variant="primary" icon={Share2} onClick={handleShare}>Compartir</ActionBtn>
         )}
-        <ActionBtn variant="secondary" icon={Printer} onClick={handlePrint}
-          className={cn(!onShare && !onDownload && "col-span-full")}>
-          Imprimir
-        </ActionBtn>
+        {onPrint && (
+          <ActionBtn variant="secondary" icon={Printer} onClick={handlePrint}
+            className={cn(!onShare && !onDownload ? "max-w-xs mx-auto w-full" : "")}
+          >
+            Imprimir
+          </ActionBtn>
+        )}
         {onDownload && (
           <ActionBtn variant="ghost" icon={Download} onClick={handleDownload}>Guardar</ActionBtn>
         )}
@@ -293,6 +297,7 @@ const PDFPreviewView = memo(({
       {/* Header */}
       <header className="px-5 py-3 border-b border-white/5 flex items-center gap-3 flex-shrink-0 bg-gray-950/80">
         <button
+          type="button"
           onClick={onBack}
           className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 active:bg-white/15 flex items-center justify-center transition-all touch-manipulation shadow-sm"
           aria-label="Volver"
@@ -460,6 +465,7 @@ const DetailView = memo(({
           </div>
         </div>
         <button
+          type="button"
           onClick={onClose}
           className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 active:bg-white/15 flex items-center justify-center transition-all touch-manipulation shrink-0 shadow-sm"
           aria-label="Cerrar"

@@ -11,6 +11,7 @@ import { useKeyboardVisible } from "@/hooks/useKeyboardVisible";
 import { useEstadisticasUsuario } from "@/hooks/useMultiUser";
 import { useScrollAware } from "@/hooks/useScrollAware";
 import { haptic } from "@/hooks/clientes/useHapticFeedback";
+import { useNegocio } from "@/hooks/useNegocio";
 
 interface NavItemConfig {
   name: string;
@@ -31,10 +32,13 @@ const RIGHT_ITEMS: NavItemConfig[] = [
 export function MobileNav() {
   const { activeView, navigateTo, openModal } = useMobileNavigation();
   const { estadisticas } = useEstadisticasUsuario();
+  const { negocio } = useNegocio();
   const isKeyboardVisible = useKeyboardVisible();
   const isScrollVisible = useScrollAware(80);
 
   const isHidden = isKeyboardVisible || !isScrollVisible;
+
+
 
   const isViewActive = (view: AppView) => {
     return activeView === view;
@@ -111,8 +115,7 @@ export function MobileNav() {
               className={cn(
                 "flex items-center justify-center",
                 "w-16 h-16 rounded-full",
-                "bg-gradient-to-tr from-blue-600 to-blue-400",
-                "shadow-[0_8px_30px_rgb(59,130,246,0.3)]",
+                "bg-gradient-to-tr from-blue-600 to-blue-400 shadow-[0_8px_30px_rgb(59,130,246,0.3)]",
                 "ring-[6px] ring-gray-900/40",
                 estadisticas.totalOrdenes === 0 ? "ring-blue-500/50" : "",
                 "active:scale-90 active:shadow-md",

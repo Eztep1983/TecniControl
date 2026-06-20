@@ -32,9 +32,13 @@ const VIEW_COMPONENTS: Record<AppView, React.ComponentType> = {
   "configuracion": dynamic(() => import("@/app/(app)/configuracion/page"), { loading: () => <ViewLoading />, ssr: false }),
 };
 
-// Componente Global del Formulario
 const GlobalFormularioMantenimiento = dynamic(
   () => import("@/app/(app)/ordenes/mantenimiento/formulario"),
+  { ssr: false }
+);
+
+const GlobalOnboardingForm = dynamic(
+  () => import("@/components/onboarding/OnboardingForm"),
   { ssr: false }
 );
 
@@ -107,13 +111,14 @@ function useSlideAnimation(
 }
 
 export function MobileAppShell({ children }: { children: React.ReactNode }) {
-  const { activeView, slideDirection, isMobileNav, isModalOpenLocally, closeModal, navigateTo } = useMobileNavigation();
+  const { activeView, slideDirection, isMobileNav, isModalOpenLocally, isOnboardingLocally, closeModal, navigateTo } = useMobileNavigation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [history, setHistory] = useState<AppView[]>([activeView]);
   
   const searchParams = useSearchParams();
   const router = useRouter();
   const isModalCrearOrdenOpen = isModalOpenLocally || searchParams?.get("modal") === "crear-orden";
+  const isOnboarding = isOnboardingLocally || searchParams?.get("onboarding") === "true";
 
   useEffect(() => {
     setHistory(prev => {
@@ -189,16 +194,37 @@ export function MobileAppShell({ children }: { children: React.ReactNode }) {
 
       <AnimatePresence>
         {isModalCrearOrdenOpen && (
-          <GlobalFormularioMantenimiento
-            onClose={closeModal}
-            onSuccess={(steps) => {
-              closeModal(steps);
-              // Asegurarse de que volvemos a órdenes si no estábamos ahí
-              if (activeView !== "ordenes") {
-                setTimeout(() => router.push("/ordenes"), 300);
-              }
-            }}
-          />
+          isOnboarding ? (
+            <GlobalOnboardingForm
+              onClose={(steps?: number) => {
+                closeModal(steps);
+                setTimeout(() => {
+                  router.replace(activeView === "ordenes" ? "/ordenes" : `/${activeView}`, { scroll: false });
+                }, 150);
+              }}
+              onSuccess={(steps?: number) => {
+                closeModal(steps);
+                setTimeout(() => {
+                  router.replace(activeView === "ordenes" ? "/ordenes" : `/${activeView}`, { scroll: false });
+                }, 150);
+              }}
+            />
+          ) : (
+            <GlobalFormularioMantenimiento
+              onClose={(steps?: number) => {
+                closeModal(steps);
+                setTimeout(() => {
+                  router.replace(activeView === "ordenes" ? "/ordenes" : `/${activeView}`, { scroll: false });
+                }, 150);
+              }}
+              onSuccess={(steps?: number) => {
+                closeModal(steps);
+                setTimeout(() => {
+                  router.replace(activeView === "ordenes" ? "/ordenes" : `/${activeView}`, { scroll: false });
+                }, 150);
+              }}
+            />
+          )
         )}
       </AnimatePresence>
     </>

@@ -40,8 +40,8 @@
     "semantic_hash": "f870d84a47f950de9e430d2c0fc615ef"
   },
   "src/app/(app)/configuracion/page.tsx": {
-    "mtime": 1781643488.2810433,
-    "ast_hash": "34c3394c8117e14d80e69e897d7f6ce3",
+    "mtime": 1781821455.4969225,
+    "ast_hash": "d7aafffb233167f9bd3b3bcb921a930b",
     "semantic_hash": ""
   },
   "src/app/(app)/layout.tsx": {
@@ -105,8 +105,8 @@
     "semantic_hash": "18e90ccd42cc5dc43570116ea9d3d1cb"
   },
   "src/components/auth/AuthProvider.tsx": {
-    "mtime": 1781817291.1576617,
-    "ast_hash": "c9ac95f19af16351c50ca368b442a752",
+    "mtime": 1781821450.4859974,
+    "ast_hash": "61bbd79b056f761b188d21115716fe2b",
     "semantic_hash": ""
   },
   "src/components/auth/SpeechProvider.tsx": {
@@ -180,8 +180,8 @@
     "semantic_hash": "78904303a24675c71854d94e6718a6f7"
   },
   "src/components/forms/FirmaInput.tsx": {
-    "mtime": 1781819975.2733693,
-    "ast_hash": "12fd44c7a084c3b69fe94bad85a68cdf",
+    "mtime": 1781820663.2033255,
+    "ast_hash": "ef40f8f4042598714e06198d76bc588e",
     "semantic_hash": ""
   },
   "src/components/forms/FormActions.tsx": {
@@ -235,8 +235,8 @@
     "semantic_hash": ""
   },
   "src/components/mantenimiento/PrintService.tsx": {
-    "mtime": 1781820137.9605334,
-    "ast_hash": "920f022e04c0475c079ef9bfb248de76",
+    "mtime": 1781820714.1374948,
+    "ast_hash": "fb37b5c2153607178c8936187a4c68b7",
     "semantic_hash": ""
   },
   "src/components/onboarding/OnboardingSuccess.tsx": {

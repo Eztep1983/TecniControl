@@ -15,11 +15,6 @@ export function useOnboardingFlow(user: any, statsLoading: boolean, negocioLoadi
       return;
     }
 
-    if (totalOrdenes > 0) {
-      markOnboardingCompleted();
-      return;
-    }
-
     setShowWelcome(true);
   }, [user?.uid, statsLoading, negocioLoading, negocio?.onboardingCompleted, totalOrdenes, markOnboardingCompleted]);
 

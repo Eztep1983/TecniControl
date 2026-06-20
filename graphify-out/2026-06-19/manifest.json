@@ -40,8 +40,8 @@
     "semantic_hash": "f870d84a47f950de9e430d2c0fc615ef"
   },
   "src/app/(app)/configuracion/page.tsx": {
-    "mtime": 1781883346.6107807,
-    "ast_hash": "e4d4d9eb6f189141aa88c288de7047ed",
+    "mtime": 1781821757.1093342,
+    "ast_hash": "793c13ed42994c2882c6bf5d7953f998",
     "semantic_hash": ""
   },
   "src/app/(app)/layout.tsx": {
@@ -50,8 +50,8 @@
     "semantic_hash": ""
   },
   "src/app/(app)/ordenes/mantenimiento/formulario.tsx": {
-    "mtime": 1781974106.157936,
-    "ast_hash": "28af9a217222a3428ae400a90f9b160b",
+    "mtime": 1781882313.7384045,
+    "ast_hash": "cbfa23826fb5e556b650c60a225dbe36",
     "semantic_hash": ""
   },
   "src/app/(app)/ordenes/mantenimiento/page.tsx": {
@@ -60,8 +60,8 @@
     "semantic_hash": ""
   },
   "src/app/(app)/ordenes/page.tsx": {
-    "mtime": 1781904193.2126439,
-    "ast_hash": "67274078e78cf35951e34ac48a520fe9",
+    "mtime": 1781882308.667624,
+    "ast_hash": "e0e3b00445d788bd0d86062cfd02e895",
     "semantic_hash": ""
   },
   "src/app/(app)/page.tsx": {
@@ -180,8 +180,8 @@
     "semantic_hash": "78904303a24675c71854d94e6718a6f7"
   },
   "src/components/forms/FirmaInput.tsx": {
-    "mtime": 1781975090.2156029,
-    "ast_hash": "a7b49843ebd5723c814abda673925814",
+    "mtime": 1781820663.2033255,
+    "ast_hash": "ef40f8f4042598714e06198d76bc588e",
     "semantic_hash": ""
   },
   "src/components/forms/FormActions.tsx": {
@@ -205,7 +205,7 @@
     "semantic_hash": "6c4684378ae28e8bc6f2f71e1327f00b"
   },
   "src/components/forms/MantenimientoInfo.tsx": {
-    "mtime": 1781973488.382943,
+    "mtime": 1781367408.2184782,
     "ast_hash": "6455e74282c937babd86e2536534fc1f",
     "semantic_hash": "6455e74282c937babd86e2536534fc1f"
   },
@@ -225,8 +225,8 @@
     "semantic_hash": "be6bc4419c4ca7e140f0b8b305fe297f"
   },
   "src/components/mantenimiento/ModalOrden.tsx": {
-    "mtime": 1781974047.823394,
-    "ast_hash": "ab95afdc2a42b5c0dc996f094ab4d100",
+    "mtime": 1781820023.1970701,
+    "ast_hash": "cd756cadbc25cd324d844c2ef993f7dd",
     "semantic_hash": ""
   },
   "src/components/mantenimiento/OrdenCard.tsx": {
@@ -235,19 +235,19 @@
     "semantic_hash": ""
   },
   "src/components/mantenimiento/PrintService.tsx": {
-    "mtime": 1781971338.091462,
-    "ast_hash": "a79cef835c3efe9355a4a29515c7b013",
+    "mtime": 1781820714.1374948,
+    "ast_hash": "fb37b5c2153607178c8936187a4c68b7",
     "semantic_hash": ""
   },
   "src/components/onboarding/OnboardingSuccess.tsx": {
-    "mtime": 1781972164.7049026,
-    "ast_hash": "2f3a536365da02c50f2d56d6fa5be760",
-    "semantic_hash": ""
+    "mtime": 1779490990.701329,
+    "ast_hash": "5ecb1f6b28adde1846f81ad2e5091d8b",
+    "semantic_hash": "5ecb1f6b28adde1846f81ad2e5091d8b"
   },
   "src/components/onboarding/WelcomeScreen.tsx": {
-    "mtime": 1781973682.5741682,
-    "ast_hash": "2003f5b54ba9f3def3d27ebad9069047",
-    "semantic_hash": ""
+    "mtime": 1779563880.2506905,
+    "ast_hash": "55942a7cb9f728d57a732559f42d5c4e",
+    "semantic_hash": "55942a7cb9f728d57a732559f42d5c4e"
   },
   "src/components/providers/CapacitorProvider.tsx": {
     "mtime": 1781368222.2314372,
@@ -260,13 +260,13 @@
     "semantic_hash": "ac275a0e4f417b589fd188da1aaf7566"
   },
   "src/components/providers/MobileAppShell.tsx": {
-    "mtime": 1781973400.9006808,
-    "ast_hash": "69762b73e91f21d73e4460240cb05683",
+    "mtime": 1781882303.7702904,
+    "ast_hash": "e3eb78dc3d50c64c6da908b06bea1725",
     "semantic_hash": ""
   },
   "src/components/providers/MobileNavigationContext.tsx": {
-    "mtime": 1781973393.7185583,
-    "ast_hash": "1e223d92050aa39e56a7e372a16c5d01",
+    "mtime": 1781882300.3422263,
+    "ast_hash": "8c0ffdde39653b07845aa39b37634024",
     "semantic_hash": ""
   },
   "src/components/providers/OfflineSyncProvider.tsx": {
@@ -285,8 +285,8 @@
     "semantic_hash": "fb80ee677746a37397a0e2ef62e5fe97"
   },
   "src/components/shadcnui/mobile-nav.tsx": {
-    "mtime": 1781972272.6748896,
-    "ast_hash": "d215329a4d68b6a2429b246426d42150",
+    "mtime": 1781469713.1366549,
+    "ast_hash": "e56718220bf062c8ee2c16f15619843a",
     "semantic_hash": ""
   },
   "src/components/tareas-repuestos/ModalPieza.tsx": {
@@ -590,9 +590,9 @@
     "semantic_hash": "3401cb11b7fd92f3df50f80b9363d41d"
   },
   "src/hooks/ordenes/useOnboardingFlow.ts": {
-    "mtime": 1781885300.131508,
-    "ast_hash": "1027b62bf7cc4659df0e7295e09beaef",
-    "semantic_hash": ""
+    "mtime": 1779744742.5727367,
+    "ast_hash": "df23b54ada5678702a05082012a85d9e",
+    "semantic_hash": "df23b54ada5678702a05082012a85d9e"
   },
   "src/hooks/use-mobile.tsx": {
     "mtime": 1768939458.1659882,
@@ -902,16 +902,6 @@
   "tests/single-device.test.ts": {
     "mtime": 1781817248.615233,
     "ast_hash": "b4669f4d49579b417e44996a73bc89fa",
-    "semantic_hash": ""
-  },
-  "src/components/onboarding/ActivationChecklist.tsx": {
-    "mtime": 1781903200.0982058,
-    "ast_hash": "34fc30b22b76d35062ae4e8c523887cf",
-    "semantic_hash": ""
-  },
-  "src/components/onboarding/OnboardingForm.tsx": {
-    "mtime": 1781974066.864934,
-    "ast_hash": "22d3700222382756488903a6a445fac1",
     "semantic_hash": ""
   }
 }

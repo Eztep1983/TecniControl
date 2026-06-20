@@ -15,6 +15,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/basic/tabs";
 import CuentaYSeguridad from '@/components/configuracion/CuentaYSeguridad';
 import { useNegocio } from '@/hooks/useNegocio';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface NegocioConUsuario extends Negocio {
   userId: string;
@@ -46,11 +47,31 @@ function StatusMessage({ status }: { status: PageStatus }) {
 export default function ConfiguracionPage() {
   const { user } = useAuth();
   const { negocio: hookNegocio, loading: hookLoading } = useNegocio();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [status, setStatus] = useState<PageStatus>({ type: null, message: '' });
+  const [resettingOnboarding, setResettingOnboarding] = useState(false);
+
+  const handleResetOnboarding = async () => {
+    if (!user?.uid) return;
+    try {
+      setResettingOnboarding(true);
+      const negocioRef = doc(db, 'negocios', user.uid);
+      await updateDoc(negocioRef, {
+        onboardingCompleted: false
+      });
+      queryClient.invalidateQueries({ queryKey: ['negocio', user.uid] });
+      setStatus({ type: 'success', message: 'Onboarding reiniciado con éxito. Regresa a la sección de Órdenes para ver la checklist.' });
+    } catch (error) {
+      console.error('Error al reiniciar onboarding:', error);
+      setStatus({ type: 'error', message: 'No se pudo reiniciar el onboarding. Intenta nuevamente.' });
+    } finally {
+      setResettingOnboarding(false);
+    }
+  };
   const [negocio, setNegocio] = useState<NegocioConUsuario>({
     id: '',
     userId: user?.uid || '',
@@ -464,6 +485,40 @@ export default function ConfiguracionPage() {
                 </Button>
               </div>
             </div>
+            </CardContent>
+          </Card>
+
+          {/* Herramientas de Pruebas / Desarrollo */}
+          <Card className="bg-gray-950/70 border border-amber-500/20 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.8)] mt-6 transition-all hover:border-amber-500/40">
+            <CardHeader className="border-b border-amber-500/20 bg-gray-950/80 rounded-2xl">
+              <CardTitle className="text-white flex items-center gap-2 text-xl">
+                <Settings className="w-5 h-5 text-amber-400" />
+                Zona de Pruebas (Onboarding)
+              </CardTitle>
+              <CardDescription className="text-gray-400 mt-1">
+                Reinicia el estado del onboarding para volver a visualizar el flujo guiado y probar la checklist de activación.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6">
+              <p className="text-sm text-gray-400">
+                Si tu cuenta ya tiene el onboarding marcado como completado en la base de datos, puedes forzar su reinicio aquí. Esto habilitará la barra de progreso, la checklist y el botón Sandbox en la pantalla de Órdenes.
+              </p>
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleResetOnboarding}
+                  disabled={resettingOnboarding}
+                  className="bg-amber-600 hover:bg-amber-500 text-gray-950 font-bold transition-all active:scale-95 shadow-lg shadow-amber-900/20"
+                >
+                  {resettingOnboarding ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Reiniciando...
+                    </>
+                  ) : (
+                    'Reiniciar Estado de Onboarding'
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

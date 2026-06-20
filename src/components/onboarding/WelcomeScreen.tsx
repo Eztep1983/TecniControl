@@ -37,7 +37,7 @@ export default function WelcomeScreen({ onStartOnboarding, onSkip }: WelcomeScre
   if (!mounted) return null;
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen px-4 py-6 bg-[#0a0a0b] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-black/70 overflow-y-auto">
       <AnimatedContent distance={20} direction="vertical" duration={0.5} className="w-full max-w-lg my-auto relative">
         
         {/* Skip button at top right */}
@@ -155,7 +155,7 @@ export default function WelcomeScreen({ onStartOnboarding, onSkip }: WelcomeScre
                 onClick={onStartOnboarding}
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white p-4 rounded-[1rem] flex items-center justify-center space-x-3 transition-all shadow-xl shadow-blue-600/20 group touch-manipulation"
               >
-                <span className="text-lg font-bold">Comenzar el Recorrido</span>
+                <span className="text-lg font-bold">Ver cómo funciona</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </motion.button>
               
