@@ -105,13 +105,14 @@ export function DispositivoFormModal({
           numeroSerie: initialData.numeroSerie ?? "",
         });
         
-        const isPredefined = TIPO_OPTIONS.some(t => t.value === initialData.tipo?.toLowerCase());
+        const isPredefined = TIPO_OPTIONS.some(t => t.value.toLowerCase() === initialData.tipo?.toLowerCase());
         if (isPredefined) {
-          setSelectedTile(initialData.tipo.toLowerCase());
+          const exactValue = TIPO_OPTIONS.find(t => t.value.toLowerCase() === initialData.tipo?.toLowerCase())?.value;
+          setSelectedTile(exactValue || "");
           setIsCustom(false);
           setCustomTipoValue("");
         } else {
-          setSelectedTile("personalizado");
+          setSelectedTile("Personalizado");
           setIsCustom(true);
           setCustomTipoValue(initialData.tipo ?? "");
         }
@@ -133,8 +134,8 @@ export function DispositivoFormModal({
 
   // Manejar selección de tile
   const handleTileSelect = (value: string) => {
-    if (value === "personalizado") {
-      setSelectedTile("personalizado");
+    if (value === "Personalizado") {
+      setSelectedTile("Personalizado");
       setIsCustom(true);
       setCustomTipoValue("");
       form.setValue("tipo", "");
@@ -154,15 +155,7 @@ export function DispositivoFormModal({
     form.setValue("tipo", v.trim(), { shouldValidate: v.length > 0 });
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== "Enter") return;
-    const target = event.target as HTMLElement;
-    if (target.tagName === "TEXTAREA") return;
 
-    event.preventDefault();
-    event.stopPropagation();
-    form.handleSubmit(onSubmit, onError)();
-  };
 
   const onError = (errors: FieldErrors<DispositivoFormValues>) => {
     if (Object.keys(errors).length === 0) return;
@@ -170,7 +163,6 @@ export function DispositivoFormModal({
     const firstError =
       errors.tipo?.message ||
       errors.marca?.message ||
-      errors.modelo?.message ||
       errors.numeroSerie?.message ||
       "Revisá los campos del formulario.";
 
@@ -213,7 +205,7 @@ export function DispositivoFormModal({
 
       toast({
         title: initialData?.id ? "Dispositivo actualizado" : "Dispositivo agregado",
-        description: `${data.marca} ${data.modelo ?? ""} guardado en ${cliente.name}.`,
+        description: `${data.marca} guardado en ${cliente.name}.`,
       });
 
       onSuccess(payload as Cliente, dispositivoParaGuardar as Dispositivo);
@@ -232,56 +224,28 @@ export function DispositivoFormModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      {/*
-        ── Bottom Sheet ──────────────────────────────────────────────────────
-        Posicionado en la base de la pantalla, con esquinas superiores
-        redondeadas y deslizamiento hacia arriba. Compatible con safe-area
-        insets de iOS/Android.
-      */}
       <DialogContent
         className={[
-          // Forma
-          "rounded-t-[28px] rounded-b-none",
-          // Fondo / borde
-          "bg-gray-900 border-t border-white/[0.06]",
-          // Layout
+          "rounded-[28px]",
+          "dark:bg-gray-900 bg-gray-100 border dark:border-white border-gray-200/[0.06]",
           "p-0 gap-0 flex flex-col",
-          // Altura máxima + scroll interno
-          "max-h-[92dvh]",
-          // Sombra dramática
-          "shadow-[0_-20px_60px_rgba(0,0,0,0.6)]",
-          // Transición ligera para apertura/cierre
-          "transition-opacity duration-150 ease-out",
+          "w-[calc(100%-1.5rem)] max-w-md mx-auto",
+          "max-h-[85vh]",
+          "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]",
         ].join(" ")}
-        // ── Reset del transform/posición que Radix inyecta como estilos inline ──
-        // Radix aplica top:50%, left:50%, translate(-50%,-50%) por defecto.
-        // Al sobreescribir con style prop lo pisamos con máxima especificidad.
-        style={{
-          position: "fixed",
-          top: "auto",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          transform: open ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.95)',
-          opacity: open ? 1 : 0,
-          transition: 'transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms cubic-bezier(0.16, 1, 0.3, 1)',
-          width: "100%",
-          maxWidth: "100%",
-          margin: 0,
-        }}
       >
         {/* ── Drag handle ─────────────────────────────────────────────────── */}
         <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-9 h-1 rounded-full bg-white/20" />
+          <div className="w-9 h-1 rounded-full dark:bg-white/20 bg-gray-300" />
         </div>
 
         <div className="px-5 pt-2 pb-4 flex-shrink-0">
           <div className="flex items-start justify-between">
             <div>
-              <DialogTitle className="text-[17px] font-semibold tracking-tight text-white leading-tight">
+              <DialogTitle className="text-[17px] font-semibold tracking-tight dark:text-white text-gray-900 leading-tight">
                 {initialData ? "Editar dispositivo" : "Nuevo dispositivo"}
               </DialogTitle>
-              <p className="text-[13px] text-white/40 mt-0.5 font-medium">
+              <p className="text-[13px] dark:text-white text-gray-900/40 mt-0.5 font-medium">
                 {cliente.name}
               </p>
             </div>
@@ -291,8 +255,11 @@ export function DispositivoFormModal({
 
         {/* ── Formulario ──────────────────────────────────────────────────── */}
         <Form {...form}>
-          <div
-            onKeyDown={handleKeyDown}
+          <form
+            onSubmit={(e) => {
+              e.stopPropagation();
+              form.handleSubmit(onSubmit, onError)(e);
+            }}
             className="flex flex-col flex-1 min-h-0"
           >
             {/* Área scrollable */}
@@ -304,7 +271,7 @@ export function DispositivoFormModal({
                 name="tipo"
                 render={() => (
                   <FormItem>
-                    <p className="text-[11px] font-semibold tracking-widest uppercase text-white/30 mb-3">
+                    <p className="text-[11px] font-semibold tracking-widest uppercase dark:text-white text-gray-900/30 mb-3">
                       Tipo de equipo
                     </p>
 
@@ -328,14 +295,14 @@ export function DispositivoFormModal({
                               "active:scale-[0.96] select-none",
                               // Especial para personalizado
                               isPersonalized && !isSelected
-                                ? "border-dashed border-white/15 bg-white/[0.03]"
+                                ? "border-dashed dark:border-white/15 border-gray-200 bg-white/[0.03]"
                                 : "",
                               // Estado seleccionado
                               isSelected
                                 ? "bg-blue-500/15 border-blue-400/40 shadow-[0_0_0_1px_rgba(59,130,246,0.2)]"
                                 : !isPersonalized
-                                ? "bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.07] hover:border-white/15"
-                                : "hover:bg-white/[0.06] hover:border-white/20",
+                                ? "bg-white/[0.04] dark:border-white border-gray-200/[0.08] hover:bg-white/[0.07] hover:dark:border-white/15 hover:border-gray-200"
+                                : "hover:bg-white/[0.06] hover:dark:border-white/20 hover:border-gray-200",
                             ].join(" ")}
                           >
                             {/* Ícono */}
@@ -356,8 +323,8 @@ export function DispositivoFormModal({
                                   isSelected
                                     ? "text-blue-400"
                                     : isPersonalized
-                                    ? "text-white/40"
-                                    : "text-white/50",
+                                    ? "dark:text-white text-gray-900/40"
+                                    : "dark:text-white text-gray-900/50",
                                 ].join(" ")}
                               />
                             </div>
@@ -369,7 +336,7 @@ export function DispositivoFormModal({
                                 "transition-colors duration-200",
                                 isSelected
                                   ? "text-blue-300"
-                                  : "text-white/50",
+                                  : "dark:text-white text-gray-900/50",
                               ].join(" ")}
                             >
                               {label}
@@ -404,19 +371,19 @@ export function DispositivoFormModal({
                           className={[
                             "w-full h-11 pl-10 pr-4 rounded-xl",
                             "bg-blue-500/[0.07] border border-blue-500/25",
-                            "text-white text-[14px] placeholder:text-white/20",
+                            "dark:text-white text-gray-900 text-[14px] placeholder:dark:text-white text-gray-900/20",
                             "focus:outline-none focus:border-blue-400/50 focus:bg-blue-500/10",
                             "transition-colors duration-200",
                             "disabled:opacity-40",
                           ].join(" ")}
                         />
                         {customTipoValue.length > 0 && (
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-white/20 font-mono">
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] dark:text-white text-gray-900/20 font-mono">
                             {40 - customTipoValue.length}
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-white/25 mt-1.5 ml-1">
+                      <p className="text-[11px] dark:text-white text-gray-900/25 mt-1.5 ml-1">
                         Define el tipo exacto de equipo
                       </p>
                     </div>
@@ -428,11 +395,11 @@ export function DispositivoFormModal({
 
               {/* ── Marca y Modelo ──────────────────────────────────────── */}
               <div>
-                <p className="text-[11px] font-semibold tracking-widest uppercase text-white/30 mb-3">
+                <p className="text-[11px] font-semibold tracking-widest uppercase dark:text-white text-gray-900/30 mb-3">
                   Identificación
                 </p>
                 <div className="space-y-3">
-                  {/* Marca */}
+                  {/* Marca y Modelo */}
                   <FormField
                     control={form.control}
                     name="marca"
@@ -440,47 +407,17 @@ export function DispositivoFormModal({
                       <FormItem>
                         <FormControl>
                           <div className="relative">
-                            <Cpu className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 pointer-events-none" />
+                            <Cpu className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 dark:text-white text-gray-900/20 pointer-events-none" />
                             <Input
                               {...field}
-                              placeholder="Marca  —  HP, Canon, Epson…"
+                              placeholder="Marca y modelo  —  Ej: HP LaserJet 1020"
                               disabled={isLoading}
                               autoComplete="off"
                               className={[
                                 "h-12 pl-10 pr-4 rounded-xl",
-                                "bg-white/[0.04] border-white/[0.08]",
-                                "text-white placeholder:text-white/20 text-[14px]",
-                                "focus:border-white/20 focus:bg-white/[0.06]",
-                                "focus:ring-0 focus-visible:ring-0",
-                                "transition-colors duration-200",
-                              ].join(" ")}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage className="text-[12px] text-red-400 ml-1 mt-1" />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Modelo */}
-                  <FormField
-                    control={form.control}
-                    name="modelo"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative">
-                            <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 pointer-events-none" />
-                            <Input
-                              {...field}
-                              placeholder="Modelo  —  LaserJet 1020, opcional"
-                              disabled={isLoading}
-                              autoComplete="off"
-                              className={[
-                                "h-12 pl-10 pr-4 rounded-xl",
-                                "bg-white/[0.04] border-white/[0.08]",
-                                "text-white placeholder:text-white/20 text-[14px]",
-                                "focus:border-white/20 focus:bg-white/[0.06]",
+                                "bg-white/[0.04] dark:border-white border-gray-200/[0.08]",
+                                "dark:text-white text-gray-900 placeholder:dark:text-white text-gray-900/20 text-[14px]",
+                                "focus:dark:border-white/20 focus:border-gray-200 focus:bg-white/[0.06]",
                                 "focus:ring-0 focus-visible:ring-0",
                                 "transition-colors duration-200",
                               ].join(" ")}
@@ -496,9 +433,9 @@ export function DispositivoFormModal({
 
               {/* ── Número de serie ─────────────────────────────────────── */}
               <div>
-                <p className="text-[11px] font-semibold tracking-widest uppercase text-white/30 mb-3">
+                <p className="text-[11px] font-semibold tracking-widest uppercase dark:text-white text-gray-900/30 mb-3">
                   Número de serie
-                  <span className="normal-case font-normal tracking-normal text-white/20 ml-2">
+                  <span className="normal-case font-normal tracking-normal dark:text-white text-gray-900/20 ml-2">
                     — opcional
                   </span>
                 </p>
@@ -509,7 +446,7 @@ export function DispositivoFormModal({
                     <FormItem>
                       <FormControl>
                         <div className="relative">
-                          <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 pointer-events-none" />
+                          <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 dark:text-white text-gray-900/20 pointer-events-none" />
                           <Input
                             {...field}
                             placeholder="ABC-123-XYZ"
@@ -519,9 +456,9 @@ export function DispositivoFormModal({
                             spellCheck={false}
                             className={[
                               "h-12 pl-10 pr-4 rounded-xl font-mono",
-                              "bg-white/[0.04] border-white/[0.08]",
-                              "text-white placeholder:text-white/20 text-[14px] tracking-wider",
-                              "focus:border-white/20 focus:bg-white/[0.06]",
+                              "bg-white/[0.04] dark:border-white border-gray-200/[0.08]",
+                              "dark:text-white text-gray-900 placeholder:dark:text-white text-gray-900/20 text-[14px] tracking-wider",
+                              "focus:dark:border-white/20 focus:border-gray-200 focus:bg-white/[0.06]",
                               "focus:ring-0 focus-visible:ring-0",
                               "transition-colors duration-200",
                             ].join(" ")}
@@ -543,8 +480,8 @@ export function DispositivoFormModal({
               className={[
                 "px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]",
                 "flex-shrink-0 flex gap-3",
-                "border-t border-white/[0.06]",
-                "bg-gray-950/85",
+                "border-t dark:border-white border-gray-200/[0.06]",
+                "dark:bg-gray-950/85 bg-gray-50",
               ].join(" ")}
             >
               {/* Cancelar */}
@@ -554,8 +491,8 @@ export function DispositivoFormModal({
                 disabled={isLoading}
                 className={[
                   "flex-[0.4] h-[52px] rounded-2xl",
-                  "bg-white/[0.06] hover:bg-white/10 active:bg-white/[0.15]",
-                  "text-white/60 text-[15px] font-medium",
+                  "bg-white/[0.06] hover:dark:bg-white/10 hover:bg-gray-200 active:bg-white/[0.15]",
+                  "dark:text-white text-gray-900/60 text-[15px] font-medium",
                   "transition-colors duration-150 active:scale-[0.97]",
                   "disabled:opacity-30",
                 ].join(" ")}
@@ -565,13 +502,12 @@ export function DispositivoFormModal({
 
               {/* Agregar */}
               <button
-                type="button"
-                onClick={form.handleSubmit(onSubmit, onError)}
+                type="submit"
                 disabled={isLoading}
                 className={[
                   "flex-1 h-[52px] rounded-2xl",
                   "bg-blue-500 hover:bg-blue-400 active:bg-blue-600",
-                  "disabled:bg-white/10 disabled:text-white/20",
+                  "disabled:dark:bg-white/10 bg-gray-200 disabled:dark:text-white text-gray-900/20",
                   "text-[#0a0e14] text-[15px] font-semibold",
                   "flex items-center justify-center gap-2",
                   "transition-colors duration-200 active:scale-[0.97]",
@@ -581,8 +517,8 @@ export function DispositivoFormModal({
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin text-white/40" />
-                    <span className="text-white/40">Guardando…</span>
+                    <Loader2 className="w-4 h-4 animate-spin dark:text-white text-gray-900/40" />
+                    <span className="dark:text-white text-gray-900/40">Guardando…</span>
                   </>
                 ) : (
                   <>
@@ -592,7 +528,7 @@ export function DispositivoFormModal({
                 )}
               </button>
             </div>
-          </div>
+          </form>
         </Form>
       </DialogContent>
     </Dialog>

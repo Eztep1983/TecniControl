@@ -176,8 +176,8 @@ function StatusBanner({ status }: { status: InlineStatus }) {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium">{status.message}</p>
           {status.details && (
-            <div className="mt-2 p-3 bg-slate-900/70 rounded-3xl border border-white/10">
-              <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono break-words">
+            <div className="mt-2 p-3 dark:bg-slate-900/70 bg-gray-100 rounded-3xl border dark:border-white/10 border-gray-300/50">
+              <pre className="text-xs dark:text-slate-300 dark:text-slate-300 text-slate-700 whitespace-pre-wrap font-mono break-words">
                 {status.details}
               </pre>
             </div>
@@ -671,13 +671,13 @@ export default function CuentaYSeguridad() {
     <div className="space-y-6">
 
       {/* ── Account info ─────────────────────────────────────────────────── */}
-      <Card className="bg-slate-950/70 border border-white/10 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.8)] rounded-[28px]">
-        <CardHeader className="border-b border-white/10 pb-4 mb-2">
-          <CardTitle className="text-white flex items-center gap-2 text-xl">
+      <Card className="dark:bg-slate-950/70 bg-white border dark:border-white/10 border-gray-300/50 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.8)] rounded-[28px]">
+        <CardHeader className="border-b dark:border-white/10 border-gray-300/50 pb-4 mb-2">
+          <CardTitle className="dark:text-white text-gray-900 flex items-center gap-2 text-xl">
             <User className="w-5 h-5 text-sky-400" />
             Mi Cuenta
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="dark:text-slate-400 dark:text-slate-400 text-slate-600">
             Información de tu cuenta de acceso
           </CardDescription>
         </CardHeader>
@@ -692,9 +692,9 @@ export default function CuentaYSeguridad() {
             </div>
             <div className="min-w-0">
               {user?.displayName && (
-                <p className="text-white font-medium truncate">{user.displayName}</p>
+                <p className="dark:text-white text-gray-900 font-medium truncate">{user.displayName}</p>
               )}
-              <p className="text-slate-400 text-sm truncate flex items-center gap-1.5">
+              <p className="dark:text-slate-400 dark:text-slate-400 text-slate-600 text-sm truncate flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 shrink-0" />
                 {user?.email}
               </p>
@@ -703,7 +703,7 @@ export default function CuentaYSeguridad() {
                                text-xs font-medium border
                                ${isGoogleUser
                                  ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                                 : 'bg-slate-800/70 text-slate-300 border border-white/10'}`}>
+                                 : 'dark:bg-slate-800/70 bg-gray-200 dark:text-slate-300 dark:text-slate-300 text-slate-700 border dark:border-white/10 border-gray-300/50'}`}>
                 {isGoogleUser
                   ? <><GoogleIcon className="w-3 h-3" />Google</>
                   : <><KeyRound className="w-3 h-3" />Email y contraseña</>}
@@ -726,9 +726,9 @@ export default function CuentaYSeguridad() {
                 Cerrar sesión
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="bg-slate-950/95 border border-white/10 max-w-sm rounded-[32px] shadow-[0_24px_80px_-36px_rgba(15,23,42,0.75)]">
+            <AlertDialogContent className="dark:bg-slate-950/95 bg-white border dark:border-white/10 border-gray-300/50 max-w-sm rounded-[32px] shadow-[0_24px_80px_-36px_rgba(15,23,42,0.75)]">
               <AlertDialogHeader>
-                <AlertDialogTitle className="text-white">
+                <AlertDialogTitle className="dark:text-white text-gray-900">
                   Confirmar cierre de sesión
                 </AlertDialogTitle>
                 <AlertDialogDescription>
@@ -756,17 +756,17 @@ export default function CuentaYSeguridad() {
           {/* Password section — adapts to auth provider */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-slate-300 font-medium flex items-center gap-2">
-                <KeyRound className="w-4 h-4 text-slate-400" />
+              <p className="text-sm dark:text-slate-300 dark:text-slate-300 text-slate-700 font-medium flex items-center gap-2">
+                <KeyRound className="w-4 h-4 dark:text-slate-400 dark:text-slate-400 text-slate-600" />
                 Contraseña
               </p>
               {isGoogleUser ? (
-                <p className="text-xs text-slate-400 mt-1 max-w-xs">
+                <p className="text-xs dark:text-slate-400 dark:text-slate-400 text-slate-600 mt-1 max-w-xs">
                   Tu cuenta usa Google para autenticarse — no tienes contraseña en TecniControl.
                   Gestiona tu seguridad directamente desde Google.
                 </p>
               ) : (
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs dark:text-slate-400 dark:text-slate-400 text-slate-600 mt-1">
                   Cambia tu contraseña directamente o solicita un correo de restablecimiento.
                 </p>
               )}
@@ -778,8 +778,8 @@ export default function CuentaYSeguridad() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg
-                           border border-white/10 bg-slate-900/70 text-slate-200 text-sm
-                           hover:bg-slate-900/90 hover:text-white transition-colors
+                           border dark:border-white/10 border-gray-300/50 dark:bg-slate-900/70 bg-gray-100 dark:text-slate-200 dark:text-slate-200 text-slate-800 text-sm
+                           hover:dark:bg-slate-900/90 hover:bg-gray-50 hover:dark:text-white hover:text-gray-900 transition-colors
                            min-w-[200px] shrink-0"
               >
                 <GoogleIcon />
@@ -816,12 +816,12 @@ export default function CuentaYSeguridad() {
 
           {/* Collapsible Direct Password Change Form */}
           {!isGoogleUser && showChangePasswordForm && (
-            <form onSubmit={handleChangePassword} className="mt-4 p-4 rounded-3xl border border-white/10 bg-slate-950/70 space-y-4 shadow-lg shadow-slate-950/20 animate-in fade-in duration-200">
+            <form onSubmit={handleChangePassword} className="mt-4 p-4 rounded-3xl border dark:border-white/10 border-gray-300/50 dark:bg-slate-950/70 bg-white space-y-4 shadow-lg shadow-slate-950/20 animate-in fade-in duration-200">
               <p className="text-xs font-semibold uppercase text-blue-400 tracking-wider">Cambiar contraseña directamente</p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="current-password-field" className="text-slate-300 text-xs">Contraseña actual</Label>
+                  <Label htmlFor="current-password-field" className="dark:text-slate-300 dark:text-slate-300 text-slate-700 text-xs">Contraseña actual</Label>
                   <Input
                     id="current-password-field"
                     type="password"
@@ -829,12 +829,12 @@ export default function CuentaYSeguridad() {
                     value={currentPassword}
                     onChange={e => setCurrentPassword(e.target.value)}
                     required
-                    className="bg-slate-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-sky-500 h-9 text-sm"
+                    className="dark:bg-slate-900/90 bg-gray-50 border dark:border-white/10 border-gray-300/50 dark:text-white text-gray-900 focus:border-sky-500 focus:ring-sky-500 h-9 text-sm"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="new-password-field" className="text-slate-300 text-xs">Nueva contraseña</Label>
+                  <Label htmlFor="new-password-field" className="dark:text-slate-300 dark:text-slate-300 text-slate-700 text-xs">Nueva contraseña</Label>
                   <Input
                     id="new-password-field"
                     type="password"
@@ -842,12 +842,12 @@ export default function CuentaYSeguridad() {
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
                     required
-                    className="bg-slate-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-sky-500 h-9 text-sm"
+                    className="dark:bg-slate-900/90 bg-gray-50 border dark:border-white/10 border-gray-300/50 dark:text-white text-gray-900 focus:border-sky-500 focus:ring-sky-500 h-9 text-sm"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="confirm-new-password-field" className="text-slate-300 text-xs">Confirmar nueva contraseña</Label>
+                  <Label htmlFor="confirm-new-password-field" className="dark:text-slate-300 dark:text-slate-300 text-slate-700 text-xs">Confirmar nueva contraseña</Label>
                   <Input
                     id="confirm-new-password-field"
                     type="password"
@@ -855,7 +855,7 @@ export default function CuentaYSeguridad() {
                     value={confirmNewPassword}
                     onChange={e => setConfirmNewPassword(e.target.value)}
                     required
-                    className="bg-slate-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-sky-500 h-9 text-sm"
+                    className="dark:bg-slate-900/90 bg-gray-50 border dark:border-white/10 border-gray-300/50 dark:text-white text-gray-900 focus:border-sky-500 focus:ring-sky-500 h-9 text-sm"
                   />
                 </div>
               </div>
@@ -873,7 +873,7 @@ export default function CuentaYSeguridad() {
                     setNewPassword('')
                     setConfirmNewPassword('')
                   }}
-                  className="text-slate-400 hover:text-white hover:bg-slate-900 h-9 text-sm"
+                  className="dark:text-slate-400 dark:text-slate-400 text-slate-600 hover:dark:text-white hover:text-gray-900 hover:dark:bg-slate-900 hover:bg-gray-100 h-9 text-sm"
                   disabled={changePasswordLoading}
                 >
                   Cancelar
@@ -898,13 +898,13 @@ export default function CuentaYSeguridad() {
       </Card>
 
       {/* ── Export ───────────────────────────────────────────────────────── */}
-      <Card className="bg-slate-950/70 border border-white/10 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.8)] rounded-[28px]">
-        <CardHeader className="border-b border-white/10 pb-4 mb-2">
-          <CardTitle className="text-white flex items-center gap-2 text-xl">
+      <Card className="dark:bg-slate-950/70 bg-white border dark:border-white/10 border-gray-300/50 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.8)] rounded-[28px]">
+        <CardHeader className="border-b dark:border-white/10 border-gray-300/50 pb-4 mb-2">
+          <CardTitle className="dark:text-white text-gray-900 flex items-center gap-2 text-xl">
             <Download className="w-5 h-5 text-emerald-400" />
             Tus Datos
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="dark:text-slate-400 dark:text-slate-400 text-slate-600">
             Descarga una copia de seguridad de todos tus clientes y órdenes de servicio.
           </CardDescription>
         </CardHeader>
@@ -913,8 +913,8 @@ export default function CuentaYSeguridad() {
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-slate-300 font-medium">Exportar información</p>
-              <p className="text-xs text-slate-400 mt-1 max-w-md">
+              <p className="text-sm dark:text-slate-300 dark:text-slate-300 text-slate-700 font-medium">Exportar información</p>
+              <p className="text-xs dark:text-slate-400 dark:text-slate-400 text-slate-600 mt-1 max-w-md">
                 Obtendrás un archivo JSON con clientes y todo el historial de mantenimientos.
               </p>
               <p className="text-xs mt-1.5">
@@ -923,7 +923,7 @@ export default function CuentaYSeguridad() {
                     <Smartphone className="w-3 h-3" />El archivo se guardará en tu dispositivo
                   </span>
                 ) : (
-                  <span className="text-slate-400 flex items-center gap-1">
+                  <span className="dark:text-slate-400 dark:text-slate-400 text-slate-600 flex items-center gap-1">
                     <FolderOpen className="w-3 h-3" />El archivo se descargará en tu carpeta de descargas
                   </span>
                 )}
@@ -933,7 +933,7 @@ export default function CuentaYSeguridad() {
               variant="outline"
               onClick={handleExportData}
               disabled={isExporting}
-              className="border-emerald-500/20 text-emerald-300 bg-slate-900/70 hover:bg-slate-900/90
+              className="border-emerald-500/20 text-emerald-300 dark:bg-slate-900/70 bg-gray-100 hover:dark:bg-slate-900/90 hover:bg-gray-50
                          hover:text-emerald-200 min-w-[180px] shrink-0 shadow-sm shadow-emerald-500/10"
             >
               {isExporting ? (
@@ -951,11 +951,11 @@ export default function CuentaYSeguridad() {
           {/* Honest indeterminate sweep bar */}
           {isExporting && (
             <div className="space-y-1.5">
-              <div className="w-full bg-slate-900/70 rounded-full h-1 overflow-hidden">
+              <div className="w-full dark:bg-slate-900/70 bg-gray-100 rounded-full h-1 overflow-hidden">
                 <div className="h-full bg-emerald-400 rounded-full"
                      style={{ animation: 'sweep 1.4s ease-in-out infinite', width: '40%' }} />
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs dark:text-slate-400 dark:text-slate-400 text-slate-600">
                 {exportState.step === 'fetching'   && 'Conectando con la base de datos…'}
                 {exportState.step === 'validating' && 'Verificando integridad de los datos…'}
                 {exportState.step === 'writing'    && 'Generando archivo de exportación…'}
@@ -966,22 +966,22 @@ export default function CuentaYSeguridad() {
       </Card>
 
       {/* ── Danger zone (accordion) ───────────────────────────────────────── */}
-      <Card className="bg-gray-900/50 border-gray-500/20">
+      <Card className="dark:bg-gray-900/50 bg-gray-50 border-gray-500/20">
         <CardHeader
           className="cursor-pointer select-none"
           onClick={() => setDangerOpen(o => !o)}
         >
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-gray-400 flex items-center gap-2 text-xl">
+              <CardTitle className="dark:text-gray-400 text-gray-600 flex items-center gap-2 text-xl">
                 <AlertTriangle className="w-5 h-5" />
                 Zona de Peligro
               </CardTitle>
-              <CardDescription className="text-slate-400">
+              <CardDescription className="dark:text-slate-400 dark:text-slate-400 text-slate-600">
                 Acciones irreversibles sobre tu cuenta
               </CardDescription>
             </div>
-            <ChevronDown className={`w-5 h-5 text-gray-400/70 transition-transform duration-200
+            <ChevronDown className={`w-5 h-5 dark:text-gray-400 text-gray-600/70 transition-transform duration-200
                                      ${dangerOpen ? 'rotate-180' : ''}`} />
           </div>
         </CardHeader>
@@ -1009,8 +1009,8 @@ export default function CuentaYSeguridad() {
 
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div>
-                <p className="text-sm text-slate-300 font-medium">Eliminar cuenta</p>
-                <p className="text-xs text-slate-400 mt-1 max-w-md">
+                <p className="text-sm dark:text-slate-300 dark:text-slate-300 text-slate-700 font-medium">Eliminar cuenta</p>
+                <p className="text-xs dark:text-slate-400 dark:text-slate-400 text-slate-600 mt-1 max-w-md">
                   Esta acción no se puede deshacer. Se borrará tu acceso y todos los datos permanentemente.
                 </p>
                 <p className="text-xs text-yellow-400/80 mt-1">
@@ -1038,19 +1038,19 @@ export default function CuentaYSeguridad() {
                   </Button>
                 </AlertDialogTrigger>
 
-                <AlertDialogContent className="bg-slate-950/95 border border-white/10 max-w-md w-[calc(100vw-2rem)] rounded-[28px] shadow-[0_24px_80px_-36px_rgba(15,23,42,0.75)]">
+                <AlertDialogContent className="dark:bg-slate-950/95 bg-white border dark:border-white/10 border-gray-300/50 max-w-md w-[calc(100vw-2rem)] rounded-[28px] shadow-[0_24px_80px_-36px_rgba(15,23,42,0.75)]">
                   <AlertDialogHeader className="flex flex-col items-center text-center">
-                    <AlertDialogTitle className="text-white flex items-center justify-center gap-2">
+                    <AlertDialogTitle className="dark:text-white text-gray-900 flex items-center justify-center gap-2">
                       <ShieldCheck className="w-5 h-5 text-red-400" />
                       Confirma tu identidad
                     </AlertDialogTitle>
                     <AlertDialogDescription asChild>
-                      <div className="space-y-2 text-slate-400 text-sm flex flex-col items-center">
+                      <div className="space-y-2 dark:text-slate-400 dark:text-slate-400 text-slate-600 text-sm flex flex-col items-center">
                         <p>
                           {isGoogleUser
                             ? 'Para continuar, deberás autenticarte con Google nuevamente.'
                             : <>Ingresa tu contraseña para eliminar la cuenta de{' '}
-                                <span className="text-white font-medium">{user?.email}</span>.</>}
+                                <span className="dark:text-white text-gray-900 font-medium">{user?.email}</span>.</>}
                         </p>
                         <p className="text-yellow-400/80 text-xs">
                           Esta acción es permanente y no se puede deshacer.
@@ -1066,8 +1066,8 @@ export default function CuentaYSeguridad() {
                       // Google: single button triggers the native/popup flow
                       <Button
                         variant="outline"
-                        className="w-full border-white/10 bg-slate-900/80 text-white
-                                   hover:bg-slate-900/95 gap-2 justify-center"
+                        className="w-full dark:border-white/10 border-gray-300/50 dark:bg-slate-900/80 bg-gray-50 dark:text-white text-gray-900
+                                   hover:dark:bg-slate-900/95 hover:bg-gray-50 gap-2 justify-center"
                         onClick={reauthWithGoogle}
                         disabled={reAuthLoading || deleteState.loading}
                       >
@@ -1083,7 +1083,7 @@ export default function CuentaYSeguridad() {
                     ) : (
                       // Email/password: text input
                       <div className="space-y-2">
-                        <Label htmlFor="reauth-password" className="text-slate-300 text-sm">
+                        <Label htmlFor="reauth-password" className="dark:text-slate-300 dark:text-slate-300 text-slate-700 text-sm">
                           Contraseña actual
                         </Label>
                         <div className="relative">
@@ -1095,7 +1095,7 @@ export default function CuentaYSeguridad() {
                             onKeyDown={e => e.key === 'Enter' && reauthWithPassword()}
                             placeholder="••••••••"
                             autoComplete="current-password"
-                            className="bg-slate-900/90 border border-white/10 text-white pr-10
+                            className="dark:bg-slate-900/90 bg-gray-50 border dark:border-white/10 border-gray-300/50 dark:text-white text-gray-900 pr-10
                                        focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50"
                           />
                           <button
@@ -1103,8 +1103,8 @@ export default function CuentaYSeguridad() {
                             onClick={() => setShowPassword(v => !v)}
                             tabIndex={-1}
                             aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400
-                                       hover:text-slate-200 transition-colors"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 dark:text-slate-400 dark:text-slate-400 text-slate-600
+                                       hover:dark:text-slate-200 dark:text-slate-200 text-slate-800 transition-colors"
                           >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -1123,7 +1123,7 @@ export default function CuentaYSeguridad() {
 
                   <AlertDialogFooter className="flex-col sm:flex-row gap-2">
                     <AlertDialogCancel
-                      className="bg-slate-900/90 text-white hover:bg-slate-900 border border-white/10 w-full sm:w-auto"
+                      className="dark:bg-slate-900/90 bg-gray-50 dark:text-white text-gray-900 hover:dark:bg-slate-900 hover:bg-gray-100 border dark:border-white/10 border-gray-300/50 w-full sm:w-auto"
                       disabled={reAuthLoading || deleteState.loading}
                     >
                       Cancelar

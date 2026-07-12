@@ -7,7 +7,7 @@ export function usePersistentReducer<S, A>(
   reducer: Reducer<S, A>,
   initialState: S,
   onHydrate?: (savedState: S) => S
-): [S, Dispatch<A>, () => void] {
+): [S, Dispatch<A>, () => void, boolean] {
   const augmentedReducer = (state: S, action: any): S => {
     if (action.type === 'HYDRATE') {
       return action.payload
@@ -60,5 +60,5 @@ export function usePersistentReducer<S, A>(
     }
   }
 
-  return [state, dispatch as Dispatch<A>, clearPersistence]
+  return [state, dispatch as Dispatch<A>, clearPersistence, isHydrated]
 }

@@ -82,7 +82,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 p-4 transition-colors duration-300">
         <div className="text-center space-y-4">
           <Loader2 className="h-10 w-10 animate-spin text-blue-600 dark:text-blue-400 mx-auto" />
-          <p className="text-slate-600 dark:text-gray-400 text-sm font-medium">
+          <p className="dark:text-slate-400 text-slate-600 dark:text-gray-400 text-sm font-medium">
             Verificando sesión...
           </p>
         </div>

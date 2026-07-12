@@ -24,9 +24,9 @@ export default function FormActions({
   const isFormValid = totalTareas > 0
 
   return (
-    <div className="bg-gray-800/70 rounded-xl border border-gray-700/50 p-6 shadow-lg">
+    <div className="dark:bg-gray-800/70 bg-gray-200 rounded-xl border dark:border-gray-700/50 border-gray-300 p-6 shadow-lg">
       <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
-        <div className="text-sm text-gray-400 flex items-center space-x-2">
+        <div className="text-sm dark:text-gray-400 text-gray-600 flex items-center space-x-2">
           {isFormValid ? (
             <span>
               {tareasSeleccionadas.length} tarea{tareasSeleccionadas.length !== 1 ? 's' : ''} predefinida{tareasSeleccionadas.length !== 1 ? 's' : ''} + 
@@ -44,7 +44,7 @@ export default function FormActions({
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-2 border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700 transition-colors"
+            className="px-6 py-2 border dark:border-gray-600 border-gray-300 rounded-lg dark:text-gray-300 text-gray-700 hover:bg-gray-700 transition-colors"
           >
             Cancelar
           </button>
@@ -54,12 +54,12 @@ export default function FormActions({
             disabled={loading || !isFormValid}
             className={`px-6 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-lg ${
               loading || !isFormValid
-                ? 'bg-gray-600 text-gray-300 cursor-not-allowed opacity-50'
-                : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white hover:shadow-xl'
+                ? 'bg-gray-600 dark:text-gray-300 text-gray-700 cursor-not-allowed opacity-50'
+                : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:text-white text-gray-900 hover:shadow-xl'
             }`}
           >
             {loading ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 dark:border-white border-gray-200 border-t-transparent rounded-full animate-spin"></div>
             ) : (
               <Save className="w-4 h-4" />
             )}

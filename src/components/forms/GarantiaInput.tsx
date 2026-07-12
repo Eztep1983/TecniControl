@@ -100,25 +100,25 @@ export default function GarantiaInput({
   return (
     <div className="space-y-6 w-full max-w-full">
       {/* Banner Principal de Control - Toggle Switch */}
-      <div className="bg-gray-800/80 border border-gray-700/50 rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-lg hover:border-gray-600/50 transition-colors">
+      <div className="dark:bg-gray-800/80 bg-gray-200/80 border dark:border-gray-700/50 border-gray-300 rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-lg hover:dark:border-gray-600/50 hover:border-gray-300 transition-colors">
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors duration-300 ${garantiaHabilitada ? 'bg-blue-500/20 shadow-inner' : 'bg-gray-700/50 shadow-none'}`}>
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors duration-300 ${garantiaHabilitada ? 'bg-blue-500/20 shadow-inner' : 'dark:bg-gray-700/50 bg-gray-300 shadow-none'}`}>
             {garantiaHabilitada ? (
-              <Shield className="w-6 h-6 text-blue-400" />
+              <Shield className="w-6 h-6 dark:text-blue-400 text-blue-700" />
             ) : (
-              <ShieldOff className="w-6 h-6 text-gray-400" />
+              <ShieldOff className="w-6 h-6 dark:text-gray-400 text-gray-600" />
             )}
           </div>
           <div>
-            <h3 className="text-lg sm:text-xl font-bold text-gray-100 flex items-center gap-2">
+            <h3 className="text-lg sm:text-xl font-bold dark:text-gray-100 text-gray-900 flex items-center gap-2">
               Garantía del servicio
               {garantiaHabilitada && (
                  <button type="button" onClick={() => setMostrarInfo(!mostrarInfo)} className="p-1 hover:bg-gray-700 rounded-full transition-colors">
-                   <Info className="w-4 h-4 text-gray-400" />
+                   <Info className="w-4 h-4 dark:text-gray-400 text-gray-600" />
                  </button>
               )}
             </h3>
-            <p className={`text-xs sm:text-sm transition-colors duration-300 ${garantiaHabilitada ? 'text-blue-300/80' : 'text-gray-500'}`}>
+            <p className={`text-xs sm:text-sm transition-colors duration-300 ${garantiaHabilitada ? 'dark:text-blue-300 text-blue-700/80' : 'text-gray-500'}`}>
               {garantiaHabilitada ? 'Incluida en el servicio' : 'No se aplicará garantía'}
             </p>
           </div>
@@ -153,10 +153,10 @@ export default function GarantiaInput({
       {mostrarInfo && garantiaHabilitada && (
         <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="flex gap-3">
-            <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-200/90">
+            <Info className="w-5 h-5 dark:text-blue-400 text-blue-700 flex-shrink-0 mt-0.5" />
+            <div className="text-sm dark:text-blue-200 text-blue-800/90">
               <p className="font-medium mb-1">Sobre la garantía</p>
-              <p className="text-blue-300/70">
+              <p className="dark:text-blue-300 text-blue-700/70">
                 La garantía cubre defectos en el trabajo realizado. No cubre daños por mal uso, 
                 accidentes o desgaste normal. El periodo inicia desde la fecha de entrega.
               </p>
@@ -171,10 +171,10 @@ export default function GarantiaInput({
                     
           {/* Seccion: Duración (Botones Responsive) */}
           <div className="space-y-3">
-            <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-blue-400" />
+            <label className="text-sm font-medium dark:text-gray-300 text-gray-700 flex items-center gap-1.5">
+              <Clock className="w-4 h-4 dark:text-blue-400 text-blue-700" />
               Duración de la garantía
-              <span className="text-red-400">*</span>
+              <span className="dark:text-red-400 text-red-700">*</span>
             </label>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
               {opcionesGarantia.map((opcion) => (
@@ -186,7 +186,7 @@ export default function GarantiaInput({
                     relative p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 outline-none
                     ${mesesGarantia === opcion.valor
                       ? 'bg-blue-500/20 border-blue-500 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
-                      : 'bg-gray-800/40 border-gray-700/50 hover:bg-gray-700/50 hover:border-gray-600'
+                      : 'dark:bg-gray-800/40 bg-gray-200 dark:border-gray-700/50 border-gray-300 hover:dark:bg-gray-700/50 hover:bg-gray-300 hover:dark:border-gray-600 hover:border-gray-300'
                     }
                     active:scale-95 touch-manipulation
                   `}
@@ -194,12 +194,12 @@ export default function GarantiaInput({
 
                   <div className="flex flex-col items-center justify-center">
                     <span className={`text-xl sm:text-2xl font-bold mb-0.5 ${
-                      mesesGarantia === opcion.valor ? 'text-blue-300' : 'text-gray-300'
+                      mesesGarantia === opcion.valor ? 'dark:text-blue-300 text-blue-700' : 'dark:text-gray-300 text-gray-700'
                     }`}>
                       {opcion.valor}
                     </span>
                     <span className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider ${
-                      mesesGarantia === opcion.valor ? 'text-blue-400' : 'text-gray-500'
+                      mesesGarantia === opcion.valor ? 'dark:text-blue-400 text-blue-700' : 'text-gray-500'
                     }`}>
                       {opcion.etiqueta.replace(/[0-9]+ /g, '')} {/* Quita los números de la etiqueta */}
                     </span>
@@ -210,17 +210,17 @@ export default function GarantiaInput({
             {/* Mensaje sutil debajo */}
             <div className="flex items-center gap-1.5 text-xs text-gray-500 ml-1">
                <Shield className="w-3.5 h-3.5 text-gray-600" />
-               Garantía seleccionada: <span className="text-gray-300 font-medium">{mesesGarantia} {mesesGarantia === 1 ? 'mes' : 'meses'}</span>
+               Garantía seleccionada: <span className="dark:text-gray-300 text-gray-700 font-medium">{mesesGarantia} {mesesGarantia === 1 ? 'mes' : 'meses'}</span>
             </div>
           </div>
           
           {/* Fila: Fecha de inicio y vencimiento */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2 hidden">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-blue-400" />
+              <label className="text-sm font-medium dark:text-gray-300 text-gray-700 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 dark:text-blue-400 text-blue-700" />
                 Fecha de inicio
-                <span className="text-red-400">*</span>
+                <span className="dark:text-red-400 text-red-700">*</span>
               </label>
               <input
                 type="date"
@@ -228,7 +228,7 @@ export default function GarantiaInput({
                 value={garantiaTiempoDesde}
                 onChange={(e) => onCambiarFechaDesde(e.target.value)}
                 max={new Date(Date() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+                className="w-full px-4 py-3 dark:bg-gray-900/60 bg-gray-50 border dark:border-gray-700/50 border-gray-300 rounded-xl dark:text-white text-gray-900 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
               />
               {errorFecha && (
                 <div className="flex items-center gap-1.5 mt-2 text-xs text-yellow-400 animate-in fade-in slide-in-from-top-1 duration-200">
@@ -237,7 +237,7 @@ export default function GarantiaInput({
                 </div>
               )}
               {garantiaTiempoDesde && !errorFecha && (
-                <div className="flex items-center gap-1.5 mt-2 text-xs text-green-400 animate-in fade-in slide-in-from-top-1 duration-200">
+                <div className="flex items-center gap-1.5 mt-2 text-xs dark:text-green-400 text-green-700 animate-in fade-in slide-in-from-top-1 duration-200">
                   <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
                   <span>Fecha válida</span>
                 </div>
@@ -245,8 +245,8 @@ export default function GarantiaInput({
             </div>
           
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-blue-400" />
+              <label className="text-sm font-medium dark:text-gray-300 text-gray-700 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 dark:text-blue-400 text-blue-700" />
                 Vencimiento
               </label>
               <div className="relative">
@@ -254,11 +254,11 @@ export default function GarantiaInput({
                   type="text"
                   readOnly
                   value={formatearFechaVencimiento()}
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-800 rounded-xl text-gray-400 cursor-not-allowed text-sm sm:text-base outline-none"
+                  className="w-full px-4 py-3 dark:bg-gray-900/50 bg-gray-50 border dark:border-gray-800 border-gray-200 rounded-xl dark:text-gray-400 text-gray-600 cursor-not-allowed text-sm sm:text-base outline-none"
                 />
                 {diasRestantes !== null && diasRestantes > 0 && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 bg-blue-500/20 px-2.5 py-1 rounded-lg">
-                    <span className="text-xs text-blue-300 font-medium tracking-wide">
+                    <span className="text-xs dark:text-blue-300 text-blue-700 font-medium tracking-wide">
                       {diasRestantes} DÍAS
                     </span>
                   </div>
@@ -269,10 +269,10 @@ export default function GarantiaInput({
           
           {/* Seccion: Descripción de cobertura */}
           <div className="space-y-3">
-            <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
-              <Shield className="w-4 h-4 text-blue-400" />
+            <label className="text-sm font-medium dark:text-gray-300 text-gray-700 flex items-center gap-1.5">
+              <Shield className="w-4 h-4 dark:text-blue-400 text-blue-700" />
               ¿Qué cubre la garantía?
-              <span className="text-xs text-gray-500 font-normal ml-1 bg-gray-800 px-2 py-0.5 rounded-full">(Opcional)</span>
+              <span className="text-xs text-gray-500 font-normal ml-1 dark:bg-gray-800 bg-gray-200 px-2 py-0.5 rounded-full">(Opcional)</span>
             </label>
             <div className="relative">
               <textarea
@@ -280,10 +280,10 @@ export default function GarantiaInput({
                 value={garantiaDescripcion}
                 onChange={(e) => onCambiarDescripcion(e.target.value)}
                 maxLength={500}
-                className="w-full px-4 py-3 bg-gray-900/60 border border-gray-700/50 rounded-xl text-white focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 resize-none text-sm placeholder-gray-600 outline-none"
+                className="w-full px-4 py-3 dark:bg-gray-900/60 bg-gray-50 border dark:border-gray-700/50 border-gray-300 rounded-xl dark:text-white text-gray-900 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 resize-none text-sm placeholder-gray-600 outline-none"
                 placeholder="Detalla qué incluye la cobertura..."
               />
-              <div className="absolute bottom-3 right-3 bg-gray-900/80 px-2 py-0.5 rounded-md">
+              <div className="absolute bottom-3 right-3 dark:bg-gray-900/80 bg-gray-100 px-2 py-0.5 rounded-md">
                 <span className="text-xs text-gray-500 font-mono">
                   {garantiaDescripcion.length}/500
                 </span>
@@ -304,7 +304,7 @@ export default function GarantiaInput({
                       key={index}
                       type="button"
                       onClick={() => onCambiarDescripcion(`Cubre: ${sugerencia}`)}
-                      className="px-3.5 py-1.5 bg-gray-800 border border-gray-700 hover:bg-gray-700 hover:border-gray-500 text-[13px] text-gray-300 rounded-full transition-all duration-200 active:scale-95 touch-manipulation"
+                      className="px-3.5 py-1.5 dark:bg-gray-800 bg-gray-200 border dark:border-gray-700 border-gray-300 hover:bg-gray-700 hover:border-gray-500 text-[13px] dark:text-gray-300 text-gray-700 rounded-full transition-all duration-200 active:scale-95 touch-manipulation"
                     >
                       + {sugerencia}
                     </button>
@@ -318,11 +318,11 @@ export default function GarantiaInput({
         /* Estado OFF de Garantía */
         <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-3xl flex gap-4 items-start">
           <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
-            <Info className="w-5 h-5 text-blue-400" />
+            <Info className="w-5 h-5 dark:text-blue-400 text-blue-700" />
           </div>
           <div className="space-y-1">
-            <h4 className="text-lg font-bold text-blue-400">¿Registrar Garantía del Servicio?</h4>
-            <p className="text-sm text-gray-400 leading-relaxed">
+            <h4 className="text-lg font-bold dark:text-blue-400 text-blue-700">¿Registrar Garantía del Servicio?</h4>
+            <p className="text-sm dark:text-gray-400 text-gray-600 leading-relaxed">
               Puede omitir el registro de garantía del servicio realizado desactivando el toggle superior si el servicio no lo requiere.
             </p>
           </div>

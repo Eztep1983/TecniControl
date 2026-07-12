@@ -37,10 +37,10 @@ function getIconoDispositivo(tipo: string) {
 function getEstadoStyle(estado?: string) {
   if (!estado) return null
   const e = estado.toLowerCase()
-  if (e.includes('bueno') || e.includes('funciona')) return 'bg-emerald-500/15 text-emerald-400'
-  if (e.includes('malo') || e.includes('daño') || e.includes('roto')) return 'bg-red-500/15 text-red-400'
-  if (e.includes('regular') || e.includes('usado')) return 'bg-amber-500/15 text-amber-400'
-  return 'bg-gray-700/50 text-gray-400'
+  if (e.includes('bueno') || e.includes('funciona')) return 'bg-emerald-500/15 dark:text-emerald-400 text-emerald-700'
+  if (e.includes('malo') || e.includes('daño') || e.includes('roto')) return 'bg-red-500/15 dark:text-red-400 text-red-700'
+  if (e.includes('regular') || e.includes('usado')) return 'bg-amber-500/15 dark:text-amber-400 text-amber-700'
+  return 'dark:bg-gray-700/50 bg-gray-300 dark:text-gray-400 text-gray-600'
 }
 
 export default function DispositivoSelector({
@@ -88,8 +88,8 @@ export default function DispositivoSelector({
         <div className="relative p-4 sm:p-5">
           {/* Badge */}
           <div className="flex items-center gap-1.5 mb-3">
-            <CheckCircle2 className="w-4 h-4 text-blue-400" />
-            <span className="text-xs font-medium text-blue-400 uppercase tracking-wide">
+            <CheckCircle2 className="w-4 h-4 dark:text-blue-400 text-blue-700" />
+            <span className="text-xs font-medium dark:text-blue-400 text-blue-700 uppercase tracking-wide">
               Dispositivo seleccionado
             </span>
           </div>
@@ -98,21 +98,21 @@ export default function DispositivoSelector({
             {/* Icon + info */}
             <div className="flex items-start gap-3 min-w-0 flex-1">
               <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center flex-shrink-0 animate-in zoom-in duration-200">
-                <Icono className="w-6 h-6 text-blue-300" />
+                <Icono className="w-6 h-6 dark:text-blue-300 text-blue-700" />
               </div>
 
               <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-white text-base leading-tight">
+                <h3 className="font-semibold dark:text-white text-gray-900 text-base leading-tight">
                   {dispositivoSeleccionado.tipo}
                 </h3>
-                <p className="text-sm text-blue-300/80 mt-0.5">
+                <p className="text-sm dark:text-blue-300 text-blue-700/80 mt-0.5">
                   {dispositivoSeleccionado.marca}{dispositivoSeleccionado.modelo ? ` ${dispositivoSeleccionado.modelo}` : ''}
                 </p>
 
                 {dispositivoSeleccionado.numeroSerie && (
                   <div className="flex items-center gap-1.5 mt-2">
-                    <Package className="w-3.5 h-3.5 text-blue-400/60" />
-                    <span className="text-xs text-blue-300/60 font-mono">
+                    <Package className="w-3.5 h-3.5 dark:text-blue-400 text-blue-700/60" />
+                    <span className="text-xs dark:text-blue-300 text-blue-700/60 font-mono">
                       S/N: {dispositivoSeleccionado.numeroSerie}
                     </span>
                   </div>
@@ -130,7 +130,7 @@ export default function DispositivoSelector({
             <button
               type="button"
               onClick={onDesseleccionarDispositivo}
-              className="flex-shrink-0 min-h-[44px] px-4 py-2 bg-blue-500/20 hover:bg-blue-500/35 active:bg-blue-500/45 text-blue-300 hover:text-blue-100 rounded-xl transition-all duration-150 font-medium text-sm active:scale-95"
+              className="flex-shrink-0 min-h-[44px] px-4 py-2 bg-blue-500/20 hover:bg-blue-500/35 active:bg-blue-500/45 dark:text-blue-300 text-blue-700 hover:text-blue-100 rounded-xl transition-all duration-150 font-medium text-sm active:scale-95"
             >
               Cambiar
             </button>
@@ -144,13 +144,13 @@ export default function DispositivoSelector({
   if (dispositivos.length === 0) {
     return (
       <>
-        <div className="py-12 px-6 text-center border border-gray-700/50 rounded-2xl bg-gray-800/50 animate-in fade-in slide-in-from-top-1 duration-300">
+        <div className="py-12 px-6 text-center border dark:border-gray-700/50 border-gray-300 rounded-2xl dark:bg-gray-800/50 bg-gray-200 animate-in fade-in slide-in-from-top-1 duration-300">
           <div className="w-16 h-16 bg-gray-700/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-gray-500" />
           </div>
-          <p className="text-gray-300 font-semibold">Sin dispositivos registrados</p>
+          <p className="dark:text-gray-300 text-gray-700 font-semibold">Sin dispositivos registrados</p>
             <p className="text-sm text-gray-500 mt-1 mb-5">
-              Agrega el dispositivo de <span className="text-white">{cliente.name?.split(' ')[0] || 'este cliente'}</span> para continuar
+              Agrega el dispositivo de <span className="dark:text-white text-gray-900">{cliente.name?.split(' ')[0] || 'este cliente'}</span> para continuar
           </p>
           <button
             type="button"
@@ -179,7 +179,7 @@ export default function DispositivoSelector({
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-lg font-semibold text-gray-200">DISPOSITIVOS DEL CLIENTE</p>
+            <p className="text-lg font-semibold dark:text-gray-200 text-gray-800">DISPOSITIVOS DEL CLIENTE</p>
             <p className="text-md text-gray-500 mt-0.5">
               {dispositivos.length} dispositivo{dispositivos.length !== 1 ? 's' : ''} registrado{dispositivos.length !== 1 ? 's' : ''}
             </p>
@@ -189,7 +189,7 @@ export default function DispositivoSelector({
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="flex-shrink-0 min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/25 text-blue-400 hover:text-blue-300 rounded-xl text-sm font-medium transition-all active:scale-95"
+            className="flex-shrink-0 min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/25 dark:text-blue-400 text-blue-700 hover:dark:text-blue-300 hover:text-blue-700 rounded-xl text-sm font-medium transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span className="sm:inline">Nuevo</span>
@@ -197,7 +197,7 @@ export default function DispositivoSelector({
         </div>
 
         {/* Device list */}
-        <div className="rounded-2xl border border-gray-700/50 bg-gray-800/80 overflow-hidden shadow-xl">
+        <div className="rounded-2xl border dark:border-gray-700/50 border-gray-300 dark:bg-gray-800/80 bg-gray-200/80 overflow-hidden shadow-xl">
           {dispositivosVisibles.map((dispositivo, index) => (
             <DispositivoRow
               key={dispositivo.id}
@@ -214,7 +214,7 @@ export default function DispositivoSelector({
             <button
               type="button"
               onClick={() => setVisibles(v => v + LOAD_MORE_STEP)}
-              className="w-full min-h-[48px] flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-blue-400 hover:bg-gray-700/30 active:bg-gray-700/50 transition-all duration-150"
+              className="w-full min-h-[48px] flex items-center justify-center gap-2 text-sm dark:text-gray-400 text-gray-600 hover:dark:text-blue-400 hover:text-blue-700 hover:bg-gray-700/30 active:dark:bg-gray-700/50 active:bg-gray-300 transition-all duration-150"
             >
               <ChevronDown className="w-4 h-4" />
               Ver {Math.min(LOAD_MORE_STEP, dispositivos.length - visibles)} más
@@ -256,18 +256,18 @@ const DispositivoRow = memo(function DispositivoRow({
       type="button"
       onClick={() => onSelect(dispositivo)}
       // min-h-[72px] para touch target cómodo dado el contenido
-      className={`w-full min-h-[72px] px-4 py-4 flex items-center gap-3 text-left transition-all duration-150 active:scale-[0.985] ${animando ? 'bg-blue-500/20' : 'hover:bg-gray-700/40 active:bg-gray-700/60'} ${showDivider ? 'border-b border-gray-700/30' : ''}`}
+      className={`w-full min-h-[72px] px-4 py-4 flex items-center gap-3 text-left transition-all duration-150 active:scale-[0.985] ${animando ? 'bg-blue-500/20' : 'hover:bg-gray-700/40 active:bg-gray-700/60'} ${showDivider ? 'border-b dark:border-gray-700/30 border-gray-300' : ''}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Device icon */}
       <div className="w-11 h-11 bg-gray-700/60 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
-        <Icono className="w-5 h-5 text-gray-400" />
+        <Icono className="w-5 h-5 dark:text-gray-400 text-gray-600" />
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className="font-medium text-white text-sm">{dispositivo.tipo}</div>
-        <div className="text-xs text-gray-400 mt-0.5">
+        <div className="font-medium dark:text-white text-gray-900 text-sm">{dispositivo.tipo}</div>
+        <div className="text-xs dark:text-gray-400 text-gray-600 mt-0.5">
           {dispositivo.marca}{dispositivo.modelo ? ` ${dispositivo.modelo}` : ''}
         </div>
         <div className="flex items-center gap-2 mt-1.5 flex-wrap">

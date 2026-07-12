@@ -24,9 +24,11 @@ import GarantiaInput from '@/components/forms/GarantiaInput'
 import ContadorInput, { Contador } from '@/components/forms/ContadorInput'
 import FirmaInput from '@/components/forms/FirmaInput'
 import ResumenMantenimiento from '@/components/forms/ResumenMantenimiento'
+import { PDFPreviewView } from '@/components/mantenimiento/ModalOrden'
 import { usePersistentReducer } from '@/hooks/usePersistentReducer'
 import { useKeyboardVisible } from '@/hooks/useKeyboardVisible'
 import { useOfflineOrderQueue } from '@/hooks/useOfflineOrderQueue'
+import { useMobileNavigation } from '@/components/providers/MobileNavigationContext'
 
 interface FormularioMantenimientoProps {
   onClose: (stepsToPop?: number) => void
@@ -480,27 +482,31 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   const { user } = useAuth()
   const { negocio } = useNegocio()
   const isKeyboardVisible = useKeyboardVisible()
-  const { imprimirOrden, compartirOrden } = usePrintService({ negocio })
+  const { imprimirOrden, compartirOrden, generarPDFBlob, generarHTML } = usePrintService({ negocio })
   const { mutateAsync: crearOrdenMutate } = useCrearOrden()
   const { enqueueOrder } = useOfflineOrderQueue()
   const { clientes: hookClientes } = useClientesUsuario()
   const searchParams = useSearchParams()
-  const queryClienteId = typeof window !== 'undefined'
+  const { modalClienteId } = useMobileNavigation()
+  const queryClienteId = modalClienteId || searchParams?.get('clienteId') || (typeof window !== 'undefined'
     ? new URLSearchParams(window.location.search).get('clienteId')
-    : (searchParams ? searchParams.get('clienteId') : null)
+    : null)
   const [hintExpanded, setHintExpanded] = useState(false)
+  const [vistaResumen, setVistaResumen] = useState<'pdf' | 'normal'>('pdf')
   // ordenCreada es estado LOCAL (no persistente) para que clearPersistence() no lo borre
   const [ordenCreada, setOrdenCreada] = useState<OrdenMantenimiento | null>(null)
   
   // Ref para manejar el botón de atrás en Android y evitar cerrar el modal
   const stepsPushed = useRef(0)
 
-  const [state, dispatch, clearPersistence] = usePersistentReducer(
+  const [state, dispatch, clearPersistence, isHydrated] = usePersistentReducer(
     'draft_mantenimiento',
     formReducer,
     initialState,
     useCallback((savedState: FormState) => ({ ...savedState, loading: false, ordenCreada: undefined }), [])
   )
+
+  const hasInitializedCliente = useRef(false)
 
   // ============================================================================
   // EFFECTS
@@ -737,13 +743,14 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
 
   // Pre-select client from search params on mount or when clientId changes
   useEffect(() => {
-    if (queryClienteId && hookClientes.length > 0) {
+    if (isHydrated && queryClienteId && hookClientes.length > 0 && !hasInitializedCliente.current) {
       const matched = hookClientes.find(c => c.id === queryClienteId);
-      if (matched && state.clienteSeleccionado?.id !== queryClienteId) {
+      if (matched) {
         handleSeleccionarCliente(matched);
+        hasInitializedCliente.current = true;
       }
     }
-  }, [queryClienteId, hookClientes, state.clienteSeleccionado?.id, handleSeleccionarCliente]);
+  }, [isHydrated, queryClienteId, hookClientes, handleSeleccionarCliente]);
 
   // Handlers de Dispositivo
   const handleSeleccionarDispositivo = useCallback((dispositivo: Dispositivo) => {
@@ -790,6 +797,101 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   }, [])
 
   // ============================================================================
+  // PREVIEW ORDEN
+  // ============================================================================
+
+  const ordenActualPreview = useMemo(() => {
+    if (!state.clienteSeleccionado || !state.dispositivoSeleccionado || !user) return null;
+
+    const todasLasTareas = [
+      ...state.tareasSeleccionadas,
+      ...state.tareasPersonalizadas.filter(t => t.trim())
+    ];
+
+    const piezasUsadasFiltradas = state.piezasUsadas
+      .filter(pieza => pieza?.pieza?.trim())
+      .map(pieza => ({
+        pieza: pieza.pieza,
+        cantidad: pieza.cantidad || 1
+      }));
+
+    let contadorParaGuardar: any = null;
+    if (state.mostrarContador && state.contador) {
+      contadorParaGuardar = {
+        tipo: state.contador.tipo,
+        valor: state.contador.valor || 0,
+        fechaRegistro: new Date(state.contador.fechaRegistro)
+      };
+      if (state.contador.unidadPersonalizada?.trim())
+        contadorParaGuardar.unidadPersonalizada = state.contador.unidadPersonalizada.trim();
+      if (state.contador.notas?.trim())
+        contadorParaGuardar.notas = state.contador.notas.trim();
+    }
+
+    const nuevaOrden: any = {
+      tipo: 'mantenimiento',
+      horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      cliente: state.clienteSeleccionado!,
+      clienteId: state.clienteSeleccionado!.id,
+      dispositivo: state.dispositivoSeleccionado!,
+      dispositivoId: state.dispositivoSeleccionado!.id,
+      fechaCreacion: new Date(),
+      tipoMantenimiento: state.tipoMantenimiento,
+      tareasRealizadas: todasLasTareas,
+      piezasUsadas: piezasUsadasFiltradas,
+      userId: user!.uid,
+    };
+
+    if (contadorParaGuardar) nuevaOrden.contador = contadorParaGuardar;
+
+    if (state.tipoMantenimiento === 'diagnostico') {
+      nuevaOrden.observacionesIniciales = state.observacionesIniciales.trim();
+      nuevaOrden.pruebasRealizadas = state.pruebasRealizadas.trim();
+      nuevaOrden.diagnosticoFinal = state.diagnosticoFinal.trim();
+      if (state.contadorMaquina !== undefined) nuevaOrden.contadorMaquina = state.contadorMaquina;
+    }
+
+    if (state.tipoMantenimiento === 'instalacion') {
+      nuevaOrden.instalacionRecomendaciones = state.instalacionRecomendaciones;
+      nuevaOrden.instalacionRecomendacionesDetalle = state.instalacionRecomendacionesDetalle;
+      nuevaOrden.instalacionConfiguracion = state.instalacionConfiguracion;
+      nuevaOrden.instalacionConfiguracionTipos = state.instalacionConfiguracionTipos;
+    }
+
+    if (state.tipoMantenimiento === 'garantia') {
+      nuevaOrden.garantiaReferenciaId = state.garantiaReferenciaId.trim();
+      nuevaOrden.garantiaMotivo = state.garantiaMotivo.trim();
+    }
+
+    nuevaOrden.garantiaHabilitada = state.garantiaHabilitada;
+    if (state.garantiaHabilitada) {
+      if (state.garantiaTiempoDesde) nuevaOrden.garantiaTiempoDesde = new Date(state.garantiaTiempoDesde);
+      if (state.garantiaTiempoHasta) nuevaOrden.garantiaTiempoHasta = new Date(state.garantiaTiempoHasta);
+      if (state.garantiaDescripcion.trim()) nuevaOrden.garantiaDescripcion = state.garantiaDescripcion.trim();
+    } else {
+      nuevaOrden.garantiaDescripcion = 'No aplica';
+      nuevaOrden.garantiaTiempoDesde = null;
+      nuevaOrden.garantiaTiempoHasta = null;
+    }
+
+    nuevaOrden.firmaCliente = state.firmaHabilitada ? state.firmaCliente : null;
+    nuevaOrden.nombreFirmante = state.firmaHabilitada ? (state.nombreReceptor || state.clienteSeleccionado?.name || 'Cliente') : null;
+    nuevaOrden.validacionCliente = state.firmaHabilitada ? state.validacionCliente : false;
+    nuevaOrden.nombreReceptor = state.firmaHabilitada ? state.nombreReceptor.trim() : null;
+    nuevaOrden.cedulaReceptor = state.firmaHabilitada ? state.cedulaReceptor.trim() : null;
+
+    Object.keys(nuevaOrden).forEach(key => {
+      if (nuevaOrden[key] === undefined) delete nuevaOrden[key];
+    });
+
+    // Simulamos un ID temporal para la vista previa
+    nuevaOrden.id = 'PREVIEW';
+    nuevaOrden.idPersonalizado = 'VISTA PREVIA';
+
+    return nuevaOrden as OrdenMantenimiento;
+  }, [state, user]);
+
+  // ============================================================================
   // SUBMIT OPTIMIZADO
   // ============================================================================
 
@@ -820,87 +922,9 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
     dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
-      // Construimos la orden sin idPersonalizado (la mutación lo genera)
-      const todasLasTareas = [
-        ...state.tareasSeleccionadas,
-        ...state.tareasPersonalizadas.filter(t => t.trim())
-      ];
-
-      const piezasUsadasFiltradas = state.piezasUsadas
-        .filter(pieza => pieza?.pieza?.trim())
-        .map(pieza => ({
-          pieza: pieza.pieza,
-          cantidad: pieza.cantidad || 1
-        }));
-
-      let contadorParaGuardar: any = null;
-      if (state.mostrarContador && state.contador) {
-        contadorParaGuardar = {
-          tipo: state.contador.tipo,
-          valor: state.contador.valor || 0,
-          fechaRegistro: new Date(state.contador.fechaRegistro)
-        };
-        if (state.contador.unidadPersonalizada?.trim())
-          contadorParaGuardar.unidadPersonalizada = state.contador.unidadPersonalizada.trim();
-        if (state.contador.notas?.trim())
-          contadorParaGuardar.notas = state.contador.notas.trim();
-      }
-
-      const nuevaOrden: any = {
-        tipo: 'mantenimiento',
-        horaCreacion: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        cliente: state.clienteSeleccionado!,
-        clienteId: state.clienteSeleccionado!.id,
-        dispositivo: state.dispositivoSeleccionado!,
-        dispositivoId: state.dispositivoSeleccionado!.id,
-        fechaCreacion: new Date(),
-        tipoMantenimiento: state.tipoMantenimiento,
-        tareasRealizadas: todasLasTareas,
-        piezasUsadas: piezasUsadasFiltradas,
-        userId: user!.uid,
-      };
-
-      if (contadorParaGuardar) nuevaOrden.contador = contadorParaGuardar;
-
-      if (state.tipoMantenimiento === 'diagnostico') {
-        nuevaOrden.observacionesIniciales = state.observacionesIniciales.trim();
-        nuevaOrden.pruebasRealizadas = state.pruebasRealizadas.trim();
-        nuevaOrden.diagnosticoFinal = state.diagnosticoFinal.trim();
-        if (state.contadorMaquina !== undefined) nuevaOrden.contadorMaquina = state.contadorMaquina;
-      }
-
-      if (state.tipoMantenimiento === 'instalacion') {
-        nuevaOrden.instalacionRecomendaciones = state.instalacionRecomendaciones;
-        nuevaOrden.instalacionRecomendacionesDetalle = state.instalacionRecomendacionesDetalle;
-        nuevaOrden.instalacionConfiguracion = state.instalacionConfiguracion;
-        nuevaOrden.instalacionConfiguracionTipos = state.instalacionConfiguracionTipos;
-      }
-
-      if (state.tipoMantenimiento === 'garantia') {
-        nuevaOrden.garantiaReferenciaId = state.garantiaReferenciaId.trim();
-        nuevaOrden.garantiaMotivo = state.garantiaMotivo.trim();
-      }
-
-      nuevaOrden.garantiaHabilitada = state.garantiaHabilitada;
-      if (state.garantiaHabilitada) {
-        if (state.garantiaTiempoDesde) nuevaOrden.garantiaTiempoDesde = new Date(state.garantiaTiempoDesde);
-        if (state.garantiaTiempoHasta) nuevaOrden.garantiaTiempoHasta = new Date(state.garantiaTiempoHasta);
-        if (state.garantiaDescripcion.trim()) nuevaOrden.garantiaDescripcion = state.garantiaDescripcion.trim();
-      } else {
-        nuevaOrden.garantiaDescripcion = 'No aplica';
-        nuevaOrden.garantiaTiempoDesde = null;
-        nuevaOrden.garantiaTiempoHasta = null;
-      }
-
-      nuevaOrden.firmaCliente = state.firmaHabilitada ? state.firmaCliente : null;
-      nuevaOrden.nombreFirmante = state.firmaHabilitada ? (state.nombreReceptor || state.clienteSeleccionado?.name || 'Cliente') : null;
-      nuevaOrden.validacionCliente = state.firmaHabilitada ? state.validacionCliente : false;
-      nuevaOrden.nombreReceptor = state.firmaHabilitada ? state.nombreReceptor.trim() : null;
-      nuevaOrden.cedulaReceptor = state.firmaHabilitada ? state.cedulaReceptor.trim() : null;
-
-      Object.keys(nuevaOrden).forEach(key => {
-        if (nuevaOrden[key] === undefined) delete nuevaOrden[key];
-      });
+      const nuevaOrden = { ...ordenActualPreview! };
+      delete (nuevaOrden as any).id;
+      delete (nuevaOrden as any).idPersonalizado;
 
       // ── Verificar conectividad REAL antes de intentar Firestore ──────────────
       // navigator.onLine es poco confiable en Android (siempre true con WiFi sin internet).
@@ -988,12 +1012,12 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
 
   const getTipoMantenimientoColor = useMemo(() => {
     const colors = {
-      preventivo: 'bg-green-600/20 text-green-400 border-green-500/30',
-      correctivo: 'bg-orange-600/20 text-orange-400 border-orange-500/30',
-      diagnostico: 'bg-blue-600/20 text-blue-400 border-blue-500/30',
-      instalacion: 'bg-purple-600/20 text-purple-400 border-purple-500/30',
-      garantia: 'bg-amber-600/20 text-amber-400 border-amber-500/30',
-      '': 'bg-gray-600/20 text-gray-400 border-gray-500/30'
+      preventivo: 'bg-green-600/20 dark:text-green-400 text-green-700 border-green-500/30',
+      correctivo: 'bg-orange-600/20 dark:text-orange-400 text-orange-700 border-orange-500/30',
+      diagnostico: 'bg-blue-600/20 dark:text-blue-400 text-blue-700 border-blue-500/30',
+      instalacion: 'bg-purple-600/20 dark:text-purple-400 text-purple-700 border-purple-500/30',
+      garantia: 'bg-amber-600/20 dark:text-amber-400 text-amber-700 border-amber-500/30',
+      '': 'bg-gray-600/20 dark:text-gray-400 text-gray-600 border-gray-500/30'
     } as const
 
     return colors[state.tipoMantenimiento]
@@ -1215,11 +1239,53 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
 
       case 'resumen':
         return (
-          <ResumenMantenimiento
-            state={state}
-            tipoMantenimientoLabel={getTipoMantenimientoLabel}
-            tipoMantenimientoColor={getTipoMantenimientoColor}
-          />
+          <div className="space-y-4">
+            <div className="flex justify-center mb-4">
+              <div className="dark:bg-gray-800 bg-gray-200 p-1 rounded-xl flex items-center shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => setVistaResumen('pdf')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                    vistaResumen === 'pdf' 
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' 
+                      : 'dark:text-gray-400 text-gray-600 hover:dark:text-white hover:text-gray-900 hover:dark:bg-gray-700/50 hover:bg-gray-300'
+                  }`}
+                >
+                  Vista PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVistaResumen('normal')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                    vistaResumen === 'normal' 
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' 
+                      : 'dark:text-gray-400 text-gray-600 hover:dark:text-white hover:text-gray-900 hover:dark:bg-gray-700/50 hover:bg-gray-300'
+                  }`}
+                >
+                  Vista Normal
+                </button>
+              </div>
+            </div>
+            
+            {vistaResumen === 'pdf' && ordenActualPreview ? (
+              <div className="h-[65vh] min-h-[500px] w-full rounded-2xl overflow-hidden border dark:border-gray-700/50 border-gray-300 dark:bg-gray-950 bg-gray-50 shadow-xl relative">
+                <PDFPreviewView 
+                  orden={ordenActualPreview}
+                  onBack={() => {}} 
+                  generarPDFBlob={generarPDFBlob}
+                  generarHTML={generarHTML}
+                  hideHeader={true}
+                  hideFooter={true}
+                />
+              </div>
+            ) : (
+              <ResumenMantenimiento
+                state={state}
+                tipoMantenimientoLabel={getTipoMantenimientoLabel}
+                tipoMantenimientoColor={getTipoMantenimientoColor}
+              />
+            )}
+          </div>
         )
     }
   }
@@ -1227,9 +1293,9 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
   // Guard de autenticación
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen dark:bg-gray-900 bg-gray-100 flex items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-gray-400">Debes iniciar sesión para crear órdenes.</p>
+          <p className="dark:text-gray-400 text-gray-600">Debes iniciar sesión para crear órdenes.</p>
         </div>
       </div>
     )
@@ -1291,24 +1357,24 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="fixed inset-0 z-[100] bg-gray-900 flex flex-col overflow-hidden w-full h-[100dvh]"
+      className="fixed inset-0 z-[100] dark:bg-gray-900 bg-gray-100 flex flex-col overflow-hidden w-full h-[100dvh]"
     >
       {/* Onboarding fixed hints removed in favor of inline top card */}
 
       {/* Header Estilo Nativo */}
-      <header className="sticky top-0 z-30 bg-gray-900/95 border-b border-gray-800">
+      <header className="sticky top-0 z-30 dark:bg-gray-900/95 bg-gray-100/95 border-b dark:border-gray-800 border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <button
             type="button"
             onClick={() => onClose(stepsPushed.current + 1)}
-            className="p-3 text-white/80 hover:bg-white/10 rounded-full transition-colors active:scale-95 touch-manipulation"
+            className="p-3 dark:text-white text-gray-900/80 hover:dark:bg-white/10 hover:bg-gray-200 rounded-full transition-colors active:scale-95 touch-manipulation"
             aria-label="Cerrar formulario"
           >
             <X className="w-6 h-6" />
           </button>
           
           <div className="text-center flex-1 mx-4">
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl font-bold dark:text-white text-gray-900 tracking-tight">
               {STEPS_CONFIG[currentStepIndex].title}
             </h1>
             <div className="flex justify-center items-center gap-1 mt-1">
@@ -1356,7 +1422,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
 
       {/* Barra de navegación inferior flotante */}
       <div 
-        className={`bottom-nav-container min-h-[96px] h-auto w-full absolute bottom-0 left-0 right-0 z-30 bg-gray-900/95 border-t border-gray-800 transition-all duration-300 transform ${
+        className={`bottom-nav-container min-h-[96px] h-auto w-full absolute bottom-0 left-0 right-0 z-30 dark:bg-gray-900/95 bg-gray-100/95 border-t dark:border-gray-800 border-gray-200 transition-all duration-300 transform ${
           isKeyboardVisible ? 'hidden' : 'translate-y-0 opacity-100'
         }`}
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}
@@ -1366,7 +1432,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
             type="button"
             onClick={prevStep}
             disabled={state.currentStep === 'cliente'}
-            className="flex items-center justify-center h-12 px-5 text-base font-medium text-gray-300 bg-gray-800 rounded-xl hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 touch-manipulation min-w-[100px]"
+            className="flex items-center justify-center h-12 px-5 text-base font-medium dark:text-gray-300 text-gray-700 dark:bg-gray-800 bg-gray-200 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 touch-manipulation min-w-[100px]"
           >
             <ChevronLeft className="w-5 h-5 mr-1" />
             <span className="hidden sm:inline">Anterior</span>
@@ -1379,7 +1445,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                 type="button"
                 onClick={() => onClose(stepsPushed.current + 1)}
                 disabled={state.loading}
-                className="h-12 px-5 text-base font-medium text-gray-300 bg-gray-800 rounded-xl hover:bg-gray-700 disabled:opacity-50 transition-all active:scale-95 touch-manipulation"
+                className="h-12 px-5 text-base font-medium dark:text-gray-300 text-gray-700 dark:bg-gray-800 bg-gray-200 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-700 disabled:opacity-50 transition-all active:scale-95 touch-manipulation"
               >
                 Cancelar
               </button>
@@ -1409,7 +1475,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
             <button type="button" onClick={nextStep} disabled={!canProceedToNextStep()}
               className={`flex items-center justify-center h-12 min-w-[100px] px-6 rounded-xl text-base font-bold transition-all
                 ${!canProceedToNextStep()
-                  ? 'bg-blue-600/40 text-blue-200 border border-blue-800/50'
+                  ? 'bg-blue-600/40 dark:text-blue-200 text-blue-800 border border-blue-800/50'
                   : 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
                 } touch-manipulation`}>
               {!canProceedToNextStep() 
@@ -1423,7 +1489,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
         {/* Mensaje de validación (solo en móvil) */}
         {!canProceedToNextStep() && state.currentStep !== 'resumen' && (
           <div className="px-4 pb-2 text-center">
-            <p className="text-xs text-blue-400 bg-blue-500/10 rounded-lg py-2 px-3">
+            <p className="text-xs dark:text-blue-400 text-blue-700 bg-blue-500/10 rounded-lg py-2 px-3">
               {state.currentStep === 'cliente' && 'Selecciona un cliente para continuar'}
               {state.currentStep === 'dispositivo' && 'Selecciona un dispositivo para continuar'}
               {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'diagnostico' && 'Completa todos los campos del diagnóstico'}
@@ -1451,12 +1517,12 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/95 p-4"
+              className="fixed inset-0 z-[100] flex items-center justify-center dark:bg-gray-900/95 bg-gray-100/95 p-4"
             >
               <motion.div
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
-                className="bg-gray-900 border border-gray-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative"
+                className="dark:bg-gray-900 bg-gray-100 border dark:border-gray-800 border-gray-200 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative"
               >
                 <div className="p-8 flex flex-col items-center text-center">
                   <motion.div
@@ -1465,21 +1531,21 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                     transition={{ type: "spring", damping: 12, delay: 0.2 }}
                     className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-blue-600/40"
                   >
-                    <Check className="w-10 h-10 text-white stroke-[3px]" />
+                    <Check className="w-10 h-10 dark:text-white text-gray-900 stroke-[3px]" />
                   </motion.div>
 
-                  <h2 className="text-2xl font-bold text-white mb-2">¡Orden Generada!</h2>
-                  <p className="text-gray-400 mb-4">
-                    La orden <span className="text-blue-400 font-mono">#{ordenCreada.idPersonalizado}</span> ha sido registrada correctamente.
+                  <h2 className="text-2xl font-bold dark:text-white text-gray-900 mb-2">¡Orden Generada!</h2>
+                  <p className="dark:text-gray-400 text-gray-600 mb-4">
+                    La orden <span className="dark:text-blue-400 text-blue-700 font-mono">#{ordenCreada.idPersonalizado}</span> ha sido registrada correctamente.
                   </p>
 
                   {(ordenCreada as any).isOffline && (
-                    <div className="bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs py-2 px-3 rounded-lg mb-6 flex flex-col items-center justify-center gap-1 w-full">
+                    <div className="bg-amber-500/10 border border-amber-500/20 dark:text-amber-400 text-amber-700 text-xs py-2 px-3 rounded-lg mb-6 flex flex-col items-center justify-center gap-1 w-full">
                       <div className="flex items-center gap-1.5 font-bold">
                         <CloudOff className="w-3.5 h-3.5" />
                         <span>Guardada Localmente</span>
                       </div>
-                      <span className="text-[10px] text-amber-500/80">Se sincronizará al tener conexión.</span>
+                      <span className="text-[10px] dark:text-amber-500 text-amber-600/80">Se sincronizará al tener conexión.</span>
                     </div>
                   )}
 
@@ -1495,7 +1561,7 @@ export default function FormularioMantenimiento({ onClose, onSuccess }: Formular
                       onClick={() => {
                         onSuccess(stepsPushed.current + 1);
                       }}
-                      className="w-full h-12 mt-4 text-gray-400 hover:text-white font-medium transition-colors touch-manipulation"
+                      className="w-full h-12 mt-4 dark:text-gray-400 text-gray-600 hover:dark:text-white hover:text-gray-900 font-medium transition-colors touch-manipulation"
                     >
                       Volver
                     </button>

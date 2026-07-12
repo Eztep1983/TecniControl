@@ -33,6 +33,7 @@ import { haptic } from "@/hooks/clientes/useHapticFeedback";
 import { useMediaQuery } from "@/hooks/clientes/useMediaQuery";
 import { cn } from "@/lib/utils";
 import { useMobileNavigation } from "@/components/providers/MobileNavigationContext";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 // ── Tarjeta individual ───────────────────────────────────────────────────────
 interface ClienteCardProps {
@@ -51,6 +52,9 @@ const ClienteCard = memo(function ClienteCard({
   onHistorial,
 }: ClienteCardProps) {
   const { openModal } = useMobileNavigation();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const handleView = useCallback(() => {
     haptic.selection();
@@ -61,10 +65,7 @@ const ClienteCard = memo(function ClienteCard({
     (e: React.MouseEvent) => {
       e.stopPropagation();
       haptic.impactLight();
-      openModal();
-      const url = new URL(window.location.href);
-      url.searchParams.set("clienteId", client.id!);
-      window.history.replaceState(window.history.state, "", url.toString());
+      openModal({ clienteId: client.id! });
     },
     [client, openModal]
   );
@@ -81,9 +82,9 @@ const ClienteCard = memo(function ClienteCard({
   return (
     <div
       className={cn(
-        "relative bg-gray-800/40 rounded-2xl border border-gray-700/50 transition-all duration-200 overflow-hidden",
+        "relative dark:bg-gray-800/40 bg-gray-200 rounded-2xl border dark:border-gray-700/50 border-gray-300 transition-all duration-200 overflow-hidden",
         isExiting ? "opacity-0 scale-95" : "opacity-100 scale-100",
-        "group hover:bg-gray-800/60 hover:border-gray-600/50 flex flex-col sm:flex-row"
+        "group hover:dark:bg-gray-800/60 hover:bg-gray-200 hover:dark:border-gray-600/50 hover:border-gray-300 flex flex-col sm:flex-row"
       )}
     >
       {/* Información del Cliente (Tappable para ver detalle) */}
@@ -101,10 +102,10 @@ const ClienteCard = memo(function ClienteCard({
           <User className="w-6 h-6 text-blue-400" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0 pr-2">
-          <h3 className="font-bold text-white text-base leading-tight truncate group-hover:text-blue-400 transition-colors">
+          <h3 className="font-bold dark:text-white text-gray-900 text-base leading-tight truncate group-hover:text-blue-400 transition-colors">
             {client.name}
           </h3>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs font-medium text-gray-400">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs font-medium dark:text-gray-400 text-gray-600">
             {client.cedula && (
               <span className="flex items-center gap-1">
                 <IdCard className="w-3.5 h-3.5" />
@@ -129,7 +130,7 @@ const ClienteCard = memo(function ClienteCard({
       </div>
 
       {/* Botones de Acción */}
-      <div className="flex items-center gap-1.5 p-3 sm:p-4 bg-gray-900/30 sm:bg-transparent border-t border-gray-700/30 sm:border-t-0 sm:border-l sm:ml-auto">
+      <div className="flex items-center gap-1.5 p-3 sm:p-4 dark:bg-gray-900/30 bg-gray-100 sm:bg-transparent border-t dark:border-gray-700/30 border-gray-300 sm:border-t-0 sm:border-l sm:ml-auto">
         <button
           onClick={handleEmitirOrden}
           className="flex-1 sm:flex-none min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 transition-colors px-3"
@@ -140,7 +141,7 @@ const ClienteCard = memo(function ClienteCard({
         </button>
         <button
           onClick={handleHistorial}
-          className="flex-1 sm:flex-none min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-gray-700/30 hover:bg-gray-700/50 border border-gray-700/50 text-gray-300 transition-colors px-3"
+          className="flex-1 sm:flex-none min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-gray-700/30 hover:dark:bg-gray-700/50 hover:bg-gray-300 border dark:border-gray-700/50 border-gray-300 dark:text-gray-300 text-gray-700 transition-colors px-3"
           aria-label="Ver historial"
         >
           <History className="w-4 h-4" />
@@ -194,12 +195,12 @@ const Pagination = memo(function Pagination({
       <div className="sticky bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-20 px-4 mt-8 pointer-events-none">
         <nav
           aria-label="Paginación móvil"
-          className="mx-auto max-w-[280px] flex items-center justify-between bg-gray-900/80 border border-gray-700/50 rounded-2xl p-1.5 shadow-2xl shadow-black/60 ring-1 ring-white/10 pointer-events-auto transition-transform active:scale-[0.98]"
+          className="mx-auto max-w-[280px] flex items-center justify-between dark:bg-gray-900/80 bg-gray-100 border dark:border-gray-700/50 border-gray-300 rounded-2xl p-1.5 shadow-2xl shadow-black/60 ring-1 ring-white/10 pointer-events-auto transition-transform active:scale-[0.98]"
         >
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="flex items-center justify-center w-11 h-11 rounded-xl bg-gray-800/60 text-gray-400 hover:text-white disabled:opacity-20 disabled:pointer-events-none active:scale-90 transition-all focus:outline-none"
+            className="flex items-center justify-center w-11 h-11 rounded-xl dark:bg-gray-800/60 bg-gray-200 dark:text-gray-400 text-gray-600 hover:dark:text-white hover:text-gray-900 disabled:opacity-20 disabled:pointer-events-none active:scale-90 transition-all focus:outline-none"
             aria-label="Anterior"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -223,7 +224,7 @@ const Pagination = memo(function Pagination({
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="flex items-center justify-center w-11 h-11 rounded-xl bg-gray-800/60 text-gray-400 hover:text-white disabled:opacity-20 disabled:pointer-events-none active:scale-90 transition-all focus:outline-none"
+            className="flex items-center justify-center w-11 h-11 rounded-xl dark:bg-gray-800/60 bg-gray-200 dark:text-gray-400 text-gray-600 hover:dark:text-white hover:text-gray-900 disabled:opacity-20 disabled:pointer-events-none active:scale-90 transition-all focus:outline-none"
             aria-label="Siguiente"
           >
             <ChevronRight className="w-5 h-5" />
@@ -236,12 +237,12 @@ const Pagination = memo(function Pagination({
   return (
     <nav
       aria-label="Paginación de clientes"
-      className="flex items-center justify-between gap-4 pt-6 border-t border-gray-800/50 mt-4"
+      className="flex items-center justify-between gap-4 pt-6 border-t dark:border-gray-800 border-gray-200/50 mt-4"
     >
       <button
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="flex items-center gap-2 h-11 px-4 rounded-xl bg-gray-800/40 hover:bg-gray-700/60 text-sm text-gray-300 font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500/50 outline-none"
+        className="flex items-center gap-2 h-11 px-4 rounded-xl dark:bg-gray-800/40 bg-gray-200 hover:bg-gray-700/60 text-sm dark:text-gray-300 text-gray-700 font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500/50 outline-none"
       >
         <ChevronLeft className="w-4 h-4" />
         <span>Anterior</span>
@@ -268,7 +269,7 @@ const Pagination = memo(function Pagination({
               className={`min-w-[40px] h-10 rounded-xl text-sm font-bold transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500/50 outline-none ${
                 currentPage === item
                   ? "bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
-                  : "text-gray-500 hover:bg-gray-800/60 hover:text-gray-300"
+                  : "text-gray-500 hover:dark:bg-gray-800/60 hover:bg-gray-200 hover:dark:text-gray-300 hover:text-gray-700"
               }`}
             >
               {item}
@@ -280,7 +281,7 @@ const Pagination = memo(function Pagination({
       <button
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="flex items-center gap-2 h-11 px-4 rounded-xl bg-gray-800/40 hover:bg-gray-700/60 text-sm text-gray-300 font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500/50 outline-none"
+        className="flex items-center gap-2 h-11 px-4 rounded-xl dark:bg-gray-800/40 bg-gray-200 hover:bg-gray-700/60 text-sm dark:text-gray-300 text-gray-700 font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500/50 outline-none"
       >
         <span>Siguiente</span>
         <ChevronRight className="w-4 h-4" />
@@ -352,7 +353,7 @@ export const ClientesDataTable = memo(function ClientesDataTable({
   return (
     <div className="space-y-6 pb-8">
       <div className="flex items-center justify-between px-2">
-        <p className="text-xs text-gray-400 font-medium" aria-live="polite">
+        <p className="text-xs dark:text-gray-400 text-gray-600 font-medium" aria-live="polite">
           {data.length === 0
             ? "Sin resultados"
             : `Mostrando ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(

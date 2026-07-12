@@ -25,19 +25,19 @@ export function UpgradePrompt({
         <Crown className="w-10 h-10 text-amber-500" />
       </div>
       
-      <h2 className="text-2xl font-bold text-slate-900 mb-3">{title}</h2>
-      <p className="text-slate-600 mb-8 max-w-md mx-auto">{description}</p>
+      <h2 className="text-2xl font-bold dark:text-slate-100 text-slate-900 mb-3">{title}</h2>
+      <p className="dark:text-slate-400 text-slate-600 mb-8 max-w-md mx-auto">{description}</p>
       
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 w-full max-w-md mb-8 text-left">
-        <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-          <Lock className="w-4 h-4 text-slate-400" /> 
+        <h3 className="font-semibold dark:text-slate-200 text-slate-800 mb-4 flex items-center gap-2">
+          <Lock className="w-4 h-4 dark:text-slate-400 dark:text-slate-400 text-slate-600" /> 
           Beneficios del Plan Pro
         </h3>
         <ul className="space-y-3">
           {features.map((feature, idx) => (
             <li key={idx} className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-              <span className="text-slate-700">{feature}</span>
+              <span className="dark:text-slate-300 text-slate-700">{feature}</span>
             </li>
           ))}
         </ul>
@@ -45,7 +45,7 @@ export function UpgradePrompt({
 
       <button 
         onClick={onUpgrade}
-        className="bg-amber-500 hover:bg-amber-600 text-white font-medium px-8 py-4 rounded-full shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 group w-full max-w-md sm:w-auto transition-colors"
+        className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-medium px-8 py-4 rounded-full shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 group w-full max-w-md sm:w-auto transition-colors"
       >
         <Crown className="w-5 h-5" />
         Actualizar a Pro

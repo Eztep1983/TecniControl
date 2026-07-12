@@ -43,13 +43,13 @@ export default function WelcomeScreen({ onStartOnboarding, onSkip }: WelcomeScre
         {/* Skip button at top right */}
         <button 
           onClick={onSkip}
-          className="absolute -top-12 right-4 text-gray-500 hover:text-white transition-colors flex items-center gap-1 text-sm font-medium group"
+          className="absolute -top-12 right-4 text-gray-500 hover:dark:text-white hover:text-gray-900 transition-colors flex items-center gap-1 text-sm font-medium group"
         >
           Ya conozco la app
           <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </button>
 
-        <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-black border border-gray-800 rounded-[2rem] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-black border dark:border-gray-800 border-gray-200 rounded-[2rem] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
           {/* Decorative background elements */}
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 rounded-full blur-[100px]" />
           <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-purple-600/10 rounded-full blur-[100px]" />
@@ -70,7 +70,7 @@ export default function WelcomeScreen({ onStartOnboarding, onSkip }: WelcomeScre
               </div>
             </motion.div>
             
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-3 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold dark:text-white text-gray-900 mb-3 tracking-tight">
               ¡Bienvenido a TecniControl!              
             </h1>
             
@@ -79,7 +79,7 @@ export default function WelcomeScreen({ onStartOnboarding, onSkip }: WelcomeScre
               <span className="text-blue-400 text-xs font-bold uppercase tracking-wider">Recorrido: 1 minuto</span>
             </div>
 
-            <p className="text-gray-400 text-lg sm:text-base max-w-sm mx-auto leading-relaxed">
+            <p className="dark:text-gray-400 text-gray-600 text-lg sm:text-base max-w-sm mx-auto leading-relaxed">
               Aprenderas a crear órdenes profesionales y compartirlas con tus clientes.
             </p>
           </div>
@@ -90,7 +90,7 @@ export default function WelcomeScreen({ onStartOnboarding, onSkip }: WelcomeScre
             
             <div className="relative flex justify-between max-w-[280px] mx-auto">
               {/* Connector Line */}
-              <div className="absolute top-4 left-6 right-6 h-0.5 bg-gray-800 z-0">
+              <div className="absolute top-4 left-6 right-6 h-0.5 dark:bg-gray-800 bg-gray-200 z-0">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: '100%' }}
@@ -153,7 +153,7 @@ export default function WelcomeScreen({ onStartOnboarding, onSkip }: WelcomeScre
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={onStartOnboarding}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white p-4 rounded-[1rem] flex items-center justify-center space-x-3 transition-all shadow-xl shadow-blue-600/20 group touch-manipulation"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 dark:text-white text-gray-900 p-4 rounded-[1rem] flex items-center justify-center space-x-3 transition-all shadow-xl shadow-blue-600/20 group touch-manipulation"
               >
                 <span className="text-lg font-bold">Ver cómo funciona</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -161,7 +161,7 @@ export default function WelcomeScreen({ onStartOnboarding, onSkip }: WelcomeScre
               
               <button
                 onClick={onSkip}
-                className="w-full text-gray-500 hover:text-gray-300 py-2 text-sm font-medium transition-colors"
+                className="w-full text-gray-500 hover:dark:text-gray-300 hover:text-gray-700 py-2 text-sm font-medium transition-colors"
               >
                 Explorar por mi cuenta
               </button>
@@ -181,10 +181,10 @@ function StepIcon({ icon, label, description, delay }: { icon: React.ReactNode, 
       transition={{ delay }}
       className="relative z-10 flex flex-col items-center"
     >
-      <div className="w-8 h-8 bg-gray-900 border border-gray-700 rounded-full flex items-center justify-center mb-1 shadow-lg">
+      <div className="w-8 h-8 dark:bg-gray-900 bg-gray-100 border dark:border-gray-700 border-gray-300 rounded-full flex items-center justify-center mb-1 shadow-lg">
         <div className="text-blue-400">{icon}</div>
       </div>
-      <span className="text-[10px] font-bold text-white uppercase tracking-wider mb-0.5">{label}</span>
+      <span className="text-[10px] font-bold dark:text-white text-gray-900 uppercase tracking-wider mb-0.5">{label}</span>
       <span className="text-[8px] text-gray-500 font-medium leading-none text-center whitespace-nowrap">{description}</span>
     </motion.div>
   )
@@ -199,12 +199,12 @@ function LearningItem({ title, description, color, icon: Icon }: { title: string
   }
 
   return (
-    <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700/50 hover:border-gray-600 transition-colors">
+    <div className="p-3 rounded-xl dark:bg-gray-800/30 bg-gray-100 border dark:border-gray-700/50 border-gray-300 hover:dark:border-gray-600 hover:border-gray-300 transition-colors">
       <div className={`w-6 h-6 rounded-md ${colors[color]} flex items-center justify-center mb-2`}>
         <Icon className="w-4 h-4" />
       </div>
-      <h3 className="text-white font-bold text-[13px] mb-0.5">{title}</h3>
-      <p className="text-gray-400 text-[11px] leading-tight">{description}</p>
+      <h3 className="dark:text-white text-gray-900 font-bold text-[13px] mb-0.5">{title}</h3>
+      <p className="dark:text-gray-400 text-gray-600 text-[11px] leading-tight">{description}</p>
     </div>
   )
 }

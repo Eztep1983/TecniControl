@@ -151,8 +151,8 @@ const AnimatedList = <T extends unknown>({
             {renderItem ? (
               renderItem(item, index, selectedIndex === index)
             ) : (
-              <div className={`p-4 bg-gray-800/50 rounded-xl border border-gray-700/50 ${selectedIndex === index ? 'ring-2 ring-blue-500' : ''} ${itemClassName}`}>
-                <p className="text-white m-0">{String(item)}</p>
+              <div className={`p-4 dark:bg-gray-800/50 bg-gray-200 rounded-xl border dark:border-gray-700/50 border-gray-300 ${selectedIndex === index ? 'ring-2 ring-blue-500' : ''} ${itemClassName}`}>
+                <p className="dark:text-white text-gray-900 m-0">{String(item)}</p>
               </div>
             )}
           </AnimatedItem>

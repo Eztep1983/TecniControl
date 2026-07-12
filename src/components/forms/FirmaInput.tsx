@@ -112,29 +112,29 @@ export default function FirmaInput({
     <div className="space-y-6">
       <div>
         {/* Interruptor principal */}
-        <div className="bg-gray-800/80 border border-gray-700/50 rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-lg hover:border-gray-600/50 transition-colors mb-6">
+        <div className="dark:bg-gray-800/80 bg-gray-200/80 border dark:border-gray-700/50 border-gray-300 rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-lg hover:dark:border-gray-600/50 hover:border-gray-300 transition-colors mb-6">
           <div className="flex items-center gap-3 sm:gap-4">
             <div
               className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors duration-300 ${
                 signatureState.habilitada
                   ? 'bg-blue-500/20 shadow-inner'
-                  : 'bg-gray-700/50 shadow-none'
+                  : 'dark:bg-gray-700/50 bg-gray-300 shadow-none'
               }`}
             >
               {signatureState.habilitada ? (
-                <PenSquare className="w-6 h-6 text-blue-400" />
+                <PenSquare className="w-6 h-6 dark:text-blue-400 text-blue-700" />
               ) : (
-                <PenOff className="w-6 h-6 text-gray-400" />
+                <PenOff className="w-6 h-6 dark:text-gray-400 text-gray-600" />
               )}
             </div>
             <div>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-100 flex items-center gap-2">
+              <h3 className="text-lg sm:text-xl font-bold dark:text-gray-100 text-gray-900 flex items-center gap-2">
                 Firma de conformidad
               </h3>
               <p
                 className={`text-xs sm:text-sm transition-colors duration-300 ${
                   signatureState.habilitada
-                    ? 'text-blue-300/80'
+                    ? 'dark:text-blue-300 text-blue-700/80'
                     : 'text-gray-500'
                 }`}
               >
@@ -177,7 +177,7 @@ export default function FirmaInput({
         {/* Advertencia de confirmación inline */}
         {showConfirmToggle && (
           <div role="alert" className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300 bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex flex-col gap-3 shadow-lg">
-            <p className="text-xs text-amber-200 leading-relaxed">
+            <p className="text-xs dark:text-amber-200 text-amber-800 leading-relaxed">
               Desactivar la firma eliminará los datos ingresados del receptor (nombre y cédula), la firma dibujada y la aceptación de términos. ¿Estás seguro de que deseas continuar?
             </p>
             <div className="flex justify-end gap-2">
@@ -187,7 +187,7 @@ export default function FirmaInput({
                   setShowConfirmToggle(false)
                   switchRef.current?.focus()
                 }}
-                className="px-3.5 py-2 text-xs font-semibold text-gray-300 hover:text-white rounded-lg hover:bg-gray-800 transition-colors min-h-[40px] flex items-center justify-center"
+                className="px-3.5 py-2 text-xs font-semibold dark:text-gray-300 text-gray-700 hover:dark:text-white hover:text-gray-900 rounded-lg hover:dark:bg-gray-800 hover:bg-gray-200 transition-colors min-h-[40px] flex items-center justify-center"
               >
                 Cancelar
               </button>
@@ -220,10 +220,10 @@ export default function FirmaInput({
         {signatureState.habilitada ? (
           <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
             {/* Campos del Receptor */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-800/40 p-4 border border-gray-700/30 rounded-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 dark:bg-gray-800/40 bg-gray-200 p-4 border dark:border-gray-700/30 border-gray-300 rounded-2xl">
               <div className="space-y-1.5">
-                <label htmlFor="nombreReceptor" className="block text-sm font-medium text-gray-300">
-                  Nombre Completo del Receptor <span className="text-red-400 font-bold">*</span>
+                <label htmlFor="nombreReceptor" className="block text-sm font-medium dark:text-gray-300 text-gray-700">
+                  Nombre Completo del Receptor <span className="dark:text-red-400 text-red-700 font-bold">*</span>
                 </label>
                 <input
                   type="text"
@@ -239,20 +239,20 @@ export default function FirmaInput({
                     setTouchedFields(prev => ({ ...prev, nombre: true }))
                   }}
                   placeholder="Ej. Juan Pérez"
-                  className={`w-full px-4 py-3 bg-gray-900/60 border rounded-xl text-white focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 outline-none ${
-                    showNombreError ? 'border-red-500/50 focus:border-red-500/50' : 'border-gray-700/50'
+                  className={`w-full px-4 py-3 dark:bg-gray-900/60 bg-gray-50 border rounded-xl dark:text-white text-gray-900 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 outline-none ${
+                    showNombreError ? 'border-red-500/50 focus:border-red-500/50' : 'dark:border-gray-700/50 border-gray-300'
                   }`}
                 />
                 {showNombreError && (
-                  <p role="alert" className="text-xs text-red-400 flex items-center gap-1.5 mt-1 animate-in fade-in slide-in-from-top-1">
+                  <p role="alert" className="text-xs dark:text-red-400 text-red-700 flex items-center gap-1.5 mt-1 animate-in fade-in slide-in-from-top-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     El nombre del receptor es obligatorio.
                   </p>
                 )}
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="cedulaReceptor" className="block text-sm font-medium text-gray-300">
-                  Cédula del Receptor <span className="text-red-400 font-bold">*</span>
+                <label htmlFor="cedulaReceptor" className="block text-sm font-medium dark:text-gray-300 text-gray-700">
+                  Cédula del Receptor <span className="dark:text-red-400 text-red-700 font-bold">*</span>
                 </label>
                 <input
                   type="text"
@@ -296,12 +296,12 @@ export default function FirmaInput({
                     setTouchedFields(prev => ({ ...prev, cedula: true }))
                   }}
                   placeholder="Ej. 123456789"
-                  className={`w-full px-4 py-3 bg-gray-900/60 border rounded-xl text-white focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 outline-none ${
-                    showCedulaError ? 'border-red-500/50 focus:border-red-500/50' : 'border-gray-700/50'
+                  className={`w-full px-4 py-3 dark:bg-gray-900/60 bg-gray-50 border rounded-xl dark:text-white text-gray-900 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 outline-none ${
+                    showCedulaError ? 'border-red-500/50 focus:border-red-500/50' : 'dark:border-gray-700/50 border-gray-300'
                   }`}
                 />
                 {showCedulaError && (
-                  <p role="alert" className="text-xs text-red-400 flex items-center gap-1.5 mt-1 animate-in fade-in slide-in-from-top-1">
+                  <p role="alert" className="text-xs dark:text-red-400 text-red-700 flex items-center gap-1.5 mt-1 animate-in fade-in slide-in-from-top-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     {!signatureState.cedulaReceptor?.trim()
                       ? 'La cédula del receptor es obligatoria.'
@@ -314,15 +314,15 @@ export default function FirmaInput({
             {/* Lienzo de firma */}
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                <label className="block text-sm font-medium text-gray-300">
-                  Firma Digital del Receptor <span className="text-red-400 font-bold">*</span>
+                <label className="block text-sm font-medium dark:text-gray-300 text-gray-700">
+                  Firma Digital del Receptor <span className="dark:text-red-400 text-red-700 font-bold">*</span>
                 </label>
                 <div className="flex gap-2 justify-end w-full sm:w-auto">
                   {!isEmpty && (
                     <button
                       type="button"
                       onClick={handleUndo}
-                      className="text-xs flex items-center justify-center px-4 py-2.5 rounded-xl bg-gray-700/50 text-gray-300 hover:text-white transition-all active:scale-95 min-h-[40px] min-w-[90px]"
+                      className="text-xs flex items-center justify-center px-4 py-2.5 rounded-xl dark:bg-gray-700/50 bg-gray-300 dark:text-gray-300 text-gray-700 hover:dark:text-white hover:text-gray-900 transition-all active:scale-95 min-h-[40px] min-w-[90px]"
                     >
                       <Undo className="w-4 h-4 mr-1.5" />
                       Deshacer
@@ -333,8 +333,8 @@ export default function FirmaInput({
                     onClick={handleClear}
                     className={`text-xs flex items-center justify-center px-4 py-2.5 rounded-xl transition-all active:scale-95 min-h-[40px] min-w-[90px] ${
                       isConfirmingClear
-                        ? 'bg-amber-500/20 text-amber-300'
-                        : 'bg-red-500/10 text-red-400 hover:text-red-300'
+                        ? 'bg-amber-500/20 dark:text-amber-300 text-amber-700'
+                        : 'bg-red-500/10 dark:text-red-400 text-red-700 hover:dark:text-red-300 hover:text-red-700'
                     }`}
                   >
                     <Eraser className="w-4 h-4 mr-1.5" />
@@ -346,7 +346,7 @@ export default function FirmaInput({
               <div
                 ref={containerRef}
                 className={`border-2 border-dashed rounded-xl bg-white overflow-hidden relative shadow-inner touch-none ${
-                  showFirmaError ? 'border-red-500/50' : 'border-gray-600/50'
+                  showFirmaError ? 'border-red-500/50' : 'dark:border-gray-600/50 border-gray-300'
                 }`}
                 style={{ height: 'clamp(160px, 28dvh, 240px)' }}
               >
@@ -375,7 +375,7 @@ export default function FirmaInput({
                 />
                 {isEmpty && (
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                    <span className="text-sm font-medium text-gray-400 bg-white/80 px-3 py-1 rounded-full scale-95 opacity-80">
+                    <span className="text-sm font-medium dark:text-gray-400 text-gray-600 bg-white/80 px-3 py-1 rounded-full scale-95 opacity-80">
                       Firme aquí
                     </span>
                   </div>
@@ -383,7 +383,7 @@ export default function FirmaInput({
               </div>
 
               {showFirmaError && (
-                <p role="alert" className="text-xs text-red-400 flex items-center gap-1.5 mt-2 animate-in fade-in slide-in-from-top-1">
+                <p role="alert" className="text-xs dark:text-red-400 text-red-700 flex items-center gap-1.5 mt-2 animate-in fade-in slide-in-from-top-1">
                   <AlertCircle className="w-3.5 h-3.5" />
                   La firma es obligatoria.
                 </p>
@@ -392,7 +392,7 @@ export default function FirmaInput({
               <div className="p-4 rounded-3xl border border-blue-500/20 bg-blue-500/5 text-blue-100 space-y-2 mt-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-                    <Info className="w-4 h-4 text-blue-400" />
+                    <Info className="w-4 h-4 dark:text-blue-400 text-blue-700" />
                   </div>
                   <p className="text-sm font-medium">
                     Para que esta firma sea válida debe ser firmada por el cliente o el receptor relacionado al cliente/empresa en esta orden.
@@ -408,7 +408,7 @@ export default function FirmaInput({
                 className={`flex items-start p-4 rounded-xl border transition-all cursor-pointer ${
                   signatureState.validada
                     ? 'bg-blue-500/10 border-blue-500/30'
-                    : 'bg-gray-800/50 border-gray-700 hover:border-gray-600'
+                    : 'dark:bg-gray-800/50 bg-gray-200 dark:border-gray-700 border-gray-300 hover:dark:border-gray-600 hover:border-gray-300'
                 }`}
               >
                 <div className="flex-shrink-0 mt-0.5 relative">
@@ -426,11 +426,11 @@ export default function FirmaInput({
                     className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
                       signatureState.validada
                         ? 'bg-blue-500 border-blue-500'
-                        : 'bg-gray-900 border-gray-600'
+                        : 'dark:bg-gray-900 bg-gray-100 dark:border-gray-600 border-gray-300'
                     } peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-gray-900`}
                   >
                     {signatureState.validada && (
-                      <CheckCircle2 className="w-4 h-4 text-white animate-in zoom-in duration-200" />
+                      <CheckCircle2 className="w-4 h-4 dark:text-white text-gray-900 animate-in zoom-in duration-200" />
                     )}
                   </div>
                 </div>
@@ -438,7 +438,7 @@ export default function FirmaInput({
                   className={`ml-3 text-xs leading-relaxed ${
                     signatureState.validada
                       ? 'text-blue-100 font-medium'
-                      : 'text-gray-400'
+                      : 'dark:text-gray-400 text-gray-600'
                   }`}
                 >
                   Declaro que recibo el equipo a mi entera satisfacción y
@@ -447,7 +447,7 @@ export default function FirmaInput({
                     href="/legal/politica-privacidad" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
+                    className="dark:text-blue-400 text-blue-700 hover:underline"
                     onClick={(e) => e.stopPropagation()}
                   >
                     Política de Privacidad
@@ -457,7 +457,7 @@ export default function FirmaInput({
                     href="/legal/terminos-servicio" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
+                    className="dark:text-blue-400 text-blue-700 hover:underline"
                     onClick={(e) => e.stopPropagation()}
                   >
                     Términos de Servicio
@@ -467,13 +467,13 @@ export default function FirmaInput({
               </label>
 
               {showValidacionError && (
-                <p role="alert" className="text-xs text-red-400 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
+                <p role="alert" className="text-xs dark:text-red-400 text-red-700 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
                   <AlertCircle className="w-3.5 h-3.5" />
                   El receptor debe aceptar los términos para finalizar.
                 </p>
               )}
               {signatureState.validada && (
-                <p className="text-xs text-emerald-400 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
+                <p className="text-xs dark:text-emerald-400 text-emerald-700 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   Términos aceptados.
                 </p>
@@ -483,13 +483,13 @@ export default function FirmaInput({
         ) : (
           <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-3xl flex gap-4 items-start animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
-              <PenIcon className="w-5 h-5 text-blue-400" />
+              <PenIcon className="w-5 h-5 dark:text-blue-400 text-blue-700" />
             </div>
             <div className="space-y-1">
-              <h4 className="text-lg font-bold text-blue-400">
+              <h4 className="text-lg font-bold dark:text-blue-400 text-blue-700">
                 Firma opcional
               </h4>
-              <p className="text-sm text-gray-400 leading-relaxed">
+              <p className="text-sm dark:text-gray-400 text-gray-600 leading-relaxed">
                   La firma confirma que el cliente recibió el equipo y acepta las condiciones del servicio. Actívala para que la orden quede validada.
               </p>
             </div>

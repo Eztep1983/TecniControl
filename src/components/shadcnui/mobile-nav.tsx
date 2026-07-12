@@ -56,14 +56,7 @@ export function MobileNav() {
 
   return (
     <>
-      <style>{`
-        @media (orientation: portrait) {
-          #mobile-nav-bg {
-            mask-image: radial-gradient(circle 42px at 50% 0px, transparent 42px, black 43px);
-            -webkit-mask-image: radial-gradient(circle 42px at 50% 0px, transparent 42px, black 43px);
-          }
-        }
-      `}</style>
+      {/* El estilo del notch ha sido extraído a globals.css (.nav-notch-bg) para optimizar SSR y reducir layout shifts */}
       <nav
         id="mobile-nav"
         className={cn(
@@ -83,7 +76,7 @@ export function MobileNav() {
         {/* Fondo con Notch y Blur */}
         <div 
           id="mobile-nav-bg"
-          className="absolute inset-0 bg-gray-900/75 backdrop-blur-xl border-t border-gray-600/40 pointer-events-none"
+          className="absolute inset-0 dark:bg-gray-900/75 bg-gray-100/85 backdrop-blur-xl border-t dark:border-gray-600/40 border-gray-300/60 pointer-events-none nav-notch-bg"
         />
 
         {/* Container interno para mejor control de espacio */}
@@ -116,7 +109,7 @@ export function MobileNav() {
                 "flex items-center justify-center",
                 "w-16 h-16 rounded-full",
                 "bg-gradient-to-tr from-blue-600 to-blue-400 shadow-[0_8px_30px_rgb(59,130,246,0.3)]",
-                "ring-[6px] ring-gray-900/40",
+                "ring-[6px] dark:ring-gray-900/40 ring-gray-200/60",
                 estadisticas.totalOrdenes === 0 ? "ring-blue-500/50" : "",
                 "active:scale-90 active:shadow-md",
                 "transition-all duration-200 ease-out",
@@ -125,7 +118,7 @@ export function MobileNav() {
               aria-label="Nueva orden"
               aria-describedby="new-order-hint"
             >
-              <Plus className="w-8 h-8 text-white" />
+              <Plus className="w-8 h-8 dark:text-white text-gray-900" />
             </button>
             <span id="new-order-hint" className="sr-only">
               Crear nueva orden de trabajo
@@ -173,7 +166,7 @@ function NavButton({ item, active, onClick }: NavButtonProps) {
         "touch-manipulation",
         active 
           ? "text-blue-500" 
-          : "text-gray-400 hover:text-gray-300 active:text-gray-300"
+          : "dark:text-gray-400 text-gray-600 hover:dark:text-gray-300 hover:text-gray-700 active:dark:text-gray-300 active:text-gray-700"
       )}
       aria-label={item.name}
       aria-pressed={active}
@@ -190,8 +183,8 @@ function NavButton({ item, active, onClick }: NavButtonProps) {
 
       {/* Label and active dot indicator */}
       <span className={cn(
-        "text-[10px] font-bold tracking-wide transition-opacity duration-200",
-        active ? "opacity-100" : "opacity-0 absolute"
+        "text-[9px] font-medium tracking-wide transition-colors duration-200",
+        active ? "text-blue-400 font-bold" : "dark:text-gray-400 text-gray-600"
       )}>
         {item.name}
       </span>

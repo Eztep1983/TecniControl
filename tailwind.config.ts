@@ -79,6 +79,9 @@ export default {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
+      transitionTimingFunction: {
+        'ios': 'cubic-bezier(0.16, 1, 0.3, 1)'
+      },
   		keyframes: {
   			'accordion-down': {
   				from: {
@@ -95,11 +98,55 @@ export default {
   				to: {
   					height: '0'
   				}
-  			}
+  			},
+  			'modal-orden-in': {
+  				from: {
+  					transform: 'translate(-50%, -50%) translateY(40px) scale(0.95)',
+  					opacity: '0'
+  				},
+  				to: {
+  					transform: 'translate(-50%, -50%) translateY(0) scale(1)',
+  					opacity: '1'
+  				}
+  			},
+  			'modal-orden-out': {
+  				from: {
+  					transform: 'translate(-50%, -50%) translateY(0) scale(1)',
+  					opacity: '1'
+  				},
+  				to: {
+  					transform: 'translate(-50%, -50%) translateY(40px) scale(0.95)',
+  					opacity: '0'
+  				}
+  			},
+  			'sheet-orden-in': {
+  				from: {
+  					transform: 'translateY(40px) scale(0.95)',
+  					opacity: '0'
+  				},
+  				to: {
+  					transform: 'translateY(0) scale(1)',
+  					opacity: '1'
+  				}
+  			},
+  			'sheet-orden-out': {
+  				from: {
+  					transform: 'translateY(0) scale(1)',
+  					opacity: '1'
+  				},
+  				to: {
+  					transform: 'translateY(40px) scale(0.95)',
+  					opacity: '0'
+  				}
+  			},
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'modal-orden-in': 'modal-orden-in 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+  			'modal-orden-out': 'modal-orden-out 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+  			'sheet-orden-in': 'sheet-orden-in 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+  			'sheet-orden-out': 'sheet-orden-out 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
   		}
   	}
   },

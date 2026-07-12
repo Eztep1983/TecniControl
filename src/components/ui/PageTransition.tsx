@@ -73,6 +73,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
         exit="exit"
         transition={{ duration: 0.15, ease: "easeInOut" }}
         className="w-full h-full"
+        style={{ willChange: "transform, opacity" }}
       >
         {children}
       </motion.div>

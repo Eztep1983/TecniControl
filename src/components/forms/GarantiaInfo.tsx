@@ -30,8 +30,8 @@ export default function GarantiaInfo({
     >
       {/* Banner informativo */}
       <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex gap-3 items-start">
-        <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-        <div className="text-sm text-amber-200/80">
+        <AlertCircle className="w-5 h-5 dark:text-amber-400 text-amber-700 shrink-0 mt-0.5" />
+        <div className="text-sm dark:text-amber-200 text-amber-800/80">
           <p className="font-bold mb-1">Respuesta a Garantía</p>
           <p>Utilice esta sección para documentar la atención a un fallo cubierto por una garantía previa.</p>
         </div>
@@ -40,10 +40,10 @@ export default function GarantiaInfo({
       <div className="space-y-5">
         {/* Referencia de Orden — obligatoria */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-300 flex items-center gap-2">
-            <Hash className="w-4 h-4 text-amber-400" />
+          <label className="text-sm font-semibold dark:text-gray-300 text-gray-700 flex items-center gap-2">
+            <Hash className="w-4 h-4 dark:text-amber-400 text-amber-700" />
             Orden de Referencia
-            <span className="text-red-400" aria-hidden="true">*</span>
+            <span className="dark:text-red-400 text-red-700" aria-hidden="true">*</span>
           </label>
 
           <div className="relative">
@@ -56,12 +56,12 @@ export default function GarantiaInfo({
               required
               aria-required="true"
               aria-invalid={referenciaInvalida}
-              className={`w-full pl-11 pr-10 py-3 bg-gray-900/60 border rounded-xl text-white focus:ring-2 outline-none transition-all duration-200 ${
+              className={`w-full pl-11 pr-10 py-3 dark:bg-gray-900/60 bg-gray-50 border rounded-xl dark:text-white text-gray-900 focus:ring-2 outline-none transition-all duration-200 ${
                 referenciaInvalida
                   ? 'border-red-500/60 focus:ring-red-500/30 focus:border-red-500/80'
                   : referenciaId.trim()
                   ? 'border-green-500/50 focus:ring-amber-500/30 focus:border-amber-500/60'
-                  : 'border-gray-700/50 focus:ring-amber-500/30 focus:border-amber-500/60'
+                  : 'dark:border-gray-700/50 border-gray-300 focus:ring-amber-500/30 focus:border-amber-500/60'
               }`}
             />
             {/* Icono izquierdo */}
@@ -76,7 +76,7 @@ export default function GarantiaInfo({
                   exit={{ opacity: 0, scale: 0.5 }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
                 >
-                  <CheckCircle2 className="w-4 h-4 text-green-400" />
+                  <CheckCircle2 className="w-4 h-4 dark:text-green-400 text-green-700" />
                 </motion.span>
               )}
               {referenciaInvalida && !referenciaId.trim() && (
@@ -87,7 +87,7 @@ export default function GarantiaInfo({
                   exit={{ opacity: 0, scale: 0.5 }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
                 >
-                  <AlertCircle className="w-4 h-4 text-red-400" />
+                  <AlertCircle className="w-4 h-4 dark:text-red-400 text-red-700" />
                 </motion.span>
               )}
             </AnimatePresence>
@@ -101,7 +101,7 @@ export default function GarantiaInfo({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.15 }}
-                className="flex items-center gap-1.5 text-xs text-red-400"
+                className="flex items-center gap-1.5 text-xs dark:text-red-400 text-red-700"
               >
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 La referencia de la orden es obligatoria
@@ -112,10 +112,10 @@ export default function GarantiaInfo({
 
         {/* Motivo del Reclamo — obligatorio */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-300 flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-amber-400" />
+          <label className="text-sm font-semibold dark:text-gray-300 text-gray-700 flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 dark:text-amber-400 text-amber-700" />
             Motivo del Reclamo
-            <span className="text-red-400" aria-hidden="true">*</span>
+            <span className="dark:text-red-400 text-red-700" aria-hidden="true">*</span>
           </label>
 
           <textarea
@@ -127,12 +127,12 @@ export default function GarantiaInfo({
             required
             aria-required="true"
             aria-invalid={motivoInvalido}
-            className={`w-full px-4 py-3 bg-gray-900/60 border rounded-xl text-white focus:ring-2 outline-none transition-all duration-200 resize-none ${
+            className={`w-full px-4 py-3 dark:bg-gray-900/60 bg-gray-50 border rounded-xl dark:text-white text-gray-900 focus:ring-2 outline-none transition-all duration-200 resize-none ${
               motivoInvalido
                 ? 'border-red-500/60 focus:ring-red-500/30 focus:border-red-500/80'
                 : motivo.trim()
                 ? 'border-green-500/50 focus:ring-amber-500/30 focus:border-amber-500/60'
-                : 'border-gray-700/50 focus:ring-amber-500/30 focus:border-amber-500/60'
+                : 'dark:border-gray-700/50 border-gray-300 focus:ring-amber-500/30 focus:border-amber-500/60'
             }`}
           />
 
@@ -144,7 +144,7 @@ export default function GarantiaInfo({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.15 }}
-                className="flex items-center gap-1.5 text-xs text-red-400"
+                className="flex items-center gap-1.5 text-xs dark:text-red-400 text-red-700"
               >
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 Describe el motivo del reclamo de garantía

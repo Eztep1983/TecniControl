@@ -28,7 +28,7 @@ const TIPOS_CONTADOR = [
     color: 'from-blue-500 to-blue-600',
     bgColor: 'bg-blue-500/10',
     borderColor: 'border-blue-500/50',
-    textColor: 'text-blue-400'
+    textColor: 'dark:text-blue-400 text-blue-700'
   },
   { 
     valor: 'impresiones', 
@@ -37,7 +37,7 @@ const TIPOS_CONTADOR = [
     color: 'from-purple-500 to-purple-600',
     bgColor: 'bg-purple-500/10',
     borderColor: 'border-purple-500/50',
-    textColor: 'text-purple-400'
+    textColor: 'dark:text-purple-400 text-purple-700'
   },
   { 
     valor: 'copias', 
@@ -46,7 +46,7 @@ const TIPOS_CONTADOR = [
     color: 'from-green-500 to-green-600',
     bgColor: 'bg-green-500/10',
     borderColor: 'border-green-500/50',
-    textColor: 'text-green-400'
+    textColor: 'dark:text-green-400 text-green-700'
   },
   { 
     valor: 'escaneos', 
@@ -64,7 +64,7 @@ const TIPOS_CONTADOR = [
     color: 'from-orange-500 to-orange-600',
     bgColor: 'bg-orange-500/10',
     borderColor: 'border-orange-500/50',
-    textColor: 'text-orange-400'
+    textColor: 'dark:text-orange-400 text-orange-700'
   },
   { 
     valor: 'personalizado', 
@@ -149,7 +149,7 @@ const ContadorInput = React.memo(function ContadorInput({
           p-5 rounded-2xl border-2 transition-all duration-300
           ${mostrarContador 
             ? 'bg-blue-500/10 border-blue-500 shadow-[0_0_20px_rgba(245,158,11,0.15)]' 
-            : 'bg-gray-800/40 border-gray-700 hover:border-gray-500'
+            : 'dark:bg-gray-800/40 bg-gray-200 dark:border-gray-700 border-gray-300 hover:border-gray-500'
           }
         `}
       >
@@ -157,12 +157,12 @@ const ContadorInput = React.memo(function ContadorInput({
           <div className="flex items-center gap-4">
             <div className={`
               w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500
-              ${mostrarContador ? 'bg-blue-500 text-white rotate-[360deg]' : 'bg-gray-700 text-gray-400'}
+              ${mostrarContador ? 'bg-blue-500 text-white rotate-[360deg]' : 'bg-gray-700 dark:text-gray-400 text-gray-600'}
             `}>
               <Hash className="w-6 h-6" />
             </div>
             <div>
-              <h3 className={`font-bold text-lg transition-colors ${mostrarContador ? 'text-blue-400' : 'text-gray-200'}`}>
+              <h3 className={`font-bold text-lg transition-colors ${mostrarContador ? 'dark:text-blue-400 text-blue-700' : 'dark:text-gray-200 text-gray-800'}`}>
                 Registro de Contador
               </h3>
               <p className="text-sm text-gray-500">
@@ -192,7 +192,7 @@ const ContadorInput = React.memo(function ContadorInput({
         <div className="space-y-6 animate-in slide-in-from-top-4 duration-500">
 
                     {/* Valor del Contador - Foco Central */}
-          <section className="bg-gray-800/30 rounded-3xl p-6 border border-gray-700/50 space-y-6">
+          <section className="dark:bg-gray-800/30 bg-gray-100 rounded-3xl p-6 border dark:border-gray-700/50 border-gray-300 space-y-6">
             <div className="text-center space-y-1">
               <span className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em]">Valor Actual</span>
               <div className="flex items-center justify-center gap-6">
@@ -200,7 +200,7 @@ const ContadorInput = React.memo(function ContadorInput({
                   type="button"
                   onClick={() => ajustarValor(-1)}
                   disabled={contadorActual.valor <= 0}
-                  className="w-14 h-14 rounded-2xl bg-gray-700 flex items-center justify-center text-white active:scale-90 disabled:opacity-30 transition-all"
+                  className="w-14 h-14 rounded-2xl bg-gray-700 flex items-center justify-center dark:text-white text-gray-900 active:scale-90 disabled:opacity-30 transition-all"
                 >
                   <Minus className="w-6 h-6" />
                 </button>
@@ -223,7 +223,7 @@ const ContadorInput = React.memo(function ContadorInput({
                   type="button"
                   onClick={() => ajustarValor(1)}
                   className={`
-                    w-14 h-14 rounded-2xl flex items-center justify-center text-white active:scale-90 transition-all shadow-lg
+                    w-14 h-14 rounded-2xl flex items-center justify-center dark:text-white text-gray-900 active:scale-90 transition-all shadow-lg
                     ${tipoConfig.color.includes('blue') ? 'bg-blue-500 shadow-blue-500/20' : 'bg-blue-500 shadow-blue-500/20'}
                   `}
                   style={{ background: `linear-gradient(to bottom right, ${tipoConfig.color.split(' ')[0].replace('from-', '')}, ${tipoConfig.color.split(' ')[1].replace('to-', '')})` }}
@@ -240,7 +240,7 @@ const ContadorInput = React.memo(function ContadorInput({
                   key={val}
                   type="button"
                   onClick={() => handleChange('valor', contadorActual.valor + val)}
-                  className="px-4 py-2 rounded-xl bg-gray-700/50 text-gray-300 text-sm font-bold hover:bg-gray-700 active:scale-95 transition-all"
+                  className="px-4 py-2 rounded-xl dark:bg-gray-700/50 bg-gray-300 dark:text-gray-300 text-gray-700 text-sm font-bold hover:bg-gray-700 active:scale-95 transition-all"
                 >
                   +{val}
                 </button>
@@ -252,8 +252,8 @@ const ContadorInput = React.memo(function ContadorInput({
           {/* Tipos de Contador - Grid Optimizado para Pulgares */}
           <section className="space-y-3">
             <div className="flex items-center gap-2 px-1">
-              <Target className="w-4 h-4 text-blue-500" />
-              <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">Registrar Tipo de Medición Como:</span>
+              <Target className="w-4 h-4 dark:text-blue-500 text-blue-600" />
+              <span className="text-sm font-bold dark:text-gray-400 text-gray-600 uppercase tracking-wider">Registrar Tipo de Medición Como:</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
               {TIPOS_CONTADOR.map((tipo) => {
@@ -268,12 +268,12 @@ const ContadorInput = React.memo(function ContadorInput({
                       relative p-4 rounded-2xl border-2 flex flex-col items-center gap-3 transition-all active:scale-95
                       ${isSelected 
                         ? `${tipo.bgColor} ${tipo.borderColor} ring-4 ring-white/5` 
-                        : 'bg-gray-800/30 border-gray-700/50 text-gray-500 hover:border-gray-600'
+                        : 'dark:bg-gray-800/30 bg-gray-100 dark:border-gray-700/50 border-gray-300 text-gray-500 hover:dark:border-gray-600 hover:border-gray-300'
                       }
                     `}
                   >
                     <IconComponent className={`w-8 h-8 ${isSelected ? tipo.textColor : ''}`} />
-                    <span className={`text-xs font-bold uppercase tracking-tight ${isSelected ? 'text-white' : ''}`}>
+                    <span className={`text-xs font-bold uppercase tracking-tight ${isSelected ? 'dark:text-white text-gray-900' : ''}`}>
                       {tipo.label}
                     </span>
                     {isSelected && (
@@ -292,13 +292,13 @@ const ContadorInput = React.memo(function ContadorInput({
             <div className="space-y-2 hidden">
               <label className="text-xs font-bold text-gray-500 uppercase px-1">Fecha Registro</label>
               <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500" />
+                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 dark:text-blue-500 text-blue-600" />
                 <input
                   type="date"
                   value={contadorActual.fechaRegistro}
                   onChange={(e) => handleChange('fechaRegistro', e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
-                  className="w-full bg-gray-800/50 border-2 border-gray-700 rounded-2xl pl-12 pr-4 py-4 text-white focus:border-blue-500 focus:outline-none transition-all"
+                  className="w-full dark:bg-gray-800/50 bg-gray-200 border-2 dark:border-gray-700 border-gray-300 rounded-2xl pl-12 pr-4 py-4 dark:text-white text-gray-900 focus:border-blue-500 focus:outline-none transition-all"
                 />
               </div>
             </div>
@@ -313,7 +313,7 @@ const ContadorInput = React.memo(function ContadorInput({
                   value={contadorActual.unidadPersonalizada || ''}
                   onChange={(e) => handleChange('unidadPersonalizada', e.target.value)}
                   maxLength={50}
-                  className="w-full bg-pink-500/5 border-2 border-pink-500/30 rounded-2xl px-4 py-4 text-white placeholder-pink-500/40 focus:border-pink-500 focus:outline-none transition-all"
+                  className="w-full bg-pink-500/5 border-2 border-pink-500/30 rounded-2xl px-4 py-4 dark:text-white text-gray-900 placeholder-pink-500/40 focus:border-pink-500 focus:outline-none transition-all"
                 />
               </div>
             )}
@@ -325,11 +325,11 @@ const ContadorInput = React.memo(function ContadorInput({
       {!mostrarContador && (
         <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-3xl flex gap-4 items-start">
           <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
-            <Info className="w-5 h-5 text-blue-400" />
+            <Info className="w-5 h-5 dark:text-blue-400 text-blue-700" />
           </div>
           <div className="space-y-1">
-            <h4 className="text-lg text-center font-bold text-blue-400">¿Por qué registrar el contador?</h4>
-            <p className="text-sm text-gray-400 text-center leading-relaxed">
+            <h4 className="text-lg text-center font-bold dark:text-blue-400 text-blue-700">¿Por qué registrar el contador?</h4>
+            <p className="text-sm dark:text-gray-400 text-gray-600 text-center leading-relaxed">
               Permite predecir fallas, programar mantenimientos preventivos y llevar un historial exacto del ciclo de vida de los componentes del equipo aplica solamente si el equipo cuenta con medidor de algún tipo.
             </p>
           </div>

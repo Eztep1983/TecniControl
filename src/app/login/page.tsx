@@ -211,7 +211,7 @@ export default function LoginPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-white-500 to-blue-500 dark:from-blue-900 dark:to-cyan-950 p-4 transition-colors duration-300">
         <div className="flex flex-col items-center justify-center space-y-4">
-          <div className="w-16 h-16 overflow-hidden bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="w-16 h-16 overflow-hidden bg-white rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
             <img
               src={logo.src}
               alt="TecniControl Logo"
@@ -219,7 +219,7 @@ export default function LoginPage() {
             />
           </div>
           <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
-          <p className="text-lg font-semibold text-slate-900 dark:text-white">Redirigiendo a TecniControl...</p>
+          <p className="text-lg font-semibold dark:text-slate-100 text-slate-900 dark:text-white">Redirigiendo a TecniControl...</p>
         </div>
       </div>
     )
@@ -236,7 +236,7 @@ export default function LoginPage() {
           {/* Header */}
           <CardHeader className="text-center px-8 pt-8 pb-4">
             <div className="flex justify-center items-center gap-3 mb-2">
-              <div className="w-12 h-12 overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700">
+              <div className="w-12 h-12 overflow-hidden rounded-xl bg-white shadow-lg border border-gray-200 dark:border-gray-700">
                 <img
                   src={logo.src}
                   alt="TecniControl Logo"
@@ -247,7 +247,7 @@ export default function LoginPage() {
                 TecniControl
               </CardTitle>
             </div>
-            <CardDescription className="text-slate-600 dark:text-gray-300 text-lg">
+            <CardDescription className="dark:text-slate-400 text-slate-600 dark:text-gray-300 text-lg">
               Gestiona tus órdenes de servicio
             </CardDescription>
           </CardHeader>
@@ -274,10 +274,10 @@ export default function LoginPage() {
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 mb-2">
                     <Lock className="h-8 w-8" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                  <h3 className="text-xl font-bold dark:text-slate-100 text-slate-900 dark:text-white">
                     Acceso Restringido
                   </h3>
-                  <p className="text-slate-600 dark:text-slate-400">
+                  <p className="dark:text-slate-400 text-slate-600 dark:text-slate-400">
                     {error}
                   </p>
                 </div>
@@ -285,7 +285,7 @@ export default function LoginPage() {
                 <Button
                   variant="outline"
                   onClick={resetLoginState}
-                  className="w-full py-6 rounded-xl border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 gap-2"
+                  className="w-full py-6 rounded-xl border-slate-200 dark:border-slate-800 dark:text-slate-400 text-slate-600 dark:text-slate-400 hover:dark:bg-slate-900 hover:bg-slate-50 dark:hover:dark:bg-slate-900 hover:bg-gray-100 gap-2"
                 >
                   <RefreshCw className="h-4 w-4" />
                   Volver al inicio de sesión
@@ -325,13 +325,13 @@ export default function LoginPage() {
                         }`}
                       >
                         {acceptedTerms && (
-                          <CheckCircle2 className="w-4 h-4 text-white animate-in zoom-in duration-200" />
+                          <CheckCircle2 className="w-4 h-4 dark:text-white text-gray-900 animate-in zoom-in duration-200" />
                         )}
                       </div>
                     </div>
                     <label 
                       htmlFor="terms" 
-                      className="text-xs sm:text-sm text-slate-600 dark:text-gray-400 leading-relaxed cursor-pointer"
+                      className="text-xs sm:text-sm dark:text-slate-400 text-slate-600 dark:text-gray-400 leading-relaxed cursor-pointer"
                     >
                       Acepto el tratamiento de mis datos personales de acuerdo con la{' '}
                       <a 
@@ -362,7 +362,7 @@ export default function LoginPage() {
                     onClick={handleGoogleSignIn}
                     disabled={loading || isSigningIn || !acceptedTerms}
                     size="lg"
-                    className="w-full py-7 text-base font-bold bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl shadow-md hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale-[0.5]"
+                    className="w-full py-7 text-base font-bold bg-white hover:dark:bg-slate-900 hover:bg-slate-50 dark:bg-slate-900 dark:hover:dark:bg-slate-800 hover:bg-gray-200 dark:text-slate-200 text-slate-800 dark:text-slate-100 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl shadow-md hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale-[0.5]"
                   >
                     {loading || isSigningIn ? (
                       <>
@@ -383,16 +383,16 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setIsEmailFormExpanded(!isEmailFormExpanded)}
-                    className="w-full flex items-center justify-between py-3.5 px-4 rounded-xl bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-900/40 dark:hover:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 transition-all duration-200 group"
+                    className="w-full flex items-center justify-between py-3.5 px-4 rounded-xl dark:bg-slate-900 bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-900/40 dark:hover:dark:bg-slate-900/80 hover:bg-gray-50 border border-slate-200/80 dark:border-slate-800 transition-all duration-200 group"
                   >
-                    <span className="text-sm font-semibold text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <span className="text-sm font-semibold dark:text-slate-400 text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:dark:text-blue-400 hover:text-blue-700 transition-colors">
                       O ingresar con correo y contraseña
                     </span>
                     <div className="p-1 rounded-md bg-white dark:bg-slate-800 shadow-sm border border-slate-200/50 dark:border-slate-700/50 group-hover:border-blue-500/30 transition-all">
                       {isEmailFormExpanded ? (
-                        <ChevronUp className="h-4 w-4 text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                        <ChevronUp className="h-4 w-4 dark:text-slate-400 text-slate-500 group-hover:text-blue-600 dark:group-hover:dark:text-blue-400 hover:text-blue-700 transition-colors" />
                       ) : (
-                        <ChevronDown className="h-4 w-4 text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                        <ChevronDown className="h-4 w-4 dark:text-slate-400 text-slate-500 group-hover:text-blue-600 dark:group-hover:dark:text-blue-400 hover:text-blue-700 transition-colors" />
                       )}
                     </div>
                   </button>
@@ -406,7 +406,7 @@ export default function LoginPage() {
                       <div className="pt-2 pb-1 space-y-5 px-0.5">
                         {/* Mode selection tabs */}
                         {mode === 'login' && (
-                          <div className="flex bg-slate-100 dark:bg-gray-900 p-1 rounded-xl">
+                          <div className="flex dark:bg-slate-800 bg-slate-100 dark:bg-gray-900 p-1 rounded-xl">
                             <div className="flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm text-center">
                               Iniciar Sesión
                             </div>
@@ -417,16 +417,16 @@ export default function LoginPage() {
                         {mode === 'login' && (
                           <form onSubmit={handleEmailLogin} className="space-y-4">
                             <div className="space-y-1">
-                              <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">Correo electrónico</Label>
+                              <Label htmlFor="email" className="dark:text-slate-300 text-slate-700 dark:text-slate-300 font-medium">Correo electrónico</Label>
                               <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 dark:text-slate-400 dark:text-slate-400 text-slate-600 dark:text-slate-500" />
                                 <Input
                                   id="email"
                                   type="email"
                                   placeholder="nombre@ejemplo.com"
                                   value={email}
                                   onChange={(e) => setEmail(e.target.value)}
-                                  className="pl-10 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500"
+                                  className="pl-10 dark:bg-slate-900 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500"
                                   required
                                 />
                               </div>
@@ -434,7 +434,7 @@ export default function LoginPage() {
 
                             <div className="space-y-1">
                               <div className="flex justify-between items-center">
-                                <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-medium">Contraseña</Label>
+                                <Label htmlFor="password" className="dark:text-slate-300 text-slate-700 dark:text-slate-300 font-medium">Contraseña</Label>
                                 <button
                                   type="button"
                                   onClick={() => { setMode('forgot-password'); setError(null); setSuccessMessage(null); }}
@@ -444,20 +444,20 @@ export default function LoginPage() {
                                 </button>
                               </div>
                               <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 dark:text-slate-400 dark:text-slate-400 text-slate-600 dark:text-slate-500" />
                                 <Input
                                   id="password"
                                   type={showPassword ? "text" : "password"}
                                   placeholder="••••••••"
                                   value={password}
                                   onChange={(e) => setPassword(e.target.value)}
-                                  className="pl-10 pr-10 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500"
+                                  className="pl-10 pr-10 dark:bg-slate-900 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500"
                                   required
                                 />
                                 <button
                                   type="button"
                                   onClick={() => setShowPassword(!showPassword)}
-                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 dark:text-slate-400 dark:text-slate-400 text-slate-600 hover:dark:text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:dark:text-slate-300 dark:text-slate-300 text-slate-700"
                                 >
                                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                 </button>
@@ -483,22 +483,22 @@ export default function LoginPage() {
                         {mode === 'forgot-password' && (
                           <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
                             <div className="space-y-2">
-                              <p className="text-sm text-slate-600 dark:text-slate-350 leading-relaxed">
+                              <p className="text-sm dark:text-slate-400 text-slate-600 dark:text-slate-350 leading-relaxed">
                                 Ingresa tu correo electrónico y te enviaremos un enlace de recuperación para restablecer tu contraseña de forma segura.
                               </p>
                             </div>
 
                             <div className="space-y-1">
-                              <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">Correo electrónico</Label>
+                              <Label htmlFor="email" className="dark:text-slate-300 text-slate-700 dark:text-slate-300 font-medium">Correo electrónico</Label>
                               <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 dark:text-slate-400 dark:text-slate-400 text-slate-600 dark:text-slate-500" />
                                 <Input
                                   id="email"
                                   type="email"
                                   placeholder="nombre@ejemplo.com"
                                   value={email}
                                   onChange={(e) => setEmail(e.target.value)}
-                                  className="pl-10 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500"
+                                  className="pl-10 dark:bg-slate-900 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500"
                                   required
                                 />
                               </div>
@@ -522,7 +522,7 @@ export default function LoginPage() {
                             <button
                               type="button"
                               onClick={() => { setMode('login'); setError(null); setSuccessMessage(null); }}
-                              className="flex items-center justify-center gap-2 w-full py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                              className="flex items-center justify-center gap-2 w-full py-2 text-sm font-semibold dark:text-slate-400 text-slate-600 hover:dark:text-slate-200 hover:text-slate-800 dark:text-slate-400 dark:hover:dark:text-slate-200 dark:text-slate-200 text-slate-800 transition-colors"
                             >
                               <ArrowLeft className="h-4 w-4" />
                               <span>Volver al inicio de sesión</span>
@@ -535,14 +535,14 @@ export default function LoginPage() {
                 </div>
 
                 {/* Privacy info box */}
-                <div className="rounded-xl bg-slate-50 dark:bg-gray-700/50 p-5 border border-slate-200 dark:border-gray-600">
+                <div className="rounded-xl dark:bg-slate-900 bg-slate-50 dark:bg-gray-700/50 p-5 border border-slate-200 dark:border-gray-600">
                   <div className="flex gap-3">
                     <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                     <div className="space-y-2">
-                      <p className="font-semibold text-slate-900 dark:text-white text-sm">
+                      <p className="font-semibold dark:text-slate-100 text-slate-900 dark:text-white text-sm">
                         Tu privacidad está protegida
                       </p>
-                      <p className="text-sm text-slate-600 dark:text-gray-300 leading-relaxed">
+                      <p className="text-sm dark:text-slate-400 text-slate-600 dark:text-gray-300 leading-relaxed">
                         Solo utilizamos tu información para autenticarte de forma segura. Tus datos están completamente resguardados.
                       </p>
                     </div>
@@ -555,7 +555,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <footer className="mt-8 text-center space-y-3 px-4">
-          <p className="text-sm text-slate-600 dark:text-gray-400">
+          <p className="text-sm dark:text-slate-400 text-slate-600 dark:text-gray-400">
             Al iniciar sesión, aceptas nuestros{' '}
             <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline font-medium transition-colors">
               Términos de Servicio
@@ -565,7 +565,7 @@ export default function LoginPage() {
               Política de Privacidad
             </a>
           </p>
-          <p className="text-xs text-slate-500 dark:text-gray-500">
+          <p className="text-xs dark:text-slate-400 text-slate-500 dark:text-gray-500">
             TecniControl v1.0.0
           </p>
         </footer>

@@ -29,6 +29,7 @@ import ResumenMantenimiento from '@/components/forms/ResumenMantenimiento'
 import { usePersistentReducer } from '@/hooks/usePersistentReducer'
 import { useKeyboardVisible } from '@/hooks/useKeyboardVisible'
 import { useOfflineOrderQueue } from '@/hooks/useOfflineOrderQueue'
+import { useMobileNavigation } from '@/components/providers/MobileNavigationContext'
 
 interface OnboardingFormProps {
   onClose: (stepsToPop?: number) => void
@@ -546,9 +547,10 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
   const { clientes: hookClientes } = useClientesUsuario()
   const searchParams = useSearchParams()
   const router = useRouter()
-  const queryClienteId = typeof window !== 'undefined'
+  const { modalClienteId } = useMobileNavigation()
+  const queryClienteId = modalClienteId || searchParams?.get('clienteId') || (typeof window !== 'undefined'
     ? new URLSearchParams(window.location.search).get('clienteId')
-    : (searchParams ? searchParams.get('clienteId') : null)
+    : null)
   const [hintExpanded, setHintExpanded] = useState(false)
   // ordenCreada es estado LOCAL (no persistente) para que clearPersistence() no lo borre
   const [ordenCreada, setOrdenCreada] = useState<OrdenMantenimiento | null>(null)
@@ -558,6 +560,8 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
 
   const [state, dispatch] = useReducer(formReducer, initialState)
   const clearPersistence = useCallback(() => {}, [])
+  
+  const hasInitializedCliente = useRef(false)
 
   // ============================================================================
   // EFFECTS
@@ -795,13 +799,14 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
 
   // Pre-select client from search params on mount or when clientId changes
   useEffect(() => {
-    if (queryClienteId && hookClientes.length > 0) {
+    if (queryClienteId && hookClientes.length > 0 && !hasInitializedCliente.current) {
       const matched = hookClientes.find(c => c.id === queryClienteId);
-      if (matched && state.clienteSeleccionado?.id !== queryClienteId) {
+      if (matched) {
         handleSeleccionarCliente(matched);
+        hasInitializedCliente.current = true;
       }
     }
-  }, [queryClienteId, hookClientes, state.clienteSeleccionado?.id, handleSeleccionarCliente]);
+  }, [queryClienteId, hookClientes, handleSeleccionarCliente]);
 
   // Handlers de Dispositivo
   const handleSeleccionarDispositivo = useCallback((dispositivo: Dispositivo) => {
@@ -1004,7 +1009,7 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
       diagnostico: 'bg-blue-600/20 text-blue-400 border-blue-500/30',
       instalacion: 'bg-purple-600/20 text-purple-400 border-purple-500/30',
       garantia: 'bg-amber-600/20 text-amber-400 border-amber-500/30',
-      '': 'bg-gray-600/20 text-gray-400 border-gray-500/30'
+      '': 'bg-gray-600/20 dark:text-gray-400 text-gray-600 border-gray-500/30'
     } as const
 
     return colors[state.tipoMantenimiento]
@@ -1284,7 +1289,7 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
         }
 
         return (
-          <div className="w-full h-[500px] border border-white/10 rounded-2xl overflow-hidden relative">
+          <div className="w-full h-[500px] border dark:border-white/10 border-gray-300/50 rounded-2xl overflow-hidden relative">
             <PDFPreviewView 
               orden={mockOrden} 
               onBack={() => dispatch({ type: 'SET_CURRENT_STEP', payload: 'firma' })} 
@@ -1299,9 +1304,9 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
   // Guard de autenticación
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen dark:bg-gray-900 bg-gray-100 flex items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-gray-400">Debes iniciar sesión para crear órdenes.</p>
+          <p className="dark:text-gray-400 text-gray-600">Debes iniciar sesión para crear órdenes.</p>
         </div>
       </div>
     )
@@ -1363,24 +1368,24 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="fixed inset-0 z-[100] bg-gray-900 flex flex-col overflow-hidden w-full h-[100dvh]"
+      className="fixed inset-0 z-[100] dark:bg-gray-900 bg-gray-100 flex flex-col overflow-hidden w-full h-[100dvh]"
     >
       {/* Onboarding fixed hints removed in favor of inline top card */}
 
       {/* Header Estilo Nativo */}
-      <header className="sticky top-0 z-30 bg-gray-900/95 border-b border-gray-800">
+      <header className="sticky top-0 z-30 dark:bg-gray-900/95 bg-gray-100/95 border-b dark:border-gray-800 border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <button
             type="button"
             onClick={() => onClose(stepsPushed.current + 1)}
-            className="p-3 text-white/80 hover:bg-white/10 rounded-full transition-colors active:scale-95 touch-manipulation"
+            className="p-3 dark:text-white text-gray-900/80 hover:dark:bg-white/10 hover:bg-gray-200 rounded-full transition-colors active:scale-95 touch-manipulation"
             aria-label="Cerrar formulario"
           >
             <X className="w-6 h-6" />
           </button>
           
           <div className="text-center flex-1 mx-4">
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl font-bold dark:text-white text-gray-900 tracking-tight">
               {STEPS_CONFIG[currentStepIndex].title}
             </h1>
             <div className="flex justify-center items-center gap-1 mt-1">
@@ -1414,7 +1419,7 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
             dragElastic={0.2}
             className="fixed z-50 bottom-28 right-4 max-w-[300px] pointer-events-auto cursor-grab active:cursor-grabbing"
           >
-            <div className="bg-blue-900/95 text-white p-4 rounded-2xl shadow-2xl backdrop-blur-md border border-blue-500/30">
+            <div className="bg-blue-900/95 dark:text-white text-gray-900 p-4 rounded-2xl shadow-2xl backdrop-blur-md border border-blue-500/30">
               <div className="flex items-start gap-3">
                 <div className="bg-blue-500/20 p-2 rounded-xl shrink-0 mt-0.5 border border-blue-500/30">
                   {ONBOARDING_HINTS[state.currentStep]?.icon || <Sparkles className="w-5 h-5 text-blue-300" />}
@@ -1451,7 +1456,7 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
 
       {/* Barra de navegación inferior flotante */}
       <div 
-        className={`bottom-nav-container min-h-[96px] h-auto w-full absolute bottom-0 left-0 right-0 z-30 bg-gray-900/95 border-t border-gray-800 transition-all duration-300 transform ${
+        className={`bottom-nav-container min-h-[96px] h-auto w-full absolute bottom-0 left-0 right-0 z-30 dark:bg-gray-900/95 bg-gray-100/95 border-t dark:border-gray-800 border-gray-200 transition-all duration-300 transform ${
           isKeyboardVisible ? 'hidden' : 'translate-y-0 opacity-100'
         }`}
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}
@@ -1461,7 +1466,7 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
             type="button"
             onClick={prevStep}
             disabled={state.currentStep === 'cliente'}
-            className="flex items-center justify-center h-12 px-5 text-base font-medium text-gray-300 bg-gray-800 rounded-xl hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 touch-manipulation min-w-[100px]"
+            className="flex items-center justify-center h-12 px-5 text-base font-medium dark:text-gray-300 text-gray-700 dark:bg-gray-800 bg-gray-200 rounded-xl hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 touch-manipulation min-w-[100px]"
           >
             <ChevronLeft className="w-5 h-5 mr-1" />
             <span className="hidden sm:inline">Anterior</span>
@@ -1473,14 +1478,14 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
               <button
                 type="button"
                 onClick={() => onClose(stepsPushed.current + 1)}
-                className="h-12 px-5 text-base font-medium text-gray-300 bg-gray-800 rounded-xl hover:bg-gray-700 transition-all active:scale-95 touch-manipulation"
+                className="h-12 px-5 text-base font-medium dark:text-gray-300 text-gray-700 dark:bg-gray-800 bg-gray-200 rounded-xl hover:bg-gray-700 transition-all active:scale-95 touch-manipulation"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 form="mantenimiento-form"
-                className="flex-1 flex items-center justify-center h-12 px-6 text-base font-bold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl hover:from-emerald-700 hover:to-emerald-600 transition-all active:scale-95 shadow-lg shadow-emerald-600/30 touch-manipulation"
+                className="flex-1 flex items-center justify-center h-12 px-6 text-base font-bold dark:text-white text-gray-900 bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl hover:from-emerald-700 hover:to-emerald-600 transition-all active:scale-95 shadow-lg shadow-emerald-600/30 touch-manipulation"
               >
                 <CheckCircle className="w-5 h-5 mr-2" />
                 Completar Tour

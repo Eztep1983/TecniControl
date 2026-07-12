@@ -67,7 +67,7 @@ const Toast = ({ toast, onClose }: { toast: ToastData; onClose: () => void }) =>
   const styles = {
     success: 'bg-blue-600/95 border-blue-500/50',
     error:   'bg-red-600/95 border-red-500/50',
-    info:    'bg-gray-800/95 border-gray-700/50',
+    info:    'dark:bg-gray-800/95 bg-gray-200 dark:border-gray-700/50 border-gray-300',
   }
   const Icon = toast.type === 'success' ? CheckCircle : toast.type === 'error' ? AlertCircle : Info
 
@@ -87,17 +87,17 @@ const Toast = ({ toast, onClose }: { toast: ToastData; onClose: () => void }) =>
         }
       `}</style>
       <div className="flex items-center gap-3 p-4">
-        <Icon className="w-5 h-5 text-white shrink-0" />
-        <span className="text-sm font-medium text-white flex-1">{toast.text}</span>
+        <Icon className="w-5 h-5 dark:text-white text-gray-900 shrink-0" />
+        <span className="text-sm font-medium dark:text-white text-gray-900 flex-1">{toast.text}</span>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-full hover:bg-white/20 active:bg-white/30 touch-manipulation"
+          className="p-1.5 rounded-full hover:dark:bg-white/20 hover:bg-gray-300 active:bg-white/30 touch-manipulation"
           aria-label="Cerrar"
         >
-          <X className="w-4 h-4 text-white" />
+          <X className="w-4 h-4 dark:text-white text-gray-900" />
         </button>
       </div>
-      <div className="h-1 w-full bg-white/20">
+      <div className="h-1 w-full dark:bg-white/20 bg-gray-300">
         <div
           className="h-full bg-white/60"
           style={{
@@ -130,8 +130,8 @@ const SearchInput = ({
       placeholder={placeholder}
       className="
         w-full min-h-[48px] pl-10 pr-9 py-3
-        bg-gray-800/70 border border-gray-700/60 rounded-2xl
-        text-white placeholder-gray-500 text-sm
+        dark:bg-gray-800/70 bg-gray-200 border dark:border-gray-700/60 border-gray-300 rounded-2xl
+        dark:text-white text-gray-900 placeholder-gray-500 text-sm
         focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-transparent
         transition-all
       "
@@ -143,7 +143,7 @@ const SearchInput = ({
       <button
         onClick={() => onChange('')}
         type="button"
-        className="absolute right-2.5 top-1/2 -trangray-y-1/2 p-1.5 text-gray-400 hover:text-white active:text-white touch-manipulation"
+        className="absolute right-2.5 top-1/2 -trangray-y-1/2 p-1.5 dark:text-gray-400 text-gray-600 hover:dark:text-white hover:text-gray-900 active:dark:text-white active:text-gray-900 touch-manipulation"
         aria-label="Limpiar"
       >
         <X className="w-4 h-4" />
@@ -165,12 +165,12 @@ const StatChip = ({
   colorClass: string
   Icon: React.ComponentType<{ className?: string }>
 }) => (
-  <div className="shrink-0 bg-gray-800/50 border border-gray-700/40 rounded-2xl p-3 min-w-[100px] flex-1">
+  <div className="shrink-0 dark:bg-gray-800/50 bg-gray-200 border dark:border-gray-700/40 border-gray-300 rounded-2xl p-3 min-w-[100px] flex-1">
     <div className="flex items-center gap-1.5 mb-0.5">
       <Icon className={`w-3.5 h-3.5 ${colorClass}`} />
       <span className={`text-xl font-bold leading-none ${colorClass}`}>{value}</span>
     </div>
-    <span className="text-xs text-gray-400 leading-tight">{label}</span>
+    <span className="text-xs dark:text-gray-400 text-gray-600 leading-tight">{label}</span>
   </div>
 )
 
@@ -187,19 +187,19 @@ const TareaItem = memo(({
 }) => (
   <div
     className="
-      bg-gray-800/70 rounded-2xl px-4 py-3.5
-      border border-gray-700/40
+      dark:bg-gray-800/70 bg-gray-200 rounded-2xl px-4 py-3.5
+      border dark:border-gray-700/40 border-gray-300
       flex items-center justify-between gap-3
-      transition-colors hover:bg-gray-800
+      transition-colors hover:dark:bg-gray-800 hover:bg-gray-200
     "
   >
     <div className="flex-1 min-w-0">
-      <p className="text-white font-medium text-sm leading-snug truncate">
+      <p className="dark:text-white text-gray-900 font-medium text-sm leading-snug truncate">
         {tarea.nombre}
       </p>
       <div className="flex flex-wrap gap-1.5 mt-2">
         <TipoChip tipo={tarea.tipo} />
-        <span className="text-xs px-2 py-0.5 bg-gray-700/70 text-gray-400 rounded-full border border-gray-600/40">
+        <span className="text-xs px-2 py-0.5 bg-gray-700/70 dark:text-gray-400 text-gray-600 rounded-full border dark:border-gray-600/40 border-gray-300">
           {tarea.categoria}
         </span>
       </div>
@@ -211,7 +211,7 @@ const TareaItem = memo(({
         type="button"
         className="
           w-11 h-11 flex items-center justify-center
-          rounded-2xl bg-blue-500/10 text-blue-400
+          rounded-2xl bg-blue-500/10 dark:text-blue-400 text-blue-700
           active:bg-blue-500/20
           touch-manipulation transition-all
         "
@@ -224,7 +224,7 @@ const TareaItem = memo(({
         type="button"
         className="
           w-11 h-11 flex items-center justify-center
-          rounded-2xl bg-red-500/10 text-red-400
+          rounded-2xl bg-red-500/10 dark:text-red-400 text-red-700
           active:bg-red-500/20
           touch-manipulation transition-all
         "
@@ -251,17 +251,17 @@ const PiezaItem = memo(({
 }) => (
   <div
     className="
-      bg-gray-800/70 rounded-2xl px-4 py-3.5
-      border border-gray-700/40
+      dark:bg-gray-800/70 bg-gray-200 rounded-2xl px-4 py-3.5
+      border dark:border-gray-700/40 border-gray-300
       flex items-center justify-between gap-3
-      transition-colors hover:bg-gray-800
+      transition-colors hover:dark:bg-gray-800 hover:bg-gray-200
     "
   >
     <div className="flex-1 min-w-0">
-      <p className="text-white font-medium text-sm leading-snug truncate">
+      <p className="dark:text-white text-gray-900 font-medium text-sm leading-snug truncate">
         {pieza.nombre}
       </p>
-      <span className="text-xs text-gray-400 mt-1 inline-block">
+      <span className="text-xs dark:text-gray-400 text-gray-600 mt-1 inline-block">
         {pieza.categoria}
       </span>
     </div>
@@ -272,7 +272,7 @@ const PiezaItem = memo(({
         type="button"
         className="
           w-11 h-11 flex items-center justify-center
-          rounded-2xl bg-blue-500/10 text-blue-400
+          rounded-2xl bg-blue-500/10 dark:text-blue-400 text-blue-700
           active:bg-blue-500/20
           touch-manipulation transition-all
         "
@@ -285,7 +285,7 @@ const PiezaItem = memo(({
         type="button"
         className="
           w-11 h-11 flex items-center justify-center
-          rounded-2xl bg-red-500/10 text-red-400
+          rounded-2xl bg-red-500/10 dark:text-red-400 text-red-700
           active:bg-red-500/20
           touch-manipulation transition-all
         "
@@ -303,9 +303,9 @@ PiezaItem.displayName = 'PiezaItem'
 
 const TipoChip = ({ tipo }: { tipo: TareaPredefinida['tipo'] }) => {
   const styles = {
-    preventivo: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
-    correctivo: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-    ambos:      'bg-purple-500/15 text-purple-300 border-purple-500/30',
+    preventivo: 'bg-blue-500/15 dark:text-blue-300 text-blue-700 border-blue-500/30',
+    correctivo: 'bg-amber-500/15 dark:text-amber-300 text-amber-700 border-amber-500/30',
+    ambos:      'bg-purple-500/15 dark:text-purple-300 text-purple-700 border-purple-500/30',
   }
   const labels = { preventivo: 'Preventivo', correctivo: 'Correctivo', ambos: 'Ambos' }
 
@@ -322,17 +322,20 @@ const EmptyState = ({
   Icon,
   title,
   description,
+  actionButton,
 }: {
   Icon: React.ComponentType<{ className?: string }>
   title: string
   description: string
+  actionButton?: React.ReactNode
 }) => (
   <div className="flex flex-col items-center justify-center py-10 text-center">
-    <div className="bg-gray-800/50 p-5 rounded-full mb-4">
+    <div className="dark:bg-gray-800/50 bg-gray-200 p-5 rounded-full mb-4">
       <Icon className="w-9 h-9 text-gray-500" />
     </div>
-    <p className="text-gray-300 font-medium">{title}</p>
-    <p className="text-gray-500 text-sm mt-1 max-w-[200px] leading-relaxed">{description}</p>
+    <p className="dark:text-gray-300 text-gray-700 font-medium">{title}</p>
+    <p className="text-gray-500 text-sm mt-1 max-w-[200px] leading-relaxed mb-4">{description}</p>
+    {actionButton}
   </div>
 )
 
@@ -342,13 +345,13 @@ const Skeleton = () => (
   <div className="animate-pulse space-y-4 p-4">
     <div className="flex gap-3 overflow-hidden pb-1">
       {[1, 2, 3, 4, 5].map(i => (
-        <div key={i} className="h-16 w-24 bg-gray-800/60 rounded-2xl shrink-0" />
+        <div key={i} className="h-16 w-24 dark:bg-gray-800/60 bg-gray-200 rounded-2xl shrink-0" />
       ))}
     </div>
-    <div className="h-12 bg-gray-800/60 rounded-xl" />
-    <div className="h-12 bg-gray-800/60 rounded-xl" />
+    <div className="h-12 dark:bg-gray-800/60 bg-gray-200 rounded-xl" />
+    <div className="h-12 dark:bg-gray-800/60 bg-gray-200 rounded-xl" />
     {[1, 2, 3].map(i => (
-      <div key={i} className="h-20 bg-gray-800/60 rounded-xl" />
+      <div key={i} className="h-20 dark:bg-gray-800/60 bg-gray-200 rounded-xl" />
     ))}
   </div>
 )
@@ -368,7 +371,7 @@ const NetworkIndicator = ({
 
   if (isFlushing) {
     return (
-      <div className="flex items-center gap-1.5 text-xs text-blue-400">
+      <div className="flex items-center gap-1.5 text-xs dark:text-blue-400 text-blue-700">
         <Loader2 className="w-3 h-3 animate-spin" />
         <span>Sincronizando…</span>
       </div>
@@ -377,7 +380,7 @@ const NetworkIndicator = ({
 
   if (!isOnline) {
     return (
-      <div className="flex items-center gap-1.5 text-xs text-amber-400">
+      <div className="flex items-center gap-1.5 text-xs dark:text-amber-400 text-amber-700">
         <WifiOff className="w-3 h-3" />
         <span>Sin conexión{pendingCount > 0 ? ` · ${pendingCount} pendiente${pendingCount > 1 ? 's' : ''}` : ''}</span>
       </div>
@@ -386,7 +389,7 @@ const NetworkIndicator = ({
 
   if (pendingCount > 0) {
     return (
-      <div className="flex items-center gap-1.5 text-xs text-amber-400">
+      <div className="flex items-center gap-1.5 text-xs dark:text-amber-400 text-amber-700">
         <CloudOff className="w-3 h-3" />
         <span>{pendingCount} pendiente{pendingCount > 1 ? 's' : ''}</span>
       </div>
@@ -474,6 +477,9 @@ export default function TareasRepuestosPage() {
     )
   }, [piezas, debouncedSearchPiezas])
 
+  const categoriasUnicasTareas = useMemo(() => Array.from(new Set(tareas.map(t => t.categoria))), [tareas])
+  const categoriasUnicasPiezas = useMemo(() => Array.from(new Set(piezas.map(p => p.categoria))), [piezas])
+
   // ── Handlers de Tareas ────────────────────────────────────────────────────
 
   const handleCrearTarea = useCallback((data: FormTarea) => {
@@ -551,7 +557,7 @@ export default function TareasRepuestosPage() {
 
   if (!user) return (
     <div className="flex flex-1 items-center justify-center">
-      <p className="text-gray-400 text-sm">Debes iniciar sesión para continuar</p>
+      <p className="dark:text-gray-400 text-gray-600 text-sm">Debes iniciar sesión para continuar</p>
     </div>
   )
 
@@ -563,7 +569,7 @@ export default function TareasRepuestosPage() {
       <header
         className="
           sticky top-0 z-40
-          bg-gray-900/90 border-b border-gray-800/60
+          dark:bg-gray-900/90 bg-gray-50 border-b dark:border-gray-800 border-gray-200/60
           -mx-4 -mt-4 px-4 py-3.5 mb-4
           sm:-mx-6 sm:-mt-6 sm:px-6
           lg:-mx-8 lg:-mt-8 lg:px-8
@@ -574,11 +580,11 @@ export default function TareasRepuestosPage() {
         <div className="flex items-center gap-3 max-w-2xl mx-auto">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-white leading-tight truncate">
+              <h1 className="text-lg font-bold dark:text-white text-gray-900 leading-tight truncate">
                 Tareas y Repuestos
               </h1>
               {isMutating && (
-                <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin shrink-0" />
+                <Loader2 className="w-3.5 h-3.5 dark:text-blue-400 text-blue-700 animate-spin shrink-0" />
               )}
             </div>
             <NetworkIndicator
@@ -593,8 +599,8 @@ export default function TareasRepuestosPage() {
       {/* ── Banner offline ── */}
       {!isOnline && (
         <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center gap-2 -mt-4 mb-4">
-          <WifiOff className="w-4 h-4 text-amber-400 shrink-0" />
-          <p className="text-xs text-amber-300">
+          <WifiOff className="w-4 h-4 dark:text-amber-400 text-amber-700 shrink-0" />
+          <p className="text-xs dark:text-amber-300 text-amber-700">
             Modo offline — los cambios se sincronizarán al reconectar
           </p>
         </div>
@@ -610,35 +616,35 @@ export default function TareasRepuestosPage() {
         ) : (
           <>
             {/* Resumen de Estadísticas */}
-            <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
+            <div className={`grid gap-3 ${pendingCount > 0 ? 'grid-cols-2 md:grid-cols-3' : 'grid-cols-2'} pb-1`}>
               <StatChip
                 label="Total Tareas"
                 value={tareas.length}
-                colorClass="text-blue-400"
+                colorClass="dark:text-blue-400 text-blue-700"
                 Icon={ListChecks}
               />
               <StatChip
                 label="Total Repuestos"
                 value={piezas.length}
-                colorClass="text-purple-400"
+                colorClass="dark:text-purple-400 text-purple-700"
                 Icon={Package}
               />
               {pendingCount > 0 && (
                 <StatChip
                   label="Pendientes Sync"
                   value={pendingCount}
-                  colorClass="text-amber-400"
+                  colorClass="dark:text-amber-400 text-amber-700"
                   Icon={CloudOff}
                 />
               )}
             </div>
 
             {/* Tabs (Contraste aumentado e inactivo rebajado) */}
-            <div className="flex bg-gray-800/60 rounded-2xl p-1.5 border border-gray-700/40 shadow-sm">
+            <div className="flex dark:bg-gray-800/60 bg-gray-200 rounded-2xl p-1.5 border dark:border-gray-700/40 border-gray-300 shadow-sm">
               {(
                 [
                   { key: 'tareas', label: 'Tareas',    Icon: ListChecks, active: 'bg-blue-500/35 text-white font-semibold shadow-sm' },
-                  { key: 'piezas', label: 'Repuestos',  Icon: Package,    active: 'bg-purple-500/35 text-white font-semibold shadow-sm' },
+                  { key: 'piezas', label: 'Repuestos',  Icon: Package,    active: 'bg-purple-500/35 dark:text-white text-gray-900 font-semibold shadow-sm' },
                 ] as const
               ).map(({ key, label, Icon, active }) => (
                 <button
@@ -650,7 +656,7 @@ export default function TareasRepuestosPage() {
                     flex-1 flex items-center justify-center gap-2
                     min-h-[44px] rounded-xl text-sm
                     transition-all touch-manipulation select-none
-                    ${tab === key ? active : 'text-gray-500 hover:text-gray-300 active:text-gray-250'}
+                    ${tab === key ? active : 'text-gray-500 hover:dark:text-gray-300 hover:text-gray-700 active:text-gray-250'}
                   `}
                 >
                   <Icon className="w-4 h-4" />
@@ -661,9 +667,9 @@ export default function TareasRepuestosPage() {
 
             {/* ── Panel Tareas (Con Animación animate-in fade-in) ── */}
             {tab === 'tareas' && (
-              <section className="bg-gray-800/40 rounded-2xl border border-gray-700/40 overflow-hidden animate-in fade-in duration-200">
-                <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-700/40">
-                  <h2 className="text-white font-semibold text-sm">
+              <section className="dark:bg-gray-800/40 bg-gray-200 rounded-2xl border dark:border-gray-700/40 border-gray-300 overflow-hidden animate-in fade-in duration-200">
+                <div className="flex items-center justify-between px-4 py-3.5 border-b dark:border-gray-700/40 border-gray-300">
+                  <h2 className="dark:text-white text-gray-900 font-semibold text-sm">
                     Tareas predefinidas
                     <span className="text-gray-500 font-normal ml-1.5">
                       ({tareasFiltradas.length})
@@ -674,7 +680,7 @@ export default function TareasRepuestosPage() {
                     type="button"
                     className="
                       flex items-center gap-1.5 pl-3 pr-4 min-h-[44px]
-                      bg-blue-500/15 text-blue-300 border border-blue-500/30 rounded-2xl
+                      bg-blue-500/15 dark:text-blue-300 text-blue-700 border border-blue-500/30 rounded-2xl
                       text-sm font-semibold active:bg-blue-500/25
                       touch-manipulation transition-all
                     "
@@ -697,7 +703,17 @@ export default function TareasRepuestosPage() {
                       <EmptyState
                         Icon={ListChecks}
                         title="Sin tareas"
-                        description={searchTareas ? 'No hay resultados para tu búsqueda' : 'Agrega tareas con el botón Agregar'}
+                        description={searchTareas ? 'No hay resultados para tu búsqueda' : 'No tienes tareas creadas aún.'}
+                        actionButton={
+                          !searchTareas ? (
+                            <button
+                              onClick={() => { haptic('light'); setModalTarea(true) }}
+                              className="px-4 py-2 bg-blue-500/15 dark:text-blue-300 text-blue-700 border border-blue-500/30 rounded-xl text-sm font-semibold active:bg-blue-500/25 touch-manipulation transition-all"
+                            >
+                              + Crear Tarea
+                            </button>
+                          ) : undefined
+                        }
                       />
                     ) : (
                       <>
@@ -722,7 +738,7 @@ export default function TareasRepuestosPage() {
                             className="
                               w-full min-h-[48px] mt-2
                               flex items-center justify-center gap-1.5
-                              text-sm font-medium text-blue-300
+                              text-sm font-medium dark:text-blue-300 text-blue-700
                               bg-blue-500/10 border border-blue-500/20
                               rounded-2xl active:bg-blue-500/20 active:scale-[0.98]
                               touch-manipulation transition-all
@@ -740,9 +756,9 @@ export default function TareasRepuestosPage() {
 
             {/* ── Panel Piezas (Con Animación animate-in fade-in) ── */}
             {tab === 'piezas' && (
-              <section className="bg-gray-800/40 rounded-2xl border border-gray-700/40 overflow-hidden animate-in fade-in duration-200">
-                <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-700/40">
-                  <h2 className="text-white font-semibold text-sm">
+              <section className="dark:bg-gray-800/40 bg-gray-200 rounded-2xl border dark:border-gray-700/40 border-gray-300 overflow-hidden animate-in fade-in duration-200">
+                <div className="flex items-center justify-between px-4 py-3.5 border-b dark:border-gray-700/40 border-gray-300">
+                  <h2 className="dark:text-white text-gray-900 font-semibold text-sm">
                     Repuestos predefinidos
                     <span className="text-gray-500 font-normal ml-1.5">
                       ({piezasFiltradas.length})
@@ -752,7 +768,7 @@ export default function TareasRepuestosPage() {
                     onClick={() => { haptic('light'); setModalPieza(true) }}
                     className="
                       flex items-center gap-1.5 pl-3 pr-4 min-h-[44px]
-                      bg-purple-500/15 text-purple-300 border border-purple-500/30 rounded-2xl
+                      bg-purple-500/15 dark:text-purple-300 text-purple-700 border border-purple-500/30 rounded-2xl
                       text-sm font-semibold active:bg-purple-500/25
                       touch-manipulation transition-all
                     "
@@ -775,7 +791,17 @@ export default function TareasRepuestosPage() {
                       <EmptyState
                         Icon={Package}
                         title="Sin repuestos"
-                        description={searchPiezas ? 'No hay resultados para tu búsqueda' : 'Agrega repuestos con el botón Agregar'}
+                        description={searchPiezas ? 'No hay resultados para tu búsqueda' : 'No tienes repuestos creados aún.'}
+                        actionButton={
+                          !searchPiezas ? (
+                            <button
+                              onClick={() => { haptic('light'); setModalPieza(true) }}
+                              className="px-4 py-2 bg-purple-500/15 dark:text-purple-300 text-purple-700 border border-purple-500/30 rounded-xl text-sm font-semibold active:bg-purple-500/25 touch-manipulation transition-all"
+                            >
+                              + Crear Repuesto
+                            </button>
+                          ) : undefined
+                        }
                       />
                     ) : (
                       <>
@@ -798,7 +824,7 @@ export default function TareasRepuestosPage() {
                             className="
                               w-full min-h-[48px] mt-2
                               flex items-center justify-center gap-1.5
-                              text-sm font-medium text-purple-300
+                              text-sm font-medium dark:text-purple-300 text-purple-700
                               bg-purple-500/10 border border-purple-500/20
                               rounded-2xl active:bg-purple-500/20 active:scale-[0.98]
                               touch-manipulation transition-all
@@ -817,26 +843,21 @@ export default function TareasRepuestosPage() {
         )}
       </main>
 
-      {/* ── Modales de CREACIÓN Y EDICIÓN ── */}
-      <ModalTarea
-        isOpen={modalTarea || !!editTarea}
-        onClose={() => {
-          setModalTarea(false)
-          setEditTarea(null)
-        }}
-        tarea={editTarea}
-        onSubmit={editTarea ? handleActualizarTarea : handleCrearTarea}
-      />
-
-      <ModalPieza
-        isOpen={modalPieza || !!editPieza}
-        onClose={() => {
-          setModalPieza(false)
-          setEditPieza(null)
-        }}
-        pieza={editPieza}
-        onSubmit={editPieza ? handleActualizarPieza : handleCrearPieza}
-      />
+        {/* Modales de creación / edición */}
+        <ModalTarea
+          isOpen={modalTarea || editTarea !== null}
+          onClose={() => { setModalTarea(false); setEditTarea(null) }}
+          tarea={editTarea}
+          onSubmit={editTarea ? handleActualizarTarea : handleCrearTarea}
+          categoriasSugeridas={categoriasUnicasTareas}
+        />
+        <ModalPieza
+          isOpen={modalPieza || editPieza !== null}
+          onClose={() => { setModalPieza(false); setEditPieza(null) }}
+          pieza={editPieza}
+          onSubmit={editPieza ? handleActualizarPieza : handleCrearPieza}
+          categoriasSugeridas={categoriasUnicasPiezas}
+        />
 
       {/* ── Modales de CONFIRMACIÓN DE ELIMINACIÓN ── */}
       <Modal
@@ -845,7 +866,7 @@ export default function TareasRepuestosPage() {
         title="Confirmar eliminación"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-300 leading-relaxed">
+          <p className="text-sm dark:text-gray-300 text-gray-700 leading-relaxed">
             ¿Estás seguro de que deseas eliminar esta tarea predefinida? Esta acción no se puede deshacer.
           </p>
           <div className="flex flex-col gap-3 pt-2">
@@ -871,7 +892,7 @@ export default function TareasRepuestosPage() {
               type="button"
               className="
                 w-full min-h-[50px] rounded-2xl font-bold text-sm
-                text-gray-400 active:bg-gray-800 touch-manipulation transition-all
+                dark:text-gray-400 text-gray-600 active:dark:bg-gray-800 active:bg-gray-200 touch-manipulation transition-all
               "
             >
               Cancelar
@@ -886,7 +907,7 @@ export default function TareasRepuestosPage() {
         title="Confirmar eliminación"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-300 leading-relaxed">
+          <p className="text-sm dark:text-gray-300 text-gray-700 leading-relaxed">
             ¿Estás seguro de que deseas eliminar este repuesto predefinido? Esta acción no se puede deshacer.
           </p>
           <div className="flex flex-col gap-3 pt-2">
@@ -912,7 +933,7 @@ export default function TareasRepuestosPage() {
               type="button"
               className="
                 w-full min-h-[50px] rounded-2xl font-bold text-sm
-                text-gray-400 active:bg-gray-800 touch-manipulation transition-all
+                dark:text-gray-400 text-gray-600 active:dark:bg-gray-800 active:bg-gray-200 touch-manipulation transition-all
               "
             >
               Cancelar

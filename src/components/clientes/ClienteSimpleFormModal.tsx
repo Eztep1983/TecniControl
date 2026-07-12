@@ -22,6 +22,7 @@ import {
   Hash,
   Loader2,
   CheckCircle2,
+  ChevronDown,
 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type FieldErrors } from "react-hook-form";
@@ -77,6 +78,7 @@ export function ClienteSimpleFormModal({
   const { user } = useAuth();
   const { crearCliente, actualizarCliente } = useClientesUsuario();
   const [isLoading, setIsLoading] = useState(false);
+  const [showExtra, setShowExtra] = useState(false);
   const isEditing = !!initialData?.id;
 
   useAndroidBack(open, onClose);
@@ -103,6 +105,8 @@ export function ClienteSimpleFormModal({
           phone: initialData.phone ?? "",
           address: initialData.address ?? "",
         });
+        const hasExtraData = !!(initialData.cedula || initialData.email || initialData.phone || initialData.address);
+        setShowExtra(hasExtraData);
       } else {
         form.reset({
           name: "",
@@ -111,19 +115,12 @@ export function ClienteSimpleFormModal({
           phone: "",
           address: "",
         });
+        setShowExtra(false);
       }
     }
   }, [open, initialData, form]);
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== "Enter") return;
-    const target = event.target as HTMLElement;
-    if (target.tagName === "TEXTAREA") return;
 
-    event.preventDefault();
-    event.stopPropagation();
-    form.handleSubmit(onSubmit, onError)();
-  };
 
   const onError = (errors: FieldErrors<FormValues>) => {
     if (Object.keys(errors).length === 0) return;
@@ -200,46 +197,27 @@ export function ClienteSimpleFormModal({
       */}
       <DialogContent
         className={[
-          // Forma
-          "rounded-t-[28px] rounded-b-none",
-          // Fondo / borde
-          "bg-gray-900 border-t border-white/[0.06]",
-          // Layout
+          "rounded-[28px]",
+          "dark:bg-gray-900 bg-gray-100 border dark:border-white border-gray-200/[0.06]",
           "p-0 gap-0 flex flex-col",
-          // Altura máxima + scroll interno
-          "max-h-[92dvh]",
-          // Sombra dramática
-          "shadow-[0_-20px_60px_rgba(0,0,0,0.6)]",
-          // Transición ligera para apertura/cierre
-          "transition-opacity duration-150 ease-out",
+          "w-[calc(100%-1.5rem)] max-w-md mx-auto",
+          "max-h-[85vh]",
+          "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]",
         ].join(" ")}
-        style={{
-          position: "fixed",
-          top: "auto",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          transform: open ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.95)',
-          opacity: open ? 1 : 0,
-          transition: 'transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms cubic-bezier(0.16, 1, 0.3, 1)',
-          width: "100%",
-          maxWidth: "100%",
-          margin: 0,
-        }}
       >
         {/* ── Drag handle ─────────────────────────────────────────────────── */}
         <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-9 h-1 rounded-full bg-white/20" />
+          <div className="w-9 h-1 rounded-full dark:bg-white/20 bg-gray-300" />
         </div>
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="px-5 pt-2 pb-4 flex-shrink-0">
           <div className="flex items-start justify-between">
             <div>
-              <DialogTitle className="text-[17px] font-semibold tracking-tight text-white leading-tight">
+              <DialogTitle className="text-[17px] font-semibold tracking-tight dark:text-white text-gray-900 leading-tight">
                 {isEditing ? "Editar cliente" : "Nuevo cliente"}
               </DialogTitle>
-              <p className="text-[13px] text-white/40 mt-0.5 font-medium">
+              <p className="text-[13px] dark:text-white text-gray-900/40 mt-0.5 font-medium">
                 {isEditing ? "Modifica la información básica" : "Registra la información básica del cliente"}
               </p>
             </div>
@@ -249,8 +227,11 @@ export function ClienteSimpleFormModal({
 
         {/* ── Formulario ──────────────────────────────────────────────────── */}
         <Form {...form}>
-          <div
-            onKeyDown={handleKeyDown}
+          <form
+            onSubmit={(e) => {
+              e.stopPropagation();
+              form.handleSubmit(onSubmit, onError)(e);
+            }}
             className="flex flex-col flex-1 min-h-0"
           >
             {/* Área scrollable */}
@@ -258,7 +239,7 @@ export function ClienteSimpleFormModal({
 
               {/* ── Información Principal ───────────────────────────────────── */}
               <div>
-                <p className="text-[11px] font-semibold tracking-widest uppercase text-white/30 mb-2.5">
+                <p className="text-[11px] font-semibold tracking-widest uppercase dark:text-white text-gray-900/30 mb-2.5">
                   Datos del Cliente
                 </p>
                 <div className="space-y-3">
@@ -270,17 +251,18 @@ export function ClienteSimpleFormModal({
                       <FormItem>
                         <FormControl>
                           <div className="relative">
-                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-white/20 pointer-events-none" />
+                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 dark:text-white text-gray-900/20 pointer-events-none" />
                             <Input
                               {...field}
                               placeholder="Nombre completo *"
                               disabled={isLoading}
                               autoComplete="name"
+                              autoFocus
                               className={[
                                 "h-12 pl-10 pr-4 rounded-xl",
-                                "bg-white/[0.04] border-white/[0.08]",
-                                "text-white placeholder:text-white/20 text-[14px]",
-                                "focus:border-white/20 focus:bg-white/[0.06]",
+                                "bg-white/[0.04] dark:border-white border-gray-200/[0.08]",
+                                "dark:text-white text-gray-900 placeholder:dark:text-white text-gray-900/20 text-[14px]",
+                                "focus:dark:border-white/20 focus:border-gray-200 focus:bg-white/[0.06]",
                                 "focus:ring-0 focus-visible:ring-0",
                                 "transition-colors duration-200",
                               ].join(" ")}
@@ -291,140 +273,157 @@ export function ClienteSimpleFormModal({
                       </FormItem>
                     )}
                   />
+                  
+                  {!showExtra && (
+                    <button
+                      type="button"
+                      onClick={() => setShowExtra(true)}
+                      className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-dashed dark:border-white/10 border-gray-300/50 dark:text-white text-gray-900/40 text-[13px] font-medium transition-colors duration-200 active:scale-[0.98]"
+                    >
+                      Añadir más detalles
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  )}
 
-                  {/* Cédula o NIT */}
-                  <FormField
-                    control={form.control}
-                    name="cedula"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative">
-                            <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-white/20 pointer-events-none" />
-                            <Input
-                              {...field}
-                              placeholder="Cédula o NIT (opcional)"
-                              disabled={isLoading}
-                              autoComplete="off"
-                              className={[
-                                "h-12 pl-10 pr-4 rounded-xl",
-                                "bg-white/[0.04] border-white/[0.08]",
-                                "text-white placeholder:text-white/20 text-[14px]",
-                                "focus:border-white/20 focus:bg-white/[0.06]",
-                                "focus:ring-0 focus-visible:ring-0",
-                                "transition-colors duration-200",
-                              ].join(" ")}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage className="text-[12px] text-red-400 ml-1 mt-1" />
-                      </FormItem>
-                    )}
-                  />
+                  {showExtra && (
+                    <>
+                      {/* Cédula o NIT */}
+                      <FormField
+                        control={form.control}
+                        name="cedula"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="relative">
+                                <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 dark:text-white text-gray-900/20 pointer-events-none" />
+                                <Input
+                                  {...field}
+                                  placeholder="Cédula o NIT (opcional)"
+                                  disabled={isLoading}
+                                  autoComplete="off"
+                                  className={[
+                                    "h-12 pl-10 pr-4 rounded-xl",
+                                    "bg-white/[0.04] dark:border-white border-gray-200/[0.08]",
+                                    "dark:text-white text-gray-900 placeholder:dark:text-white text-gray-900/20 text-[14px]",
+                                    "focus:dark:border-white/20 focus:border-gray-200 focus:bg-white/[0.06]",
+                                    "focus:ring-0 focus-visible:ring-0",
+                                    "transition-colors duration-200",
+                                  ].join(" ")}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage className="text-[12px] text-red-400 ml-1 mt-1" />
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
 
               {/* ── Datos de Contacto ───────────────────────────────────────── */}
-              <div>
-                <p className="text-[11px] font-semibold tracking-widest uppercase text-white/30 mb-2.5">
-                  Contacto y Ubicación
-                </p>
-                <div className="space-y-3">
-                  {/* Correo electrónico */}
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-white/20 pointer-events-none" />
-                            <Input
-                              {...field}
-                              type="email"
-                              placeholder="Correo electrónico (opcional)"
-                              disabled={isLoading}
-                              autoComplete="email"
-                              inputMode="email"
-                              className={[
-                                "h-12 pl-10 pr-4 rounded-xl",
-                                "bg-white/[0.04] border-white/[0.08]",
-                                "text-white placeholder:text-white/20 text-[14px]",
-                                "focus:border-white/20 focus:bg-white/[0.06]",
-                                "focus:ring-0 focus-visible:ring-0",
-                                "transition-colors duration-200",
-                              ].join(" ")}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage className="text-[12px] text-red-400 ml-1 mt-1" />
-                      </FormItem>
-                    )}
-                  />
+              {showExtra && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                  <p className="text-[11px] font-semibold tracking-widest uppercase dark:text-white text-gray-900/30 mb-2.5">
+                    Contacto y Ubicación
+                  </p>
+                  <div className="space-y-3">
+                    {/* Correo electrónico */}
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="relative">
+                              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 dark:text-white text-gray-900/20 pointer-events-none" />
+                              <Input
+                                {...field}
+                                type="email"
+                                placeholder="Correo electrónico (opcional)"
+                                disabled={isLoading}
+                                autoComplete="email"
+                                inputMode="email"
+                                className={[
+                                  "h-12 pl-10 pr-4 rounded-xl",
+                                  "bg-white/[0.04] dark:border-white border-gray-200/[0.08]",
+                                  "dark:text-white text-gray-900 placeholder:dark:text-white text-gray-900/20 text-[14px]",
+                                  "focus:dark:border-white/20 focus:border-gray-200 focus:bg-white/[0.06]",
+                                  "focus:ring-0 focus-visible:ring-0",
+                                  "transition-colors duration-200",
+                                ].join(" ")}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage className="text-[12px] text-red-400 ml-1 mt-1" />
+                        </FormItem>
+                      )}
+                    />
 
-                  {/* Teléfono */}
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative">
-                            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-white/20 pointer-events-none" />
-                            <Input
-                              {...field}
-                              type="tel"
-                              placeholder="Teléfono (opcional)"
-                              disabled={isLoading}
-                              autoComplete="tel"
-                              inputMode="tel"
-                              className={[
-                                "h-12 pl-10 pr-4 rounded-xl",
-                                "bg-white/[0.04] border-white/[0.08]",
-                                "text-white placeholder:text-white/20 text-[14px]",
-                                "focus:border-white/20 focus:bg-white/[0.06]",
-                                "focus:ring-0 focus-visible:ring-0",
-                                "transition-colors duration-200",
-                              ].join(" ")}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage className="text-[12px] text-red-400 ml-1 mt-1" />
-                      </FormItem>
-                    )}
-                  />
+                    {/* Teléfono */}
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="relative">
+                              <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 dark:text-white text-gray-900/20 pointer-events-none" />
+                              <Input
+                                {...field}
+                                type="tel"
+                                placeholder="Teléfono (opcional)"
+                                disabled={isLoading}
+                                autoComplete="tel"
+                                inputMode="tel"
+                                className={[
+                                  "h-12 pl-10 pr-4 rounded-xl",
+                                  "bg-white/[0.04] dark:border-white border-gray-200/[0.08]",
+                                  "dark:text-white text-gray-900 placeholder:dark:text-white text-gray-900/20 text-[14px]",
+                                  "focus:dark:border-white/20 focus:border-gray-200 focus:bg-white/[0.06]",
+                                  "focus:ring-0 focus-visible:ring-0",
+                                  "transition-colors duration-200",
+                                ].join(" ")}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage className="text-[12px] text-red-400 ml-1 mt-1" />
+                        </FormItem>
+                      )}
+                    />
 
-                  {/* Dirección */}
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative">
-                            <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-white/20 pointer-events-none" />
-                            <Input
-                              {...field}
-                              placeholder="Dirección (opcional)"
-                              disabled={isLoading}
-                              autoComplete="street-address"
-                              className={[
-                                "h-12 pl-10 pr-4 rounded-xl",
-                                "bg-white/[0.04] border-white/[0.08]",
-                                "text-white placeholder:text-white/20 text-[14px]",
-                                "focus:border-white/20 focus:bg-white/[0.06]",
-                                "focus:ring-0 focus-visible:ring-0",
-                                "transition-colors duration-200",
-                              ].join(" ")}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage className="text-[12px] text-red-400 ml-1 mt-1" />
-                      </FormItem>
-                    )}
-                  />
+                    {/* Dirección */}
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="relative">
+                              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 dark:text-white text-gray-900/20 pointer-events-none" />
+                              <Input
+                                {...field}
+                                placeholder="Dirección (opcional)"
+                                disabled={isLoading}
+                                autoComplete="street-address"
+                                className={[
+                                  "h-12 pl-10 pr-4 rounded-xl",
+                                  "bg-white/[0.04] dark:border-white border-gray-200/[0.08]",
+                                  "dark:text-white text-gray-900 placeholder:dark:text-white text-gray-900/20 text-[14px]",
+                                  "focus:dark:border-white/20 focus:border-gray-200 focus:bg-white/[0.06]",
+                                  "focus:ring-0 focus-visible:ring-0",
+                                  "transition-colors duration-200",
+                                ].join(" ")}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage className="text-[12px] text-red-400 ml-1 mt-1" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Espacio para safe area inferior */}
               <div className="h-1" />
@@ -435,8 +434,8 @@ export function ClienteSimpleFormModal({
               className={[
                 "px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]",
                 "flex-shrink-0 flex gap-3",
-                "border-t border-white/[0.06]",
-                "bg-gray-950/85",
+                "border-t dark:border-white border-gray-200/[0.06]",
+                "dark:bg-gray-950/85 bg-gray-50",
               ].join(" ")}
             >
               {/* Cancelar */}
@@ -446,8 +445,8 @@ export function ClienteSimpleFormModal({
                 disabled={isLoading}
                 className={[
                   "flex-[0.4] h-[52px] rounded-2xl",
-                  "bg-white/[0.06] hover:bg-white/10 active:bg-white/[0.15]",
-                  "text-white/60 text-[15px] font-medium",
+                  "bg-white/[0.06] hover:dark:bg-white/10 hover:bg-gray-200 active:bg-white/[0.15]",
+                  "dark:text-white text-gray-900/60 text-[15px] font-medium",
                   "transition-colors duration-150 active:scale-[0.97]",
                   "disabled:opacity-30",
                 ].join(" ")}
@@ -457,13 +456,12 @@ export function ClienteSimpleFormModal({
 
               {/* Guardar/Crear */}
               <button
-                type="button"
-                onClick={form.handleSubmit(onSubmit, onError)}
+                type="submit"
                 disabled={isLoading}
                 className={[
                   "flex-1 h-[52px] rounded-2xl",
                   "bg-blue-500 hover:bg-blue-400 active:bg-blue-600",
-                  "disabled:bg-white/10 disabled:text-white/20",
+                  "disabled:dark:bg-white/10 bg-gray-200 disabled:dark:text-white text-gray-900/20",
                   "text-[#0a0e14] text-[15px] font-semibold",
                   "flex items-center justify-center gap-2",
                   "transition-colors duration-200 active:scale-[0.97]",
@@ -473,8 +471,8 @@ export function ClienteSimpleFormModal({
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin text-white/40" />
-                    <span className="text-white/40">Guardando…</span>
+                    <Loader2 className="w-4 h-4 animate-spin dark:text-white text-gray-900/40" />
+                    <span className="dark:text-white text-gray-900/40">Guardando…</span>
                   </>
                 ) : (
                   <>
@@ -484,7 +482,7 @@ export function ClienteSimpleFormModal({
                 )}
               </button>
             </div>
-          </div>
+          </form>
         </Form>
       </DialogContent>
     </Dialog>

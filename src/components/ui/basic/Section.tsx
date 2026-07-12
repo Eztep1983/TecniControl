@@ -21,7 +21,7 @@ export default function Section({
   children 
 }: SectionProps) {
   return (
-    <div className="bg-gray-800/70 rounded-xl border border-gray-700/50 p-6 shadow-lg">
+    <div className="dark:bg-gray-800/70 bg-gray-200 rounded-xl border dark:border-gray-700/50 border-gray-300 p-6 shadow-lg">
       {onToggle ? (
         // Si hay función onToggle, mostrar botón interactivo
         <button 
@@ -29,21 +29,21 @@ export default function Section({
           onClick={onToggle}
           className="flex justify-between items-center w-full mb-4 hover:opacity-80 transition-opacity"
         >
-          <h2 className="text-xl font-semibold text-white flex items-center">
+          <h2 className="text-xl font-semibold dark:text-white text-gray-900 flex items-center">
             <div className={`w-2 h-6 ${colorClass} rounded-full mr-3`}></div>
             {icon && <span className="mr-2">{icon}</span>}
             {title}
           </h2>
           {isOpen ? (
-            <ChevronUp className="w-5 h-5 text-gray-400" />
+            <ChevronUp className="w-5 h-5 dark:text-gray-400 text-gray-600" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-gray-400" />
+            <ChevronDown className="w-5 h-5 dark:text-gray-400 text-gray-600" />
           )}
         </button>
       ) : (
         // Si no hay función onToggle, mostrar solo el título (sin interacción)
         <div className="flex items-center w-full mb-4">
-          <h2 className="text-xl font-semibold text-white flex items-center">
+          <h2 className="text-xl font-semibold dark:text-white text-gray-900 flex items-center">
             <div className={`w-2 h-6 ${colorClass} rounded-full mr-3`}></div>
             {icon && <span className="mr-2">{icon}</span>}
             {title}

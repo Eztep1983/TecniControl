@@ -52,13 +52,13 @@
   // Funciones auxiliares movidas fuera del componente (evita useCallback y recreaciones innecesarias)
   const getTipoColor = (tipo: string): string => {
     const colors: Record<string, string> = {
-      preventivo: 'bg-green-500/20 text-green-400 border-green-500/30',
-      correctivo: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-      diagnostico: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-      instalacion: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-      garantia: 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+      preventivo: 'bg-green-500/20 dark:text-green-400 text-green-700 border-green-500/30',
+      correctivo: 'bg-orange-500/20 dark:text-orange-400 text-orange-700 border-orange-500/30',
+      diagnostico: 'bg-blue-500/20 dark:text-blue-400 text-blue-700 border-blue-500/30',
+      instalacion: 'bg-purple-500/20 dark:text-purple-400 text-purple-700 border-purple-500/30',
+      garantia: 'bg-amber-500/20 dark:text-amber-400 text-amber-700 border-amber-500/30'
     }
-    return colors[tipo] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+    return colors[tipo] || 'bg-gray-500/20 dark:text-gray-400 text-gray-600 border-gray-500/30'
   }
 
   const getTipoLabel = (tipo: string): string => {
@@ -74,7 +74,7 @@
 
   // Componente de chip para filtros activos
   const FilterChip = ({ label, onRemove }: { label: string; onRemove: () => void }) => (
-    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full border border-blue-500/30">
+    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-500/20 dark:text-blue-400 text-blue-700 text-xs rounded-full border border-blue-500/30">
       {label}
       <button
         onClick={(e) => {
@@ -98,10 +98,10 @@
     onClearFilters?: () => void;
   }) => (
     <div className="flex flex-col items-center justify-center py-12 px-4">
-      <div className="bg-gray-700/50 rounded-full p-4 mb-4">
+      <div className="dark:bg-gray-700/50 bg-gray-300 rounded-full p-4 mb-4">
         <Wrench className="w-8 h-8 text-gray-500" />
       </div>
-      <p className="text-gray-400 text-sm font-medium mb-1">
+      <p className="dark:text-gray-400 text-gray-600 text-sm font-medium mb-1">
         {hasFilters ? 'No se encontraron resultados' : 'No hay órdenes de mantenimiento'}
       </p>
       <p className="text-gray-500 text-xs text-center mb-4">
@@ -112,7 +112,7 @@
       {hasFilters && onClearFilters ? (
         <button
           onClick={onClearFilters}
-          className="flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-amber-500/20"
+          className="flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 dark:text-amber-400 text-amber-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-amber-500/20"
         >
           <X className="w-4 h-4" />
           Limpiar filtros
@@ -182,7 +182,7 @@
       <>
         {parts.map((part, i) => 
           tokens.some(token => normalize(part) === token) ? (
-            <span key={i} className="bg-blue-500/30 text-blue-200 rounded-sm px-0.5">{part}</span>
+            <span key={i} className="bg-blue-500/30 dark:text-blue-200 text-blue-800 rounded-sm px-0.5">{part}</span>
           ) : (
             <span key={i}>{part}</span>
           )
@@ -478,26 +478,26 @@
     return (
       <div className="bg-transparent min-h-screen pb-safe">
         {/* Sticky Header extracted to the top */}
-        <div className="sticky top-0 z-40 bg-gray-900/95 border-b border-gray-800 pt-safe backdrop-blur-xl">
+        <div className="sticky top-0 z-40 dark:bg-gray-900/95 bg-gray-100/95 border-b dark:border-gray-800 border-gray-200 pt-safe backdrop-blur-xl">
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="flex items-center gap-3">
               <Link
                 href="/ordenes"
                 prefetch={false}
-                className="text-blue-400 hover:text-blue-300 transition-colors p-2 -ml-2 rounded-full hover:bg-gray-800 flex-shrink-0"
+                className="dark:text-blue-400 text-blue-700 hover:dark:text-blue-300 hover:text-blue-700 transition-colors p-2 -ml-2 rounded-full hover:dark:bg-gray-800 hover:bg-gray-200 flex-shrink-0"
                 aria-label="Volver a órdenes"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Link>
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="bg-blue-500/20 p-2 rounded-lg flex-shrink-0">
-                  <Wrench className="w-5 h-5 text-blue-400" />
+                  <Wrench className="w-5 h-5 dark:text-blue-400 text-blue-700" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-lg font-bold text-white truncate">
+                  <h1 className="text-lg font-bold dark:text-white text-gray-900 truncate">
                     Historial de Órdenes
                   </h1>
-                  <p className="text-gray-400 text-xs truncate">
+                  <p className="dark:text-gray-400 text-gray-600 text-xs truncate">
                     {globalStats?.totalOrdenes > 0 
                       ? `${globalStats.totalOrdenes} órdenes registradas` 
                       : 'Gestión de órdenes de servicio'}
@@ -511,21 +511,21 @@
         <div className="max-w-7xl mx-auto px-4 py-5 space-y-6">
           {mostrarCargando ? (
             <div className="flex flex-1 flex-col w-full space-y-6">
-              <Skeleton className="h-[48px] w-full bg-gray-700/50 rounded-xl" />
+              <Skeleton className="h-[48px] w-full dark:bg-gray-700/50 bg-gray-300 rounded-xl" />
               <div className="space-y-3 sm:space-y-4">
                 {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-24 w-full bg-gray-700/50 rounded-xl" />
+                  <Skeleton key={i} className="h-24 w-full dark:bg-gray-700/50 bg-gray-300 rounded-xl" />
                 ))}
               </div>
             </div>
           ) : error ? (
             <div className="flex flex-1 items-center justify-center p-4">
               <div className="text-center bg-red-500/10 border border-red-500/20 rounded-xl p-6 max-w-md">
-                <p className="text-red-400 font-medium mb-2">Error al cargar las órdenes</p>
-                <p className="text-red-300/70 text-sm mb-4">{(error as Error).message || 'Ocurrió un error inesperado al conectar con el servidor.'}</p>
+                <p className="dark:text-red-400 text-red-700 font-medium mb-2">Error al cargar las órdenes</p>
+                <p className="dark:text-red-300 text-red-700/70 text-sm mb-4">{(error as Error).message || 'Ocurrió un error inesperado al conectar con el servidor.'}</p>
                 <button 
                   onClick={() => refrescarOrdenes()}
-                  className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg text-sm transition-colors"
+                  className="bg-red-500/20 hover:bg-red-500/30 dark:text-red-400 text-red-700 px-4 py-2 rounded-lg text-sm transition-colors"
                 >
                   Reintentar
                 </button>
@@ -534,19 +534,19 @@
           ) : !user ? (
             <div className="flex flex-1 items-center justify-center p-4">
               <div className="text-center">
-                <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-6">
-                  <p className="text-gray-400">Debes iniciar sesión para acceder a esta página.</p>
+                <div className="dark:bg-gray-800/50 bg-gray-200 rounded-xl border dark:border-gray-700/50 border-gray-300 p-6">
+                  <p className="dark:text-gray-400 text-gray-600">Debes iniciar sesión para acceder a esta página.</p>
                 </div>
               </div>
             </div>
           ) : (
             <>
                 {/* Barra de búsqueda y filtros */}
-                <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-3 sm:p-4">
+                <div className="dark:bg-gray-800/50 bg-gray-200 rounded-xl border dark:border-gray-700/50 border-gray-300 p-3 sm:p-4">
                   <div className="flex flex-col sm:flex-row gap-3">
                   {/* Búsqueda */}
                   <div className="relative flex-1">
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 dark:text-gray-400 text-gray-600 pointer-events-none" />
                     <input
                       type="search"
                       inputMode="search"
@@ -557,7 +557,7 @@
                       placeholder="Buscar por cliente, mes, dispositivo, id..."
                       value={busqueda}
                       onChange={(e) => setBusqueda(e.target.value)}
-                      className="w-full min-h-[48px] pl-9 pr-4 py-2.5 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
+                      className="w-full min-h-[48px] pl-9 pr-4 py-2.5 dark:bg-gray-700/50 bg-gray-300 border dark:border-gray-600/50 border-gray-300 rounded-lg dark:text-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm"
                       aria-label="Buscar órdenes"
                     />
                     {busqueda && (
@@ -566,7 +566,7 @@
                         className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-600 rounded-full transition-colors"
                         aria-label="Limpiar búsqueda"
                       >
-                        <X className="w-3.5 h-3.5 text-gray-400" />
+                        <X className="w-3.5 h-3.5 dark:text-gray-400 text-gray-600" />
                       </button>
                     )}
                   </div>
@@ -576,8 +576,8 @@
                     <Sheet open={mostrarFiltros} onOpenChange={setMostrarFiltros}>
                       <SheetTrigger asChild>
                         <button
-                          className={`w-full sm:w-auto min-h-[48px] bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 px-4 py-2.5 rounded-lg flex items-center justify-between sm:justify-center gap-2 transition-colors border text-sm ${
-                            filtroTipo !== 'todos' ? 'border-blue-500/50' : 'border-gray-600/50'
+                          className={`w-full sm:w-auto min-h-[48px] dark:bg-gray-700/50 bg-gray-300 hover:bg-gray-600/50 dark:text-gray-300 text-gray-700 px-4 py-2.5 rounded-lg flex items-center justify-between sm:justify-center gap-2 transition-colors border text-sm ${
+                            filtroTipo !== 'todos' ? 'border-blue-500/50' : 'dark:border-gray-600/50 border-gray-300'
                           }`}
                           disabled={aplicandoFiltro}
                         >
@@ -595,10 +595,10 @@
                           {!aplicandoFiltro && <ChevronDown className="w-4 h-4" />}
                         </button>
                       </SheetTrigger>
-                      <SheetContent side="bottom" className="bg-gray-900 border-gray-800 rounded-t-2xl text-white">
+                      <SheetContent side="bottom" className="dark:bg-gray-900 bg-gray-100 dark:border-gray-800 border-gray-200 rounded-t-2xl dark:text-white text-gray-900">
                         <SheetHeader className="text-left pb-4 border-b border-gray-850">
-                          <SheetTitle className="text-lg font-bold text-white">Filtros</SheetTitle>
-                          <SheetDescription className="text-xs text-gray-400">
+                          <SheetTitle className="text-lg font-bold dark:text-white text-gray-900">Filtros</SheetTitle>
+                          <SheetDescription className="text-xs dark:text-gray-400 text-gray-600">
                             Selecciona el tipo de mantenimiento a visualizar
                           </SheetDescription>
                         </SheetHeader>
@@ -621,13 +621,13 @@
                                 }}
                                 className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors text-sm font-medium ${
                                   filtroTipo === option.value
-                                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                    : 'text-gray-300 hover:bg-gray-800/50 border border-transparent'
+                                    ? 'bg-blue-500/20 dark:text-blue-400 text-blue-700 border border-blue-500/30'
+                                    : 'dark:text-gray-300 text-gray-700 hover:dark:bg-gray-800/50 hover:bg-gray-200 border border-transparent'
                                 }`}
                                 disabled={aplicandoFiltro}
                               >
                                 <span>{option.label}</span>
-                                <span className="text-xs text-gray-400 bg-gray-800 px-2.5 py-1 rounded-full border border-gray-700">
+                                <span className="text-xs dark:text-gray-400 text-gray-600 dark:bg-gray-800 bg-gray-200 px-2.5 py-1 rounded-full border dark:border-gray-700 border-gray-300">
                                   {option.count}
                                 </span>
                               </button>
@@ -640,8 +640,8 @@
                     <div className="relative" data-filtro-dropdown>
                       <button
                         onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                        className={`w-full sm:w-auto min-h-[48px] bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 px-4 py-2.5 rounded-lg flex items-center justify-between sm:justify-center gap-2 transition-colors border text-sm ${
-                          filtroTipo !== 'todos' ? 'border-blue-500/50' : 'border-gray-600/50'
+                        className={`w-full sm:w-auto min-h-[48px] dark:bg-gray-700/50 bg-gray-300 hover:bg-gray-600/50 dark:text-gray-300 text-gray-700 px-4 py-2.5 rounded-lg flex items-center justify-between sm:justify-center gap-2 transition-colors border text-sm ${
+                          filtroTipo !== 'todos' ? 'border-blue-500/50' : 'dark:border-gray-600/50 border-gray-300'
                         }`}
                         aria-expanded={mostrarFiltros}
                         disabled={aplicandoFiltro}
@@ -663,12 +663,12 @@
                       {/* Dropdown de filtros */}
                       {mostrarFiltros && (
                         <div 
-                          className="absolute top-full right-0 mt-2 w-56 bg-gray-800 rounded-xl shadow-lg z-20 p-3 border border-gray-700/50 max-h-[60dvh] overflow-y-auto"
+                          className="absolute top-full right-0 mt-2 w-56 dark:bg-gray-800 bg-gray-200 rounded-xl shadow-lg z-20 p-3 border dark:border-gray-700/50 border-gray-300 max-h-[60dvh] overflow-y-auto"
                           onKeyDown={(e) => {
                             if (e.key === 'Escape') setMostrarFiltros(false)
                           }}
                         >
-                          <p className="text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">Tipo de mantenimiento</p>
+                          <p className="text-xs font-medium dark:text-gray-400 text-gray-600 mb-2 uppercase tracking-wider">Tipo de mantenimiento</p>
                           <div className="space-y-1">
                             {[
                               { value: 'todos', label: 'Todos', count: globalStats.totalOrdenes },
@@ -683,13 +683,13 @@
                                 onClick={() => cambiarFiltro(option.value)}
                                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm ${
                                   filtroTipo === option.value
-                                    ? 'bg-blue-500/20 text-blue-400'
-                                    : 'text-gray-300 hover:bg-gray-700/50'
+                                    ? 'bg-blue-500/20 dark:text-blue-400 text-blue-700'
+                                    : 'dark:text-gray-300 text-gray-700 hover:dark:bg-gray-700/50 hover:bg-gray-300'
                                 }`}
                                 disabled={aplicandoFiltro}
                               >
                                 <span>{option.label}</span>
-                                <span className="text-xs text-gray-500 bg-gray-700/50 px-2 py-0.5 rounded-full">
+                                <span className="text-xs text-gray-500 dark:bg-gray-700/50 bg-gray-300 px-2 py-0.5 rounded-full">
                                   {option.count}
                                 </span>
                               </button>
@@ -703,8 +703,8 @@
 
                 {/* Chips de filtros activos */}
                 {hasActiveFilters && (
-                  <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-gray-700/50">
-                    <span className="text-xs text-gray-400">Filtros activos:</span>
+                  <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t dark:border-gray-700/50 border-gray-300">
+                    <span className="text-xs dark:text-gray-400 text-gray-600">Filtros activos:</span>
                     {busqueda && (
                       <FilterChip 
                         label={`Búsqueda: "${busqueda}"`} 
@@ -719,7 +719,7 @@
                     )}
                     <button
                       onClick={limpiarFiltros}
-                      className="text-xs text-gray-500 hover:text-gray-300 transition-colors ml-auto"
+                      className="text-xs text-gray-500 hover:dark:text-gray-300 hover:text-gray-700 transition-colors ml-auto"
                     >
                       Limpiar todo
                     </button>
@@ -734,20 +734,20 @@
                   esMobile ? (
                     <div className="p-3 sm:p-4 grid gap-3">
                       {[1, 2, 3].map((i) => (
-                        <div key={i} className="bg-gray-800/80 rounded-xl border border-gray-700/50 p-4 space-y-3">
+                        <div key={i} className="dark:bg-gray-800/80 bg-gray-200/80 rounded-xl border dark:border-gray-700/50 border-gray-300 p-4 space-y-3">
                           <div className="flex justify-between items-start">
                             <div className="space-y-2 flex-1">
-                              <Skeleton className="h-5 w-2/3 bg-gray-700/50" />
-                              <Skeleton className="h-4 w-1/2 bg-gray-700/50" />
+                              <Skeleton className="h-5 w-2/3 dark:bg-gray-700/50 bg-gray-300" />
+                              <Skeleton className="h-4 w-1/2 dark:bg-gray-700/50 bg-gray-300" />
                             </div>
-                            <Skeleton className="h-6 w-20 bg-gray-700/50 rounded-full" />
+                            <Skeleton className="h-6 w-20 dark:bg-gray-700/50 bg-gray-300 rounded-full" />
                           </div>
-                          <Skeleton className="h-4 w-3/4 bg-gray-700/50" />
-                          <Skeleton className="h-4 w-1/3 bg-gray-700/50" />
+                          <Skeleton className="h-4 w-3/4 dark:bg-gray-700/50 bg-gray-300" />
+                          <Skeleton className="h-4 w-1/3 dark:bg-gray-700/50 bg-gray-300" />
                           <div className="flex justify-end gap-2 pt-2">
-                            <Skeleton className="h-8 w-8 bg-gray-700/50 rounded-lg" />
-                            <Skeleton className="h-8 w-8 bg-gray-700/50 rounded-lg" />
-                            <Skeleton className="h-8 w-8 bg-gray-700/50 rounded-lg" />
+                            <Skeleton className="h-8 w-8 dark:bg-gray-700/50 bg-gray-300 rounded-lg" />
+                            <Skeleton className="h-8 w-8 dark:bg-gray-700/50 bg-gray-300 rounded-lg" />
+                            <Skeleton className="h-8 w-8 dark:bg-gray-700/50 bg-gray-300 rounded-lg" />
                           </div>
                         </div>
                       ))}
@@ -755,7 +755,7 @@
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-700">
-                        <thead className="bg-gray-700/50">
+                        <thead className="dark:bg-gray-700/50 bg-gray-300">
                           <tr>
                             <th className="px-4 sm:px-6 py-3"><Skeleton className="h-4 w-16 bg-gray-600/50" /></th>
                             <th className="px-4 sm:px-6 py-3"><Skeleton className="h-4 w-24 bg-gray-600/50" /></th>
@@ -764,28 +764,28 @@
                             <th className="px-4 sm:px-6 py-3"><Skeleton className="h-4 w-24 bg-gray-600/50" /></th>
                           </tr>
                         </thead>
-                        <tbody className="bg-gray-800/30 divide-y divide-gray-700/50">
+                        <tbody className="dark:bg-gray-800/30 bg-gray-100 divide-y divide-gray-700/50">
                           {[1, 2, 3, 4, 5].map((i) => (
                             <tr key={i}>
                               <td className="px-4 sm:px-6 py-4 space-y-2">
-                                <Skeleton className="h-4 w-32 bg-gray-700/50" />
-                                <Skeleton className="h-3 w-24 bg-gray-700/50" />
+                                <Skeleton className="h-4 w-32 dark:bg-gray-700/50 bg-gray-300" />
+                                <Skeleton className="h-3 w-24 dark:bg-gray-700/50 bg-gray-300" />
                               </td>
                               <td className="px-4 sm:px-6 py-4 space-y-2">
-                                <Skeleton className="h-4 w-28 bg-gray-700/50" />
-                                <Skeleton className="h-3 w-36 bg-gray-700/50" />
+                                <Skeleton className="h-4 w-28 dark:bg-gray-700/50 bg-gray-300" />
+                                <Skeleton className="h-3 w-36 dark:bg-gray-700/50 bg-gray-300" />
                               </td>
                               <td className="px-4 sm:px-6 py-4">
-                                <Skeleton className="h-6 w-20 rounded-full bg-gray-700/50" />
+                                <Skeleton className="h-6 w-20 rounded-full dark:bg-gray-700/50 bg-gray-300" />
                               </td>
                               <td className="px-4 sm:px-6 py-4">
-                                <Skeleton className="h-4 w-24 bg-gray-700/50" />
+                                <Skeleton className="h-4 w-24 dark:bg-gray-700/50 bg-gray-300" />
                               </td>
                               <td className="px-4 sm:px-6 py-4">
                                 <div className="flex gap-2">
-                                  <Skeleton className="h-8 w-8 rounded bg-gray-700/50" />
-                                  <Skeleton className="h-8 w-8 rounded bg-gray-700/50" />
-                                  <Skeleton className="h-8 w-8 rounded bg-gray-700/50" />
+                                  <Skeleton className="h-8 w-8 rounded dark:bg-gray-700/50 bg-gray-300" />
+                                  <Skeleton className="h-8 w-8 rounded dark:bg-gray-700/50 bg-gray-300" />
+                                  <Skeleton className="h-8 w-8 rounded dark:bg-gray-700/50 bg-gray-300" />
                                 </div>
                               </td>
                             </tr>
@@ -822,11 +822,11 @@
                       /* Vista escritorio: Tabla */
                       <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-700">
-                          <thead className="bg-gray-700/50">
+                          <thead className="dark:bg-gray-700/50 bg-gray-300">
                             <tr>
                               <th 
                                 onClick={() => handleSort('cliente')}
-                                className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-600/50 transition-colors"
+                                className="px-4 sm:px-6 py-3 text-left text-xs font-medium dark:text-gray-300 text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-600/50 transition-colors"
                               >
                                 <div className="flex items-center gap-2">
                                   <span>Cliente</span>
@@ -837,7 +837,7 @@
                               </th>
                               <th 
                                 onClick={() => handleSort('dispositivo')}
-                                className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-600/50 transition-colors"
+                                className="px-4 sm:px-6 py-3 text-left text-xs font-medium dark:text-gray-300 text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-600/50 transition-colors"
                               >
                                 <div className="flex items-center gap-2">
                                   <span>Dispositivo</span>
@@ -846,12 +846,12 @@
                                   )}
                                 </div>
                               </th>
-                              <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                              <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium dark:text-gray-300 text-gray-700 uppercase tracking-wider">
                                 Tipo
                               </th>
                               <th 
                                 onClick={() => handleSort('fechaCreacion')}
-                                className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-600/50 transition-colors"
+                                className="px-4 sm:px-6 py-3 text-left text-xs font-medium dark:text-gray-300 text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-600/50 transition-colors"
                               >
                                 <div className="flex items-center gap-2">
                                   <span>Fecha</span>
@@ -860,31 +860,31 @@
                                   )}
                                 </div>
                               </th>
-                              <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
+                              <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium dark:text-gray-300 text-gray-700 uppercase tracking-wider">
                                 Acciones
                               </th>
                             </tr>
                           </thead>
-                          <tbody className="bg-gray-800/30 divide-y divide-gray-700/50">
+                          <tbody className="dark:bg-gray-800/30 bg-gray-100 divide-y divide-gray-700/50">
                             {ordenesFiltradas.map((orden) => (
                               <tr
                                 key={orden.idPersonalizado}
                                 onClick={() => handleRowClick(orden)}
-                                className="hover:bg-gray-700/50 transition-colors group cursor-pointer"
+                                className="hover:dark:bg-gray-700/50 hover:bg-gray-300 transition-colors group cursor-pointer"
                               >
                                 <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm font-medium text-white group-hover:text-blue-300 transition-colors">
+                                    <div className="text-sm font-medium dark:text-white text-gray-900 group-hover:dark:text-blue-300 group-hover:text-blue-700 transition-colors">
                                       <Highlight text={orden.cliente?.name || 'N/A'} term={debouncedBusqueda} />
                                     </div>
-                                    <div className="text-xs text-gray-400 mt-0.5">
+                                    <div className="text-xs dark:text-gray-400 text-gray-600 mt-0.5">
                                       {orden.cliente?.phone || 'Sin teléfono'}
                                     </div>
                                 </td>
                                 <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-white group-hover:text-blue-300 transition-colors">
+                                  <div className="text-sm dark:text-white text-gray-900 group-hover:dark:text-blue-300 group-hover:text-blue-700 transition-colors">
                                     <Highlight text={`${orden.dispositivo?.marca || ''} ${orden.dispositivo?.modelo || ''}`} term={debouncedBusqueda} />
                                   </div>
-                                  <div className="text-xs text-gray-400 mt-0.5">
+                                  <div className="text-xs dark:text-gray-400 text-gray-600 mt-0.5">
                                     S/N: {orden.dispositivo?.numeroSerie || 'N/A'}
                                   </div>
                                 </td>
@@ -893,14 +893,14 @@
                                     {getTipoLabel(orden.tipoMantenimiento)}
                                   </span>
                                 </td>
-                                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm dark:text-gray-400 text-gray-600">
                                   {formatFecha(orden.fechaCreacion)}
                                 </td>
                                 <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
                                   <div className="flex justify-end gap-1">
                                     <button
                                       onClick={() => handleRowClick(orden)}
-                                      className="text-blue-400 hover:text-blue-300 p-1.5 rounded-lg hover:bg-blue-500/20 transition-colors"
+                                      className="dark:text-blue-400 text-blue-700 hover:dark:text-blue-300 hover:text-blue-700 p-1.5 rounded-lg hover:bg-blue-500/20 transition-colors"
                                       aria-label="Ver detalles"
                                       title="Ver detalles"
                                     >
@@ -927,9 +927,9 @@
 
                     {/* Sentinel para auto-paginación */}
                     {!isSearching && hasNextPage && (
-                      <div ref={sentinelRef} className="px-3 sm:px-6 py-6 bg-gray-800/50 border-t border-gray-700/50 flex flex-col items-center justify-center gap-2">
+                      <div ref={sentinelRef} className="px-3 sm:px-6 py-6 dark:bg-gray-800/50 bg-gray-200 border-t dark:border-gray-700/50 border-gray-300 flex flex-col items-center justify-center gap-2">
                         {isFetchingNextPage ? (
-                          <div className="flex items-center gap-2 text-blue-400 text-sm">
+                          <div className="flex items-center gap-2 dark:text-blue-400 text-blue-700 text-sm">
                             <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                             <span>Cargando más órdenes...</span>
                           </div>
@@ -937,7 +937,7 @@
                           // Fallback button accesible
                           <button
                             onClick={() => fetchNextPage()}
-                            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 text-sm font-medium transition-all active:scale-95 w-full sm:w-auto justify-center"
+                            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 dark:text-blue-400 text-blue-700 text-sm font-medium transition-all active:scale-95 w-full sm:w-auto justify-center"
                           >
                             <ChevronDown className="w-4 h-4" />
                             <span>Cargar más órdenes</span>
@@ -968,7 +968,7 @@
             <div
               aria-live="polite"
               aria-label="Cargando más órdenes"
-              className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 bg-gray-800/95 border border-gray-700/60 rounded-full shadow-xl backdrop-blur-sm text-sm text-blue-300 font-medium pointer-events-none"
+              className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 dark:bg-gray-800/95 bg-gray-200 border dark:border-gray-700/60 border-gray-300 rounded-full shadow-xl backdrop-blur-sm text-sm dark:text-blue-300 text-blue-700 font-medium pointer-events-none"
             >
               <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none flex-shrink-0" />
               <span>Cargando más órdenes...</span>

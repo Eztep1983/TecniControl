@@ -98,7 +98,7 @@ const BusinessAvatar = memo(
         <img
           src={src}
           alt="Logo"
-          className={baseClass + ' bg-gray-800 border border-gray-700'}
+          className={baseClass + ' dark:bg-gray-800 bg-gray-200 border dark:border-gray-700 border-gray-300'}
           onError={() => {
             // Guard: only set failed once — prevents any re-render loop
             if (!hasTriedFallback.current) {
@@ -121,7 +121,7 @@ const BusinessAvatar = memo(
           className
         )}
       >
-        <span className="text-sm font-bold text-blue-300 tracking-wide">{initials}</span>
+        <span className="text-sm font-bold dark:text-blue-300 text-blue-700 tracking-wide">{initials}</span>
       </div>
     )
   }
@@ -131,22 +131,22 @@ BusinessAvatar.displayName = 'BusinessAvatar'
 // ─── StatCard ────────────────────────────────────────────────────────────────
 
 const TIPO_COLORS: Record<string, string> = {
-  preventivo: 'bg-green-500/20 text-green-400 border-green-500/30',
-  correctivo: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  diagnostico: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  instalacion: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  garantia: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  preventivo: 'bg-green-500/20 dark:text-green-400 text-green-700 border-green-500/30',
+  correctivo: 'bg-orange-500/20 dark:text-orange-400 text-orange-700 border-orange-500/30',
+  diagnostico: 'bg-blue-500/20 dark:text-blue-400 text-blue-700 border-blue-500/30',
+  instalacion: 'bg-purple-500/20 dark:text-purple-400 text-purple-700 border-purple-500/30',
+  garantia: 'bg-amber-500/20 dark:text-amber-400 text-amber-700 border-amber-500/30',
 }
 
 const getTipoColor = (tipo: string) =>
-  TIPO_COLORS[tipo] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+  TIPO_COLORS[tipo] || 'bg-gray-500/20 dark:text-gray-400 text-gray-600 border-gray-500/30'
 
 const StatCard = memo(
   ({
     icon: Icon,
     value,
     label,
-    colorClass = 'border-gray-700/50',
+    colorClass = 'dark:border-gray-700/50 border-gray-300',
     onClick,
   }: {
     icon: React.ElementType
@@ -162,18 +162,18 @@ const StatCard = memo(
         onClick={onClick}
         type={onClick ? "button" : undefined}
         className={cn(
-          'snap-start shrink-0 w-32 bg-gray-800/40 border rounded-2xl p-4',
-          'flex flex-col items-center justify-center',
+          'w-full dark:bg-gray-800/40 bg-gray-200 border rounded-2xl p-2.5',
+          'flex flex-col items-center justify-center text-center',
           'transition-all duration-150',
-          onClick ? 'cursor-pointer hover:bg-gray-800/60 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400' : 'cursor-default',
+          onClick ? 'cursor-pointer hover:dark:bg-gray-800/60 hover:bg-gray-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400' : 'cursor-default',
           colorClass
         )}
         role={onClick ? 'button' : 'listitem'}
         aria-label={onClick ? `Ver órdenes de tipo ${label}` : undefined}
       >
-        <Icon className="w-5 h-5 text-gray-400 mb-1.5" aria-hidden="true" />
-        <span className="text-xl font-bold text-white tabular-nums">{value}</span>
-        <span className="text-xs uppercase tracking-wider text-gray-400 font-medium text-center leading-tight mt-0.5">
+        <Icon className="w-4 h-4 dark:text-gray-400 text-gray-600 mb-1" aria-hidden="true" />
+        <span className="text-lg font-bold dark:text-white text-gray-900 tabular-nums leading-tight">{value}</span>
+        <span className="text-[9px] sm:text-[10px] uppercase tracking-wider dark:text-gray-400 text-gray-600 font-medium text-center leading-tight mt-0.5 break-words max-w-full">
           {label}
         </span>
       </Component>
@@ -185,22 +185,15 @@ StatCard.displayName = 'StatCard'
 // ─── EmptyOrdenes ────────────────────────────────────────────────────────────
 
 const EmptyOrdenes = memo(
-  ({ onCreate }: { onCreate: () => void }) => (
-    <div className="flex flex-col items-center justify-center py-10 px-6 text-center rounded-xl border border-dashed border-gray-700/60 bg-gray-800/20">
-      <div className="w-12 h-12 rounded-xl bg-gray-800/60 border border-gray-700/50 flex items-center justify-center mb-3">
+  () => (
+    <div className="flex flex-col items-center justify-center py-10 px-6 text-center rounded-xl border border-dashed dark:border-gray-700/60 border-gray-300 dark:bg-gray-800/20 bg-gray-200">
+      <div className="w-12 h-12 rounded-xl dark:bg-gray-800/60 bg-gray-200 border dark:border-gray-700/50 border-gray-300 flex items-center justify-center mb-3">
         <FileX className="w-6 h-6 text-gray-600" aria-hidden="true" />
       </div>
-      <p className="text-sm font-medium text-white">Sin órdenes recientes</p>
-      <p className="text-xs text-gray-400 mt-1">
-        Las órdenes que crees aparecerán aquí.
+      <p className="text-sm font-medium dark:text-white text-gray-900">Sin órdenes recientes</p>
+      <p className="text-xs dark:text-gray-400 text-gray-600 mt-2">
+        Presiona el botón <strong className="dark:text-blue-400 text-blue-700 font-bold dark:bg-gray-800 bg-gray-200 px-1.5 py-0.5 rounded shadow-sm inline-flex items-center justify-center">+</strong> debajo para crear tu primera orden.
       </p>
-      <button
-        type="button"
-        onClick={onCreate}
-        className="mt-4 inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white transition-all hover:bg-blue-500 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400"
-      >
-        Crear nueva orden
-      </button>
     </div>
   )
 )
@@ -235,8 +228,8 @@ const DraftBanner = memo(
               className="flex flex-col sm:flex-row sm:items-center gap-3"
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <FileEdit className="w-4 h-4 text-blue-400 shrink-0" aria-hidden="true" />
-                <span className="text-sm font-medium text-blue-300 truncate">
+                <FileEdit className="w-4 h-4 dark:text-blue-400 text-blue-700 shrink-0" aria-hidden="true" />
+                <span className="text-sm font-medium dark:text-blue-300 text-blue-700 truncate">
                   Orden en pausa detectada
                 </span>
               </div>
@@ -244,7 +237,7 @@ const DraftBanner = memo(
                 <button
                   type="button"
                   onClick={() => setIsConfirming(true)}
-                  className="flex-1 sm:flex-none text-gray-400 bg-gray-800/80 border border-gray-700/50 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  className="flex-1 sm:flex-none dark:text-gray-400 text-gray-600 dark:bg-gray-800/80 bg-gray-200/80 border dark:border-gray-700/50 border-gray-300 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:bg-gray-700 hover:dark:text-white hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-400"
                   aria-label="Descartar orden en pausa"
                 >
                   Descartar
@@ -269,8 +262,8 @@ const DraftBanner = memo(
               className="flex flex-col sm:flex-row sm:items-center gap-3"
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <FileEdit className="w-4 h-4 text-red-400 shrink-0" aria-hidden="true" />
-                <span className="text-sm font-medium text-red-300 truncate">
+                <FileEdit className="w-4 h-4 dark:text-red-400 text-red-700 shrink-0" aria-hidden="true" />
+                <span className="text-sm font-medium dark:text-red-300 text-red-700 truncate">
                   ¿Seguro que deseas descartar?
                 </span>
               </div>
@@ -278,7 +271,7 @@ const DraftBanner = memo(
                 <button
                   type="button"
                   onClick={() => setIsConfirming(false)}
-                  className="flex-1 sm:flex-none text-gray-400 bg-gray-800/80 border border-gray-700/50 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  className="flex-1 sm:flex-none dark:text-gray-400 text-gray-600 dark:bg-gray-800/80 bg-gray-200/80 border dark:border-gray-700/50 border-gray-300 px-3 py-2 min-h-[44px] text-xs rounded-lg transition-colors hover:bg-gray-700 hover:dark:text-white hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-400"
                 >
                   Cancelar
                 </button>
@@ -288,7 +281,7 @@ const DraftBanner = memo(
                     setIsConfirming(false)
                     onDiscard()
                   }}
-                  className="flex-1 sm:flex-none bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  className="flex-1 sm:flex-none bg-red-500/20 dark:text-red-400 text-red-700 border border-red-500/30 px-3 py-2 min-h-[44px] rounded-lg text-xs font-bold transition-all active:scale-95 hover:bg-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-400"
                 >
                   Confirmar descarte
                 </button>
@@ -382,7 +375,7 @@ function OrdenesDashboardContent() {
   if (authLoading) {
     return (
       <div className="flex flex-1 items-center justify-center p-4 min-h-[60vh]">
-        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+        <Loader2 className="w-8 h-8 dark:text-blue-500 text-blue-600 animate-spin" />
       </div>
     )
   }
@@ -390,10 +383,10 @@ function OrdenesDashboardContent() {
   if (!user) {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
-        <div className="text-center bg-gray-800/50 rounded-xl p-8 max-w-md">
-          <Shield className="w-12 h-12 text-red-400 mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-xl font-bold text-white mb-2">Acceso Restringido</h2>
-          <p className="text-gray-400">Debes iniciar sesión para acceder a esta página.</p>
+        <div className="text-center dark:bg-gray-800/50 bg-gray-200 rounded-xl p-8 max-w-md">
+          <Shield className="w-12 h-12 dark:text-red-400 text-red-700 mx-auto mb-4" aria-hidden="true" />
+          <h2 className="text-xl font-bold dark:text-white text-gray-900 mb-2">Acceso Restringido</h2>
+          <p className="dark:text-gray-400 text-gray-600">Debes iniciar sesión para acceder a esta página.</p>
         </div>
       </div>
     )
@@ -417,17 +410,17 @@ function OrdenesDashboardContent() {
   return (
     <div className="bg-transparent min-h-screen pb-safe">
       {/* Header */}
-      <div className=" top-0 z-40 bg-gray-900/95 border-b border-gray-800 pt-safe backdrop-blur-xl">
+      <div className=" top-0 z-40 dark:bg-gray-900/95 bg-gray-100/95 border-b dark:border-gray-800 border-gray-200 pt-safe backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <BusinessAvatar
               logoUrl={negocio?.logoUrl || '/icono.png'}
               displayName={greetingData.title}
-              className="w-12 h-12 shadow-inner border border-gray-800 p-0.5 bg-white"
+              className="w-12 h-12 shadow-inner border dark:border-gray-800 border-gray-200 p-0.5 bg-white"
             />
             <div className="min-w-0">
-              <h1 className="text-lg font-bold text-white truncate" title={greetingData.title}>{greetingData.title}</h1>
-              <p className="text-xs uppercase tracking-wider text-gray-400 font-medium mt-0.5">
+              <h1 className="text-lg font-bold dark:text-white text-gray-900 truncate" title={greetingData.title}>{greetingData.title}</h1>
+              <p className="text-xs uppercase tracking-wider dark:text-gray-400 text-gray-600 font-medium mt-0.5">
                 {greetingData.subtitle}
               </p>
             </div>
@@ -438,21 +431,7 @@ function OrdenesDashboardContent() {
       <div className="max-w-7xl mx-auto px-4 py-5 space-y-6">
         <OfflineSyncBanner />
 
-        {/* Nueva Orden CTA */}
-        <button
-          type="button"
-          onClick={handleCreateNuevaOrden}
-          disabled={isDashboardLoading}
-          aria-label="Emitir nueva orden de mantenimiento"
-          className={cn(
-            "w-full bg-blue-600 text-white rounded-xl flex items-center justify-center gap-2 transition-all font-bold shadow-lg shadow-blue-900/20",
-            "py-4 px-4 min-h-[56px] focus:outline-none focus:ring-2 focus:ring-blue-400",
-            isDashboardLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700 active:scale-95"
-          )}
-        >
-          <Plus className="w-5 h-5" aria-hidden="true" />
-          Nueva Orden
-        </button>
+        <OfflineSyncBanner />
 
         {/* Draft banner */}
         <AnimatePresence>
@@ -469,29 +448,29 @@ function OrdenesDashboardContent() {
           <div className="flex items-center justify-between ml-1 mb-3">
             <h2
               id="resumen-heading"
-              className="text-sm font-bold text-gray-400 uppercase tracking-widest"
+              className="text-sm font-bold dark:text-gray-400 text-gray-600 uppercase tracking-widest"
             >
               Resumen
             </h2>
             <button 
               onClick={refrescarDatos} 
-              className="flex items-center justify-center min-w-[44px] min-h-[44px] text-gray-500 hover:text-blue-400 rounded-lg hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="flex items-center justify-center min-w-[44px] min-h-[44px] text-gray-500 hover:dark:text-blue-400 hover:text-blue-700 rounded-lg hover:dark:bg-gray-800 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
               disabled={isRefetching || isDashboardLoading}
               aria-label="Actualizar datos"
             >
-              <RefreshCw className={cn("w-5 h-5", (isRefetching || isDashboardLoading) && "animate-spin text-blue-400")} />
+              <RefreshCw className={cn("w-5 h-5", (isRefetching || isDashboardLoading) && "animate-spin dark:text-blue-400 text-blue-700")} />
             </button>
           </div>
 
           {statsLoading && estadisticas.totalOrdenes === 0 ? (
-            <div className="flex gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0" role="status" aria-label="Cargando estadísticas">
+            <div className="grid grid-cols-3 gap-2" role="status" aria-label="Cargando estadísticas">
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="snap-start shrink-0 w-32 h-24 rounded-2xl" />
+                <Skeleton key={i} className="w-full h-[88px] rounded-2xl" />
               ))}
             </div>
           ) : (
             <div
-              className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 [mask-image:linear-gradient(to_right,black_80%,transparent)] sm:[mask-image:none] scrollbar-none sm:scrollbar-auto snap-x snap-mandatory"
+              className="grid grid-cols-3 gap-2"
               role="list"
               aria-label="Estadísticas de actividad"
             >
@@ -504,35 +483,35 @@ function OrdenesDashboardContent() {
               <StatCard
                 icon={Shield}
                 value={estadisticas.preventivos}
-                label="Preventivos"
+                label="Prev"
                 colorClass="border-green-500/20"
                 onClick={() => router.push('/ordenes/mantenimiento?tipo=preventivo')}
               />
               <StatCard
                 icon={Wrench}
                 value={estadisticas.correctivos}
-                label="Correctivos"
+                label="Corr"
                 colorClass="border-orange-500/20"
                 onClick={() => router.push('/ordenes/mantenimiento?tipo=correctivo')}
               />
               <StatCard
                 icon={Stethoscope}
                 value={estadisticas.diagnosticos}
-                label="Diagnósticos"
+                label="Diag"
                 colorClass="border-blue-500/20"
                 onClick={() => router.push('/ordenes/mantenimiento?tipo=diagnostico')}
               />
               <StatCard
                 icon={Package}
                 value={estadisticas.instalaciones}
-                label="Instalaciones"
+                label="Inst"
                 colorClass="border-purple-500/20"
                 onClick={() => router.push('/ordenes/mantenimiento?tipo=instalacion')}
               />
               <StatCard
                 icon={Shield}
                 value={estadisticas.garantias || 0}
-                label="Garantías"
+                label="Gar"
                 colorClass="border-amber-500/20"
                 onClick={() => router.push('/ordenes/mantenimiento?tipo=garantia')}
               />
@@ -544,7 +523,7 @@ function OrdenesDashboardContent() {
         <section aria-labelledby="recientes-heading">
           <h2
             id="recientes-heading"
-            className="text-sm font-bold text-gray-400 uppercase tracking-widest ml-1 mb-3"
+            className="text-sm font-bold dark:text-gray-400 text-gray-600 uppercase tracking-widest ml-1 mb-3"
           >
             Recientes
           </h2>
@@ -557,11 +536,11 @@ function OrdenesDashboardContent() {
             </div>
           ) : ordenesError ? (
             <div className="flex flex-col items-center justify-center py-8 text-center rounded-xl bg-red-500/10 border border-red-500/20">
-              <AlertTriangle className="w-8 h-8 text-red-400 mb-2" />
-              <p className="text-sm font-medium text-red-400">Error al cargar las órdenes</p>
+              <AlertTriangle className="w-8 h-8 dark:text-red-400 text-red-700 mb-2" />
+              <p className="text-sm font-medium dark:text-red-400 text-red-700">Error al cargar las órdenes</p>
               <button 
                 onClick={refrescarDatos} 
-                className="mt-3 px-4 py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg text-xs font-bold transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-400"
+                className="mt-3 px-4 py-2 bg-red-500/20 dark:text-red-400 text-red-700 hover:bg-red-500/30 rounded-lg text-xs font-bold transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-400"
               >
                 Reintentar
               </button>
@@ -582,13 +561,13 @@ function OrdenesDashboardContent() {
               ))}
             </div>
           ) : (
-            <EmptyOrdenes onCreate={handleCreateNuevaOrden} />
+            <EmptyOrdenes />
           )}
 
           {ordenesRecientes.length > 0 && (
             <Link
               href="/ordenes/mantenimiento"
-              className="mt-3 flex items-center justify-center w-full py-3 text-sm text-blue-400 bg-gray-800/30 rounded-xl border border-gray-700/50 hover:bg-gray-800/50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="mt-3 flex items-center justify-center w-full py-3 text-sm dark:text-blue-400 text-blue-700 dark:bg-gray-800/30 bg-gray-100 rounded-xl border dark:border-gray-700/50 border-gray-300 hover:dark:bg-gray-800/50 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               Ver todo el historial
               <ArrowRight className="w-3.5 h-3.5 ml-2" aria-hidden="true" />

@@ -21,6 +21,7 @@ import { auth, db } from '@/lib/firebase'
 import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from 'firebase/firestore'
 import { useToast } from "@/hooks/use-toast"
 import { getLocalDeviceId } from '@/lib/device-helpers'
+import { Preferences } from '@capacitor/preferences'
 
 const SECURITY_CONFIG = {
   allowedDomains: null as string[] | null,
@@ -40,22 +41,34 @@ const logger = {
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
-const getCachedUid = (): string | null => {
+const getCachedUidAsync = async (): Promise<string | null> => {
   if (typeof window === 'undefined') return null
   try {
+    if (Capacitor.isNativePlatform()) {
+      const { value } = await Preferences.get({ key: SESSION_CACHE_KEY })
+      return value
+    }
     return localStorage.getItem(SESSION_CACHE_KEY)
   } catch {
     return null
   }
 }
 
-const setCachedUid = (uid: string | null) => {
+const setCachedUidAsync = async (uid: string | null) => {
   if (typeof window === 'undefined') return
   try {
-    if (uid) {
-      localStorage.setItem(SESSION_CACHE_KEY, uid)
+    if (Capacitor.isNativePlatform()) {
+      if (uid) {
+        await Preferences.set({ key: SESSION_CACHE_KEY, value: uid })
+      } else {
+        await Preferences.remove({ key: SESSION_CACHE_KEY })
+      }
     } else {
-      localStorage.removeItem(SESSION_CACHE_KEY)
+      if (uid) {
+        localStorage.setItem(SESSION_CACHE_KEY, uid)
+      } else {
+        localStorage.removeItem(SESSION_CACHE_KEY)
+      }
     }
   } catch {
     // ignore
@@ -119,9 +132,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearError = useCallback(() => setError(null), [])
 
   useIsomorphicLayoutEffect(() => {
-    if (getCachedUid() !== null) {
-      logger.log(' Sesión cacheada encontrada, esperando confirmación de Firebase...')
-    }
+    getCachedUidAsync().then(uid => {
+      if (uid !== null) {
+        logger.log(' Sesión cacheada encontrada, esperando confirmación de Firebase...')
+      }
+    })
   }, [])
 
   const validateEmailDomain = useCallback((email: string | null): boolean => {
@@ -279,7 +294,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await syncUserDocument(result.user, true)
         
         logger.log('✅ Google sign in nativo exitoso:', result.user.uid)
-        setCachedUid(result.user.uid)
+        await setCachedUidAsync(result.user.uid)
         lastActivityRef.current = Date.now()
         setLoading(false)
         return
@@ -299,7 +314,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await syncUserDocument(result.user, true)
 
       logger.log('✅ Google sign in exitoso (popup):', result.user.uid)
-      setCachedUid(result.user.uid)
+      await setCachedUidAsync(result.user.uid)
       lastActivityRef.current = Date.now()
       setLoading(false)
     } catch (error: any) {
@@ -322,7 +337,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await syncUserDocument(result.user, true)
 
       logger.log('✅ Email sign in exitoso:', result.user.uid)
-      setCachedUid(result.user.uid)
+      await setCachedUidAsync(result.user.uid)
       lastActivityRef.current = Date.now()
       setLoading(false)
     } catch (error: any) {
@@ -356,7 +371,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const validation = validateUser(firebaseUser)
         if (!validation.valid) {
           logger.warn('User validation failed:', validation.reason)
-          setCachedUid(null)
+          await setCachedUidAsync(null)
           await signOut(auth)
           setUser(null)
           setError(validation.reason || 'Acceso denegado')
@@ -365,10 +380,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         try {
-          const isNewLogin = getCachedUid() !== firebaseUser.uid
+          const cachedUid = await getCachedUidAsync()
+          const isNewLogin = cachedUid !== firebaseUser.uid
           
           // 🔥 DESBLOQUEAR LA UI INMEDIATAMENTE
-          setCachedUid(firebaseUser.uid)
+          await setCachedUidAsync(firebaseUser.uid)
           setUser(firebaseUser)
           lastActivityRef.current = Date.now()
           setError(null)
@@ -399,7 +415,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                       variant: "destructive"
                     });
                     
-                    setCachedUid(null);
+                    await setCachedUidAsync(null);
                     await signOut(auth);
                     setUser(null);
                     setUserProfile(null);
@@ -413,7 +429,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .catch(async (err: any) => {
               logger.error('Error in background auth sync:', err)
               if (err.message?.includes('ERROR_DE_PERMISOS')) {
-                setCachedUid(null)
+                await setCachedUidAsync(null)
                 await signOut(auth)
                 setUser(null)
                 setError(err.message)
@@ -421,14 +437,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             })
         } catch (err: any) {
           logger.error('Error in auth state listener setup:', err)
-          setCachedUid(null)
+          await setCachedUidAsync(null)
           await signOut(auth)
           setUser(null)
           setError(err.message || 'Error de autorización')
           setLoading(false)
         }
       } else {
-        setCachedUid(null)
+        await setCachedUidAsync(null)
         setUser(null)
         setUserProfile(null)
         setLoading(false)
@@ -448,7 +464,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = useCallback(async (): Promise<void> => {
     try {
       logger.log('Logging out...')
-      setCachedUid(null)
+      await setCachedUidAsync(null)
       await signOut(auth)
       setError(null)
       logger.log('Logout successful')

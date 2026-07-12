@@ -33,7 +33,7 @@ const ClientesSkeleton = memo(function ClientesSkeleton() {
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-2xl bg-gray-800/40 border border-gray-700/40 overflow-hidden"
+            className="rounded-2xl dark:bg-gray-800/40 bg-gray-200 border dark:border-gray-700/40 border-gray-300 overflow-hidden"
             // FIX: aria-hidden para que los skeletons no se anuncien individualmente
             aria-hidden="true"
           >
@@ -50,7 +50,7 @@ const ClientesSkeleton = memo(function ClientesSkeleton() {
                 <div className="h-3 w-2/3 rounded bg-gray-700/40 animate-pulse" />
               </div>
             </div>
-            <div className="h-11 bg-gray-800/40 animate-pulse border-t border-gray-700/30" />
+            <div className="h-11 dark:bg-gray-800/40 bg-gray-200 animate-pulse border-t dark:border-gray-700/30 border-gray-300" />
           </div>
         ))}
       </div>
@@ -71,8 +71,7 @@ export function ClientesList() {
   const [selectedClienteHistorial, setSelectedClienteHistorial] = useState<Cliente | null>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
 
-  // FIX: Tipado correcto del ref sin cast inseguro.
-  // usePullToRefresh debe devolver RefObject<HTMLElement> o similar.
+
   const { containerRef } = usePullToRefresh<HTMLDivElement>({
     onRefresh: async () => {
       haptic.impactLight();
@@ -148,16 +147,16 @@ export function ClientesList() {
   // ── Guard: sin usuario ──────────────────────────────────────────────────
   if (isNoUser) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen dark:bg-gray-900 bg-gray-100 flex items-center justify-center p-4">
         <div
-          className="bg-gray-800/40 rounded-2xl border border-gray-700/50 p-8 max-w-sm w-full text-center"
+          className="dark:bg-gray-800/40 bg-gray-200 rounded-2xl border dark:border-gray-700/50 border-gray-300 p-8 max-w-sm w-full text-center"
           role="alert"
         >
           <div className="w-14 h-14 bg-blue-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
             <User className="w-7 h-7 text-blue-400" aria-hidden="true" />
           </div>
-          <h2 className="text-base font-semibold text-white mb-1">Acceso Requerido</h2>
-          <p className="text-sm text-gray-400">
+          <h2 className="text-base font-semibold dark:text-white text-gray-900 mb-1">Acceso Requerido</h2>
+          <p className="text-sm dark:text-gray-400 text-gray-600">
             Debes iniciar sesión para gestionar los clientes.
           </p>
         </div>
@@ -168,16 +167,16 @@ export function ClientesList() {
   // ── Guard: error ────────────────────────────────────────────────────────
   if (hasError) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen dark:bg-gray-900 bg-gray-100 flex items-center justify-center p-4">
         <div
-          className="bg-gray-800/40 rounded-2xl border border-red-500/30 p-8 max-w-sm w-full text-center"
+          className="dark:bg-gray-800/40 bg-gray-200 rounded-2xl border border-red-500/30 p-8 max-w-sm w-full text-center"
           role="alert"
         >
           <div className="w-14 h-14 bg-red-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
             <RefreshCw className="w-7 h-7 text-red-400" aria-hidden="true" />
           </div>
-          <h2 className="text-base font-semibold text-white mb-1">Error al Cargar</h2>
-          <p className="text-sm text-gray-400 mb-5">{error}</p>
+          <h2 className="text-base font-semibold dark:text-white text-gray-900 mb-1">Error al Cargar</h2>
+          <p className="text-sm dark:text-gray-400 text-gray-600 mb-5">{error}</p>
           <button
             onClick={refrescarClientes}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 text-sm font-medium transition-colors active:scale-95 min-h-[44px]"
@@ -224,7 +223,7 @@ export function ClientesList() {
         style={{ touchAction: 'pan-y' }}
       >
         {/* Header */}
-        <div className="sticky top-0 z-40 bg-gray-900/95 border-b border-gray-800 pt-safe backdrop-blur-xl">
+        <div className="sticky top-0 z-40 dark:bg-gray-900/95 bg-gray-100/95 border-b dark:border-gray-800 border-gray-200 pt-safe backdrop-blur-xl">
           <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             
             <div className="flex items-center gap-3">
@@ -236,7 +235,7 @@ export function ClientesList() {
               </div>
 
               <div className="min-w-0 flex-1">
-                <h1 className="text-base font-semibold text-white leading-tight">
+                <h1 className="text-base font-semibold dark:text-white text-gray-900 leading-tight">
                   Mis Clientes
                 </h1>
                 <p
@@ -268,7 +267,7 @@ export function ClientesList() {
                   placeholder="Buscar clientes…"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-10 min-h-[48px] text-sm bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-xl transition-all"
+                  className="w-full pl-10 pr-10 min-h-[48px] text-sm dark:bg-gray-800/50 bg-gray-200 dark:border-gray-700/50 border-gray-300 dark:text-white text-gray-900 placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-xl transition-all"
                   autoComplete="off"
                   inputMode="search"
                   enterKeyHint="search"
@@ -276,20 +275,20 @@ export function ClientesList() {
                 {searchTerm && (
                   <button
                     onClick={clearSearch}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-700/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 transition-colors"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full hover:dark:bg-gray-700/50 hover:bg-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 transition-colors"
                     aria-label="Limpiar búsqueda"
                   >
-                    <X className="w-4 h-4 text-gray-400" aria-hidden="true" />
+                    <X className="w-4 h-4 dark:text-gray-400 text-gray-600" aria-hidden="true" />
                   </button>
                 )}
               </div>
 
               <button
                 onClick={openImport}
-                className="flex items-center justify-center gap-2 px-4 rounded-xl bg-gray-800/60 hover:bg-gray-800 active:bg-gray-700/80 border border-gray-700/50 transition-all active:scale-95 text-sm font-medium flex-shrink-0 min-h-[48px] text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-700/50"
+                className="flex items-center justify-center gap-2 px-4 rounded-xl dark:bg-gray-800/60 bg-gray-200 hover:dark:bg-gray-800 hover:bg-gray-200 active:bg-gray-700/80 border dark:border-gray-700/50 border-gray-300 transition-all active:scale-95 text-sm font-medium flex-shrink-0 min-h-[48px] dark:text-gray-300 text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-700/50"
                 aria-label="Importar contactos"
               >
-                <Users className="w-4 h-4 text-gray-400" aria-hidden="true" />
+                <Users className="w-4 h-4 dark:text-gray-400 text-gray-600" aria-hidden="true" />
                 <span>Importar</span>
               </button>
 
@@ -312,14 +311,14 @@ export function ClientesList() {
             {loading && clientes.length === 0 && <ClientesSkeleton />}
 
             {isEmpty && (
-              <div className="text-center py-14 px-4 bg-gray-800/40 rounded-3xl border border-gray-700/50" role="status">
-                <div className="w-20 h-20 bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="text-center py-14 px-4 dark:bg-gray-800/40 bg-gray-200 rounded-3xl border dark:border-gray-700/50 border-gray-300" role="status">
+                <div className="w-20 h-20 dark:bg-gray-800 bg-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Users className="w-10 h-10 text-gray-600" aria-hidden="true" />
                 </div>
-                <h2 className="text-base font-semibold text-white mb-2">
+                <h2 className="text-base font-semibold dark:text-white text-gray-900 mb-2">
                   ¡Comienza tu gestión!
                 </h2>
-                <p className="text-sm text-gray-400 mb-6 max-w-xs mx-auto">
+                <p className="text-sm dark:text-gray-400 text-gray-600 mb-6 max-w-xs mx-auto">
                   Agrega tu primer cliente para gestionar dispositivos y órdenes.
                 </p>
                 <button
@@ -333,18 +332,18 @@ export function ClientesList() {
             )}
 
             {isFiltered && (
-              <div className="text-center py-14 px-4 bg-gray-800/40 rounded-3xl border border-gray-700/50" role="status">
-                <div className="w-20 h-20 bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="text-center py-14 px-4 dark:bg-gray-800/40 bg-gray-200 rounded-3xl border dark:border-gray-700/50 border-gray-300" role="status">
+                <div className="w-20 h-20 dark:bg-gray-800 bg-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Filter className="w-10 h-10 text-gray-600" aria-hidden="true" />
                 </div>
-                <h2 className="text-sm font-medium text-gray-300 mb-1">Sin resultados</h2>
+                <h2 className="text-sm font-medium dark:text-gray-300 text-gray-700 mb-1">Sin resultados</h2>
                 <p className="text-sm text-gray-500 mb-6">
                   No encontramos clientes que coincidan con{" "}
-                  <strong className="text-gray-400">"{searchTerm.length > 30 ? searchTerm.slice(0, 30) + '...' : searchTerm}"</strong>.
+                  <strong className="dark:text-gray-400 text-gray-600">"{searchTerm.length > 30 ? searchTerm.slice(0, 30) + '...' : searchTerm}"</strong>.
                 </p>
                 <button
                   onClick={clearSearch}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-700/40 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-colors active:scale-95 min-h-[48px]"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-700/40 hover:bg-gray-700 dark:text-gray-300 text-gray-700 text-sm font-medium transition-colors active:scale-95 min-h-[48px]"
                 >
                   <X className="w-5 h-5" aria-hidden="true" />
                   Limpiar búsqueda

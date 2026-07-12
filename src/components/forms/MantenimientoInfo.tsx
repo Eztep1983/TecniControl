@@ -61,8 +61,8 @@ const TIPO_CONFIG = {
     nombre: 'Preventivo',
     colorBorder: 'border-green-500/40',
     colorBg: 'bg-green-500/10',
-    colorIcon: 'bg-green-500/20 text-green-400',
-    colorText: 'text-green-300',
+    colorIcon: 'bg-green-500/20 dark:text-green-400 text-green-700',
+    colorText: 'dark:text-green-300 text-green-700',
     gradient: 'from-green-500/20 to-transparent',
   },
   correctivo: {
@@ -70,8 +70,8 @@ const TIPO_CONFIG = {
     nombre: 'Correctivo',
     colorBorder: 'border-orange-500/40',
     colorBg: 'bg-orange-500/10',
-    colorIcon: 'bg-orange-500/20 text-orange-400',
-    colorText: 'text-orange-300',
+    colorIcon: 'bg-orange-500/20 dark:text-orange-400 text-orange-700',
+    colorText: 'dark:text-orange-300 text-orange-700',
     gradient: 'from-orange-500/20 to-transparent',
   },
   diagnostico: {
@@ -79,8 +79,8 @@ const TIPO_CONFIG = {
     nombre: 'Diagnóstico',
     colorBorder: 'border-blue-500/40',
     colorBg: 'bg-blue-500/10',
-    colorIcon: 'bg-blue-500/20 text-blue-400',
-    colorText: 'text-blue-300',
+    colorIcon: 'bg-blue-500/20 dark:text-blue-400 text-blue-700',
+    colorText: 'dark:text-blue-300 text-blue-700',
     gradient: 'from-blue-500/20 to-transparent',
   },
   instalacion: {
@@ -88,8 +88,8 @@ const TIPO_CONFIG = {
     nombre: 'Instalación',
     colorBorder: 'border-purple-500/40',
     colorBg: 'bg-purple-500/10',
-    colorIcon: 'bg-purple-500/20 text-purple-400',
-    colorText: 'text-purple-300',
+    colorIcon: 'bg-purple-500/20 dark:text-purple-400 text-purple-700',
+    colorText: 'dark:text-purple-300 text-purple-700',
     gradient: 'from-purple-500/20 to-transparent',
   },
   garantia: {
@@ -97,8 +97,8 @@ const TIPO_CONFIG = {
     nombre: 'Garantía',
     colorBorder: 'border-amber-500/40',
     colorBg: 'bg-amber-500/10',
-    colorIcon: 'bg-amber-500/20 text-amber-400',
-    colorText: 'text-amber-300',
+    colorIcon: 'bg-amber-500/20 dark:text-amber-400 text-amber-700',
+    colorText: 'dark:text-amber-300 text-amber-700',
     gradient: 'from-amber-500/20 to-transparent',
   },
 } as const
@@ -312,7 +312,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
           <motion.section variants={itemVariants}>
             <div className="flex items-center gap-2 mb-3 px-1">
               <div className="w-1.5 h-5 bg-amber-500 rounded-full" />
-              <h3 className="text-gray-200 text-sm font-semibold uppercase tracking-wider">Acciones por Garantía</h3>
+              <h3 className="dark:text-gray-200 text-gray-800 text-sm font-semibold uppercase tracking-wider">Acciones por Garantía</h3>
             </div>
             <TareasInput {...tareasInputProps} />
           </motion.section>
@@ -320,7 +320,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
           <motion.section variants={itemVariants}>
              <div className="flex items-center gap-2 mb-3 px-1">
               <div className="w-1.5 h-5 bg-orange-500 rounded-full" />
-              <h3 className="text-gray-200 text-sm font-semibold uppercase tracking-wider">Repuestos Utilizados</h3>
+              <h3 className="dark:text-gray-200 text-gray-800 text-sm font-semibold uppercase tracking-wider">Repuestos Utilizados</h3>
             </div>
             <PiezasInput {...piezasInputProps} />
           </motion.section>
@@ -349,7 +349,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                 animate={{ scaleY: 1 }}
                 transition={{ delay: 0.1, duration: 0.3 }}
               />
-              <h3 className="text-gray-200 text-sm font-semibold uppercase tracking-wider">Actividades Realizadas</h3>
+              <h3 className="dark:text-gray-200 text-gray-800 text-sm font-semibold uppercase tracking-wider">Actividades Realizadas</h3>
             </div>
             <TareasInput {...tareasInputProps} />
           </motion.section>
@@ -375,7 +375,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                     animate={{ scaleY: 1 }}
                     transition={{ delay: 0.3, duration: 0.3 }}
                   />
-                  <h3 className="text-gray-200 text-sm font-semibold uppercase tracking-wider">Repuestos Utilizados</h3>
+                  <h3 className="dark:text-gray-200 text-gray-800 text-sm font-semibold uppercase tracking-wider">Repuestos Utilizados</h3>
                 </div>
                 <PiezasInput {...piezasInputProps} />
               </motion.section>
@@ -389,24 +389,24 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   }
 
   return (
-    <div className="bg-gray-800/20 sm:bg-gray-800/40 rounded-xl sm:border border-gray-700/50 w-full">
+    <div className="dark:bg-gray-800/20 bg-gray-200 sm:dark:bg-gray-800/40 bg-gray-200 rounded-xl sm:border dark:border-gray-700/50 border-gray-300 w-full">
       {/* Header Opcional en Desktop */}
       <motion.div 
-        className="hidden sm:flex p-5 border-b border-gray-700/50 items-center gap-3"
+        className="hidden sm:flex p-5 border-b dark:border-gray-700/50 border-gray-300 items-center gap-3"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
         <motion.div 
-          className="w-10 h-10 rounded-lg bg-gray-700/50 flex items-center justify-center flex-shrink-0"
+          className="w-10 h-10 rounded-lg dark:bg-gray-700/50 bg-gray-300 flex items-center justify-center flex-shrink-0"
           whileHover={{ rotate: 90, scale: 1.1 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <Settings className="w-5 h-5 text-gray-400" />
+          <Settings className="w-5 h-5 dark:text-gray-400 text-gray-600" />
         </motion.div>
         <div className="min-w-0">
-          <h3 className="text-base font-semibold text-white truncate">Información del Trabajo</h3>
-          <p className="text-sm text-gray-400 truncate">Selecciona el tipo y documenta el trabajo</p>
+          <h3 className="text-base font-semibold dark:text-white text-gray-900 truncate">Información del Trabajo</h3>
+          <p className="text-sm dark:text-gray-400 text-gray-600 truncate">Selecciona el tipo y documenta el trabajo</p>
         </div>
       </motion.div>
 
@@ -435,7 +435,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                     onHoverStart={() => setHoveredTipo(tipo)}
                     onHoverEnd={() => setHoveredTipo(null)}
                     whileTap={{ scale: 0.97 }}
-                    className="relative flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-700/50 bg-gray-900/40 hover:bg-gray-800/80 hover:border-gray-600 transition-all duration-300 touch-manipulation group overflow-hidden"
+                    className="relative flex items-center gap-4 p-4 rounded-2xl border-2 dark:border-gray-700/50 border-gray-300 dark:bg-gray-900/40 bg-gray-50 hover:dark:bg-gray-800/80 hover:bg-gray-200/80 hover:dark:border-gray-600 hover:border-gray-300 transition-all duration-300 touch-manipulation group overflow-hidden"
                   >
                     <motion.div 
                       className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -445,7 +445,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                     />
                     
                     <motion.div 
-                      className="w-12 h-12 rounded-xl flex items-center justify-center bg-gray-800 text-gray-500 group-hover:bg-gray-700 transition-all duration-300 relative z-10"
+                      className="w-12 h-12 rounded-xl flex items-center justify-center dark:bg-gray-800 bg-gray-200 text-gray-500 group-hover:bg-gray-700 transition-all duration-300 relative z-10"
                       animate={isHovered ? { scale: 1.05, rotate: 5 } : { scale: 1, rotate: 0 }}
                       transition={{ type: "spring", stiffness: 400, damping: 20 }}
                     >
@@ -453,7 +453,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                     </motion.div>
                     
                     <div className="flex-1 text-left relative z-10">
-                      <span className="block text-sm font-bold uppercase tracking-wider text-gray-400 group-hover:text-gray-200">
+                      <span className="block text-sm font-bold uppercase tracking-wider dark:text-gray-400 text-gray-600 group-hover:dark:text-gray-200 group-hover:text-gray-800">
                         {config.nombre}
                       </span>
                       <p className="text-[15px] mt-0.5 text-gray-600 group-hover:text-gray-500">
@@ -543,7 +543,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                         <CheckCircle2 className={`w-4 h-4 ${TIPO_CONFIG[tipoMantenimiento].colorText.split(' ')[0]}`} />
                       </motion.div>
                     </div>
-                    <p className="text-[11px] mt-0.5 text-white/60">
+                    <p className="text-[11px] mt-0.5 dark:text-white text-gray-900/60">
                        {TIPO_CONFIG[tipoMantenimiento].nombre.toLowerCase()} de equipo.
                     </p>
                   </div>
@@ -554,7 +554,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                   onClick={() => handleTipoChange('')}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-gray-900/60 hover:bg-gray-800 text-gray-300 hover:text-white text-xs font-bold rounded-xl border border-gray-700/50 transition-all active:scale-95 touch-manipulation shadow-sm relative z-10"
+                  className="flex items-center gap-2 px-4 py-2.5 dark:bg-gray-900/60 bg-gray-50 hover:dark:bg-gray-800 hover:bg-gray-200 dark:text-gray-300 text-gray-700 hover:dark:text-white hover:text-gray-900 text-xs font-bold rounded-xl border dark:border-gray-700/50 border-gray-300 transition-all active:scale-95 touch-manipulation shadow-sm relative z-10"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span className="hidden md:inline">CAMBIAR</span>
@@ -574,7 +574,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
-                className="py-6 text-center text-gray-500 border-2 border-dashed border-gray-700/30 rounded-xl"
+                className="py-6 text-center text-gray-500 border-2 border-dashed dark:border-gray-700/30 border-gray-300 rounded-xl"
               >
                 <motion.div
                   animate={{ 

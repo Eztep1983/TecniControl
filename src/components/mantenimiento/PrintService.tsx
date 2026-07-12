@@ -743,7 +743,7 @@ export const PrintButton: React.FC<PrintButtonProps> = ({ orden, onPrint, varian
 
   if (variant === 'icon') {
     return (
-      <button onClick={handleClick} className="p-2 rounded-lg hover:bg-green-500/10 text-green-400 transition-colors" aria-label="Imprimir orden">
+      <button onClick={handleClick} className="p-2 rounded-lg hover:bg-green-500/10 dark:text-green-400 text-green-700 transition-colors" aria-label="Imprimir orden">
         <Printer className="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
     )
@@ -753,7 +753,7 @@ export const PrintButton: React.FC<PrintButtonProps> = ({ orden, onPrint, varian
     return (
       <button
         onClick={handleClick}
-        className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-400 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm"
+        className="flex-1 bg-green-500/20 hover:bg-green-500/30 dark:text-green-400 text-green-700 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm"
         aria-label="Imprimir orden"
       >
         <Printer className="w-4 h-4" />
@@ -764,7 +764,7 @@ export const PrintButton: React.FC<PrintButtonProps> = ({ orden, onPrint, varian
   return (
     <button
       onClick={handleClick}
-      className="text-green-400 hover:text-green-300 p-1 rounded hover:bg-green-500/20 transition-colors"
+      className="dark:text-green-400 text-green-700 hover:dark:text-green-300 hover:text-green-700 p-1 rounded hover:bg-green-500/20 transition-colors"
       aria-label="Imprimir orden"
     >
       <Printer className="w-4 h-4" />
@@ -787,7 +787,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ orden, onShare, varian
 
   if (variant === 'icon') {
     return (
-      <button onClick={handleClick} className="p-2 rounded-lg hover:bg-blue-500/10 text-blue-400 transition-colors" aria-label="Compartir orden">
+      <button onClick={handleClick} className="p-2 rounded-lg hover:bg-blue-500/10 dark:text-blue-400 text-blue-700 transition-colors" aria-label="Compartir orden">
         <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
     )
@@ -797,7 +797,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ orden, onShare, varian
     return (
       <button
         onClick={handleClick}
-        className="flex-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm"
+        className="flex-1 bg-blue-500/20 hover:bg-blue-500/30 dark:text-blue-400 text-blue-700 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm"
         aria-label="Compartir orden"
       >
         <Share2 className="w-4 h-4" />
@@ -808,7 +808,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ orden, onShare, varian
   return (
     <button
       onClick={handleClick}
-      className="text-blue-400 hover:text-blue-300 p-1 rounded hover:bg-blue-500/20 transition-colors"
+      className="dark:text-blue-400 text-blue-700 hover:dark:text-blue-300 hover:text-blue-700 p-1 rounded hover:bg-blue-500/20 transition-colors"
       aria-label="Compartir orden"
     >
       <Share2 className="w-4 h-4" />
@@ -831,7 +831,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({ orden, onDownloa
 
   if (variant === 'icon') {
     return (
-      <button onClick={handleClick} className="p-2 rounded-lg hover:bg-purple-500/10 text-purple-400 transition-colors" aria-label="Descargar PDF">
+      <button onClick={handleClick} className="p-2 rounded-lg hover:bg-purple-500/10 dark:text-purple-400 text-purple-700 transition-colors" aria-label="Descargar PDF">
         <Download className="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
     )
@@ -841,7 +841,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({ orden, onDownloa
     return (
       <button
         onClick={handleClick}
-        className="flex-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm"
+        className="flex-1 bg-purple-500/20 hover:bg-purple-500/30 dark:text-purple-400 text-purple-700 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors text-sm"
         aria-label="Descargar PDF"
       >
         <Download className="w-4 h-4" />
@@ -852,7 +852,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({ orden, onDownloa
   return (
     <button
       onClick={handleClick}
-      className="text-purple-400 hover:text-purple-300 p-1 rounded hover:bg-purple-500/20 transition-colors"
+      className="dark:text-purple-400 text-purple-700 hover:dark:text-purple-300 hover:text-purple-700 p-1 rounded hover:bg-purple-500/20 transition-colors"
       aria-label="Descargar PDF"
     >
       <Download className="w-4 h-4" />

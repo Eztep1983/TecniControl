@@ -304,22 +304,22 @@ const SectionHeader = memo(({
 }) => (
   <div className="flex items-start gap-4 mb-5">
     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg transition-all duration-300 ${
-      colorClass || 'bg-gray-700/50 text-gray-400'
+      colorClass || 'dark:bg-gray-700/50 bg-gray-300 dark:text-gray-400 text-gray-600'
     }`}>
       {isComplete
-        ? <CheckCircle2 className="w-6 h-6 text-white" />
+        ? <CheckCircle2 className="w-6 h-6 dark:text-white text-gray-900" />
         : <Icon className="w-6 h-6" />}
     </div>
     <div className="flex-1 min-w-0">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h3 className="text-lg font-bold text-white tracking-tight leading-tight">{title}</h3>
+        <h3 className="text-lg font-bold dark:text-white text-gray-900 tracking-tight leading-tight">{title}</h3>
         {!!itemCount && itemCount > 0 && (
-          <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
+          <span className="text-xs bg-blue-500/20 dark:text-blue-300 text-blue-700 px-2 py-1 rounded-full">
             {itemCount} elemento{itemCount !== 1 ? 's' : ''}
           </span>
         )}
       </div>
-      <p className="text-sm text-gray-400 mt-1 line-clamp-1">{description}</p>
+      <p className="text-sm dark:text-gray-400 text-gray-600 mt-1 line-clamp-1">{description}</p>
     </div>
   </div>
 ))
@@ -361,7 +361,7 @@ const MicButton = memo(({
           ? 'bg-red-500 text-white shadow-lg shadow-red-500/40 scale-110'
           : hasPermission === false
             ? 'bg-gray-700/30 text-gray-600 cursor-not-allowed'
-            : 'bg-gray-700/60 text-gray-400 active:scale-95 active:bg-blue-500/30'
+            : 'bg-gray-700/60 dark:text-gray-400 text-gray-600 active:scale-95 active:bg-blue-500/30'
         }
       `}
     >
@@ -392,13 +392,13 @@ const RecordingIndicator = memo(({ isRecording, onStop }: {
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
       </span>
-      <span className="text-xs text-red-400 font-medium">
+      <span className="text-xs dark:text-red-400 text-red-700 font-medium">
         Escuchando… habla en español
       </span>
       <button
         type="button"
         onClick={onStop}
-        className="ml-auto text-xs text-red-400 underline touch-manipulation min-h-[32px] px-1"
+        className="ml-auto text-xs dark:text-red-400 text-red-700 underline touch-manipulation min-h-[32px] px-1"
       >
         Detener
       </button>
@@ -476,9 +476,9 @@ const TextAreaField = memo(({
     <div className="space-y-3">
       {/* Label row */}
       <div className="flex justify-between items-center px-1">
-        <label className="block text-sm font-bold text-gray-400 uppercase tracking-widest">
+        <label className="block text-sm font-bold dark:text-gray-400 text-gray-600 uppercase tracking-widest">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="dark:text-red-500 text-red-600 ml-1">*</span>}
         </label>
         <div className="flex items-center gap-2">
           {itemCount > 0 && (
@@ -490,7 +490,7 @@ const TextAreaField = memo(({
             <button
               type="button"
               onClick={handleClear}
-              className="text-xs text-gray-500 active:text-red-400 font-medium transition-colors touch-manipulation min-h-[44px] px-2"
+              className="text-xs text-gray-500 active:dark:text-red-400 active:text-red-700 font-medium transition-colors touch-manipulation min-h-[44px] px-2"
             >
               Limpiar
             </button>
@@ -513,11 +513,11 @@ const TextAreaField = memo(({
           style={{ fontSize: '16px' }}
           className={`
             w-full px-4 py-4 pr-14
-            bg-gray-900/40 border-2 rounded-2xl
-            text-white placeholder-gray-600
+            dark:bg-gray-900/40 bg-gray-50 border-2 rounded-2xl
+            dark:text-white text-gray-900 placeholder-gray-600
             focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/40
             transition-all resize-none shadow-inner
-            ${speech.isRecording ? 'border-red-500/40' : 'border-gray-700/50'}
+            ${speech.isRecording ? 'border-red-500/40' : 'dark:border-gray-700/50 border-gray-300'}
           `}
         />
 
@@ -568,16 +568,16 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
 
       {/* Observaciones Iniciales */}
       <section className={`
-        bg-gray-800/40 rounded-3xl p-6 border shadow-xl transition-all duration-300
+        dark:bg-gray-800/40 bg-gray-200 rounded-3xl p-6 border shadow-xl transition-all duration-300
         ${isComplete(observacionesIniciales)
           ? 'border-blue-500/30 shadow-blue-500/5'
-          : 'border-gray-700/50'}
+          : 'dark:border-gray-700/50 border-gray-300'}
       `}>
         <SectionHeader
           icon={FileText}
           title="Observación Inicial"
           description="Estado del equipo al recibirlo"
-          colorClass="bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-500/20"
+          colorClass="bg-gradient-to-br from-blue-500 to-blue-600 dark:text-white text-gray-900 shadow-blue-500/20"
           itemCount={count(observacionesIniciales)}
           isComplete={isComplete(observacionesIniciales)}
         />
@@ -594,16 +594,16 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
 
       {/* Pruebas Realizadas */}
       <section className={`
-        bg-gray-800/40 rounded-3xl p-6 border shadow-xl transition-all duration-300
+        dark:bg-gray-800/40 bg-gray-200 rounded-3xl p-6 border shadow-xl transition-all duration-300
         ${isComplete(pruebasRealizadas)
           ? 'border-purple-500/30 shadow-purple-500/5'
-          : 'border-gray-700/50'}
+          : 'dark:border-gray-700/50 border-gray-300'}
       `}>
         <SectionHeader
           icon={Activity}
           title="Procedimientos"
           description="Acciones técnicas ejecutadas"
-          colorClass="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-purple-500/20"
+          colorClass="bg-gradient-to-br from-purple-500 to-purple-600 dark:text-white text-gray-900 shadow-purple-500/20"
           itemCount={count(pruebasRealizadas)}
           isComplete={isComplete(pruebasRealizadas)}
         />
@@ -620,16 +620,16 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
 
       {/* Diagnóstico Final */}
       <section className={`
-        bg-gray-800/40 rounded-3xl p-6 border shadow-xl transition-all duration-300
+        dark:bg-gray-800/40 bg-gray-200 rounded-3xl p-6 border shadow-xl transition-all duration-300
         ${isComplete(diagnosticoFinal)
           ? 'border-green-500/30 shadow-green-500/5'
-          : 'border-gray-700/50'}
+          : 'dark:border-gray-700/50 border-gray-300'}
       `}>
         <SectionHeader
           icon={AlertCircle}
           title="Conclusión"
           description="Veredicto final del servicio técnico"
-          colorClass="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-green-500/20"
+          colorClass="bg-gradient-to-br from-green-500 to-green-600 dark:text-white text-gray-900 shadow-green-500/20"
           itemCount={count(diagnosticoFinal)}
           isComplete={isComplete(diagnosticoFinal)}
         />
@@ -646,12 +646,12 @@ const DiagnosticoInfo = memo(function DiagnosticoInfo({
 
       {/* Tips */}
       <div className="border border-blue-500/30 bg-blue-500/5 rounded-3xl p-5 flex items-start gap-4">
-        <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+        <AlertCircle className="w-5 h-5 dark:text-blue-400 text-blue-700 flex-shrink-0 mt-0.5" />
         <div className="space-y-1.5">
-          <h4 className="text-xs font-bold text-blue-400 uppercase tracking-widest">
+          <h4 className="text-xs font-bold dark:text-blue-400 text-blue-700 uppercase tracking-widest">
             Tips para un diagnóstico profesional
           </h4>
-          <ul className="text-sm text-gray-400 leading-relaxed space-y-1">
+          <ul className="text-sm dark:text-gray-400 text-gray-600 leading-relaxed space-y-1">
             <li>• Sé específico y objetivo en las observaciones</li>
             <li>• Documenta todas las pruebas, incluso las que salieron bien</li>
             <li>• El diagnóstico debe incluir causa raíz y solución propuesta</li>

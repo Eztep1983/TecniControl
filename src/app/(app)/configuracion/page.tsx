@@ -1,278 +1,113 @@
-// app/configuracion/page.tsx
-
 'use client'
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/basic/card";
-import { Input } from "@/components/ui/basic/input";
-import { Button } from "@/components/ui/basic/button";
-import { Label } from "@/components/ui/basic/label";
-import { Save, Building, Loader2, Settings, Upload, Check, Camera } from 'lucide-react';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useAuth } from '@/components/auth/AuthProvider';
-import { Negocio } from '@/types/orden';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/basic/tabs";
-import CuentaYSeguridad from '@/components/configuracion/CuentaYSeguridad';
-import { useNegocio } from '@/hooks/useNegocio';
-import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react'
+import { 
+  Building, ShieldCheck, Bell, Palette, 
+  HelpCircle, LogOut, ChevronRight, Settings, 
+  BarChart3, ChevronLeft
+} from 'lucide-react'
+import { useAuth } from '@/components/auth/AuthProvider'
+import { useMobileNavigation } from '@/components/providers/MobileNavigationContext'
+import CuentaYSeguridad from '@/components/configuracion/CuentaYSeguridad'
+import MiNegocio from '@/components/configuracion/MiNegocio'
+import Preferencias from '@/components/configuracion/Preferencias'
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/basic/alert-dialog"
+import { Button } from "@/components/ui/basic/button"
 
-interface NegocioConUsuario extends Negocio {
-  userId: string;
-}
-
-type PageStatusType = 'success' | 'error' | 'info' | null
-
-interface PageStatus {
-  type: PageStatusType
-  message: string
-}
-
-function StatusMessage({ status }: { status: PageStatus }) {
-  if (!status.type) return null
-
-  const color = status.type === 'success'
-    ? 'from-emerald-500/10 via-emerald-500/10 to-transparent border-emerald-500/30 text-emerald-200'
-    : status.type === 'error'
-      ? 'from-rose-500/10 via-rose-500/10 to-transparent border-rose-500/30 text-rose-200'
-      : 'from-sky-500/10 via-sky-500/10 to-transparent border-sky-500/30 text-sky-200'
-
-  return (
-    <div className={`mb-6 rounded-2xl border ${color} bg-gray-950/70 p-4 shadow-xl shadow-gray-950/40`}>
-      <p className="text-sm font-medium">{status.message}</p>
-    </div>
-  )
-}
+type SettingsSection = 'negocio' | 'seguridad' | 'notificaciones' | 'preferencias' | 'ayuda' | null
 
 export default function ConfiguracionPage() {
-  const { user } = useAuth();
-  const { negocio: hookNegocio, loading: hookLoading } = useNegocio();
-  const queryClient = useQueryClient();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [status, setStatus] = useState<PageStatus>({ type: null, message: '' });
-  const [resettingOnboarding, setResettingOnboarding] = useState(false);
+  const { logout } = useAuth();
+  const { navigateTo } = useMobileNavigation();
+  const [activeSection, setActiveSection] = useState<SettingsSection>(null);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
-  const handleResetOnboarding = async () => {
-    if (!user?.uid) return;
-    try {
-      setResettingOnboarding(true);
-      const negocioRef = doc(db, 'negocios', user.uid);
-      await updateDoc(negocioRef, {
-        onboardingCompleted: false
-      });
-      queryClient.invalidateQueries({ queryKey: ['negocio', user.uid] });
-      setStatus({ type: 'success', message: 'Onboarding reiniciado con éxito. Regresa a la sección de Órdenes para ver la checklist.' });
-    } catch (error) {
-      console.error('Error al reiniciar onboarding:', error);
-      setStatus({ type: 'error', message: 'No se pudo reiniciar el onboarding. Intenta nuevamente.' });
-    } finally {
-      setResettingOnboarding(false);
+  const menuItems = [
+    {
+      id: 'negocio',
+      label: 'Cuenta y Perfil',
+      description: 'Datos del negocio e información de contacto',
+      icon: Building,
+      color: 'dark:text-blue-400 text-blue-600',
+      bg: 'dark:bg-blue-500/10 bg-blue-100'
+    },
+    {
+      id: 'seguridad',
+      label: 'Privacidad y Seguridad',
+      description: 'Contraseñas, eliminación de cuenta y exportación',
+      icon: ShieldCheck,
+      color: 'dark:text-emerald-400 text-emerald-600',
+      bg: 'dark:bg-emerald-500/10 bg-emerald-100'
+    },
+    {
+      id: 'reportes',
+      label: 'Reportes de Consumo',
+      description: 'Análisis y estadísticas de piezas usadas',
+      icon: BarChart3,
+      color: 'dark:text-purple-400 text-purple-600',
+      bg: 'dark:bg-purple-500/10 bg-purple-100',
+      action: () => navigateTo('reportes')
+    },
+    {
+      id: 'notificaciones',
+      label: 'Notificaciones',
+      description: 'Preferencias de alertas y correos',
+      icon: Bell,
+      color: 'dark:text-amber-400 text-amber-600',
+      bg: 'dark:bg-amber-500/10 bg-amber-100'
+    },
+    {
+      id: 'preferencias',
+      label: 'Preferencias y Apariencia',
+      description: 'Tema claro/oscuro',
+      icon: Palette,
+      color: 'dark:text-pink-400 text-pink-600',
+      bg: 'dark:bg-pink-500/10 bg-pink-100'
+    },
+    {
+      id: 'ayuda',
+      label: 'Ayuda y Soporte',
+      description: 'Centro de ayuda y términos de servicio',
+      icon: HelpCircle,
+      color: 'dark:text-sky-400 text-sky-600',
+      bg: 'dark:bg-sky-500/10 bg-sky-100'
     }
-  };
-  const [negocio, setNegocio] = useState<NegocioConUsuario>({
-    id: '',
-    userId: user?.uid || '',
-    nombre: '',
-    direccion: '',
-    telefono: '',
-    email: '',
-    nit: '',
-    logoUrl: ''
-  });
+  ];
 
-  useEffect(() => {
-    if (!status.type) return
-    const timeout = window.setTimeout(() => setStatus({ type: null, message: '' }), 4200)
-    return () => window.clearTimeout(timeout)
-  }, [status.type]);
-
-  // Inicializar y crear negocio si no existe
-  useEffect(() => {
-    if (hookLoading || !user?.uid) return;
-
-    let isSubscribed = true;
-
-    const inicializarNegocio = async () => {
-      // Si ya tenemos datos del negocio desde el hook, los usamos
-      if (hookNegocio) {
-        if (isSubscribed) {
-          setNegocio({
-            id: hookNegocio.id,
-            userId: user.uid,
-            nombre: hookNegocio.nombre || '',
-            direccion: hookNegocio.direccion || '',
-            telefono: hookNegocio.telefono || '',
-            email: hookNegocio.email || '',
-            nit: hookNegocio.nit || '',
-            logoUrl: hookNegocio.logoUrl || ''
-          });
-          setLoading(false);
-        }
-        return;
-      }
-
-      // Si no hay negocio, intentamos verificar si realmente no existe antes de crear
-      try {
-        const negocioRef = doc(db, 'negocios', user.uid);
-        const negocioDoc = await getDoc(negocioRef);
-        
-        if (!isSubscribed) return;
-
-        if (negocioDoc.exists()) {
-          const data = negocioDoc.data();
-          setNegocio({
-            id: negocioDoc.id,
-            userId: user.uid,
-            nombre: data.nombre || '',
-            direccion: data.direccion || '',
-            telefono: data.telefono || '',
-            email: data.email || '',
-            nit: data.nit || '',
-            logoUrl: data.logoUrl || ''
-          });
-        } else {
-          // El negocio no existe en Firestore, inicializar en el estado por defecto sin escribir a Firestore
-          const negocioDefault: NegocioConUsuario = {
-            id: user.uid,
-            userId: user.uid,
-            nombre: user.displayName || 'Mi Negocio',
-            direccion: '',
-            telefono: '',
-            email: user.email || '',
-            nit: '',
-            logoUrl: ''
-          };
-          setNegocio(negocioDefault);
-        }
-      } catch (error) {
-        console.error('Error inicializando negocio:', error);
-        if (isSubscribed) {
-          setStatus({ type: 'error', message: 'No se pudo cargar o inicializar la configuración.' });
-        }
-      } finally {
-        if (isSubscribed) {
-          setLoading(false);
-        }
-      }
-    };
-
-    inicializarNegocio();
-    return () => { isSubscribed = false; };
-  }, [hookNegocio, hookLoading, user]);
-
-  // Manejar subida de logo
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user?.uid) return;
-
-    try {
-      setUploading(true);
-      setStatus({ type: 'info', message: 'Subiendo logo...' });
-      
-      // Redimensionar y convertir a WebP usando Canvas
-      const compressedFile = await new Promise<File>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let width = img.width;
-            let height = img.height;
-            
-            // Mantener proporciones, max 2000px ancho
-            const MAX_WIDTH = 2000;
-            if (width > MAX_WIDTH) {
-              height = Math.round((height * MAX_WIDTH) / width);
-              width = MAX_WIDTH;
-            }
-            
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            
-            if (ctx) {
-              ctx.drawImage(img, 0, 0, width, height);
-            }
-            
-            canvas.toBlob((blob) => {
-              if (blob) {
-                const newName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
-                resolve(new File([blob], newName, { type: 'image/webp' }));
-              } else {
-                reject(new Error('No se pudo convertir la imagen a WebP'));
-              }
-            }, 'image/webp', 0.85);
-          };
-          img.onerror = reject;
-          if (event.target?.result) {
-            img.src = event.target.result as string;
-          } else {
-            reject(new Error('No se pudo leer el archivo'));
-          }
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const storage = getStorage();
-      const storageRef = ref(storage, `negocios/${user.uid}/logo/${compressedFile.name}`);
-      
-      // Subir archivo optimizado
-      const snapshot = await uploadBytes(storageRef, compressedFile);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      
-      // Actualizar estado local
-      setNegocio(prev => ({ ...prev, logoUrl: downloadURL }));
-      setStatus({ type: 'success', message: 'Logo actualizado correctamente.' });
-    } catch (error) {
-      console.error('Error subiendo logo:', error);
-      setStatus({ type: 'error', message: 'Hubo un error optimizando o subiendo la imagen.' });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // Guardar cambios
-  const guardarCambios = async () => {
-    if (!user?.uid) return;
-    
-    try {
-      setSaving(true);
-      setSaved(false);
-      setStatus({ type: 'info', message: 'Guardando cambios...' });
-      const negocioRef = doc(db, 'negocios', user.uid);
-      await setDoc(negocioRef, {
-        ...negocio,
-        updatedAt: new Date()
-      }, { merge: true });
-      
-      setSaved(true);
-      setStatus({ type: 'success', message: 'Configuración guardada correctamente.' });
-      setTimeout(() => setSaved(false), 3000);
-    } catch (error) {
-      console.error('Error guardando cambios:', error);
-      setStatus({ type: 'error', message: 'No se pudo guardar la configuración. Intenta nuevamente.' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Manejar cambios en los inputs
-  const handleInputChange = (field: keyof Negocio, value: string) => {
-    setNegocio(prev => ({ ...prev, [field]: value }));
-  };
-  if (loading) {
+  if (activeSection) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-            <Settings className="w-6 h-6 text-blue-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+      <div className="bg-transparent min-h-screen pb-safe">
+        <div className="sticky top-0 z-40 dark:bg-gray-900/95 bg-gray-100/95 border-b dark:border-gray-800 border-gray-200 pt-safe backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-3">
+            <button 
+              onClick={() => setActiveSection(null)}
+              className="p-2 -ml-2 rounded-xl dark:hover:dark:bg-gray-800 hover:bg-gray-200 hover:bg-gray-200 dark:text-gray-400 text-gray-600 dark:hover:dark:text-white hover:text-gray-900 hover:text-gray-900 transition-colors"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <h1 className="text-xl font-semibold dark:text-white text-gray-900">
+              {menuItems.find(i => i.id === activeSection)?.label}
+            </h1>
           </div>
-          <p className="text-gray-400 font-medium">Cargando configuración...</p>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 py-5 space-y-6">
+          {activeSection === 'negocio' && <MiNegocio />}
+          {activeSection === 'seguridad' && <CuentaYSeguridad />}
+          {activeSection === 'preferencias' && <Preferencias />}
+          {(activeSection === 'notificaciones' || activeSection === 'ayuda') && (
+             <div className="p-8 text-center border-2 border-dashed dark:border-gray-800 border-gray-200 rounded-2xl">
+               <Settings className="w-12 h-12 dark:text-gray-600 dark:text-gray-400 text-gray-600 mx-auto mb-4" />
+               <h2 className="text-lg font-medium dark:text-gray-400 text-gray-600">Próximamente</h2>
+               <p className="text-sm dark:text-gray-500 dark:text-gray-400 text-gray-600 mt-2">Esta sección está en desarrollo.</p>
+             </div>
+          )}
         </div>
       </div>
     );
@@ -280,258 +115,82 @@ export default function ConfiguracionPage() {
 
   return (
     <div className="bg-transparent min-h-screen pb-safe">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-40 bg-gray-900/95 border-b border-gray-800 pt-safe backdrop-blur-xl">
+      <div className="sticky top-0 z-40 dark:bg-gray-900/95 bg-gray-100/95 border-b dark:border-gray-800 border-gray-200 pt-safe backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-gray-900/80 ring-1 ring-inset ring-sky-500/20 rounded-xl shadow-[0_12px_40px_-24px_rgba(56,189,248,0.9)]">
+            <div className="p-3 dark:bg-gray-900/80 bg-gray-100 ring-1 ring-inset ring-sky-500/20 rounded-xl shadow-[0_12px_40px_-24px_rgba(56,189,248,0.9)]">
               <Settings className="w-6 h-6 text-sky-300" />
             </div>
             <div>
-              <h1 className="text-3xl font-semibold text-white">Configuración</h1>
-              <p className="text-gray-400 text-sm mt-1">Administra la información de tu negocio</p>
+              <h1 className="text-3xl font-semibold dark:text-white text-gray-900">Ajustes</h1>
+              <p className="dark:text-gray-400 text-gray-600 text-sm mt-1">Preferencias y configuración de cuenta</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content Wrapper */}
-      <div className="max-w-7xl mx-auto px-4 py-5 space-y-6">
-        {status.type && <StatusMessage status={status} />}
-
-        {/* Tabs */}
-        <Tabs defaultValue="negocio" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-[520px] mb-8 rounded-2xl bg-gray-900/90 border border-white/10 p-1 shadow-lg shadow-gray-950/30">
-            <TabsTrigger value="negocio" className="data-[state=active]:bg-sky-500 data-[state=active]:text-gray-950 text-gray-400 rounded-2xl transition-all duration-200">
-              Mi Negocio
-            </TabsTrigger>
-            <TabsTrigger value="cuenta" className="data-[state=active]:bg-sky-500 data-[state=active]:text-gray-950 text-gray-400 rounded-2xl transition-all duration-200">
-              Cuenta y Seguridad
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="negocio" className="space-y-6">
-            {/* Información del Negocio */}
-            <Card className="bg-gray-950/70 border border-white/10 mb-6 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.8)] transition-all hover:border-sky-500/30">
-          <CardHeader className="border-b border-white/10 bg-gray-950/80 rounded-2xl">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-white flex items-center gap-2 text-xl">
-                  <Building className="w-5 h-5 text-blue-400" />
-                  Información del Negocio
-                </CardTitle>
-                <CardDescription className="text-gray-400 mt-1">
-                  Datos principales que aparecerán en tus ordenes generadas
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6 pt-6">
-            {/* Logo del Negocio */}
-            <div className="space-y-3">
-              <Label className="text-gray-300 font-medium flex items-center gap-2">
-                <Camera className="w-4 h-4" />
-                Logo del Negocio
-              </Label>
-              <div className="flex items-start gap-6">
-                <div className="relative group">
-                  {negocio.logoUrl ? (
-                    <div className="relative">
-                      <img 
-                        src={negocio.logoUrl} 
-                        alt="Logo del negocio" 
-                        className="w-24 h-24 rounded-xl object-cover border-2 border-gray-600 transition-colors group-hover:border-blue-500/50 shadow-lg"
-                      />
-                      <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Upload className="w-6 h-6 text-white" />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 border-2 border-dashed border-gray-600 flex items-center justify-center transition-colors group-hover:border-blue-500/50">
-                      <Building className="w-10 h-10 text-gray-400" />
-                    </div>
-                  )}
-                  {uploading && (
-                    <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center">
-                      <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
-                    </div>
-                  )}
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="dark:bg-gray-950/70 bg-white border dark:border-white/10 border-gray-300/50 shadow-lg rounded-3xl overflow-hidden divide-y divide-gray-800">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                if (item.action) item.action();
+                else setActiveSection(item.id as SettingsSection);
+              }}
+              className="w-full flex items-center justify-between p-4 hover:dark:bg-gray-800/50 hover:bg-gray-200 transition-colors active:dark:bg-gray-800/80 active:bg-gray-200/80 text-left"
+            >
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-xl ${item.bg}`}>
+                  <item.icon className={`w-6 h-6 ${item.color}`} />
                 </div>
-                <div className="flex-1 space-y-2">
-                  <label 
-                    htmlFor="business-logo" 
-                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-gray-900/80 hover:bg-gray-900 border border-white/10 rounded-2xl text-sm text-gray-200 transition-all duration-200 hover:border-sky-500/50 hover:text-white shadow-sm shadow-gray-950/20"
-                  >
-                    <Upload className="w-4 h-4" />
-                    {uploading ? 'Subiendo...' : negocio.logoUrl ? 'Cambiar Logo' : 'Subir Logo'}
-                  </label>
-                  <Input 
-                    id="business-logo" 
-                    type="file" 
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    disabled={uploading}
-                    className="hidden"
-                  />
-                  <p className="text-xs text-gray-400">
-                    Formatos: JPG, PNG, WebP, SVG. Tamaño recomendado: 400x400px
-                  </p>
+                <div>
+                  <h3 className="dark:text-white text-gray-900 font-medium text-lg">{item.label}</h3>
+                  <p className="text-gray-500 text-sm">{item.description}</p>
                 </div>
               </div>
-            </div>
-
-            <div className="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent"></div>
-
-            {/* Información Básica */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-2">
-                <Label htmlFor="business-name" className="text-gray-300 font-medium">
-                  Nombre del Negocio <span className="text-red-400">*</span>
-                </Label>
-                <Input 
-                  id="business-name" 
-                  value={negocio.nombre || ''}
-                  onChange={(e) => handleInputChange('nombre', e.target.value)}
-                  className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
-                  placeholder="Ej: TecniControl S.A.S"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="business-nit" className="text-gray-300 font-medium">
-                  NIT / RUT
-                </Label>
-                <Input 
-                  id="business-nit" 
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={negocio.nit || ''}
-                  onChange={(e) => handleInputChange('nit', e.target.value.replace(/\D/g, ''))}
-                  className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
-                  placeholder="Ej: 123456789"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-2">
-                <Label htmlFor="business-phone" className="text-gray-300 font-medium">
-                  Teléfono
-                </Label>
-                <Input 
-                  id="business-phone" 
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={negocio.telefono || ''}
-                  onChange={(e) => handleInputChange('telefono', e.target.value.replace(/\D/g, ''))}
-                  className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
-                  placeholder="Ej: 3001234567"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="business-email" className="text-gray-300 font-medium">
-                  Email
-                </Label>
-                <Input 
-                  id="business-email" 
-                  type="email"
-                  value={negocio.email || ''}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
-                  placeholder="contacto@empresa.com"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="business-address" className="text-gray-300 font-medium">
-                Dirección
-              </Label>
-              <Input 
-                id="business-address" 
-                value={negocio.direccion || ''}
-                onChange={(e) => handleInputChange('direccion', e.target.value)}
-                className="bg-gray-900/90 border border-white/10 text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
-                placeholder="Calle 123 #45-67, Ciudad"
-              />
-            </div>
-
-            {/* Botón de guardar */}
-            <div className="flex items-center justify-between pt-4 border-t border-gray-700/50">
-              {saved && (
-                <div className="flex items-center gap-2 text-green-400 text-sm">
-                  <Check className="w-4 h-4" />
-                  <span>Cambios guardados correctamente</span>
-                </div>
-              )}
-              <div className={saved ? "" : "w-full flex justify-end"}>
-                <Button 
-                  onClick={guardarCambios} 
-                  disabled={saving}
-                  className="bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-gray-950 shadow-xl shadow-sky-500/20 px-6 transition-all hover:shadow-sky-500/30"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Guardando...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Guardar Cambios
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-            </CardContent>
-          </Card>
-
-          {/* Herramientas de Pruebas / Desarrollo */}
-          <Card className="bg-gray-950/70 border border-amber-500/20 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.8)] mt-6 transition-all hover:border-amber-500/40">
-            <CardHeader className="border-b border-amber-500/20 bg-gray-950/80 rounded-2xl">
-              <CardTitle className="text-white flex items-center gap-2 text-xl">
-                <Settings className="w-5 h-5 text-amber-400" />
-                Zona de Pruebas (Onboarding)
-              </CardTitle>
-              <CardDescription className="text-gray-400 mt-1">
-                Reinicia el estado del onboarding para volver a visualizar el flujo guiado y probar la checklist de activación.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-6">
-              <p className="text-sm text-gray-400">
-                Si tu cuenta ya tiene el onboarding marcado como completado en la base de datos, puedes forzar su reinicio aquí. Esto habilitará la barra de progreso, la checklist y el botón Sandbox en la pantalla de Órdenes.
-              </p>
-              <div className="flex justify-end">
-                <Button
-                  onClick={handleResetOnboarding}
-                  disabled={resettingOnboarding}
-                  className="bg-amber-600 hover:bg-amber-500 text-gray-950 font-bold transition-all active:scale-95 shadow-lg shadow-amber-900/20"
-                >
-                  {resettingOnboarding ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Reiniciando...
-                    </>
-                  ) : (
-                    'Reiniciar Estado de Onboarding'
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="cuenta">
-          <CuentaYSeguridad />
-        </TabsContent>
-      </Tabs>
-
-        {/* Footer informativo */}
-        <div className="text-center text-sm text-gray-500 mt-8">
-          <p>Los cambios se guardan en la base de datos en tiempo real</p>
+              <ChevronRight className="w-5 h-5 text-gray-600" />
+            </button>
+          ))}
         </div>
+
+        <div className="mt-8 px-2">
+          <button
+            onClick={() => setLogoutDialogOpen(true)}
+            className="w-full flex items-center justify-center gap-2 p-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 dark:text-red-400 text-red-700 rounded-2xl transition-colors font-medium"
+          >
+            <LogOut className="w-5 h-5" />
+            Cerrar sesión
+          </button>
+          
+          <div className="text-center mt-6">
+            <p className="text-xs text-gray-600 font-medium">TecniControl v1.0.0</p>
+          </div>
+        </div>
+
+        <AlertDialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
+          <AlertDialogContent className="dark:bg-slate-950/95 bg-white border dark:border-white/10 border-gray-300/50 max-w-sm rounded-[32px] shadow-[0_24px_80px_-36px_rgba(15,23,42,0.75)]">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="dark:text-white text-gray-900">Confirmar cierre de sesión</AlertDialogTitle>
+              <AlertDialogDescription>
+                ¿Estás seguro que deseas cerrar la sesión? Si hay datos locales sin sincronizar, podrían perderse.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="flex flex-col sm:flex-row gap-2">
+              <AlertDialogCancel className="w-full sm:w-auto mt-0">Cancelar</AlertDialogCancel>
+              <Button
+                variant="destructive"
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  setLogoutDialogOpen(false);
+                  logout();
+                }}
+              >
+                Cerrar sesión
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

@@ -106,8 +106,8 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
           paddingBottom: keyboardOffset > 0 ? `${keyboardOffset}px` : 'env(safe-area-inset-bottom)'
         }}
         className={`
-          bg-slate-900 w-full flex flex-col overflow-hidden relative
-          shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] border-t border-x border-slate-700/60 sm:border
+          dark:bg-slate-900 bg-gray-100 w-full flex flex-col overflow-hidden relative
+          shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] border-t border-x dark:border-slate-700/60 border-gray-300 sm:border
           rounded-t-[2.5rem] sm:rounded-[2.5rem]
           max-h-[92dvh]
           sm:h-auto sm:max-w-md sm:max-h-[85vh]
@@ -119,13 +119,13 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       >
         {/* Drag Handle - Visible on all devices when in sheet mode */}
         <div className="flex justify-center pt-3 pb-1 flex-shrink-0 sm:hidden">
-          <div className="w-12 h-1.5 rounded-full bg-white/10" />
+          <div className="w-12 h-1.5 rounded-full dark:bg-white/10 bg-gray-200" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800/50 shrink-0 relative">
+        <div className="flex items-center justify-between px-6 py-5 border-b dark:border-slate-800/50 border-gray-300 shrink-0 relative">
           {typeof title === 'string' ? (
-            <h3 className="text-xl font-bold text-white tracking-tight">{title}</h3>
+            <h3 className="text-xl font-bold dark:text-white text-gray-900 tracking-tight">{title}</h3>
           ) : (
             title
           )}
@@ -134,7 +134,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
             type="button"
             className="
               w-10 h-10 flex items-center justify-center rounded-2xl
-              bg-slate-800 text-slate-400 hover:text-white
+              dark:bg-slate-800 bg-gray-200 dark:text-slate-400 dark:text-slate-400 text-slate-600 hover:dark:text-white hover:text-gray-900
               active:scale-90 transition-all touch-manipulation
             "
             aria-label="Cerrar"

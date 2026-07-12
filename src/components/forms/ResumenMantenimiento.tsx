@@ -44,8 +44,8 @@ export default function ResumenMantenimiento({
           aria-label="Resumen de orden"
         >
           <div className="flex items-center justify-center gap-2">
-            <CheckCircle className="w-6 h-6 text-white" />
-            <h1 className="text-xl md:text-2xl font-bold text-white text-center tracking-tight">
+            <CheckCircle className="w-6 h-6 dark:text-white text-gray-900" />
+            <h1 className="text-xl md:text-2xl font-bold dark:text-white text-gray-900 text-center tracking-tight">
               Verifica la Información
             </h1>
           </div>
@@ -61,30 +61,30 @@ export default function ResumenMantenimiento({
         <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-blue-300">
+              <div className="flex items-center gap-2 dark:text-blue-300 text-blue-700">
                 <User className="w-4 h-4" />
                 <h3 className="text-lg font-semibold uppercase tracking-wide">Cliente</h3>
               </div>
-              <p className="text-base md:text-lg font-semibold text-white">
+              <p className="text-base md:text-lg font-semibold dark:text-white text-gray-900">
                 {state.clienteSeleccionado?.name || 'No especificado'}
               </p>
               {state.clienteSeleccionado?.phone && (
-                <p className="text-lg text-gray-300 flex items-center gap-1">
+                <p className="text-lg dark:text-gray-300 text-gray-700 flex items-center gap-1">
                   <Smartphone className="w-4 h-4" />
                   <span className="text-xs"></span> {state.clienteSeleccionado.phone}
                 </p>
               )}
             </div>
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-green-300">
+              <div className="flex items-center gap-2 dark:text-green-300 text-green-700">
                 <Printer className="w-4 h-4" />
                 <h3 className="text-lg font-semibold uppercase tracking-wide">Dispositivo</h3>
               </div>
-              <p className="text-base md:text-lg font-semibold text-white">
+              <p className="text-base md:text-lg font-semibold dark:text-white text-gray-900">
                 {state.dispositivoSeleccionado?.tipo || 'No especificado'}
               </p>
               {state.dispositivoSeleccionado?.numeroSerie && (
-                <p className="text-lg text-gray-300 break-all">
+                <p className="text-lg dark:text-gray-300 text-gray-700 break-all">
                   S/N: {state.dispositivoSeleccionado.numeroSerie}
                 </p>
               )}
@@ -95,8 +95,8 @@ export default function ResumenMantenimiento({
         {/* Mantenimiento/Diagnóstico - Sección principal */}
         <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
           <div className="flex items-center gap-2 mb-4">
-            <Wrench className="w-5 h-5 text-purple-300" />
-            <h3 className="text-sm font-semibold text-purple-300 uppercase tracking-wide">
+            <Wrench className="w-5 h-5 dark:text-purple-300 text-purple-700" />
+            <h3 className="text-sm font-semibold dark:text-purple-300 text-purple-700 uppercase tracking-wide">
               {state.tipoMantenimiento === 'diagnostico' ? 'Diagnóstico Técnico' : 
                state.tipoMantenimiento === 'instalacion' ? 'Instalación y Configuración' : 
                state.tipoMantenimiento === 'garantia' ? 'Atención por Garantía' :
@@ -104,8 +104,8 @@ export default function ResumenMantenimiento({
             </h3>
           </div>
           
-          <div className="flex items-center justify-between mb-4 p-3 bg-white/5 rounded-xl">
-            <span className="text-gray-300 text-lg">Tipo de servicio:</span>
+          <div className="flex items-center justify-between mb-4 p-3 dark:bg-white/5 bg-gray-100 rounded-xl">
+            <span className="dark:text-gray-300 text-gray-700 text-lg">Tipo de servicio:</span>
             <span className={`text-base font-medium capitalize px-4 py-1.5 rounded-full border ${tipoMantenimientoColor} `}>
               {tipoMantenimientoLabel}
             </span>
@@ -113,59 +113,59 @@ export default function ResumenMantenimiento({
           
           {state.tipoMantenimiento === 'diagnostico' ? (
             <div className="space-y-4">
-              <div className="p-3 bg-white/5 rounded-xl">
-                <p className="text-xs text-gray-400 mb-2 font-medium">Observaciones iniciales</p>
-                <p className="text-sm text-gray-200 leading-relaxed">{state.observacionesIniciales || 'Sin observaciones'}</p>
+              <div className="p-3 dark:bg-white/5 bg-gray-100 rounded-xl">
+                <p className="text-xs dark:text-gray-400 text-gray-600 mb-2 font-medium">Observaciones iniciales</p>
+                <p className="text-sm dark:text-gray-200 text-gray-800 leading-relaxed">{state.observacionesIniciales || 'Sin observaciones'}</p>
               </div>
-              <div className="p-3 bg-white/5 rounded-xl">
-                <p className="text-xs text-gray-400 mb-2 font-medium">Diagnóstico final</p>
-                <p className="text-sm text-gray-200 leading-relaxed">{state.diagnosticoFinal || 'Sin diagnóstico'}</p>
+              <div className="p-3 dark:bg-white/5 bg-gray-100 rounded-xl">
+                <p className="text-xs dark:text-gray-400 text-gray-600 mb-2 font-medium">Diagnóstico final</p>
+                <p className="text-sm dark:text-gray-200 text-gray-800 leading-relaxed">{state.diagnosticoFinal || 'Sin diagnóstico'}</p>
               </div>
               {state.contadorMaquina !== undefined && (
                 <div className="p-3 bg-purple-500/10 rounded-xl border border-purple-500/20">
-                  <p className="text-xs text-gray-400 mb-1 font-medium">Contador de máquina</p>
-                  <p className="text-2xl font-bold text-purple-300">{state.contadorMaquina.toLocaleString()} <span className="text-sm">unidades</span></p>
+                  <p className="text-xs dark:text-gray-400 text-gray-600 mb-1 font-medium">Contador de máquina</p>
+                  <p className="text-2xl font-bold dark:text-purple-300 text-purple-700">{state.contadorMaquina.toLocaleString()} <span className="text-sm">unidades</span></p>
                 </div>
               )}
             </div>
           ) : state.tipoMantenimiento === 'garantia' ? (
             <div className="space-y-4">
               <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
-                <p className="text-xs text-amber-400/80 mb-2 font-bold uppercase tracking-wider">Orden de Referencia</p>
+                <p className="text-xs dark:text-amber-400 text-amber-700/80 mb-2 font-bold uppercase tracking-wider">Orden de Referencia</p>
                 <p className="text-sm text-amber-100 font-mono">#{state.garantiaReferenciaId || 'No especificada'}</p>
               </div>
-              <div className="p-3 bg-white/5 rounded-xl">
-                <p className="text-xs text-gray-400 mb-2 font-bold uppercase tracking-wider">Motivo del Reclamo</p>
-                <p className="text-sm text-gray-200 leading-relaxed">{state.garantiaMotivo || 'Sin motivo especificado'}</p>
+              <div className="p-3 dark:bg-white/5 bg-gray-100 rounded-xl">
+                <p className="text-xs dark:text-gray-400 text-gray-600 mb-2 font-bold uppercase tracking-wider">Motivo del Reclamo</p>
+                <p className="text-sm dark:text-gray-200 text-gray-800 leading-relaxed">{state.garantiaMotivo || 'Sin motivo especificado'}</p>
               </div>
               
               {/* Actividades y Repuestos en Garantía */}
-              <div className="space-y-4 pt-4 border-t border-white/10">
+              <div className="space-y-4 pt-4 border-t dark:border-white/10 border-gray-300/50">
                 <div className="space-y-3">
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Actividades Realizadas</p>
+                  <p className="text-xs dark:text-gray-400 text-gray-600 font-medium uppercase tracking-wider">Actividades Realizadas</p>
                   <div className="space-y-2">
                     {state.tareasSeleccionadas.map((tarea, idx) => (
-                      <div key={`pred-${idx}`} className="flex items-start gap-3 bg-white/5 p-3 rounded-xl">
-                        <span className="text-xs text-blue-300 font-bold mt-0.5">✓</span>
-                        <span className="text-sm text-white">{tarea}</span>
+                      <div key={`pred-${idx}`} className="flex items-start gap-3 dark:bg-white/5 bg-gray-100 p-3 rounded-xl">
+                        <span className="text-xs dark:text-blue-300 text-blue-700 font-bold mt-0.5">✓</span>
+                        <span className="text-sm dark:text-white text-gray-900">{tarea}</span>
                       </div>
                     ))}
                     {state.tareasPersonalizadas.filter(t => t.trim()).map((tarea, idx) => (
-                      <div key={`custom-${idx}`} className="flex items-start gap-3 bg-white/5 p-3 rounded-xl">
-                        <span className="text-xs text-purple-300 font-bold mt-0.5">✓</span>
-                        <span className="text-sm text-white">{tarea}</span>
+                      <div key={`custom-${idx}`} className="flex items-start gap-3 dark:bg-white/5 bg-gray-100 p-3 rounded-xl">
+                        <span className="text-xs dark:text-purple-300 text-purple-700 font-bold mt-0.5">✓</span>
+                        <span className="text-sm dark:text-white text-gray-900">{tarea}</span>
                       </div>
                     ))}
                   </div>
                 </div>
                 {state.piezasUsadas.filter(p => p?.pieza?.trim()).length > 0 && (
                   <div className="space-y-3">
-                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Repuestos Suministrados</p>
+                    <p className="text-xs dark:text-gray-400 text-gray-600 font-medium uppercase tracking-wider">Repuestos Suministrados</p>
                     <div className="space-y-2">
                       {state.piezasUsadas.filter(p => p?.pieza?.trim()).map((pieza, idx) => (
-                        <div key={idx} className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
-                          <span className="text-sm text-white truncate">{pieza.pieza}</span>
-                          <span className="text-sm font-semibold text-purple-300 ml-2">x{pieza.cantidad}</span>
+                        <div key={idx} className="flex items-center justify-between dark:bg-white/5 bg-gray-100 p-3 rounded-xl">
+                          <span className="text-sm dark:text-white text-gray-900 truncate">{pieza.pieza}</span>
+                          <span className="text-sm font-semibold dark:text-purple-300 text-purple-700 ml-2">x{pieza.cantidad}</span>
                         </div>
                       ))}
                     </div>
@@ -178,26 +178,26 @@ export default function ResumenMantenimiento({
               {state.instalacionConfiguracion && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-blue-300" />
-                    <p className="text-lg text-gray-400 font-bold uppercase tracking-wider">Configuraciones</p>
+                    <Settings className="w-4 h-4 dark:text-blue-300 text-blue-700" />
+                    <p className="text-lg dark:text-gray-400 text-gray-600 font-bold uppercase tracking-wider">Configuraciones</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {state.instalacionConfiguracionTipos.map((tipo, idx) => (
-                      <span key={idx} className="px-3 py-1.5 bg-blue-500/20 text-blue-200 rounded-full text-sm border border-blue-500/30">
+                      <span key={idx} className="px-3 py-1.5 bg-blue-500/20 dark:text-blue-200 text-blue-800 rounded-full text-sm border border-blue-500/30">
                         {tipo}
                       </span>
                     ))}
                     {state.instalacionConfiguracionTipos.length === 0 && (
-                      <p className="text-lg text-gray-400 italic">No se especificaron configuraciones</p>
+                      <p className="text-lg dark:text-gray-400 text-gray-600 italic">No se especificaron configuraciones</p>
                     )}
                   </div>
                 </div>
               )}
               {state.instalacionRecomendaciones && (
                 <div className="space-y-2">
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Recomendaciones</p>
-                  <div className="bg-white/5 p-4 rounded-xl">
-                    <p className="text-sm text-gray-200 leading-relaxed">
+                  <p className="text-xs dark:text-gray-400 text-gray-600 font-bold uppercase tracking-wider">Recomendaciones</p>
+                  <div className="dark:bg-white/5 bg-gray-100 p-4 rounded-xl">
+                    <p className="text-sm dark:text-gray-200 text-gray-800 leading-relaxed">
                       {state.instalacionRecomendacionesDetalle || 'Sin recomendaciones adicionales'}
                     </p>
                   </div>
@@ -208,28 +208,28 @@ export default function ResumenMantenimiento({
             <>
               {/* Tareas realizadas */}
               <div className="space-y-3">
-                <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Tareas realizadas</p>
+                <p className="text-xs dark:text-gray-400 text-gray-600 font-medium uppercase tracking-wider">Tareas realizadas</p>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {state.tareasSeleccionadas.map((tarea, idx) => (
-                    <div key={`pred-${idx}`} className="flex items-start gap-3 bg-white/5 p-3 rounded-xl active:bg-white/10 transition-colors">
+                    <div key={`pred-${idx}`} className="flex items-start gap-3 dark:bg-white/5 bg-gray-100 p-3 rounded-xl active:dark:bg-white/10 active:bg-gray-200 transition-colors">
                       <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-xs text-blue-300 font-bold">✓</span>
+                        <span className="text-xs dark:text-blue-300 text-blue-700 font-bold">✓</span>
                       </div>
-                      <span className="text-sm text-white flex-1">{tarea}</span>
+                      <span className="text-sm dark:text-white text-gray-900 flex-1">{tarea}</span>
                     </div>
                   ))}
                   {state.tareasPersonalizadas.filter(t => t.trim()).map((tarea, idx) => (
-                    <div key={`custom-${idx}`} className="flex items-start gap-3 bg-white/5 p-3 rounded-xl active:bg-white/10 transition-colors">
+                    <div key={`custom-${idx}`} className="flex items-start gap-3 dark:bg-white/5 bg-gray-100 p-3 rounded-xl active:dark:bg-white/10 active:bg-gray-200 transition-colors">
                       <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-xs text-purple-300 font-bold">✎</span>
+                        <span className="text-xs dark:text-purple-300 text-purple-700 font-bold">✎</span>
                       </div>
-                      <span className="text-sm text-white flex-1">{tarea}</span>
+                      <span className="text-sm dark:text-white text-gray-900 flex-1">{tarea}</span>
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center justify-between pt-3 mt-2 border-t border-white/10">
-                  <span className="text-xs text-gray-400">Total de tareas</span>
-                  <span className="text-xl font-bold text-purple-300">
+                <div className="flex items-center justify-between pt-3 mt-2 border-t dark:border-white/10 border-gray-300/50">
+                  <span className="text-xs dark:text-gray-400 text-gray-600">Total de tareas</span>
+                  <span className="text-xl font-bold dark:text-purple-300 text-purple-700">
                     {[...state.tareasSeleccionadas, ...state.tareasPersonalizadas.filter(t => t.trim())].length}
                   </span>
                 </div>
@@ -239,18 +239,18 @@ export default function ResumenMantenimiento({
               {state.piezasUsadas.filter(p => p?.pieza?.trim()).length > 0 && (
                 <div className="space-y-3 mt-4">
                   <div className="flex items-center gap-2">
-                    <Package className="w-4 h-4 text-green-300" />
-                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Piezas utilizadas</p>
+                    <Package className="w-4 h-4 dark:text-green-300 text-green-700" />
+                    <p className="text-xs dark:text-gray-400 text-gray-600 font-medium uppercase tracking-wider">Piezas utilizadas</p>
                   </div>
                   <div className="space-y-2">
                     {state.piezasUsadas
                       .filter(p => p?.pieza?.trim())
                       .map((pieza, idx) => (
-                        <div key={idx} className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
+                        <div key={idx} className="flex items-center justify-between dark:bg-white/5 bg-gray-100 p-3 rounded-xl">
                           <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <span className="text-sm text-white truncate">{pieza.pieza}</span>
+                            <span className="text-sm dark:text-white text-gray-900 truncate">{pieza.pieza}</span>
                           </div>
-                          <span className="text-sm font-semibold text-purple-300 ml-2 flex-shrink-0">x{pieza.cantidad}</span>
+                          <span className="text-sm font-semibold dark:text-purple-300 text-purple-700 ml-2 flex-shrink-0">x{pieza.cantidad}</span>
                         </div>
                       ))
                     }
@@ -265,15 +265,15 @@ export default function ResumenMantenimiento({
         {state.mostrarContador && state.contador && (
           <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
             <div className="flex items-center gap-2 mb-3">
-              <Clock className="w-5 h-5 text-blue-300" />
-              <h3 className="text-sm font-semibold text-blue-300 uppercase tracking-wide">Medición</h3>
+              <Clock className="w-5 h-5 dark:text-blue-300 text-blue-700" />
+              <h3 className="text-sm font-semibold dark:text-blue-300 text-blue-700 uppercase tracking-wide">Medición</h3>
             </div>
             <div className="flex items-baseline gap-2 mb-3">
-              <span className="text-4xl font-bold text-white">{state.contador.valor.toLocaleString()}</span>
-              <span className="text-lg text-gray-300 capitalize">{state.contador.tipo}</span>
+              <span className="text-4xl font-bold dark:text-white text-gray-900">{state.contador.valor.toLocaleString()}</span>
+              <span className="text-lg dark:text-gray-300 text-gray-700 capitalize">{state.contador.tipo}</span>
             </div>
             {state.contador.notas && (
-              <p className="text-sm text-gray-300 pt-3 border-t border-amber-500/20">{state.contador.notas}</p>
+              <p className="text-sm dark:text-gray-300 text-gray-700 pt-3 border-t border-amber-500/20">{state.contador.notas}</p>
             )}
           </div>
         )}
@@ -282,39 +282,39 @@ export default function ResumenMantenimiento({
         {state.garantiaHabilitada ? (
           <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
             <div className="flex items-center gap-2 mb-3">
-              <Shield className="w-5 h-5 text-red-300" />
-              <h3 className="text-sm font-semibold text-red-300 uppercase tracking-wide">Garantía</h3>
+              <Shield className="w-5 h-5 dark:text-red-300 text-red-700" />
+              <h3 className="text-sm font-semibold dark:text-red-300 text-red-700 uppercase tracking-wide">Garantía</h3>
             </div>
             {state.garantiaDescripcion && (
-              <p className="text-base text-white mb-3">{state.garantiaDescripcion}</p>
+              <p className="text-base dark:text-white text-gray-900 mb-3">{state.garantiaDescripcion}</p>
             )}
             {state.mesesGarantia > 0 && state.garantiaTiempoDesde && (
-              <div className="space-y-2 pt-3 border-t border-white/10">
+              <div className="space-y-2 pt-3 border-t dark:border-white/10 border-gray-300/50">
                 <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                  <span className="text-gray-300">Vigencia:</span>
-                  <span className="bg-red-600/20 px-3 py-1.5 rounded-full font-medium text-red-200">
+                  <span className="dark:text-gray-300 text-gray-700">Vigencia:</span>
+                  <span className="bg-red-600/20 px-3 py-1.5 rounded-full font-medium dark:text-red-200 text-red-800">
                     {new Date(state.garantiaTiempoDesde).toLocaleDateString()} - {state.garantiaTiempoHasta ? new Date(state.garantiaTiempoHasta).toLocaleDateString() : 'Pendiente'}
                   </span>
                 </div>
-                <p className="text-sm text-gray-400">Duración: {state.mesesGarantia} {state.mesesGarantia === 1 ? 'mes' : 'meses'}</p>
+                <p className="text-sm dark:text-gray-400 text-gray-600">Duración: {state.mesesGarantia} {state.mesesGarantia === 1 ? 'mes' : 'meses'}</p>
               </div>
             )}
           </div>
         ) : (
           <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
             <div className="flex items-center gap-2 mb-3">
-              <Shield className="w-5 h-5 text-gray-400" />
-              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Garantía del servicio</h3>
+              <Shield className="w-5 h-5 dark:text-gray-400 text-gray-600" />
+              <h3 className="text-sm font-semibold dark:text-gray-400 text-gray-600 uppercase tracking-wide">Garantía del servicio</h3>
             </div>
-            <p className="text-base text-gray-400">No aplica</p>
+            <p className="text-base dark:text-gray-400 text-gray-600">No aplica</p>
           </div>
         )}
 
         {/* Firma */}
         <div className="bg-gradient-to-br from-gray-900/30 to-blue-900/30 rounded-2xl p-5 shadow-lg border border-blue-500/20">
           <div className="flex items-center gap-2 mb-4">
-            <PenTool className="w-5 h-5 text-blue-300" />
-            <h3 className="text-sm font-semibold text-blue-300 uppercase tracking-wide">Firma del Cliente</h3>
+            <PenTool className="w-5 h-5 dark:text-blue-300 text-blue-700" />
+            <h3 className="text-sm font-semibold dark:text-blue-300 text-blue-700 uppercase tracking-wide">Firma del Cliente</h3>
           </div>
           
           {state.firmaHabilitada && state.firmaCliente ? (
@@ -327,25 +327,25 @@ export default function ResumenMantenimiento({
                   loading="lazy"
                 />
               </div>
-              <div className="space-y-3 text-center bg-black/20 p-4 rounded-xl border border-gray-800">
+              <div className="space-y-3 text-center bg-black/20 p-4 rounded-xl border dark:border-gray-800 border-gray-200">
                 <div>
                   <p className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">Responsable de recepción</p>
-                  <p className="text-base font-semibold text-white">{state.nombreReceptor || state.clienteSeleccionado?.name || 'Cliente'}</p>
+                  <p className="text-base font-semibold dark:text-white text-gray-900">{state.nombreReceptor || state.clienteSeleccionado?.name || 'Cliente'}</p>
                 </div>
                 {state.cedulaReceptor && (
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wider mb-0.5 font-medium">Cédula del Receptor</p>
-                    <p className="text-sm font-semibold text-gray-300">{state.cedulaReceptor}</p>
+                    <p className="text-sm font-semibold dark:text-gray-300 text-gray-700">{state.cedulaReceptor}</p>
                   </div>
                 )}
               </div>
-              <div className="flex items-center justify-center gap-2 text-green-400 text-sm bg-green-400/10 px-4 py-2 rounded-full">
+              <div className="flex items-center justify-center gap-2 dark:text-green-400 text-green-700 text-sm bg-green-400/10 px-4 py-2 rounded-full">
                 <CheckCircle className="w-4 h-4" />
                 <span>Validado por el cliente</span>
               </div>
             </div>
           ) : (
-            <div className="py-8 flex flex-col items-center justify-center text-gray-500 bg-black/20 rounded-xl border border-dashed border-gray-700">
+            <div className="py-8 flex flex-col items-center justify-center text-gray-500 bg-black/20 rounded-xl border border-dashed dark:border-gray-700 border-gray-300">
               <PenTool className="w-8 h-8 mb-2 opacity-20" />
               <p className="text-sm font-medium">Sin firma registrada</p>
               <p className="text-xs opacity-60">El técnico marcó esta orden sin firma</p>

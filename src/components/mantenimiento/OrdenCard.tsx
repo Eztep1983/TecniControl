@@ -31,34 +31,34 @@ const TIPO_CONFIG: Record<string, TipoConfig> = {
   preventivo:  {
     accent: 'bg-green-500',
     dot:    'bg-green-400',
-    badge:  'bg-green-500/10 text-green-400 ring-1 ring-inset ring-green-500/20',
+    badge:  'bg-green-500/10 dark:text-green-400 text-green-700 ring-1 ring-inset ring-green-500/20',
   },
   correctivo:  {
     accent: 'bg-orange-500',
     dot:    'bg-orange-400',
-    badge:  'bg-orange-500/10 text-orange-400 ring-1 ring-inset ring-orange-500/20',
+    badge:  'bg-orange-500/10 dark:text-orange-400 text-orange-700 ring-1 ring-inset ring-orange-500/20',
   },
   diagnostico: {
     accent: 'bg-blue-500',
     dot:    'bg-blue-400',
-    badge:  'bg-blue-500/10 text-blue-400 ring-1 ring-inset ring-blue-500/20',
+    badge:  'bg-blue-500/10 dark:text-blue-400 text-blue-700 ring-1 ring-inset ring-blue-500/20',
   },
   instalacion: {
     accent: 'bg-purple-500',
     dot:    'bg-purple-400',
-    badge:  'bg-purple-500/10 text-purple-400 ring-1 ring-inset ring-purple-500/20',
+    badge:  'bg-purple-500/10 dark:text-purple-400 text-purple-700 ring-1 ring-inset ring-purple-500/20',
   },
   garantia: {
     accent: 'bg-amber-500',
     dot:    'bg-amber-400',
-    badge:  'bg-amber-500/10 text-amber-400 ring-1 ring-inset ring-amber-500/20',
+    badge:  'bg-amber-500/10 dark:text-amber-400 text-amber-700 ring-1 ring-inset ring-amber-500/20',
   },
 }
 
 const DEFAULT_TIPO: TipoConfig = {
   accent: 'bg-gray-600',
   dot:    'bg-gray-500',
-  badge:  'bg-gray-500/10 text-gray-400 ring-1 ring-inset ring-gray-500/20',
+  badge:  'bg-gray-500/10 dark:text-gray-400 text-gray-600 ring-1 ring-inset ring-gray-500/20',
 }
 
 function getTipoConfig(tipo: string): TipoConfig {
@@ -69,31 +69,31 @@ function getTipoConfig(tipo: string): TipoConfig {
 
 const CLS_CARD = cn(
   'overflow-hidden rounded-2xl',
-  'border border-white/[0.07]',
-  'bg-gray-900/70',
-  'transition-all duration-150 cursor-pointer',
-  'hover:border-white/[0.12] hover:bg-gray-900/90',
+  'border dark:border-white/[0.07] border-gray-200',
+  'dark:bg-gray-900/70 bg-white',
+  'transition-all duration-150 cursor-pointer shadow-sm',
+  'hover:dark:border-white/[0.12] hover:border-gray-300 hover:dark:bg-gray-900/90 hover:bg-gray-50',
   'active:scale-[0.985]',
 )
 
 const CLS_BTN_PRIMARY = cn(
   'flex flex-1 items-center justify-center gap-1.5',
   'min-h-[44px] rounded-xl',
-  'text-[12px] font-medium text-gray-200',
-  'bg-white/[0.08]',
-  'transition-colors hover:bg-white/[0.12] active:bg-white/[0.15]',
+  'text-[12px] font-medium dark:text-gray-200 text-gray-800',
+  'dark:bg-white/[0.08] bg-gray-100',
+  'transition-colors hover:dark:bg-white/[0.12] hover:bg-gray-200 active:dark:bg-white/[0.15] active:bg-gray-300',
 )
 
 const CLS_BTN_SECONDARY = cn(
   'flex items-center justify-center w-[44px] h-[44px] rounded-xl',
-  'bg-white/[0.05] border border-white/[0.07]',
+  'dark:bg-white/[0.05] bg-gray-50 border dark:border-white/[0.07] border-gray-200',
   'text-gray-500',
-  'transition-colors hover:bg-white/[0.09] hover:text-gray-300 active:bg-white/[0.12]',
+  'transition-colors hover:dark:bg-white/[0.09] hover:bg-gray-100 hover:dark:text-gray-300 hover:text-gray-700 active:dark:bg-white/[0.12] active:bg-gray-200',
 )
 
 const CLS_BADGE_PILL = 'inline-flex px-2.5 py-[3px] text-[11px] font-medium rounded-full capitalize tracking-wide'
 
-const CLS_DEVICE_CHIP = 'inline-flex items-center gap-1.5 text-[12px] text-gray-400 bg-white/[0.05] border border-white/[0.07] rounded-full px-3 py-[3px]'
+const CLS_DEVICE_CHIP = 'inline-flex items-center gap-1.5 text-[12px] dark:text-gray-400 text-gray-600 dark:bg-white/[0.05] bg-gray-100 border dark:border-white/[0.07] border-gray-200 rounded-full px-3 py-[3px]'
 
 // ─── Helpers — module level (no closure, never recreated) ─────────────────────
 
@@ -159,7 +159,7 @@ const Highlight = memo(({ text, term }: { text: string; term: string }) => {
     <>
       {segments.parts.map((part, i) =>
         segments.tokens.some(t => normalizeStr(part) === t) ? (
-          <mark key={i} className="bg-blue-500/30 text-blue-200 rounded-sm px-0.5 not-italic">
+          <mark key={i} className="bg-blue-500/30 dark:text-blue-200 text-blue-800 rounded-sm px-0.5 not-italic">
             {part}
           </mark>
         ) : (
@@ -216,7 +216,7 @@ const OrdenCard = memo(({
 
         {/* Row 1: client name · status dot · tipo pill */}
         <div className="flex items-center justify-between gap-2 mb-2">
-          <h3 className="text-[15px] font-semibold text-white leading-snug flex-1 min-w-0 truncate">
+          <h3 className="text-[15px] font-semibold dark:text-white text-gray-900 leading-snug flex-1 min-w-0 truncate">
             <Highlight text={orden.cliente?.name || 'Sin cliente'} term={searchTerm} />
           </h3>
           <div className="flex items-center gap-1.5 shrink-0">
@@ -229,13 +229,13 @@ const OrdenCard = memo(({
 
         {/* Row 2: ID · fecha · pending badge */}
         <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 mb-3">
-          <span className="text-[12px] text-gray-500 font-medium uppercase tracking-wide">
+          <span className="text-[12px] dark:text-gray-500 text-gray-500 font-medium uppercase tracking-wide">
             {orden.idPersonalizado}
           </span>
-          <span className="text-gray-700 text-[10px]">·</span>
-          <span className="text-[12px] text-gray-600 tabular-nums">{fecha}</span>
+          <span className="dark:text-gray-500 text-gray-400 text-[10px]">·</span>
+          <span className="text-[12px] dark:text-gray-400 text-gray-600 tabular-nums">{fecha}</span>
           {isPending && (
-            <span className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase bg-amber-500/10 text-amber-400 ring-1 ring-inset ring-amber-500/20 px-2 py-[3px] rounded-full ml-0.5">
+            <span className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase bg-amber-500/10 dark:text-amber-400 text-amber-700 ring-1 ring-inset ring-amber-500/20 px-2 py-[3px] rounded-full ml-0.5">
               <CloudOff className="w-2.5 h-2.5" aria-hidden="true" />
               Pendiente
             </span>
@@ -251,20 +251,20 @@ const OrdenCard = memo(({
             </span>
           )}
           {orden.cliente?.phone && (
-            <span className="text-[12px] text-gray-600 tabular-nums">
+            <span className="text-[12px] dark:text-gray-400 text-gray-600 tabular-nums">
               {orden.cliente.phone}
             </span>
           )}
         </div>
 
         {/* Row 4: resumen — 2 lines, no italic */}
-        <p className="text-[12px] text-gray-500 leading-relaxed line-clamp-2 border-t border-white/[0.06] pt-2.5">
+        <p className="text-[12px] dark:text-gray-500 text-gray-500 leading-relaxed line-clamp-2 border-t dark:border-white/[0.06] border-gray-200 pt-2.5">
           {resumen}
         </p>
       </div>
 
       {/* Footer — primary action + icon-only secondaries */}
-      <div className="flex items-center gap-2 px-3 py-2.5 border-t border-white/[0.06]">
+      <div className="flex items-center gap-2 px-3 py-2.5 border-t dark:border-white/[0.06] border-gray-200">
 
         <button
           type="button"

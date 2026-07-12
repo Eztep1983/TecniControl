@@ -14,6 +14,7 @@ import type { Orden } from "@/types/orden";
 import { useNegocioUsuario } from "@/hooks/useMultiUser";
 import { usePrintService } from "@/components/mantenimiento/PrintService";
 import { cn } from "@/lib/utils";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 // FIX #7: Preload real — se dispara al importar este módulo, no en un effect.
 // La promise se guarda para que React.lazy la reutilice (mismo specifier = misma promise).
@@ -60,7 +61,7 @@ const OrdenItem = memo(({
 }) => (
   <button
     onClick={() => onClick(orden)}
-    className="group w-full text-left bg-gray-800/30 hover:bg-gray-800/60 active:bg-gray-800/80 rounded-2xl border border-gray-700/40 p-4 transition-all duration-150 active:scale-[0.98]"
+    className="group w-full text-left dark:bg-gray-800/30 bg-gray-100 hover:dark:bg-gray-800/60 hover:bg-gray-200 active:dark:bg-gray-800/80 active:bg-gray-200/80 rounded-2xl border dark:border-gray-700/40 border-gray-300 p-4 transition-all duration-150 active:scale-[0.98]"
   >
     <div className="flex items-start justify-between gap-3">
       <div className="flex-1 min-w-0">
@@ -84,19 +85,19 @@ const OrdenItem = memo(({
           )}
         </div>
 
-        <h4 className="font-bold text-white text-sm truncate group-hover:text-blue-400 transition-colors">
+        <h4 className="font-bold dark:text-white text-gray-900 text-sm truncate group-hover:text-blue-400 transition-colors">
           {orden.dispositivo?.marca} {orden.dispositivo?.modelo}
         </h4>
 
         <div className="flex items-center gap-4 mt-3">
           <div className="flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-gray-500" />
-            <span className="text-xs text-gray-400 font-medium">{formatFecha(orden.fechaCreacion)}</span>
+            <span className="text-xs dark:text-gray-400 text-gray-600 font-medium">{formatFecha(orden.fechaCreacion)}</span>
           </div>
           {orden.contadorMaquina !== undefined && (
             <div className="flex items-center gap-1.5">
               <RefreshCw className="w-3.5 h-3.5 text-gray-500" />
-              <span className="text-xs text-gray-400 font-medium">{orden.contadorMaquina.toLocaleString()}</span>
+              <span className="text-xs dark:text-gray-400 text-gray-600 font-medium">{orden.contadorMaquina.toLocaleString()}</span>
             </div>
           )}
         </div>
@@ -158,7 +159,7 @@ const HistorialContent = memo(function HistorialContent({
     return (
       <div className="space-y-3 p-1">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="animate-pulse bg-gray-800/50 rounded-xl h-24" />
+          <div key={i} className="animate-pulse dark:bg-gray-800/50 bg-gray-200 rounded-xl h-24" />
         ))}
       </div>
     );
@@ -168,10 +169,10 @@ const HistorialContent = memo(function HistorialContent({
     return (
       <div className="text-center py-12">
         <RefreshCw className="w-12 h-12 text-red-400 mx-auto mb-3 opacity-60" />
-        <p className="text-gray-400 text-sm mb-4">{error}</p>
+        <p className="dark:text-gray-400 text-gray-600 text-sm mb-4">{error}</p>
         <button
           onClick={handleRefresh}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700 text-white text-sm"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700 dark:text-white text-gray-900 text-sm"
         >
           <RefreshCw className="w-4 h-4" />
           Reintentar
@@ -183,11 +184,11 @@ const HistorialContent = memo(function HistorialContent({
   if (ordenes.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gray-800 flex items-center justify-center">
+        <div className="w-20 h-20 mx-auto mb-4 rounded-2xl dark:bg-gray-800 bg-gray-200 flex items-center justify-center">
           <ClipboardList className="w-10 h-10 text-gray-600" />
         </div>
-        <h3 className="text-base font-semibold text-white mb-2">Sin órdenes</h3>
-        <p className="text-sm text-gray-400 mb-6 max-w-xs mx-auto">
+        <h3 className="text-base font-semibold dark:text-white text-gray-900 mb-2">Sin órdenes</h3>
+        <p className="text-sm dark:text-gray-400 text-gray-600 mb-6 max-w-xs mx-auto">
           Este cliente aún no tiene órdenes de servicio.
         </p>
         <button
@@ -222,7 +223,7 @@ const HistorialContent = memo(function HistorialContent({
         <div className="text-center mt-3">
           <button
             onClick={() => setShowAll(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800/30 border border-gray-700/40 text-sm text-white"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl dark:bg-gray-800/30 bg-gray-100 border dark:border-gray-700/40 border-gray-300 text-sm dark:text-white text-gray-900"
           >
             Mostrar todo ({ordenes.length})
           </button>
@@ -246,7 +247,7 @@ const HistorialContent = memo(function HistorialContent({
         <div className="text-center">
           <button
             onClick={() => setShowAll(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800/30 border border-gray-700/40 text-sm text-white"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl dark:bg-gray-800/30 bg-gray-100 border dark:border-gray-700/40 border-gray-300 text-sm dark:text-white text-gray-900"
           >
             Mostrar más ({ordenes.length})
           </button>
@@ -265,11 +266,14 @@ export function ClienteHistorialModal({
 }: ClienteHistorialModalProps) {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { openModal } = useMobileNavigation();
+  const { negocio } = useNegocioUsuario();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const { ordenes, loading, error, refrescar } = useOrdenesCliente(clienteId);
   const [selectedOrden, setSelectedOrden] = useState<Orden | null>(null);
   const [showAll, setShowAll] = useState(false);
-  const { negocio } = useNegocioUsuario();
   const { imprimirOrden, compartirOrden, descargarPDF, generarPDFBlob, generarHTML } = usePrintService({ negocio });
 
   // FIX #2: Ref para el scroll container — usado con { passive: true }
@@ -310,14 +314,7 @@ export function ClienteHistorialModal({
     haptic.impactLight();
     onClose(true);
 
-    // Esperar a que los modales se cierren y useAndroidBack limpie el historial para evitar cierres instantáneos
-    setTimeout(() => {
-      openModal();
-      // Añadir el parámetro clienteId a la URL sin recargar
-      const url = new URL(window.location.href);
-      url.searchParams.set("clienteId", clienteId);
-      window.history.replaceState(window.history.state, "", url.toString());
-    }, 200);
+    openModal({ clienteId });
   }, [onClose, openModal, clienteId]);
 
   // FIX #2: stopPropagation estable para evitar que el swipe-to-close
@@ -345,7 +342,7 @@ export function ClienteHistorialModal({
         title={
           <div className="flex items-center justify-between w-full pr-10">
             <div className="min-w-0">
-              <h3 className="text-base font-bold text-white leading-tight">Historial de órdenes</h3>
+              <h3 className="text-base font-bold dark:text-white text-gray-900 leading-tight">Historial de órdenes</h3>
               <p className="text-xs text-gray-500 truncate mt-0.5">{clienteNombre}</p>
             </div>
             {!loading && ordenes.length > 0 && (
@@ -378,7 +375,11 @@ export function ClienteHistorialModal({
         </div>
       </Modal>
       {selectedOrden && (
-        <Suspense fallback={null}>
+        <Suspense fallback={
+          <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/20 backdrop-blur-sm">
+            <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
+          </div>
+        }>
           <ModalOrdenLazy
             generarPDFBlob={generarPDFBlob}
             generarHTML={generarHTML}

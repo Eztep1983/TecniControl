@@ -115,8 +115,8 @@ const ClienteSelector = memo(function ClienteSelector({
           <div className="relative p-4 sm:p-5">
             {/* Check badge */}
             <div className="flex items-center gap-1.5 mb-3">
-              <CheckCircle2 className="w-4 h-4 text-blue-400" />
-              <span className="text-xs font-medium text-blue-400 uppercase tracking-wide">
+              <CheckCircle2 className="w-4 h-4 dark:text-blue-400 text-blue-700" />
+              <span className="text-xs font-medium dark:text-blue-400 text-blue-700 uppercase tracking-wide">
                 Cliente seleccionado
               </span>
             </div>
@@ -125,37 +125,37 @@ const ClienteSelector = memo(function ClienteSelector({
               {/* Avatar + info */}
               <div className="flex items-start gap-3 min-w-0 flex-1">
                 <div className="w-12 h-12 bg-blue-500/25 rounded-2xl flex items-center justify-center flex-shrink-0 animate-in zoom-in duration-200">
-                  <span className="text-blue-200 font-bold text-xl">
+                  <span className="dark:text-blue-200 text-blue-800 font-bold text-xl">
                     {clienteSeleccionado.name?.charAt(0).toUpperCase() || '?'}
                   </span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-semibold text-white text-base leading-tight truncate">
+                  <h3 className="font-semibold dark:text-white text-gray-900 text-base leading-tight truncate">
                     {clienteSeleccionado.name}
                   </h3>
 
                   {/* Contact info — stacked on mobile */}
                   <div className="mt-2 space-y-1">
                     <div className="flex items-center gap-1.5">
-                      <Mail className="w-3.5 h-3.5 text-blue-400/70 flex-shrink-0" />
-                      <span className="text-sm text-blue-300/80 truncate">{clienteSeleccionado.email}</span>
+                      <Mail className="w-3.5 h-3.5 dark:text-blue-400 text-blue-700/70 flex-shrink-0" />
+                      <span className="text-sm dark:text-blue-300 text-blue-700/80 truncate">{clienteSeleccionado.email}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-blue-400/70 flex-shrink-0" />
-                      <span className="text-sm text-blue-300/80">{clienteSeleccionado.phone}</span>
+                      <Phone className="w-3.5 h-3.5 dark:text-blue-400 text-blue-700/70 flex-shrink-0" />
+                      <span className="text-sm dark:text-blue-300 text-blue-700/80">{clienteSeleccionado.phone}</span>
                     </div>
                     {clienteSeleccionado.address && (
                       <div className="flex items-start gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-blue-400/70 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-blue-300/70 line-clamp-1">{clienteSeleccionado.address}</span>
+                        <MapPin className="w-3.5 h-3.5 dark:text-blue-400 text-blue-700/70 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm dark:text-blue-300 text-blue-700/70 line-clamp-1">{clienteSeleccionado.address}</span>
                       </div>
                     )}
                   </div>
 
                   {/* Device count pill */}
                   <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-500/20 rounded-full">
-                    <HardDrive className="w-3 h-3 text-blue-300" />
-                    <span className="text-xs text-blue-300 font-medium">
+                    <HardDrive className="w-3 h-3 dark:text-blue-300 text-blue-700" />
+                    <span className="text-xs dark:text-blue-300 text-blue-700 font-medium">
                       {clienteSeleccionado.dispositivos?.length || 0}{' '}
                       dispositivo{clienteSeleccionado.dispositivos?.length !== 1 ? 's' : ''}
                     </span>
@@ -167,7 +167,7 @@ const ClienteSelector = memo(function ClienteSelector({
               <button
                 type="button"
                 onClick={onDesseleccionarCliente}
-                className="flex-shrink-0 min-h-[44px] px-4 py-2 bg-blue-500/20 hover:bg-blue-500/35 active:bg-blue-500/45 text-blue-300 hover:text-blue-100 rounded-xl transition-all duration-150 font-medium text-sm active:scale-95"
+                className="flex-shrink-0 min-h-[44px] px-4 py-2 bg-blue-500/20 hover:bg-blue-500/35 active:bg-blue-500/45 dark:text-blue-300 text-blue-700 hover:text-blue-100 rounded-xl transition-all duration-150 font-medium text-sm active:scale-95"
               >
                 Cambiar
               </button>
@@ -197,7 +197,7 @@ const ClienteSelector = memo(function ClienteSelector({
         {/* Header row */}
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xl font-semibold text-gray-200">SELECCIONAR CLIENTE</p>
+            <p className="text-xl font-semibold dark:text-gray-200 text-gray-800">SELECCIONAR CLIENTE</p>
             <p className="text-md text-gray-500 mt-0.5">Busca o crea un cliente</p>
           </div>
 
@@ -214,7 +214,7 @@ const ClienteSelector = memo(function ClienteSelector({
 
         {/* Search input */}
         <div className="relative">
-          <Search className="w-4.5 h-4.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <Search className="w-4.5 h-4.5 absolute left-3.5 top-1/2 -translate-y-1/2 dark:text-gray-400 text-gray-600 pointer-events-none" />
           <input
             ref={inputRef}
             type="text"
@@ -223,14 +223,14 @@ const ClienteSelector = memo(function ClienteSelector({
             placeholder="Nombre, email o teléfono…"
             value={localBusqueda}
             onChange={e => setLocalBusqueda(e.target.value)}
-            className="w-full h-12 pl-10 pr-10 bg-gray-800/70 border border-gray-700/60 rounded-xl text-white placeholder-gray-500 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/60 focus:bg-gray-800 transition-all duration-200 outline-none"
+            className="w-full h-12 pl-10 pr-10 dark:bg-gray-800/70 bg-gray-200 border dark:border-gray-700/60 border-gray-300 rounded-xl dark:text-white text-gray-900 placeholder-gray-500 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/60 focus:dark:bg-gray-800 focus:bg-gray-200 transition-all duration-200 outline-none"
           />
           {localBusqueda && (
             <button
               type="button"
               onClick={handleClearSearch}
               // 44×44 touch target via padding
-              className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center text-gray-400 hover:text-gray-200 active:scale-90 transition-all"
+              className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center dark:text-gray-400 text-gray-600 hover:dark:text-gray-200 hover:text-gray-800 active:scale-90 transition-all"
               aria-label="Limpiar búsqueda"
             >
               <X className="w-4 h-4" />
@@ -240,10 +240,10 @@ const ClienteSelector = memo(function ClienteSelector({
 
         {/* ── Clientes recientes (sin búsqueda) ── */}
         {!localBusqueda && ultimosClientes.length > 0 && (
-          <div className="rounded-2xl border border-gray-700/50 bg-gray-800/80 overflow-hidden shadow-xl animate-in fade-in slide-in-from-top-1 duration-300">
-            <div className="px-4 py-3 bg-gray-900/60 border-b border-gray-700/50 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-medium text-gray-300">Recientes</span>
+          <div className="rounded-2xl border dark:border-gray-700/50 border-gray-300 dark:bg-gray-800/80 bg-gray-200/80 overflow-hidden shadow-xl animate-in fade-in slide-in-from-top-1 duration-300">
+            <div className="px-4 py-3 dark:bg-gray-900/60 bg-gray-50 border-b dark:border-gray-700/50 border-gray-300 flex items-center gap-2">
+              <Clock className="w-4 h-4 dark:text-blue-400 text-blue-700" />
+              <span className="text-sm font-medium dark:text-gray-300 text-gray-700">Recientes</span>
               <span className="ml-auto text-xs text-gray-500 bg-gray-700/60 px-2 py-0.5 rounded-full">
                 {clientesValidos.length} en total
               </span>
@@ -264,11 +264,11 @@ const ClienteSelector = memo(function ClienteSelector({
 
         {/* ── Resultados de búsqueda ── */}
         {localBusqueda && (
-          <div className="rounded-2xl border border-gray-700/50 bg-gray-800/80 overflow-hidden shadow-xl animate-in fade-in duration-200">
+          <div className="rounded-2xl border dark:border-gray-700/50 border-gray-300 dark:bg-gray-800/80 bg-gray-200/80 overflow-hidden shadow-xl animate-in fade-in duration-200">
             {clientesFiltrados.length > 0 ? (
               <>
-                <div className="px-4 py-2.5 bg-gray-900/60 border-b border-gray-700/50">
-                  <span className="text-xs text-gray-400">
+                <div className="px-4 py-2.5 dark:bg-gray-900/60 bg-gray-50 border-b dark:border-gray-700/50 border-gray-300">
+                  <span className="text-xs dark:text-gray-400 text-gray-600">
                     {clientesFiltrados.length} resultado{clientesFiltrados.length !== 1 ? 's' : ''}
                   </span>
                 </div>
@@ -289,7 +289,7 @@ const ClienteSelector = memo(function ClienteSelector({
                   <button
                     type="button"
                     onClick={() => setVisiblesEnBusqueda(v => v + LOAD_MORE_STEP)}
-                    className="w-full min-h-[48px] flex items-center justify-center gap-2 border-t border-gray-700/50 text-sm text-gray-400 hover:text-blue-400 hover:bg-gray-700/30 active:bg-gray-700/50 transition-all duration-150"
+                    className="w-full min-h-[48px] flex items-center justify-center gap-2 border-t dark:border-gray-700/50 border-gray-300 text-sm dark:text-gray-400 text-gray-600 hover:dark:text-blue-400 hover:text-blue-700 hover:bg-gray-700/30 active:dark:bg-gray-700/50 active:bg-gray-300 transition-all duration-150"
                   >
                     <ChevronDown className="w-4 h-4" />
                     Ver {Math.min(LOAD_MORE_STEP, clientesFiltrados.length - visiblesEnBusqueda)} más
@@ -333,25 +333,25 @@ const ClienteRow = memo(function ClienteRow({
       type="button"
       onClick={() => onSelect(cliente)}
       // min-h-[64px] garantiza touch target cómodo en mobile
-      className={`w-full min-h-[64px] px-4 py-3.5 flex items-center gap-3 text-left transition-all duration-150 active:scale-[0.985] ${animando ? 'bg-blue-500/20' : 'hover:bg-gray-700/40 active:bg-gray-700/60'} ${showDivider ? 'border-b border-gray-700/30' : ''}`}
+      className={`w-full min-h-[64px] px-4 py-3.5 flex items-center gap-3 text-left transition-all duration-150 active:scale-[0.985] ${animando ? 'bg-blue-500/20' : 'hover:bg-gray-700/40 active:bg-gray-700/60'} ${showDivider ? 'border-b dark:border-gray-700/30 border-gray-300' : ''}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Avatar */}
       <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-150 group-hover:bg-blue-600/20">
-        <span className="text-gray-300 font-semibold text-base">
+        <span className="dark:text-gray-300 text-gray-700 font-semibold text-base">
           {cliente.name?.charAt(0).toUpperCase() || '?'}
         </span>
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className="font-medium text-white text-md truncate">{cliente.name}</div>
+        <div className="font-medium dark:text-white text-gray-900 text-md truncate">{cliente.name}</div>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-          <span className="text-xs text-gray-400 truncate max-w-[140px]">{cliente.email}</span>
+          <span className="text-xs dark:text-gray-400 text-gray-600 truncate max-w-[140px]">{cliente.email}</span>
           {cliente.phone && (
             <>
               <span className="text-gray-600 text-xs">·</span>
-              <span className="text-xs text-gray-400">{cliente.phone}</span>
+              <span className="text-xs dark:text-gray-400 text-gray-600">{cliente.phone}</span>
             </>
           )}
         </div>
@@ -374,8 +374,8 @@ function EmptySearch({ query, onCrear }: { query: string; onCrear: () => void })
       <div className="w-14 h-14 bg-gray-700/40 rounded-2xl flex items-center justify-center mx-auto mb-3">
         <Search className="w-7 h-7 text-gray-500" />
       </div>
-      <p className="text-gray-300 font-medium text-sm">Sin resultados para</p>
-      <p className="text-blue-400/80 font-semibold text-sm mt-0.5 truncate px-4">"{query}"</p>
+      <p className="dark:text-gray-300 text-gray-700 font-medium text-sm">Sin resultados para</p>
+      <p className="dark:text-blue-400 text-blue-700/80 font-semibold text-sm mt-0.5 truncate px-4">"{query}"</p>
       <p className="text-xs text-gray-500 mt-2 mb-4">¿Es un cliente nuevo?</p>
       <button
         type="button"
@@ -391,11 +391,11 @@ function EmptySearch({ query, onCrear }: { query: string; onCrear: () => void })
 
 function EmptyClientes({ onCrear }: { onCrear: () => void }) {
   return (
-    <div className="py-12 px-6 text-center border border-gray-700/50 rounded-2xl bg-gray-800/50 animate-in fade-in duration-300">
+    <div className="py-12 px-6 text-center border dark:border-gray-700/50 border-gray-300 rounded-2xl dark:bg-gray-800/50 bg-gray-200 animate-in fade-in duration-300">
       <div className="w-16 h-16 bg-gray-700/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
         <AlertCircle className="w-8 h-8 text-gray-500" />
       </div>
-      <p className="text-gray-300 font-semibold">Aún no hay clientes</p>
+      <p className="dark:text-gray-300 text-gray-700 font-semibold">Aún no hay clientes</p>
       <p className="text-sm text-gray-500 mt-1 mb-5">Crea tu primer cliente para generar una orden</p>
       <button
         type="button"

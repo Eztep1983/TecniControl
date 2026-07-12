@@ -15,6 +15,7 @@ import { NetworkStatusBanner } from '@/components/ui/NetworkStatusBanner'
 import { MobileNavigationProvider } from '@/components/providers/MobileNavigationContext'
 import { SpeechProvider } from '@/components/auth/SpeechProvider'
 import { MobileAppShell } from '@/components/providers/MobileAppShell'
+import { DashboardSkeleton } from '@/components/ui/DashboardSkeleton'
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -34,7 +35,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       <NetworkStatusBanner />
       <main 
         ref={mainRef}
-        className="flex flex-col flex-1 overflow-y-auto p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-6 lg:p-8 lg:pb-8 bg-gray-900"
+        className="flex flex-col flex-1 overflow-y-auto p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-6 lg:p-8 lg:pb-8 dark:bg-gray-900 bg-gray-100"
       >
         <div className="max-w-7xl mx-auto w-full flex flex-col flex-1 relative">
           {/* 
@@ -58,60 +59,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
 
   // Mostrar loading mientras se verifica autenticación
-// Reemplaza el bloque if (loading) { ... } en AppLayout
-
 if (loading) {
-  return (
-    <div className="flex flex-col min-h-screen bg-gray-900">
-
-      {/* Dashboard content skeleton */}
-      <div className="flex flex-col flex-1 p-4 pb-24 bg-gray-900">
-        <div className="max-w-7xl mx-auto w-full space-y-6">
-
-          {/* Greeting block */}
-          <div className="bg-gray-900 border-b border-gray-800 -mx-4 px-4 py-4 mb-2">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gray-700/60 animate-pulse shrink-0" />
-              <div className="space-y-2 flex-1">
-                <div className="w-40 h-4 rounded-md bg-gray-700/60 animate-pulse" />
-                <div className="w-24 h-3 rounded-md bg-gray-700/40 animate-pulse" />
-                <div className="w-32 h-3 rounded-md bg-gray-700/30 animate-pulse" />
-              </div>
-            </div>
-          </div>
-
-          {/* Nueva Orden button */}
-          <div className="w-full h-11 rounded-xl bg-blue-600/20 border border-blue-500/10 animate-pulse" />
-
-          {/* Stats section */}
-          <div className="space-y-3">
-            <div className="w-16 h-3 rounded bg-gray-700/50 animate-pulse ml-1" />
-            <div className="flex gap-3 overflow-hidden">
-              {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="shrink-0 w-32 h-28 rounded-2xl bg-gray-800/60 border border-gray-700/30 animate-pulse" />
-              ))}
-            </div>
-          </div>
-
-          {/* Recent orders section */}
-          <div className="space-y-3">
-            <div className="w-20 h-3 rounded bg-gray-700/50 animate-pulse ml-1" />
-            {[1, 2, 3].map(i => (
-              <div key={i} className="w-full h-24 rounded-2xl bg-gray-800/40 border border-gray-700/30 animate-pulse" />
-            ))}
-          </div>
-
-        </div>
-      </div>
-
-      {/* Mobile nav skeleton */}
-      <div className="fixed bottom-0 left-0 right-0 h-16 bg-gray-800 border-t border-gray-700/50 flex items-center justify-around px-6">
-        {[1, 2, 3, 4].map(i => (
-          <div key={i} className="w-8 h-8 rounded-xl bg-gray-700/50 animate-pulse" />
-        ))}
-      </div>
-    </div>
-  )
+  return <DashboardSkeleton />
 }
 
   // Si no hay usuario, no renderizar nada (ProtectedRoute manejará la redirección)

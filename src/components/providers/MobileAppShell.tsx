@@ -30,6 +30,7 @@ const VIEW_COMPONENTS: Record<AppView, React.ComponentType> = {
   "tareas-repuestos": dynamic(() => import("@/app/(app)/tareas-repuestos/page"), { loading: () => <ViewLoading />, ssr: false }),
   "ordenes/mantenimiento": dynamic(() => import("@/app/(app)/ordenes/mantenimiento/page"), { loading: () => <ViewLoading />, ssr: false }),
   "configuracion": dynamic(() => import("@/app/(app)/configuracion/page"), { loading: () => <ViewLoading />, ssr: false }),
+  "reportes": dynamic(() => import("@/app/(app)/reportes/page"), { loading: () => <ViewLoading />, ssr: false }),
 };
 
 const GlobalFormularioMantenimiento = dynamic(

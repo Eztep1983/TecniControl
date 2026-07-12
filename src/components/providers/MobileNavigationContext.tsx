@@ -59,7 +59,8 @@ interface MobileNavigationContextValue {
   consumePendingAction: () => void;
   isModalOpenLocally: boolean;
   isOnboardingLocally: boolean;
-  openModal: (options?: { onboarding?: boolean }) => void;
+  modalClienteId: string | null;
+  openModal: (options?: { onboarding?: boolean, clienteId?: string }) => void;
   closeModal: (stepsToPop?: number) => void;
 }
 
@@ -73,6 +74,7 @@ const MobileNavigationContext = createContext<MobileNavigationContextValue>({
   consumePendingAction: () => {},
   isModalOpenLocally: false,
   isOnboardingLocally: false,
+  modalClienteId: null,
   openModal: () => {},
   closeModal: () => {},
 });
@@ -96,6 +98,7 @@ export function MobileNavigationProvider({
   // Local state for modal to bypass Next.js latency
   const [isModalOpenLocally, setIsModalOpenLocally] = useState(false);
   const [isOnboardingLocally, setIsOnboardingLocally] = useState(false);
+  const [modalClienteId, setModalClienteId] = useState<string | null>(null);
 
   // Detectar si estamos en mobile
   useEffect(() => {
@@ -173,12 +176,16 @@ export function MobileNavigationProvider({
     return () => window.removeEventListener("popstate", handlePopState);
   }, [isMobileNav, activeView, isModalOpenLocally]);
 
-  const openModal = useCallback((options?: { onboarding?: boolean }) => {
+  const openModal = useCallback((options?: { onboarding?: boolean, clienteId?: string }) => {
     setIsModalOpenLocally(true);
     setIsOnboardingLocally(!!options?.onboarding);
+    setModalClienteId(options?.clienteId || null);
     // Push state without reloading to trigger back button functionality
     const currentUrl = new URL(window.location.href);
     currentUrl.searchParams.set("modal", "crear-orden");
+    if (options?.clienteId) {
+      currentUrl.searchParams.set("clienteId", options.clienteId);
+    }
     if (options?.onboarding) {
       currentUrl.searchParams.set("onboarding", "true");
     } else {
@@ -199,6 +206,7 @@ export function MobileNavigationProvider({
   const closeModal = useCallback((stepsToPop: number = 1) => {
     setIsModalOpenLocally(false);
     setIsOnboardingLocally(false);
+    setModalClienteId(null);
     // Let the standard back button action take place or pop state manually
     window.history.go(-stepsToPop);
   }, []);
@@ -223,6 +231,7 @@ export function MobileNavigationProvider({
         consumePendingAction,
         isModalOpenLocally,
         isOnboardingLocally,
+        modalClienteId,
         openModal,
         closeModal,
       }}

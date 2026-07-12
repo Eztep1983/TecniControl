@@ -47,7 +47,7 @@ export default function OnboardingSuccess({ onFinish }: OnboardingSuccessProps) 
               transition={{ type: "spring", damping: 12, stiffness: 200 }}
               className="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-blue-500/30 relative"
             >
-              <CheckCircle2 className="w-12 h-12 text-white" />
+              <CheckCircle2 className="w-12 h-12 dark:text-white text-gray-900" />
               <motion.div 
                 animate={{ scale: [1, 1.5, 1], opacity: [1, 0, 1] }}
                 transition={{ repeat: Infinity, duration: 1.5 }}
@@ -55,10 +55,10 @@ export default function OnboardingSuccess({ onFinish }: OnboardingSuccessProps) 
               />
             </motion.div>
             
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-extrabold dark:text-white text-gray-900 mb-4 tracking-tight">
               ¡Excelente trabajo!
             </h2>
-            <p className="text-gray-400 text-base mb-10 max-w-sm mx-auto">
+            <p className="dark:text-gray-400 text-gray-600 text-base mb-10 max-w-sm mx-auto">
               Has completado el recorrido inicial. Tu primera orden de prueba ha sido generada con éxito.
             </p>
             <div className="space-y-4">
@@ -66,7 +66,7 @@ export default function OnboardingSuccess({ onFinish }: OnboardingSuccessProps) 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleNextStep('/configuracion')}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white p-4 rounded-[1rem] flex items-center justify-center space-x-3 transition-all shadow-xl shadow-blue-600/20 group touch-manipulation"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 dark:text-white text-gray-900 p-4 rounded-[1rem] flex items-center justify-center space-x-3 transition-all shadow-xl shadow-blue-600/20 group touch-manipulation"
               >
                 <Building2 className="w-5 h-5" />
                 <span className="text-lg font-bold">Personaliza tu negocio</span>
@@ -76,7 +76,7 @@ export default function OnboardingSuccess({ onFinish }: OnboardingSuccessProps) 
               <button
                 type="button"
                 onClick={() => onFinish()}
-                className="w-full text-gray-500 hover:text-gray-300 py-3 text-sm font-medium transition-colors"
+                className="w-full text-gray-500 hover:dark:text-gray-300 hover:text-gray-700 py-3 text-sm font-medium transition-colors"
               >
                 Explorar por mi cuenta
               </button>
@@ -92,13 +92,13 @@ function NextStepCard({ icon, title, description, onClick }: { icon: React.React
   return (
     <button 
       onClick={onClick}
-      className="flex items-center space-x-4 p-4 rounded-2xl bg-gray-800/40 border border-gray-700/50 hover:bg-gray-800/60 hover:border-gray-600 transition-all text-left w-full group"
+      className="flex items-center space-x-4 p-4 rounded-2xl dark:bg-gray-800/40 bg-gray-200 border dark:border-gray-700/50 border-gray-300 hover:dark:bg-gray-800/60 hover:bg-gray-200 hover:dark:border-gray-600 hover:border-gray-300 transition-all text-left w-full group"
     >
-      <div className="bg-gray-900 p-3 rounded-xl text-blue-400 group-hover:scale-110 transition-transform">
+      <div className="dark:bg-gray-900 bg-gray-100 p-3 rounded-xl text-blue-400 group-hover:scale-110 transition-transform">
         {icon}
       </div>
       <div className="flex-1">
-        <h3 className="text-white font-bold text-sm mb-0.5">{title}</h3>
+        <h3 className="dark:text-white text-gray-900 font-bold text-sm mb-0.5">{title}</h3>
         <p className="text-gray-500 text-xs">{description}</p>
       </div>
       <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-blue-400 transition-colors" />

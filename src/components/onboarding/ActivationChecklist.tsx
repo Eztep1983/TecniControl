@@ -59,17 +59,17 @@ export default function ActivationChecklist({
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="space-y-1">
-            <h3 className="text-white font-extrabold text-base flex items-center gap-2 tracking-tight">
+            <h3 className="dark:text-white text-gray-900 font-extrabold text-base flex items-center gap-2 tracking-tight">
               <Sparkles className="w-5 h-5 text-sky-400" />
               Configura tu cuenta
             </h3>
-            <p className="text-gray-400 text-xs leading-relaxed">
+            <p className="dark:text-gray-400 text-gray-600 text-xs leading-relaxed">
               Completa los pasos básicos para empezar a emitir reportes profesionales.
             </p>
           </div>
           <button
             onClick={onSkipOnboarding}
-            className="text-gray-500 hover:text-white transition-colors p-1"
+            className="text-gray-500 hover:dark:text-white hover:text-gray-900 transition-colors p-1"
             title="Omitir onboarding"
           >
             <X className="w-4 h-4" />
@@ -82,7 +82,7 @@ export default function ActivationChecklist({
             <span className="text-sky-400">{progressPercentage}% completado</span>
             <span className="text-gray-500">{completedSteps} de 2 pasos</span>
           </div>
-          <div className="w-full bg-gray-800/80 rounded-full h-1.5 overflow-hidden">
+          <div className="w-full dark:bg-gray-800/80 bg-gray-200/80 rounded-full h-1.5 overflow-hidden">
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: `${progressPercentage}%` }}
@@ -95,18 +95,18 @@ export default function ActivationChecklist({
         {/* Steps */}
         <div className="space-y-3">
           {/* Step 1: Account Created */}
-          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-800/20 border border-gray-800/40">
+          <div className="flex items-center justify-between p-3 rounded-2xl dark:bg-gray-800/20 bg-gray-200 border dark:border-gray-800 border-gray-200/40">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
               <div className="text-left">
-                <p className="text-gray-300 text-xs font-semibold line-through">Crear tu cuenta de acceso</p>
+                <p className="dark:text-gray-300 text-gray-700 text-xs font-semibold line-through">Crear tu cuenta de acceso</p>
                 <p className="text-[10px] text-gray-500 font-medium">Cuenta verificada y activa</p>
               </div>
             </div>
           </div>
 
           {/* Step 2: Sandbox Order */}
-          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-800/20 border border-gray-800/40 hover:border-blue-500/20 transition-all">
+          <div className="flex items-center justify-between p-3 rounded-2xl dark:bg-gray-800/20 bg-gray-200 border dark:border-gray-800 border-gray-200/40 hover:border-blue-500/20 transition-all">
             <div className="flex items-center gap-3">
               {isSandboxCompleted ? (
                 <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
@@ -114,7 +114,7 @@ export default function ActivationChecklist({
                 <Circle className="w-5 h-5 text-gray-600 shrink-0 animate-pulse" />
               )}
               <div className="text-left">
-                <p className={`text-xs font-semibold ${isSandboxCompleted ? 'text-gray-400 line-through' : 'text-white'}`}>
+                <p className={`text-xs font-semibold ${isSandboxCompleted ? 'dark:text-gray-400 text-gray-600 line-through' : 'dark:text-white text-gray-900'}`}>
                   Crear una orden de prueba (Sandbox)
                 </p>
                 <p className="text-[10px] text-gray-500 font-medium">
@@ -134,7 +134,7 @@ export default function ActivationChecklist({
           </div>
 
           {/* Step 3: Config */}
-          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-800/20 border border-gray-800/40 hover:border-blue-500/20 transition-all">
+          <div className="flex items-center justify-between p-3 rounded-2xl dark:bg-gray-800/20 bg-gray-200 border dark:border-gray-800 border-gray-200/40 hover:border-blue-500/20 transition-all">
             <div className="flex items-center gap-3">
               {isBusinessConfigured ? (
                 <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
@@ -142,7 +142,7 @@ export default function ActivationChecklist({
                 <Circle className="w-5 h-5 text-gray-600 shrink-0" />
               )}
               <div className="text-left">
-                <p className={`text-xs font-semibold ${isBusinessConfigured ? 'text-gray-400 line-through' : 'text-white'}`}>
+                <p className={`text-xs font-semibold ${isBusinessConfigured ? 'dark:text-gray-400 text-gray-600 line-through' : 'dark:text-white text-gray-900'}`}>
                   Opcional: Personaliza tu negocio
                 </p>
                 <p className="text-[10px] text-gray-500 font-medium">
@@ -153,7 +153,7 @@ export default function ActivationChecklist({
             {!isBusinessConfigured ? (
               <button
                 onClick={() => router.push('/configuracion')}
-                className="bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700/50 font-bold text-[11px] px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all active:scale-95"
+                className="dark:bg-gray-800 bg-gray-200 hover:bg-gray-700 dark:text-gray-200 text-gray-800 border dark:border-gray-700/50 border-gray-300 font-bold text-[11px] px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all active:scale-95"
               >
                 Configurar
                 <Settings className="w-3.5 h-3.5" />
@@ -180,8 +180,8 @@ export default function ActivationChecklist({
               <Trophy className="w-5 h-5 text-emerald-400 animate-bounce" />
             </div>
             <div className="space-y-1">
-              <p className="text-white text-xs font-extrabold">¡Todo listo para empezar!</p>
-              <p className="text-gray-400 text-[10px] leading-relaxed">
+              <p className="dark:text-white text-gray-900 text-xs font-extrabold">¡Todo listo para empezar!</p>
+              <p className="dark:text-gray-400 text-gray-600 text-[10px] leading-relaxed">
                 Has configurado tu cuenta con éxito. Ya puedes empezar a registrar tus clientes y emitir reportes reales.
               </p>
             </div>
