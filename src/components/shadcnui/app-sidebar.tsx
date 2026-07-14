@@ -107,11 +107,15 @@ export function AppSidebar() {
                 className="flex items-center gap-2"
                 onClick={(e) => handleNavClick(e, 'ordenes')}
               >
-                <div className="flex aspect-square size-14 items-center justify-center rounded-lg overflow-hidden bg-black">
+                <div 
+                  className="flex aspect-square size-14 items-center justify-center rounded-lg overflow-hidden bg-white dark:bg-white"
+                  style={{ backgroundColor: 'white' }}
+                >
                   <img
                     src={icono.src}
                     alt="TecniControl"
                     className="w-full h-full object-cover"
+                    style={{ backgroundColor: 'white' }}
                   />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">

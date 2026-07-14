@@ -6,15 +6,18 @@ import { useSignatureCanvas, SignatureState } from '../../hooks/useSignatureCanv
 interface FirmaInputProps {
   signatureState: SignatureState
   onChange: (state: SignatureState) => void
+  isOnboarding?: boolean
 }
 
 export default function FirmaInput({
   signatureState,
   onChange,
+  isOnboarding,
 }: FirmaInputProps) {
   const sigCanvas = useRef<SignatureCanvas>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const switchRef = useRef<HTMLButtonElement>(null)
+  const validacionRef = useRef<HTMLInputElement>(null)
   const [isConfirmingClear, setIsConfirmingClear] = useState(false)
   const [touchedFields, setTouchedFields] = useState<{
     nombre?: boolean
@@ -24,6 +27,7 @@ export default function FirmaInput({
   }>({})
   const [canvasTouched, setCanvasTouched] = useState(false)
   const [showConfirmToggle, setShowConfirmToggle] = useState(false)
+  const [focusedInput, setFocusedInput] = useState<string | null>(null)
 
   const { guardarFirma, limpiarFirma } = useSignatureCanvas(
     containerRef,
@@ -40,6 +44,34 @@ export default function FirmaInput({
     const timer = setTimeout(() => setIsConfirmingClear(false), 3000)
     return () => clearTimeout(timer)
   }, [isConfirmingClear])
+
+  // Auto-focus al checkbox de validación
+  // Se dispara cuando todos los campos están llenos y el usuario no está escribiendo activamente
+  useEffect(() => {
+    if (
+      signatureState.habilitada && 
+      !signatureState.validada && 
+      signatureState.firma && 
+      (signatureState.nombreReceptor?.trim().length || 0) > 0 && 
+      (signatureState.cedulaReceptor?.trim().length || 0) >= 5
+    ) {
+      if (validacionRef.current && !focusedInput) {
+        const timer = setTimeout(() => {
+          // Usamos scrollIntoView en lugar de focus() para evitar abrir el teclado
+          // en dispositivos móviles por efectos secundarios del focus.
+          validacionRef.current?.parentElement?.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [
+    signatureState.habilitada,
+    signatureState.validada,
+    signatureState.firma,
+    signatureState.nombreReceptor,
+    signatureState.cedulaReceptor,
+    focusedInput
+  ]);
 
   const handleToggle = () => {
     if (signatureState.habilitada) {
@@ -145,6 +177,7 @@ export default function FirmaInput({
             </div>
           </div>
 
+          {!isOnboarding && (
           <button
             ref={switchRef}
             type="button"
@@ -172,6 +205,7 @@ export default function FirmaInput({
               `}
             />
           </button>
+          )}
         </div>
 
         {/* Advertencia de confirmación inline */}
@@ -233,10 +267,12 @@ export default function FirmaInput({
                   aria-invalid={showNombreError ? "true" : "false"}
                   value={signatureState.nombreReceptor || ''}
                   onChange={(e) => onChange({ ...signatureState, nombreReceptor: e.target.value })}
+                  onFocus={() => setFocusedInput('nombreReceptor')}
                   onBlur={() => {
                     const trimmed = signatureState.nombreReceptor?.trim() || ''
                     onChange({ ...signatureState, nombreReceptor: trimmed })
                     setTouchedFields(prev => ({ ...prev, nombre: true }))
+                    setFocusedInput(null)
                   }}
                   placeholder="Ej. Juan Pérez"
                   className={`w-full px-4 py-3 dark:bg-gray-900/60 bg-gray-50 border rounded-xl dark:text-white text-gray-900 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 outline-none ${
@@ -290,10 +326,12 @@ export default function FirmaInput({
                       onChange({ ...signatureState, cedulaReceptor: val })
                     }
                   }}
+                  onFocus={() => setFocusedInput('cedulaReceptor')}
                   onBlur={() => {
                     const trimmed = signatureState.cedulaReceptor?.trim() || ''
                     onChange({ ...signatureState, cedulaReceptor: trimmed })
                     setTouchedFields(prev => ({ ...prev, cedula: true }))
+                    setFocusedInput(null)
                   }}
                   placeholder="Ej. 123456789"
                   className={`w-full px-4 py-3 dark:bg-gray-900/60 bg-gray-50 border rounded-xl dark:text-white text-gray-900 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 outline-none ${
@@ -318,7 +356,7 @@ export default function FirmaInput({
                   Firma Digital del Receptor <span className="dark:text-red-400 text-red-700 font-bold">*</span>
                 </label>
                 <div className="flex gap-2 justify-end w-full sm:w-auto">
-                  {!isEmpty && (
+                  {!isOnboarding && !isEmpty && (
                     <button
                       type="button"
                       onClick={handleUndo}
@@ -328,18 +366,20 @@ export default function FirmaInput({
                       Deshacer
                     </button>
                   )}
-                  <button
-                    type="button"
-                    onClick={handleClear}
-                    className={`text-xs flex items-center justify-center px-4 py-2.5 rounded-xl transition-all active:scale-95 min-h-[40px] min-w-[90px] ${
-                      isConfirmingClear
-                        ? 'bg-amber-500/20 dark:text-amber-300 text-amber-700'
-                        : 'bg-red-500/10 dark:text-red-400 text-red-700 hover:dark:text-red-300 hover:text-red-700'
-                    }`}
-                  >
-                    <Eraser className="w-4 h-4 mr-1.5" />
-                    {isConfirmingClear ? '¿Confirmar?' : 'Limpiar'}
-                  </button>
+                  {!isOnboarding && (
+                    <button
+                      type="button"
+                      onClick={handleClear}
+                      className={`text-xs flex items-center justify-center px-4 py-2.5 rounded-xl transition-all active:scale-95 min-h-[40px] min-w-[90px] ${
+                        isConfirmingClear
+                          ? 'bg-amber-500/20 dark:text-amber-300 text-amber-700'
+                          : 'bg-red-500/10 dark:text-red-400 text-red-700 hover:dark:text-red-300 hover:text-red-700'
+                      }`}
+                    >
+                      <Eraser className="w-4 h-4 mr-1.5" />
+                      {isConfirmingClear ? '¿Confirmar?' : 'Limpiar'}
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -414,6 +454,7 @@ export default function FirmaInput({
                 <div className="flex-shrink-0 mt-0.5 relative">
                   <input
                     id="validacionCliente"
+                    ref={validacionRef}
                     type="checkbox"
                     checked={signatureState.validada}
                     onChange={(e) => {

@@ -331,7 +331,7 @@ export function ImportarContactosModal({
           <div className="flex items-start justify-between">
             <div>
               <DialogTitle className="text-[17px] font-semibold tracking-tight dark:text-white text-gray-900 leading-tight flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-400" />
+                <Users className="w-5 h-5 dark:text-blue-400 text-blue-700" />
                 Importar Contactos
               </DialogTitle>
               <p className="text-[13px] dark:text-white text-gray-900/40 mt-0.5 font-medium">
@@ -346,7 +346,7 @@ export function ImportarContactosModal({
           {/* Permission State: Checking */}
           {permissionState === 'checking' && (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-3">
-              <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+              <Loader2 className="w-8 h-8 dark:text-blue-500 text-blue-600 animate-spin" />
               <p className="text-sm dark:text-gray-400 text-gray-600">Verificando permisos de contactos...</p>
             </div>
           )}
@@ -354,7 +354,7 @@ export function ImportarContactosModal({
           {/* Permission State: Prompt / Denied */}
           {(permissionState === 'prompt' || permissionState === 'denied') && (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4 max-w-sm mx-auto">
-              <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+              <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center dark:text-blue-400 text-blue-700">
                 <Smartphone className="w-8 h-8" />
               </div>
               <div className="space-y-1">
@@ -364,7 +364,7 @@ export function ImportarContactosModal({
                 </p>
               </div>
               {permissionState === 'denied' && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs text-left">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 dark:text-amber-400 text-amber-700 text-xs text-left">
                   <ShieldAlert className="w-4 h-4 flex-shrink-0" />
                   <span>El permiso fue denegado. Puedes cambiar esto en los ajustes del sistema de tu dispositivo.</span>
                 </div>
@@ -395,7 +395,7 @@ export function ImportarContactosModal({
                   {searchTerm && (
                     <button
                       onClick={() => setSearchTerm("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full dark:bg-gray-800/80 bg-gray-200/80 hover:bg-gray-700/80"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full dark:bg-gray-800/80 bg-gray-200/80 hover:dark:bg-gray-700 hover:bg-gray-300/80"
                     >
                       <X className="w-3 h-3 dark:text-gray-400 text-gray-600" />
                     </button>
@@ -418,7 +418,7 @@ export function ImportarContactosModal({
                     {selectedKeys.size > 0 && (
                       <button
                         onClick={() => setSelectedKeys(new Set())}
-                        className="text-xs text-blue-400 hover:text-blue-300 font-semibold"
+                        className="text-xs dark:text-blue-400 text-blue-700 hover:dark:text-blue-300 hover:text-blue-700 font-semibold"
                       >
                         Limpiar selección ({selectedKeys.size})
                       </button>
@@ -434,7 +434,7 @@ export function ImportarContactosModal({
               >
                 {loadingContacts ? (
                   <div className="py-20 flex flex-col items-center justify-center gap-3">
-                    <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                    <Loader2 className="w-8 h-8 dark:text-blue-500 text-blue-600 animate-spin" />
                     <p className="text-sm dark:text-gray-400 text-gray-600">Leyendo libreta de contactos...</p>
                   </div>
                 ) : filteredContacts.length === 0 ? (
@@ -448,10 +448,17 @@ export function ImportarContactosModal({
                 ) : (
                   <>
                     {visibleContacts.map((contact) => (
-                      <button
+                      <div
                         key={contact.key}
                         onClick={() => !contact.isDuplicate && toggleSelect(contact.key)}
-                        type="button"
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            if (!contact.isDuplicate) toggleSelect(contact.key);
+                          }
+                        }}
                         className={[
                           "w-full text-left p-3.5 rounded-xl border flex items-center justify-between gap-4 transition-all duration-200",
                           contact.isDuplicate
@@ -483,11 +490,11 @@ export function ImportarContactosModal({
                         <div className="flex items-center gap-3 flex-shrink-0">
                           {contact.isDuplicate ? (
                             <>
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold tracking-wide flex-shrink-0 select-none">
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 dark:text-emerald-400 text-emerald-700 font-semibold tracking-wide flex-shrink-0 select-none">
                                 Existente
                               </span>
                               <div className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                                <Check className="w-3 h-3 text-emerald-400" />
+                                <Check className="w-3 h-3 dark:text-emerald-400 text-emerald-700" />
                               </div>
                             </>
                           ) : (
@@ -499,7 +506,7 @@ export function ImportarContactosModal({
                             </div>
                           )}
                         </div>
-                      </button>
+                      </div>
                     ))}
 
                     {/* Pagination Indicator / Load More */}
@@ -523,7 +530,7 @@ export function ImportarContactosModal({
                   <button
                     disabled={isImporting}
                     onClick={onClose}
-                    className="flex-1 min-h-[48px] dark:bg-gray-800 bg-gray-200 hover:bg-gray-700 dark:text-gray-300 text-gray-700 font-medium text-sm rounded-xl transition-all"
+                    className="flex-1 min-h-[48px] dark:bg-gray-800 bg-gray-200 hover:dark:bg-gray-700 hover:bg-gray-300 dark:text-gray-300 text-gray-700 font-medium text-sm rounded-xl transition-all"
                   >
                     Cancelar
                   </button>

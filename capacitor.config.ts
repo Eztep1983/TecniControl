@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'out', 
 
   server: {
-    url: 'http://192.168.1.8:9002',
+    url: 'http://192.168.1.3:9002',
     cleartext: true,
     androidScheme: 'http',
   },

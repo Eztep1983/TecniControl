@@ -19,18 +19,21 @@ interface PiezasInputProps {
   piezasUsadas: Pieza[]
   setPiezasUsadas: Dispatch<SetStateAction<Pieza[]>>
   error?: string
+  isOnboarding?: boolean
 }
 
 const SelectorCantidad = memo(({ 
   cantidad, 
   nombrePieza,
   onCambiar, 
-  onEliminar 
+  onEliminar,
+  isOnboarding
 }: { 
   cantidad: number, 
   nombrePieza: string,
   onCambiar: (c: number) => void, 
-  onEliminar: () => void 
+  onEliminar: () => void,
+  isOnboarding?: boolean
 }) => {
   const { impactLight } = useHapticFeedback()
 
@@ -40,9 +43,11 @@ const SelectorCantidad = memo(({
         type="button"
         onClick={() => {
           impactLight()
-          cantidad > 1 ? onCambiar(cantidad - 1) : onEliminar()
+          if (!isOnboarding || cantidad > 1) {
+            cantidad > 1 ? onCambiar(cantidad - 1) : onEliminar()
+          }
         }}
-        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center dark:bg-gray-800 bg-gray-200 hover:bg-gray-700 active:bg-gray-600 rounded-lg transition-all dark:text-gray-400 text-gray-600 hover:dark:text-white hover:text-gray-900"
+        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center dark:bg-gray-800 bg-gray-200 hover:dark:bg-gray-700 hover:bg-gray-300 active:dark:bg-gray-600 active:bg-gray-300 rounded-lg transition-all dark:text-gray-400 text-gray-600 hover:dark:text-white hover:text-gray-900"
         aria-label="Disminuir cantidad"
       >
         <span className="text-xl font-bold select-none">-</span>
@@ -69,7 +74,7 @@ const SelectorCantidad = memo(({
             onCambiar(cantidad + 1)
           }
         }}
-        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center dark:bg-gray-800 bg-gray-200 hover:bg-gray-700 active:bg-gray-600 rounded-lg transition-all dark:text-gray-400 text-gray-600 hover:dark:text-white hover:text-gray-900 disabled:opacity-30"
+        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center dark:bg-gray-800 bg-gray-200 hover:dark:bg-gray-700 hover:bg-gray-300 active:dark:bg-gray-600 active:bg-gray-300 rounded-lg transition-all dark:text-gray-400 text-gray-600 hover:dark:text-white hover:text-gray-900 disabled:opacity-30"
         disabled={cantidad >= 999}
         aria-label="Aumentar cantidad"
       >
@@ -83,7 +88,8 @@ SelectorCantidad.displayName = 'SelectorCantidad'
 export default memo(function PiezasInput({
   piezasUsadas,
   setPiezasUsadas,
-  error: errorExterna
+  error: errorExterna,
+  isOnboarding
 }: PiezasInputProps) {
   const { user } = useAuth()
   const { impactLight, selection, success } = useHapticFeedback()

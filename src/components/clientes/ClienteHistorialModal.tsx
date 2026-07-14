@@ -66,26 +66,26 @@ const OrdenItem = memo(({
     <div className="flex items-start justify-between gap-3">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-2">
-          <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[10px] font-bold text-blue-400 uppercase tracking-wider">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[10px] font-bold dark:text-blue-400 text-blue-700 uppercase tracking-wider">
             #{orden.idPersonalizado || orden.id?.slice(-6)}
           </span>
           <span className={cn(
             "inline-flex items-center px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider",
-            orden.tipoMantenimiento === 'preventivo' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
-            orden.tipoMantenimiento === 'correctivo' ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' :
-            'bg-blue-500/10 border-blue-500/20 text-blue-400'
+            orden.tipoMantenimiento === 'preventivo' ? 'bg-green-500/10 border-green-500/20 dark:text-green-400 text-green-700' :
+            orden.tipoMantenimiento === 'correctivo' ? 'bg-orange-500/10 border-orange-500/20 dark:text-orange-400 text-orange-700' :
+            'bg-blue-500/10 border-blue-500/20 dark:text-blue-400 text-blue-700'
           )}>
             {orden.tipoMantenimiento || 'Servicio'}
           </span>
           {(orden as any).isOfflinePending && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold dark:text-amber-400 text-amber-700 uppercase tracking-wider">
               <CloudOff className="w-3 h-3" />
               Pendiente
             </span>
           )}
         </div>
 
-        <h4 className="font-bold dark:text-white text-gray-900 text-sm truncate group-hover:text-blue-400 transition-colors">
+        <h4 className="font-bold dark:text-white text-gray-900 text-sm truncate group-hover:dark:text-blue-400 group-hover:text-blue-700 transition-colors">
           {orden.dispositivo?.marca} {orden.dispositivo?.modelo}
         </h4>
 
@@ -104,7 +104,7 @@ const OrdenItem = memo(({
       </div>
 
       <div className="w-10 h-10 rounded-xl bg-gray-700/30 flex items-center justify-center group-hover:bg-blue-500/10 transition-colors">
-        <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-blue-400 transition-colors" />
+        <ChevronRight className="w-5 h-5 text-gray-600 group-hover:dark:text-blue-400 group-hover:text-blue-700 transition-colors" />
       </div>
     </div>
   </button>
@@ -168,7 +168,7 @@ const HistorialContent = memo(function HistorialContent({
   if (error) {
     return (
       <div className="text-center py-12">
-        <RefreshCw className="w-12 h-12 text-red-400 mx-auto mb-3 opacity-60" />
+        <RefreshCw className="w-12 h-12 dark:text-red-400 text-red-700 mx-auto mb-3 opacity-60" />
         <p className="dark:text-gray-400 text-gray-600 text-sm mb-4">{error}</p>
         <button
           onClick={handleRefresh}
@@ -193,7 +193,7 @@ const HistorialContent = memo(function HistorialContent({
         </p>
         <button
           onClick={onCrearOrdenClick}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 rounded-xl text-blue-400 font-medium transition-all active:scale-95"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 rounded-xl dark:text-blue-400 text-blue-700 font-medium transition-all active:scale-95"
         >
           <PlusCircle className="w-4 h-4" />
           Crear primera orden
@@ -347,7 +347,7 @@ export function ClienteHistorialModal({
             </div>
             {!loading && ordenes.length > 0 && (
               <div className="flex-shrink-0 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                <span className="text-[10px] font-black text-blue-400">
+                <span className="text-[10px] font-black dark:text-blue-400 text-blue-700">
                   {ordenes.length} {ordenes.length === 1 ? 'ORDEN' : 'ÓRDENES'}
                 </span>
               </div>
@@ -377,7 +377,7 @@ export function ClienteHistorialModal({
       {selectedOrden && (
         <Suspense fallback={
           <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/20 backdrop-blur-sm">
-            <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
+            <RefreshCw className="w-8 h-8 dark:text-blue-400 text-blue-700 animate-spin" />
           </div>
         }>
           <ModalOrdenLazy

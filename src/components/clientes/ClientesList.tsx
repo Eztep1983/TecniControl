@@ -153,7 +153,7 @@ export function ClientesList() {
           role="alert"
         >
           <div className="w-14 h-14 bg-blue-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <User className="w-7 h-7 text-blue-400" aria-hidden="true" />
+            <User className="w-7 h-7 dark:text-blue-400 text-blue-700" aria-hidden="true" />
           </div>
           <h2 className="text-base font-semibold dark:text-white text-gray-900 mb-1">Acceso Requerido</h2>
           <p className="text-sm dark:text-gray-400 text-gray-600">
@@ -173,13 +173,13 @@ export function ClientesList() {
           role="alert"
         >
           <div className="w-14 h-14 bg-red-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <RefreshCw className="w-7 h-7 text-red-400" aria-hidden="true" />
+            <RefreshCw className="w-7 h-7 dark:text-red-400 text-red-700" aria-hidden="true" />
           </div>
           <h2 className="text-base font-semibold dark:text-white text-gray-900 mb-1">Error al Cargar</h2>
           <p className="text-sm dark:text-gray-400 text-gray-600 mb-5">{error}</p>
           <button
             onClick={refrescarClientes}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 text-sm font-medium transition-colors active:scale-95 min-h-[44px]"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 dark:text-red-400 text-red-700 text-sm font-medium transition-colors active:scale-95 min-h-[44px]"
           >
             <RefreshCw className="w-4 h-4" aria-hidden="true" />
             Reintentar
@@ -231,7 +231,7 @@ export function ClientesList() {
                 className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0"
                 aria-hidden="true"
               >
-                <Users className="w-5 h-5 text-blue-400" />
+                <Users className="w-5 h-5 dark:text-blue-400 text-blue-700" />
               </div>
 
               <div className="min-w-0 flex-1">
@@ -294,7 +294,7 @@ export function ClientesList() {
 
               <button
                 onClick={openCreate}
-                className="flex items-center justify-center gap-2 px-4 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/30 transition-all active:scale-95 text-sm font-medium flex-shrink-0 min-h-[48px] text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+                className="flex items-center justify-center gap-2 px-4 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/30 transition-all active:scale-95 text-sm font-medium flex-shrink-0 min-h-[48px] dark:text-blue-400 text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
                 aria-label="Crear nuevo cliente"
               >
                 <PlusCircle className="w-5 h-5" aria-hidden="true" />
@@ -323,7 +323,7 @@ export function ClientesList() {
                 </p>
                 <button
                   onClick={openCreate}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 rounded-xl text-blue-400 font-medium transition-all active:scale-95 min-h-[48px]"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 rounded-xl dark:text-blue-400 text-blue-700 font-medium transition-all active:scale-95 min-h-[48px]"
                 >
                   <PlusCircle className="w-5 h-5" aria-hidden="true" />
                   Crear Primer Cliente
@@ -343,7 +343,7 @@ export function ClientesList() {
                 </p>
                 <button
                   onClick={clearSearch}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-700/40 hover:bg-gray-700 dark:text-gray-300 text-gray-700 text-sm font-medium transition-colors active:scale-95 min-h-[48px]"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-700/40 hover:dark:bg-gray-700 hover:bg-gray-300 dark:text-gray-300 text-gray-700 text-sm font-medium transition-colors active:scale-95 min-h-[48px]"
                 >
                   <X className="w-5 h-5" aria-hidden="true" />
                   Limpiar búsqueda

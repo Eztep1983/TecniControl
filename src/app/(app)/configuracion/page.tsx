@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { 
   Building, ShieldCheck, Bell, Palette, 
   HelpCircle, LogOut, ChevronRight, Settings, 
@@ -23,17 +24,25 @@ import { Button } from "@/components/ui/basic/button"
 
 type SettingsSection = 'negocio' | 'seguridad' | 'notificaciones' | 'preferencias' | 'ayuda' | null
 
-export default function ConfiguracionPage() {
+function ConfiguracionContent() {
   const { logout } = useAuth();
   const { navigateTo } = useMobileNavigation();
   const [activeSection, setActiveSection] = useState<SettingsSection>(null);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (section && ['negocio', 'seguridad', 'notificaciones', 'preferencias', 'ayuda'].includes(section)) {
+      setActiveSection(section as SettingsSection);
+    }
+  }, [searchParams]);
 
   const menuItems = [
     {
       id: 'negocio',
-      label: 'Cuenta y Perfil',
-      description: 'Datos del negocio e información de contacto',
+      label: 'Mi Negocio',
+      description: 'Datos de tu negocio e información de contacto para PDFs profesionales',
       icon: Building,
       color: 'dark:text-blue-400 text-blue-600',
       bg: 'dark:bg-blue-500/10 bg-blue-100'
@@ -193,5 +202,17 @@ export default function ConfiguracionPage() {
         </AlertDialog>
       </div>
     </div>
+  );
+}
+
+export default function ConfiguracionPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <ConfiguracionContent />
+    </Suspense>
   );
 }

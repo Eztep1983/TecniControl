@@ -53,6 +53,7 @@ interface MantenimientoInfoProps {
   onToggleInstalacionConfiguracion?: (valor: boolean) => void
   onToggleInstalacionConfiguracionTipo?: (tipo: string) => void
   onAgregarInstalacionConfiguracionPersonalizada?: (tipo: string) => void
+  isOnboarding?: boolean
 }
 
 const TIPO_CONFIG = {
@@ -94,7 +95,7 @@ const TIPO_CONFIG = {
   },
   garantia: {
     icono: ShieldCheck,
-    nombre: 'Garantía',
+    nombre: 'Dar Garantía',
     colorBorder: 'border-amber-500/40',
     colorBg: 'bg-amber-500/10',
     colorIcon: 'bg-amber-500/20 dark:text-amber-400 text-amber-700',
@@ -195,6 +196,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
   onToggleInstalacionConfiguracion = () => {},
   onToggleInstalacionConfiguracionTipo = () => {},
   onAgregarInstalacionConfiguracionPersonalizada = () => {},
+  isOnboarding = false,
 }: MantenimientoInfoProps) {
   
   const [isChanging, setIsChanging] = useState(false)
@@ -215,7 +217,8 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
     onToggleTareaPredefinida,
     onActualizarTareaPersonalizada,
     onAgregarTareaPersonalizada,
-    onEliminarTareaPersonalizada
+    onEliminarTareaPersonalizada,
+    isOnboarding
   }), [
     tipoMantenimiento,
     tareasSeleccionadas,
@@ -223,14 +226,16 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
     onToggleTareaPredefinida,
     onActualizarTareaPersonalizada,
     onAgregarTareaPersonalizada,
-    onEliminarTareaPersonalizada
+    onEliminarTareaPersonalizada,
+    isOnboarding
   ])
 
   const piezasInputProps = useMemo(() => ({
     piezasUsadas,
     setPiezasUsadas,
-    error: undefined
-  }), [piezasUsadas, setPiezasUsadas])
+    error: undefined,
+    isOnboarding
+  }), [piezasUsadas, setPiezasUsadas, isOnboarding])
 
   const diagnosticoProps = useMemo(() => ({
     observacionesIniciales,
@@ -445,7 +450,7 @@ const MantenimientoInfo = memo(function MantenimientoInfo({
                     />
                     
                     <motion.div 
-                      className="w-12 h-12 rounded-xl flex items-center justify-center dark:bg-gray-800 bg-gray-200 text-gray-500 group-hover:bg-gray-700 transition-all duration-300 relative z-10"
+                      className="w-12 h-12 rounded-xl flex items-center justify-center dark:bg-gray-800 bg-gray-200 text-gray-500 group-hover:dark:bg-gray-700 hover:bg-gray-300 transition-all duration-300 relative z-10"
                       animate={isHovered ? { scale: 1.05, rotate: 5 } : { scale: 1, rotate: 0 }}
                       transition={{ type: "spring", stiffness: 400, damping: 20 }}
                     >

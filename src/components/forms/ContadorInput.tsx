@@ -240,7 +240,7 @@ const ContadorInput = React.memo(function ContadorInput({
                   key={val}
                   type="button"
                   onClick={() => handleChange('valor', contadorActual.valor + val)}
-                  className="px-4 py-2 rounded-xl dark:bg-gray-700/50 bg-gray-300 dark:text-gray-300 text-gray-700 text-sm font-bold hover:bg-gray-700 active:scale-95 transition-all"
+                  className="px-4 py-2 rounded-xl dark:bg-gray-700/50 bg-gray-300 dark:text-gray-300 text-gray-700 text-sm font-bold hover:dark:bg-gray-700 hover:bg-gray-300 active:scale-95 transition-all"
                 >
                   +{val}
                 </button>

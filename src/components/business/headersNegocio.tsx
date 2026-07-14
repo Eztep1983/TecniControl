@@ -25,7 +25,7 @@ export const NegocioHeader = ({ negocio, titulo, subtitulo }: NegocioHeaderProps
         {negocio.telefono && <p className="text-sm dark:text-gray-300 text-gray-700">Tel: {negocio.telefono}</p>}
         {negocio.email && <p className="text-sm dark:text-gray-300 text-gray-700">Email: {negocio.email}</p>}
         {negocio.nit && <p className="text-sm dark:text-gray-300 text-gray-700">NIT: {negocio.nit}</p>}
-        <h2 className="text-xl font-semibold text-blue-400 mt-2">{titulo}</h2>
+        <h2 className="text-xl font-semibold dark:text-blue-400 text-blue-700 mt-2">{titulo}</h2>
         {subtitulo && <p className="text-sm dark:text-gray-400 text-gray-600">{subtitulo}</p>}
       </div>
     </div>

@@ -289,7 +289,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
           {/* Teléfono */}
           <div className="flex items-center gap-3 p-3.5 rounded-2xl dark:bg-gray-800/30 bg-gray-100 border dark:border-gray-700/40 border-gray-300">
             <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center flex-shrink-0">
-              <Phone className="w-5 h-5 text-green-400" />
+              <Phone className="w-5 h-5 dark:text-green-400 text-green-700" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter mb-1">Teléfono</p>
@@ -306,7 +306,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
                 placeholder="Ej: +123456789"
               />
               {errors.phone && (
-                <p className="text-xs text-red-400 font-semibold mt-1 ml-1">{errors.phone}</p>
+                <p className="text-xs dark:text-red-400 text-red-700 font-semibold mt-1 ml-1">{errors.phone}</p>
               )}
             </div>
           </div>
@@ -314,7 +314,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
           {/* Email */}
           <div className="flex items-center gap-3 p-3.5 rounded-2xl dark:bg-gray-800/30 bg-gray-100 border dark:border-gray-700/40 border-gray-300">
             <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-              <Mail className="w-5 h-5 text-blue-400" />
+              <Mail className="w-5 h-5 dark:text-blue-400 text-blue-700" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter mb-1">Email</p>
@@ -331,7 +331,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
                 placeholder="Ej: correo@ejemplo.com"
               />
               {errors.email && (
-                <p className="text-xs text-red-400 font-semibold mt-1 ml-1">{errors.email}</p>
+                <p className="text-xs dark:text-red-400 text-red-700 font-semibold mt-1 ml-1">{errors.email}</p>
               )}
             </div>
           </div>
@@ -339,7 +339,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
           {/* Dirección */}
           <div className="flex items-center gap-3 p-3.5 rounded-2xl dark:bg-gray-800/30 bg-gray-100 border dark:border-gray-700/40 border-gray-300">
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-              <MapPin className="w-5 h-5 text-purple-400" />
+              <MapPin className="w-5 h-5 dark:text-purple-400 text-purple-700" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter mb-1">Dirección</p>
@@ -366,11 +366,11 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
           {localCliente.phone && (
             <div className="flex items-center gap-3 p-3.5 rounded-2xl dark:bg-gray-800/30 bg-gray-100 border dark:border-gray-700/40 border-gray-300 group">
               <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                <Phone className="w-5 h-5 text-green-400" />
+                <Phone className="w-5 h-5 dark:text-green-400 text-green-700" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Teléfono</p>
-                <a href={`tel:${localCliente.phone}`} className="text-sm dark:text-white text-gray-900 font-medium hover:text-green-400 transition-colors">
+                <a href={`tel:${localCliente.phone}`} className="text-sm dark:text-white text-gray-900 font-medium hover:dark:text-green-400 hover:text-green-700 transition-colors">
                   {localCliente.phone}
                 </a>
               </div>
@@ -379,11 +379,11 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
           {localCliente.email && (
             <div className="flex items-center gap-3 p-3.5 rounded-2xl dark:bg-gray-800/30 bg-gray-100 border dark:border-gray-700/40 border-gray-300">
               <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                <Mail className="w-5 h-5 text-blue-400" />
+                <Mail className="w-5 h-5 dark:text-blue-400 text-blue-700" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Email</p>
-                <a href={`mailto:${localCliente.email}`} className="text-sm dark:text-white text-gray-900 font-medium hover:text-blue-400 transition-colors truncate block">
+                <a href={`mailto:${localCliente.email}`} className="text-sm dark:text-white text-gray-900 font-medium hover:dark:text-blue-400 hover:text-blue-700 transition-colors truncate block">
                   {localCliente.email}
                 </a>
               </div>
@@ -392,7 +392,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
           {localCliente.address && (
             <div className="flex items-center gap-3 p-3.5 rounded-2xl dark:bg-gray-800/30 bg-gray-100 border dark:border-gray-700/40 border-gray-300">
               <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                <MapPin className="w-5 h-5 text-purple-400" />
+                <MapPin className="w-5 h-5 dark:text-purple-400 text-purple-700" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Dirección</p>
@@ -411,7 +411,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Dispositivos vinculados</p>
           <button
             onClick={handleAddDeviceClick}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-xs font-bold text-blue-400 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-xs font-bold dark:text-blue-400 text-blue-700 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             Añadir
@@ -424,7 +424,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center">
-                      <Monitor className="w-5 h-5 text-blue-400" />
+                      <Monitor className="w-5 h-5 dark:text-blue-400 text-blue-700" />
                     </div>
                     <div>
                       <p className="text-sm font-bold dark:text-white text-gray-900">{d.marca} {d.modelo}</p>
@@ -442,7 +442,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
                     </button>
                     <button
                       onClick={() => handleDeleteDeviceClick(d)}
-                      className="w-8 h-8 rounded-md flex items-center justify-center dark:text-gray-400 text-gray-600 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+                      className="w-8 h-8 rounded-md flex items-center justify-center dark:text-gray-400 text-gray-600 hover:bg-red-500/20 hover:dark:text-red-400 hover:text-red-700 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -476,7 +476,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
       <button
         onClick={handleCancelEdit}
         disabled={isSaving}
-        className="h-12 rounded-xl dark:bg-gray-800 bg-gray-200 hover:bg-gray-700 active:bg-gray-650 dark:text-white text-gray-900 text-sm font-bold border dark:border-gray-700/50 border-gray-300 transition-colors"
+        className="h-12 rounded-xl dark:bg-gray-800 bg-gray-200 hover:dark:bg-gray-700 hover:bg-gray-300 active:dark:bg-gray-600 active:bg-gray-300 dark:text-white text-gray-900 text-sm font-bold border dark:border-gray-700/50 border-gray-300 transition-colors"
       >
         Cancelar
       </button>
@@ -500,14 +500,14 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
       <div className="grid grid-cols-2 gap-3 w-full">
         <button
           onClick={handleCrearOrdenClick}
-          className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-sm font-bold text-white transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-sm font-bold dark:text-white text-gray-900 transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" />
           Emitir orden
         </button>
         <button
           onClick={handleHistorialClick}
-          className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl dark:bg-gray-800 bg-gray-200 hover:bg-gray-700 active:bg-gray-650 border dark:border-gray-700/50 border-gray-300 text-sm font-bold dark:text-gray-200 text-gray-800 transition-all active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl dark:bg-gray-800 bg-gray-200 hover:dark:bg-gray-700 hover:bg-gray-300 active:dark:bg-gray-600 active:bg-gray-300 border dark:border-gray-700/50 border-gray-300 text-sm font-bold dark:text-gray-200 text-gray-800 transition-all active:scale-[0.98]"
         >
           <History className="w-4 h-4 dark:text-gray-400 text-gray-600" />
           Ver historial
@@ -520,7 +520,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
     <div className="flex items-start justify-between gap-4 w-full">
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600/20 to-blue-400/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
-          <User className="w-7 h-7 text-blue-400" />
+          <User className="w-7 h-7 dark:text-blue-400 text-blue-700" />
         </div>
         <div className="min-w-0 flex-1">
           {isEditing ? (
@@ -540,7 +540,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
                   aria-label="Nombre del cliente"
                 />
                 {errors.name && (
-                  <p className="text-[10px] text-red-400 font-semibold mt-0.5 ml-1">{errors.name}</p>
+                  <p className="text-[10px] dark:text-red-400 text-red-700 font-semibold mt-0.5 ml-1">{errors.name}</p>
                 )}
               </div>
               <div className="flex flex-col gap-0.5">
@@ -561,7 +561,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
                   />
                 </div>
                 {errors.cedula && (
-                  <p className="text-[10px] text-red-400 font-semibold mt-0.5 ml-5">{errors.cedula}</p>
+                  <p className="text-[10px] dark:text-red-400 text-red-700 font-semibold mt-0.5 ml-5">{errors.cedula}</p>
                 )}
               </div>
             </div>
@@ -598,20 +598,20 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
               className="w-10 h-10 rounded-xl bg-red-500/10 hover:bg-red-500/20 active:bg-red-500/30 flex items-center justify-center transition-colors border border-red-500/20"
               aria-label="Eliminar cliente"
             >
-              <Trash2 className="w-5 h-5 text-red-400" />
+              <Trash2 className="w-5 h-5 dark:text-red-400 text-red-700" />
             </button>
             <button
               onClick={handleEditClick}
               className="w-10 h-10 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 active:bg-blue-500/30 flex items-center justify-center transition-colors border border-blue-500/20"
               aria-label="Editar cliente"
             >
-              <Edit className="w-5 h-5 text-blue-400" />
+              <Edit className="w-5 h-5 dark:text-blue-400 text-blue-700" />
             </button>
           </>
         )}
         <button
           onClick={handleClose}
-          className="w-10 h-10 rounded-xl dark:bg-gray-800/50 bg-gray-200 hover:bg-gray-700 active:bg-gray-600 flex items-center justify-center transition-colors"
+          className="w-10 h-10 rounded-xl dark:bg-gray-800/50 bg-gray-200 hover:dark:bg-gray-700 hover:bg-gray-300 active:dark:bg-gray-600 active:bg-gray-300 flex items-center justify-center transition-colors"
           aria-label="Cerrar"
         >
           <X className="w-5 h-5 dark:text-gray-400 text-gray-600" />
@@ -623,7 +623,7 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
   const sharedModalContent = historialOpen ? (
     <Suspense fallback={
       <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/20">
-        <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
+        <RefreshCw className="w-8 h-8 dark:text-blue-400 text-blue-700 animate-spin" />
       </div>
     }>
       <ClienteHistorialModalLazy
@@ -669,14 +669,14 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
           <div className="flex flex-col gap-2 mt-4">
             <button
               onClick={() => setDeleteDeviceOpen(false)}
-              className="w-full h-12 rounded-xl bg-gray-700/60 hover:bg-gray-700 dark:text-white text-gray-900 text-sm font-medium order-2 sm:order-1 transition-colors"
+              className="w-full h-12 rounded-xl dark:bg-gray-700/60 bg-gray-200 hover:dark:bg-gray-700 hover:bg-gray-300 dark:text-white text-gray-900 text-sm font-medium order-2 sm:order-1 transition-colors"
             >
               Cancelar
             </button>
             <button
               onClick={handleDeleteDeviceConfirm}
               disabled={isDeletingDevice}
-              className="w-full h-12 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 text-sm font-medium order-1 sm:order-2 transition-colors flex items-center justify-center gap-2"
+              className="w-full h-12 rounded-xl bg-red-500/15 hover:bg-red-500/25 dark:text-red-400 text-red-700 border border-red-500/30 text-sm font-medium order-1 sm:order-2 transition-colors flex items-center justify-center gap-2"
             >
               {isDeletingDevice ? "Eliminando..." : "Eliminar"}
             </button>
@@ -701,14 +701,14 @@ export function ClienteViewModal({ cliente, open, onClose }: ClienteViewModalPro
           <div className="flex flex-col gap-2 mt-4">
             <button
               onClick={() => setDeleteClientOpen(false)}
-              className="w-full h-12 rounded-xl bg-gray-700/60 hover:bg-gray-700 dark:text-white text-gray-900 text-sm font-medium order-2 sm:order-1 transition-colors"
+              className="w-full h-12 rounded-xl dark:bg-gray-700/60 bg-gray-200 hover:dark:bg-gray-700 hover:bg-gray-300 dark:text-white text-gray-900 text-sm font-medium order-2 sm:order-1 transition-colors"
             >
               Cancelar
             </button>
             <button
               onClick={handleDeleteClientConfirm}
               disabled={isDeletingClient}
-              className="w-full h-12 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 text-sm font-medium order-1 sm:order-2 transition-colors flex items-center justify-center gap-2"
+              className="w-full h-12 rounded-xl bg-red-500/15 hover:bg-red-500/25 dark:text-red-400 text-red-700 border border-red-500/30 text-sm font-medium order-1 sm:order-2 transition-colors flex items-center justify-center gap-2"
             >
               {isDeletingClient ? (
                 <>

@@ -15,7 +15,7 @@ export function OfflineSyncBanner() {
   if (!connected && pendingCount > 0) {
     return (
       <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 
-                      px-4 py-2.5 rounded-xl text-amber-400 text-xs font-medium mb-4">
+                      px-4 py-2.5 rounded-xl dark:text-amber-400 text-amber-700 text-xs font-medium mb-4">
         <CloudOff className="w-4 h-4 shrink-0" />
         <span>
           {pendingCount} {pendingCount === 1 ? 'orden guardada' : 'órdenes guardadas'} localmente.
@@ -29,7 +29,7 @@ export function OfflineSyncBanner() {
   if (connected && pendingCount > 0) {
     return (
       <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 
-                      px-4 py-2.5 rounded-xl text-blue-400 text-xs font-medium mb-4">
+                      px-4 py-2.5 rounded-xl dark:text-blue-400 text-blue-700 text-xs font-medium mb-4">
         <RefreshCw className={`w-4 h-4 shrink-0 ${isFlushing ? 'animate-spin' : ''}`} />
         <span>
           {isFlushing
@@ -40,7 +40,7 @@ export function OfflineSyncBanner() {
         {!isFlushing && (
           <button
             onClick={() => flush()}
-            className="ml-auto text-blue-300 hover:text-blue-100 underline"
+            className="ml-auto dark:text-blue-300 text-blue-700 hover:text-blue-100 underline"
           >
             Sincronizar ahora
           </button>
@@ -53,7 +53,7 @@ export function OfflineSyncBanner() {
   if (lastSyncResult && lastSyncResult.synced > 0 && Date.now() - lastSyncResult.timestamp < 10000) {
     return (
       <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 
-                      px-4 py-2.5 rounded-xl text-green-400 text-xs font-medium animate-in fade-in duration-300 mb-4">
+                      px-4 py-2.5 rounded-xl dark:text-green-400 text-green-700 text-xs font-medium animate-in fade-in duration-300 mb-4">
         <CheckCircle2 className="w-4 h-4 shrink-0" />
         <span>
           {lastSyncResult.synced} {lastSyncResult.synced === 1 ? 'orden sincronizada' : 'órdenes sincronizadas'} correctamente

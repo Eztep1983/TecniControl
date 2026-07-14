@@ -38,7 +38,7 @@ import {
 import { Capacitor } from '@capacitor/core'
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
-
+import * as XLSX from 'xlsx'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -137,6 +137,61 @@ function isCancelableError(error: any): boolean {
   )
 }
 
+function parseDateSafely(val: any): string {
+  if (!val) return ''
+  try {
+    if (typeof val.toDate === 'function') {
+      return val.toDate().toLocaleDateString('es-CO')
+    }
+    const d = new Date(val)
+    if (!isNaN(d.getTime())) return d.toLocaleDateString('es-CO')
+  } catch (e) {}
+  return ''
+}
+
+function formatClientesForExcel(clientes: any[]) {
+  return clientes.map(c => ({
+    'Nombre del Cliente': c.name || '',
+    'Cédula / Documento': c.cedula || '',
+    'Correo Electrónico': c.email || '',
+    'Teléfono': c.phone || '',
+    'Dirección': c.address || '',
+    'Fecha de Registro': parseDateSafely(c.createdAt),
+  }))
+}
+
+function formatOrdenesForExcel(ordenes: any[]) {
+  return ordenes.map(o => {
+    let repuestos = ''
+    if (Array.isArray(o.piezasUsadas) && o.piezasUsadas.length > 0) {
+      repuestos = o.piezasUsadas.map((p: any) => `${p.pieza} (${p.cantidad})`).join(', ')
+    }
+    
+    let tareas = ''
+    if (Array.isArray(o.tareasRealizadas) && o.tareasRealizadas.length > 0) {
+      tareas = o.tareasRealizadas.join(', ')
+    }
+    
+    return {
+      'Nro Orden': o.idPersonalizado || '',
+      'Tipo de Mantenimiento': o.tipoMantenimiento || '',
+      'Nombre del Cliente': o.cliente?.name || '',
+      'Cédula Cliente': o.cliente?.cedula || '',
+      'Equipo': `${o.dispositivo?.tipo || ''} ${o.dispositivo?.marca || ''} ${o.dispositivo?.modelo || ''}`.trim(),
+      'Falla / Observaciones': o.observacionesIniciales || '',
+      'Pruebas Realizadas': o.pruebasRealizadas || '',
+      'Diagnóstico': o.diagnosticoFinal || '',
+      'Repuestos Utilizados': repuestos,
+      'Tareas Realizadas': tareas,
+      'Garantía': o.garantiaHabilitada ? (o.garantiaDescripcion || 'Habilitada') : 'Sin Garantía',
+      'Estado Firma': o.firmaCliente ? 'Firmado' : 'Pendiente',
+      'Nombre Receptor': o.nombreReceptor || '',
+      'Cédula Receptor': o.cedulaReceptor || '',
+      'Fecha Ingreso': parseDateSafely(o.fechaCreacion || o.createdAt),
+    }
+  })
+}
+
 // ─── Google SVG icon ───────────────────────────────────────────────────────────
 
 function GoogleIcon({ className = 'w-4 h-4' }: { className?: string }) {
@@ -156,9 +211,9 @@ function StatusBanner({ status }: { status: InlineStatus }) {
   if (!status.type) return null
 
   const styles: Record<NonNullable<StatusType>, string> = {
-    success: 'bg-green-500/10 border-green-500/30 text-green-400',
-    error:   'bg-red-500/10 border-red-500/30 text-red-400',
-    info:    'bg-blue-500/10 border-blue-500/30 text-blue-400',
+    success: 'bg-green-500/10 border-green-500/30 dark:text-green-400 text-green-700',
+    error:   'bg-red-500/10 border-red-500/30 dark:text-red-400 text-red-700',
+    info:    'bg-blue-500/10 border-blue-500/30 dark:text-blue-400 text-blue-700',
   }
 
   const icons: Record<NonNullable<StatusType>, typeof CheckCircle> = {
@@ -365,18 +420,22 @@ export default function CuentaYSeguridad() {
         return
       }
 
-      const data = {
-        metadata: {
-          exportDate: new Date().toISOString(),
-          userId: user.uid, userEmail: user.email,
-          appVersion: '1.0.0', totalClientes, totalOrdenes,
-        },
-        clientes: clientesSnap.docs.map(d => ({ id: d.id, ...d.data() })),
-        ordenes:  ordenesSnap.docs.map(d => ({ id: d.id, ...d.data() })),
-      }
+      const clientesData = clientesSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+      const ordenesData  = ordenesSnap.docs.map(d => ({ id: d.id, ...d.data() }))
 
-      const jsonString = JSON.stringify(data, null, 2)
-      const dataSize   = new Blob([jsonString]).size
+      const clientesFormatted = formatClientesForExcel(clientesData)
+      const ordenesFormatted = formatOrdenesForExcel(ordenesData)
+
+      const wb = XLSX.utils.book_new()
+      
+      const wsClientes = XLSX.utils.json_to_sheet(clientesFormatted)
+      XLSX.utils.book_append_sheet(wb, wsClientes, "Clientes")
+      
+      const wsOrdenes = XLSX.utils.json_to_sheet(ordenesFormatted)
+      XLSX.utils.book_append_sheet(wb, wsOrdenes, "Órdenes")
+
+      const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+      const dataSize = excelBuffer.byteLength
 
       if (dataSize > 10 * 1024 * 1024) {
         dispatchExport({
@@ -390,7 +449,7 @@ export default function CuentaYSeguridad() {
       const fecha    = new Date()
         .toLocaleDateString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit' })
         .replace(/\//g, '-')
-      const fileName = `TecniControl_Backup_${fecha}_${user.email?.split('@')[0] ?? 'usuario'}.json`
+      const fileName = `TecniControl_Backup_${fecha}_${user.email?.split('@')[0] ?? 'usuario'}.xlsx`
 
       dispatchExport({ type: 'WRITE', isNative })
 
@@ -400,7 +459,8 @@ export default function CuentaYSeguridad() {
         `Tamaño: ${formatFileSize(dataSize)}`
 
       if (isNative) {
-        await downloadOnNative(jsonString, fileName)
+        const excelBase64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
+        await downloadOnNativeExcel(excelBase64, fileName)
         dispatchExport({ type: 'SUCCESS', message: '¡Datos exportados exitosamente!', details: successDetails })
         return
       }
@@ -409,10 +469,10 @@ export default function CuentaYSeguridad() {
         try {
           const handle   = await (window as any).showSaveFilePicker({
             suggestedName: fileName,
-            types: [{ description: 'JSON Backup', accept: { 'application/json': ['.json'] } }],
+            types: [{ description: 'Excel Backup', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }],
           })
           const writable = await handle.createWritable()
-          await writable.write(new Blob([jsonString], { type: 'application/json;charset=utf-8' }))
+          await writable.write(new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }))
           await writable.close()
           dispatchExport({
             type: 'SUCCESS', message: '¡Datos exportados exitosamente!',
@@ -424,7 +484,7 @@ export default function CuentaYSeguridad() {
         }
       }
 
-      const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' })
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
       const url  = URL.createObjectURL(blob)
       const a    = document.createElement('a')
       a.href = url; a.download = fileName
@@ -448,11 +508,11 @@ export default function CuentaYSeguridad() {
     }
   }
 
-  const downloadOnNative = async (jsonString: string, fileName: string) => {
+  const downloadOnNativeExcel = async (base64Data: string, fileName: string) => {
     try {
       const result = await Filesystem.writeFile({
-        path: fileName, data: jsonString,
-        directory: Directory.Documents, encoding: Encoding.UTF8, recursive: true,
+        path: fileName, data: base64Data,
+        directory: Directory.Documents, recursive: true,
       })
 
       try {
@@ -463,8 +523,8 @@ export default function CuentaYSeguridad() {
       }
     } catch (error: any) {
       const cache = await Filesystem.writeFile({
-        path: fileName, data: jsonString,
-        directory: Directory.Cache, encoding: Encoding.UTF8, recursive: true,
+        path: fileName, data: base64Data,
+        directory: Directory.Cache, recursive: true,
       })
 
       try {
@@ -687,7 +747,7 @@ export default function CuentaYSeguridad() {
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500/30 to-blue-600/30
                             border-2 border-blue-500/30 flex items-center justify-center
-                            text-blue-300 font-semibold text-lg select-none shrink-0">
+                            dark:text-blue-300 text-blue-700 font-semibold text-lg select-none shrink-0">
               {getUserInitials(user?.displayName, user?.email)}
             </div>
             <div className="min-w-0">
@@ -702,7 +762,7 @@ export default function CuentaYSeguridad() {
               <span className={`inline-flex items-center gap-1.5 mt-1.5 px-2 py-0.5 rounded-full
                                text-xs font-medium border
                                ${isGoogleUser
-                                 ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                 ? 'bg-blue-500/10 dark:text-blue-400 text-blue-700 border-blue-500/20'
                                  : 'dark:bg-slate-800/70 bg-gray-200 dark:text-slate-300 dark:text-slate-300 text-slate-700 border dark:border-white/10 border-gray-300/50'}`}>
                 {isGoogleUser
                   ? <><GoogleIcon className="w-3 h-3" />Google</>
@@ -719,8 +779,8 @@ export default function CuentaYSeguridad() {
               <Button
                 variant="outline"
                 onClick={() => setLogoutDialogOpen(true)}
-                className="border-blue-600/30 text-blue-400 bg-blue-500/10 hover:bg-blue-500/20
-                           hover:text-blue-300 shrink-0"
+                className="border-blue-600/30 dark:text-blue-400 text-blue-700 bg-blue-500/10 hover:bg-blue-500/20
+                           hover:dark:text-blue-300 hover:text-blue-700 shrink-0"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Cerrar sesión
@@ -762,7 +822,7 @@ export default function CuentaYSeguridad() {
               </p>
               {isGoogleUser ? (
                 <p className="text-xs dark:text-slate-400 dark:text-slate-400 text-slate-600 mt-1 max-w-xs">
-                  Tu cuenta usa Google para autenticarse — no tienes contraseña en TecniControl.
+                  Tu cuenta usa Google para autenticarse enTecniControl.
                   Gestiona tu seguridad directamente desde Google.
                 </p>
               ) : (
@@ -791,8 +851,8 @@ export default function CuentaYSeguridad() {
                 <Button
                   variant="outline"
                   onClick={() => setShowChangePasswordForm(v => !v)}
-                  className="border-blue-600/30 text-blue-400 bg-blue-500/10 hover:bg-blue-500/20
-                             hover:text-blue-300 min-w-[150px]"
+                  className="border-blue-600/30 dark:text-blue-400 text-blue-700 bg-blue-500/10 hover:bg-blue-500/20
+                             hover:dark:text-blue-300 hover:text-blue-700 min-w-[150px]"
                 >
                   <KeyRound className="w-4 h-4 mr-2" />
                   {showChangePasswordForm ? 'Ocultar formulario' : 'Cambiar contraseña'}
@@ -801,8 +861,8 @@ export default function CuentaYSeguridad() {
                   variant="outline"
                   onClick={handlePasswordReset}
                   disabled={resetLoading}
-                  className="border-blue-600/30 text-blue-400 bg-blue-500/10 hover:bg-blue-500/20
-                             hover:text-blue-300 min-w-[170px]"
+                  className="border-blue-600/30 dark:text-blue-400 text-blue-700 bg-blue-500/10 hover:bg-blue-500/20
+                             hover:dark:text-blue-300 hover:text-blue-700 min-w-[170px]"
                 >
                   {resetLoading ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Enviando...</>
@@ -817,7 +877,7 @@ export default function CuentaYSeguridad() {
           {/* Collapsible Direct Password Change Form */}
           {!isGoogleUser && showChangePasswordForm && (
             <form onSubmit={handleChangePassword} className="mt-4 p-4 rounded-3xl border dark:border-white/10 border-gray-300/50 dark:bg-slate-950/70 bg-white space-y-4 shadow-lg shadow-slate-950/20 animate-in fade-in duration-200">
-              <p className="text-xs font-semibold uppercase text-blue-400 tracking-wider">Cambiar contraseña directamente</p>
+              <p className="text-xs font-semibold uppercase dark:text-blue-400 text-blue-700 tracking-wider">Cambiar contraseña directamente</p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
@@ -901,7 +961,7 @@ export default function CuentaYSeguridad() {
       <Card className="dark:bg-slate-950/70 bg-white border dark:border-white/10 border-gray-300/50 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.8)] rounded-[28px]">
         <CardHeader className="border-b dark:border-white/10 border-gray-300/50 pb-4 mb-2">
           <CardTitle className="dark:text-white text-gray-900 flex items-center gap-2 text-xl">
-            <Download className="w-5 h-5 text-emerald-400" />
+            <Download className="w-5 h-5 dark:text-emerald-400 text-emerald-700" />
             Tus Datos
           </CardTitle>
           <CardDescription className="dark:text-slate-400 dark:text-slate-400 text-slate-600">
@@ -915,7 +975,7 @@ export default function CuentaYSeguridad() {
             <div>
               <p className="text-sm dark:text-slate-300 dark:text-slate-300 text-slate-700 font-medium">Exportar información</p>
               <p className="text-xs dark:text-slate-400 dark:text-slate-400 text-slate-600 mt-1 max-w-md">
-                Obtendrás un archivo JSON con clientes y todo el historial de mantenimientos.
+                Obtendrás un archivo XLSX con clientes y todo el historial de mantenimientos.
               </p>
               <p className="text-xs mt-1.5">
                 {isNative ? (
@@ -933,8 +993,8 @@ export default function CuentaYSeguridad() {
               variant="outline"
               onClick={handleExportData}
               disabled={isExporting}
-              className="border-emerald-500/20 text-emerald-300 dark:bg-slate-900/70 bg-gray-100 hover:dark:bg-slate-900/90 hover:bg-gray-50
-                         hover:text-emerald-200 min-w-[180px] shrink-0 shadow-sm shadow-emerald-500/10"
+              className="border-emerald-500/20 dark:text-emerald-300 text-emerald-700 dark:bg-slate-900/70 bg-gray-100 hover:dark:bg-slate-900/90 hover:bg-gray-50
+                         hover:dark:text-emerald-200 hover:text-emerald-800 min-w-[180px] shrink-0 shadow-sm shadow-emerald-500/10"
             >
               {isExporting ? (
                 <>
@@ -943,7 +1003,7 @@ export default function CuentaYSeguridad() {
                    exportState.step === 'validating' ? 'Validando...'          : 'Guardando archivo...'}
                 </>
               ) : (
-                <><FileJson className="w-4 h-4 mr-2" />Descargar JSON</>
+                <><FileJson className="w-4 h-4 mr-2" />Descargar XLSX</>
               )}
             </Button>
           </div>
@@ -962,6 +1022,56 @@ export default function CuentaYSeguridad() {
               </p>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* ── Documentos Legales ───────────────────────────────────────── */}
+      <Card className="dark:bg-slate-950/70 bg-white border dark:border-white/10 border-gray-300/50 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.8)] rounded-[28px]">
+        <CardHeader className="border-b dark:border-white/10 border-gray-300/50 pb-4 mb-2">
+          <CardTitle className="dark:text-white text-gray-900 flex items-center gap-2 text-xl">
+            <ShieldCheck className="w-5 h-5 dark:text-blue-400 text-blue-700" />
+            Acuerdos Legales
+          </CardTitle>
+          <CardDescription className="dark:text-slate-400 dark:text-slate-400 text-slate-600">
+            Consulta nuestros términos de uso y cómo protegemos tu información.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-4">
+          <a
+            href="/legal/politica-privacidad"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between p-4 rounded-xl dark:bg-slate-900/60 bg-gray-50 border dark:border-white/10 border-gray-200 hover:dark:bg-slate-800 hover:bg-gray-100 transition-colors group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg dark:bg-blue-500/10 bg-blue-100 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 dark:text-blue-400 text-blue-700" />
+              </div>
+              <div>
+                <p className="font-medium dark:text-white text-gray-900">Política de Privacidad</p>
+                <p className="text-sm dark:text-gray-400 text-gray-600">Cómo recopilamos y usamos tus datos</p>
+              </div>
+            </div>
+            <ExternalLink className="w-5 h-5 dark:text-gray-500 text-gray-400 group-hover:dark:text-white group-hover:text-gray-900 transition-colors" />
+          </a>
+
+          <a
+            href="/legal/terminos-servicio"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between p-4 rounded-xl dark:bg-slate-900/60 bg-gray-50 border dark:border-white/10 border-gray-200 hover:dark:bg-slate-800 hover:bg-gray-100 transition-colors group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg dark:bg-emerald-500/10 bg-emerald-100 flex items-center justify-center">
+                <FileJson className="w-5 h-5 dark:text-emerald-400 text-emerald-700" />
+              </div>
+              <div>
+                <p className="font-medium dark:text-white text-gray-900">Términos de Servicio</p>
+                <p className="text-sm dark:text-gray-400 text-gray-600">Reglas y lineamientos de uso</p>
+              </div>
+            </div>
+            <ExternalLink className="w-5 h-5 dark:text-gray-500 text-gray-400 group-hover:dark:text-white group-hover:text-gray-900 transition-colors" />
+          </a>
         </CardContent>
       </Card>
 
@@ -990,14 +1100,14 @@ export default function CuentaYSeguridad() {
           <CardContent className="space-y-4">
             {deleteState.error && (
               <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg
-                              text-red-400 text-sm flex items-start gap-2">
+                              dark:text-red-400 text-red-700 text-sm flex items-start gap-2">
                 <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
                 <div>
                   <p>{deleteState.error}</p>
                   {deleteState.error.includes('Cierra sesión') && (
                     <Button
                       variant="link"
-                      className="text-red-400 hover:text-red-300 p-0 h-auto mt-1 text-xs"
+                      className="dark:text-red-400 text-red-700 hover:dark:text-red-300 hover:text-red-700 p-0 h-auto mt-1 text-xs"
                       onClick={() => logout()}
                     >
                       Cerrar sesión ahora
@@ -1041,7 +1151,7 @@ export default function CuentaYSeguridad() {
                 <AlertDialogContent className="dark:bg-slate-950/95 bg-white border dark:border-white/10 border-gray-300/50 max-w-md w-[calc(100vw-2rem)] rounded-[28px] shadow-[0_24px_80px_-36px_rgba(15,23,42,0.75)]">
                   <AlertDialogHeader className="flex flex-col items-center text-center">
                     <AlertDialogTitle className="dark:text-white text-gray-900 flex items-center justify-center gap-2">
-                      <ShieldCheck className="w-5 h-5 text-red-400" />
+                      <ShieldCheck className="w-5 h-5 dark:text-red-400 text-red-700" />
                       Confirma tu identidad
                     </AlertDialogTitle>
                     <AlertDialogDescription asChild>
@@ -1114,7 +1224,7 @@ export default function CuentaYSeguridad() {
 
                     {/* Shared inline error */}
                     {reAuthError && (
-                      <p className="text-red-400 text-xs flex items-center gap-1">
+                      <p className="dark:text-red-400 text-red-700 text-xs flex items-center gap-1">
                         <XCircle className="w-3.5 h-3.5 shrink-0" />
                         {reAuthError}
                       </p>

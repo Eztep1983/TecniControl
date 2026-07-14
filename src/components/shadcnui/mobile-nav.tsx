@@ -165,7 +165,7 @@ function NavButton({ item, active, onClick }: NavButtonProps) {
         "transition-all duration-200 ease-out",
         "touch-manipulation",
         active 
-          ? "text-blue-500" 
+          ? "dark:text-blue-500 text-blue-600" 
           : "dark:text-gray-400 text-gray-600 hover:dark:text-gray-300 hover:text-gray-700 active:dark:text-gray-300 active:text-gray-700"
       )}
       aria-label={item.name}
@@ -184,7 +184,7 @@ function NavButton({ item, active, onClick }: NavButtonProps) {
       {/* Label and active dot indicator */}
       <span className={cn(
         "text-[9px] font-medium tracking-wide transition-colors duration-200",
-        active ? "text-blue-400 font-bold" : "dark:text-gray-400 text-gray-600"
+        active ? "dark:text-blue-400 text-blue-700 font-bold" : "dark:text-gray-400 text-gray-600"
       )}>
         {item.name}
       </span>

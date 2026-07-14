@@ -240,7 +240,7 @@ const initialState: FormState = {
   instalacionConfiguracionPersonalizada: '',
   mantenimientoColecciones: {},
   firmaHabilitada: true,
-  firmaCliente: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  firmaCliente: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
   validacionCliente: true,
   nombreReceptor: 'Juan Pérez',
   cedulaReceptor: '1234567890',
@@ -484,12 +484,18 @@ function formReducer(state: FormState, action: FormAction): FormState {
 
     case 'SET_ONBOARDING_DATA':
       const onboardingMantenimientoData = {
-        tareasSeleccionadas: [],
-        tareasPersonalizadas: [''],
-        piezasUsadas: [],
-        observacionesIniciales: '',
-        pruebasRealizadas: '',
-        diagnosticoFinal: '',
+        tareasSeleccionadas: ['Limpieza física interna'],
+        tareasPersonalizadas: ['Mantenimiento preventivo general'],
+        piezasUsadas: [
+          { 
+            pieza: 'Mantenimiento de Software', 
+            cantidad: 1, 
+            tipo: 'personalizada' as const
+          }
+        ],
+        observacionesIniciales: 'Equipo presenta lentitud',
+        pruebasRealizadas: 'Test de estrés superado',
+        diagnosticoFinal: 'Equipo operativo y optimizado',
         instalacionRecomendaciones: false,
         instalacionRecomendacionesDetalle: '',
         instalacionConfiguracion: false,
@@ -514,9 +520,9 @@ function formReducer(state: FormState, action: FormAction): FormState {
         mesesGarantia: 3,
         firmaHabilitada: true,
         firmaCliente: '',
-        validacionCliente: false,
-        nombreReceptor: '',
-        cedulaReceptor: '',
+        validacionCliente: true,
+        nombreReceptor: action.payload.cliente.name || 'Cliente de Prueba',
+        cedulaReceptor: action.payload.cliente.cedula || '9999999999',
         highestStepCompleted: 1
       }
 
@@ -859,6 +865,15 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Evitar envío prematuro si el usuario presiona "Enter" en un campo de texto
+    // durante un paso que no sea el final.
+    if (state.currentStep !== 'resumen') {
+      if (canProceedToNextStep()) {
+        nextStep();
+      }
+      return;
+    }
+
     if (!user?.uid) {
       alert('Error: Sesión no válida. Por favor, vuelve a iniciar sesión.');
       return;
@@ -1004,11 +1019,11 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
 
   const getTipoMantenimientoColor = useMemo(() => {
     const colors = {
-      preventivo: 'bg-green-600/20 text-green-400 border-green-500/30',
-      correctivo: 'bg-orange-600/20 text-orange-400 border-orange-500/30',
-      diagnostico: 'bg-blue-600/20 text-blue-400 border-blue-500/30',
-      instalacion: 'bg-purple-600/20 text-purple-400 border-purple-500/30',
-      garantia: 'bg-amber-600/20 text-amber-400 border-amber-500/30',
+      preventivo: 'bg-green-600/20 dark:text-green-400 text-green-700 border-green-500/30',
+      correctivo: 'bg-orange-600/20 dark:text-orange-400 text-orange-700 border-orange-500/30',
+      diagnostico: 'bg-blue-600/20 dark:text-blue-400 text-blue-700 border-blue-500/30',
+      instalacion: 'bg-purple-600/20 dark:text-purple-400 text-purple-700 border-purple-500/30',
+      garantia: 'bg-amber-600/20 dark:text-amber-400 text-amber-700 border-amber-500/30',
       '': 'bg-gray-600/20 dark:text-gray-400 text-gray-600 border-gray-500/30'
     } as const
 
@@ -1114,6 +1129,7 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
     onToggleInstalacionConfiguracion: handleToggleInstalacionConfiguracion,
     onToggleInstalacionConfiguracionTipo: handleToggleInstalacionConfiguracionTipo,
     onAgregarInstalacionConfiguracionPersonalizada: handleAgregarInstalacionConfiguracionPersonalizada,
+    isOnboarding: true,
   }), [
     state.tipoMantenimiento,
     state.tareasSeleccionadas,
@@ -1168,6 +1184,7 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
             clienteSeleccionado={state.clienteSeleccionado}
             onSeleccionarCliente={handleSeleccionarCliente}
             onDesseleccionarCliente={handleDesseleccionarCliente}
+            isOnboarding={true}
           />
         )
 
@@ -1179,6 +1196,7 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
             onSeleccionarDispositivo={handleSeleccionarDispositivo}
             onDesseleccionarDispositivo={handleDesseleccionarDispositivo}
             onClienteActualizado={(c) => dispatch({ type: 'SET_CLIENTE_SELECCIONADO', payload: c })}
+            isOnboarding={true}
           />
         )
 
@@ -1226,6 +1244,7 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
               dispatch({ type: 'SET_NOMBRE_RECEPTOR', payload: newState.nombreReceptor ?? '' })
               dispatch({ type: 'SET_CEDULA_RECEPTOR', payload: newState.cedulaReceptor ?? '' })
             }}
+            isOnboarding={true}
           />
         )
 
@@ -1289,7 +1308,7 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
         }
 
         return (
-          <div className="w-full h-[500px] border dark:border-white/10 border-gray-300/50 rounded-2xl overflow-hidden relative">
+          <div className="w-full h-[750px] sm:h-[900px] border dark:border-white/10 border-gray-300/50 rounded-2xl overflow-hidden relative">
             <PDFPreviewView 
               orden={mockOrden} 
               onBack={() => dispatch({ type: 'SET_CURRENT_STEP', payload: 'firma' })} 
@@ -1417,21 +1436,40 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
             drag
             dragConstraints={{ left: -100, right: 100, top: -200, bottom: 200 }}
             dragElastic={0.2}
-            className="fixed z-50 bottom-28 right-4 max-w-[300px] pointer-events-auto cursor-grab active:cursor-grabbing"
+            className="fixed z-50 bottom-28 right-4 max-w-[340px] pointer-events-auto cursor-grab active:cursor-grabbing group"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300, delay: 0.2 }}
           >
-            <div className="bg-blue-900/95 dark:text-white text-gray-900 p-4 rounded-2xl shadow-2xl backdrop-blur-md border border-blue-500/30">
-              <div className="flex items-start gap-3">
-                <div className="bg-blue-500/20 p-2 rounded-xl shrink-0 mt-0.5 border border-blue-500/30">
-                  {ONBOARDING_HINTS[state.currentStep]?.icon || <Sparkles className="w-5 h-5 text-blue-300" />}
+            {/* Animated Glow Effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+            
+            <div className="relative bg-gradient-to-br from-blue-950/95 to-indigo-950/95 text-white p-5 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.3)] backdrop-blur-xl border border-blue-500/30 overflow-hidden">
+              {/* Subtle background decoration */}
+              <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-blue-500/20 rounded-full blur-xl pointer-events-none" />
+              
+              <div className="flex items-start gap-4 relative z-10">
+                <div className="bg-blue-500/20 p-3 rounded-xl shrink-0 border border-blue-400/30 shadow-inner flex items-center justify-center">
+                  {ONBOARDING_HINTS[state.currentStep]?.icon || <Sparkles className="w-6 h-6 dark:text-blue-300 text-blue-700" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h4 className="font-bold text-sm tracking-tight text-blue-200 mb-1">
+                  <h4 className="font-bold text-base tracking-tight text-blue-50 mb-1.5 drop-shadow-sm">
                     {ONBOARDING_HINTS[state.currentStep]?.title || 'Onboarding'}
                   </h4>
-                  <p className="text-xs text-blue-100/70 leading-relaxed">
+                  <p className="text-sm text-blue-100/90 leading-relaxed font-medium">
                     {ONBOARDING_HINTS[state.currentStep]?.hint || 'Completa la orden para terminar el onboarding.'}
                   </p>
                 </div>
+              </div>
+              
+              {/* Drag indicator hint */}
+              <div className="mt-4 pt-3 border-t border-blue-500/20 text-center opacity-60 flex justify-center items-center gap-1.5 transition-opacity group-hover:opacity-100">
+                <div className="flex gap-0.5">
+                  <div className="w-1 h-1 rounded-full bg-blue-200"></div>
+                  <div className="w-1 h-1 rounded-full bg-blue-200"></div>
+                  <div className="w-1 h-1 rounded-full bg-blue-200"></div>
+                </div>
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-blue-100">Puedes arrastrar este mensaje</span>
               </div>
             </div>
           </motion.div>
@@ -1466,7 +1504,7 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
             type="button"
             onClick={prevStep}
             disabled={state.currentStep === 'cliente'}
-            className="flex items-center justify-center h-12 px-5 text-base font-medium dark:text-gray-300 text-gray-700 dark:bg-gray-800 bg-gray-200 rounded-xl hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 touch-manipulation min-w-[100px]"
+            className="flex items-center justify-center h-12 px-5 text-base font-medium dark:text-gray-300 text-gray-700 dark:bg-gray-800 bg-gray-200 rounded-xl hover:dark:bg-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 touch-manipulation min-w-[100px]"
           >
             <ChevronLeft className="w-5 h-5 mr-1" />
             <span className="hidden sm:inline">Anterior</span>
@@ -1475,13 +1513,6 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
 
           {state.currentStep === 'resumen' ? (
             <div className="flex gap-2 w-full max-w-sm mx-auto">
-              <button
-                type="button"
-                onClick={() => onClose(stepsPushed.current + 1)}
-                className="h-12 px-5 text-base font-medium dark:text-gray-300 text-gray-700 dark:bg-gray-800 bg-gray-200 rounded-xl hover:bg-gray-700 transition-all active:scale-95 touch-manipulation"
-              >
-                Cancelar
-              </button>
               <button
                 type="submit"
                 form="mantenimiento-form"
@@ -1496,14 +1527,14 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
               <button
                 type="button"
                 onClick={() => goToStep('resumen')}
-                className="flex items-center justify-center h-12 px-4 rounded-xl text-sm font-bold bg-blue-900/30 text-blue-400 hover:bg-blue-900/50 transition-all touch-manipulation whitespace-nowrap border border-blue-500/20"
+                className="flex items-center justify-center h-12 px-4 rounded-xl text-sm font-bold bg-blue-900/30 dark:text-blue-400 text-blue-700 hover:bg-blue-900/50 transition-all touch-manipulation whitespace-nowrap border border-blue-500/20"
               >
-                Saltar a Resumen
+                Omitir y ver resumen
               </button>
               <button type="button" onClick={nextStep} disabled={!canProceedToNextStep()}
                 className={`flex items-center justify-center h-12 min-w-[100px] px-6 rounded-xl text-base font-bold transition-all
                   ${!canProceedToNextStep()
-                    ? 'bg-blue-600/40 text-blue-200 border border-blue-800/50'
+                    ? 'bg-blue-600/40 dark:text-blue-200 text-blue-800 border border-blue-800/50'
                     : 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
                   } touch-manipulation`}>
                 {!canProceedToNextStep() 
@@ -1518,7 +1549,7 @@ export default function OnboardingForm({ onClose, onSuccess }: OnboardingFormPro
         {/* Mensaje de validación (solo en móvil) */}
         {!canProceedToNextStep() && state.currentStep !== 'resumen' && (
           <div className="px-4 pb-2 text-center">
-            <p className="text-xs text-blue-400 bg-blue-500/10 rounded-lg py-2 px-3">
+            <p className="text-xs dark:text-blue-400 text-blue-700 bg-blue-500/10 rounded-lg py-2 px-3">
               {state.currentStep === 'cliente' && 'Selecciona un cliente para continuar'}
               {state.currentStep === 'dispositivo' && 'Selecciona un dispositivo para continuar'}
               {state.currentStep === 'mantenimiento' && state.tipoMantenimiento === 'diagnostico' && 'Completa todos los campos del diagnóstico'}

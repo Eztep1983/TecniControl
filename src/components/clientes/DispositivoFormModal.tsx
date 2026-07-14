@@ -227,7 +227,7 @@ export function DispositivoFormModal({
       <DialogContent
         className={[
           "rounded-[28px]",
-          "dark:bg-gray-900 bg-gray-100 border dark:border-white border-gray-200/[0.06]",
+          "dark:bg-gray-900 bg-gray-100 border dark:border-white/[0.06] border-gray-300",
           "p-0 gap-0 flex flex-col",
           "w-[calc(100%-1.5rem)] max-w-md mx-auto",
           "max-h-[85vh]",
@@ -295,14 +295,14 @@ export function DispositivoFormModal({
                               "active:scale-[0.96] select-none",
                               // Especial para personalizado
                               isPersonalized && !isSelected
-                                ? "border-dashed dark:border-white/15 border-gray-200 bg-white/[0.03]"
+                                ? "border-dashed dark:border-white/15 border-gray-200 dark:bg-white/[0.03] bg-gray-100"
                                 : "",
                               // Estado seleccionado
                               isSelected
                                 ? "bg-blue-500/15 border-blue-400/40 shadow-[0_0_0_1px_rgba(59,130,246,0.2)]"
                                 : !isPersonalized
-                                ? "bg-white/[0.04] dark:border-white border-gray-200/[0.08] hover:bg-white/[0.07] hover:dark:border-white/15 hover:border-gray-200"
-                                : "hover:bg-white/[0.06] hover:dark:border-white/20 hover:border-gray-200",
+                                ? "dark:bg-white/[0.04] bg-white dark:border-white/[0.08] border-gray-300 hover:dark:bg-white/[0.07] hover:bg-gray-300 hover:dark:border-white/15 hover:border-gray-200"
+                                : "hover:dark:bg-white/[0.06] hover:bg-gray-300 hover:dark:border-white/20 hover:border-gray-200",
                             ].join(" ")}
                           >
                             {/* Ícono */}
@@ -313,15 +313,15 @@ export function DispositivoFormModal({
                                 isSelected
                                   ? "bg-blue-400/20"
                                   : isPersonalized
-                                  ? "bg-white/[0.06]"
-                                  : "bg-white/[0.06]",
+                                  ? "dark:bg-white/[0.06] bg-gray-200"
+                                  : "dark:bg-white/[0.06] bg-gray-200",
                               ].join(" ")}
                             >
                               <Icon
                                 className={[
                                   "w-[18px] h-[18px] transition-colors duration-200",
                                   isSelected
-                                    ? "text-blue-400"
+                                    ? "dark:text-blue-400 text-blue-700"
                                     : isPersonalized
                                     ? "dark:text-white text-gray-900/40"
                                     : "dark:text-white text-gray-900/50",
@@ -335,7 +335,7 @@ export function DispositivoFormModal({
                                 "text-[11px] font-medium leading-tight text-center",
                                 "transition-colors duration-200",
                                 isSelected
-                                  ? "text-blue-300"
+                                  ? "dark:text-blue-300 text-blue-700"
                                   : "dark:text-white text-gray-900/50",
                               ].join(" ")}
                             >
@@ -359,7 +359,7 @@ export function DispositivoFormModal({
                       ].join(" ")}
                     >
                       <div className="relative">
-                        <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400/60 pointer-events-none" />
+                        <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 dark:text-blue-400 text-blue-700/60 pointer-events-none" />
                         <input
                           ref={customInputRef}
                           type="text"
@@ -388,7 +388,7 @@ export function DispositivoFormModal({
                       </p>
                     </div>
 
-                    <FormMessage className="text-[12px] text-red-400 mt-2" />
+                    <FormMessage className="text-[12px] dark:text-red-400 text-red-700 mt-2" />
                   </FormItem>
                 )}
               />
@@ -415,16 +415,16 @@ export function DispositivoFormModal({
                               autoComplete="off"
                               className={[
                                 "h-12 pl-10 pr-4 rounded-xl",
-                                "bg-white/[0.04] dark:border-white border-gray-200/[0.08]",
+                                "dark:bg-white/[0.04] bg-white dark:border-white/[0.08] border-gray-300",
                                 "dark:text-white text-gray-900 placeholder:dark:text-white text-gray-900/20 text-[14px]",
-                                "focus:dark:border-white/20 focus:border-gray-200 focus:bg-white/[0.06]",
+                                "focus:dark:border-white/20 focus:border-blue-500 focus:dark:bg-white/[0.06] focus:bg-white",
                                 "focus:ring-0 focus-visible:ring-0",
                                 "transition-colors duration-200",
                               ].join(" ")}
                             />
                           </div>
                         </FormControl>
-                        <FormMessage className="text-[12px] text-red-400 ml-1 mt-1" />
+                        <FormMessage className="text-[12px] dark:text-red-400 text-red-700 ml-1 mt-1" />
                       </FormItem>
                     )}
                   />
@@ -456,16 +456,16 @@ export function DispositivoFormModal({
                             spellCheck={false}
                             className={[
                               "h-12 pl-10 pr-4 rounded-xl font-mono",
-                              "bg-white/[0.04] dark:border-white border-gray-200/[0.08]",
+                              "dark:bg-white/[0.04] bg-white dark:border-white/[0.08] border-gray-300",
                               "dark:text-white text-gray-900 placeholder:dark:text-white text-gray-900/20 text-[14px] tracking-wider",
-                              "focus:dark:border-white/20 focus:border-gray-200 focus:bg-white/[0.06]",
+                              "focus:dark:border-white/20 focus:border-blue-500 focus:dark:bg-white/[0.06] focus:bg-white",
                               "focus:ring-0 focus-visible:ring-0",
                               "transition-colors duration-200",
                             ].join(" ")}
                           />
                         </div>
                       </FormControl>
-                      <FormMessage className="text-[12px] text-red-400 ml-1 mt-1" />
+                      <FormMessage className="text-[12px] dark:text-red-400 text-red-700 ml-1 mt-1" />
                     </FormItem>
                   )}
                 />
@@ -480,7 +480,7 @@ export function DispositivoFormModal({
               className={[
                 "px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]",
                 "flex-shrink-0 flex gap-3",
-                "border-t dark:border-white border-gray-200/[0.06]",
+                "border-t dark:border-white/[0.06] border-gray-300",
                 "dark:bg-gray-950/85 bg-gray-50",
               ].join(" ")}
             >
@@ -491,7 +491,7 @@ export function DispositivoFormModal({
                 disabled={isLoading}
                 className={[
                   "flex-[0.4] h-[52px] rounded-2xl",
-                  "bg-white/[0.06] hover:dark:bg-white/10 hover:bg-gray-200 active:bg-white/[0.15]",
+                  "dark:bg-white/[0.06] bg-gray-200 hover:dark:bg-white/10 hover:bg-gray-200 active:dark:bg-white/[0.15] active:bg-gray-300",
                   "dark:text-white text-gray-900/60 text-[15px] font-medium",
                   "transition-colors duration-150 active:scale-[0.97]",
                   "disabled:opacity-30",
@@ -507,7 +507,7 @@ export function DispositivoFormModal({
                 className={[
                   "flex-1 h-[52px] rounded-2xl",
                   "bg-blue-500 hover:bg-blue-400 active:bg-blue-600",
-                  "disabled:dark:bg-white/10 bg-gray-200 disabled:dark:text-white text-gray-900/20",
+                  "disabled:dark:bg-white/10 bg-gray-200 disabled:dark:text-white text-gray-500",
                   "text-[#0a0e14] text-[15px] font-semibold",
                   "flex items-center justify-center gap-2",
                   "transition-colors duration-200 active:scale-[0.97]",
@@ -517,7 +517,7 @@ export function DispositivoFormModal({
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin dark:text-white text-gray-900/40" />
+                    <Loader2 className="w-4 h-4 animate-spin dark:text-white text-gray-500" />
                     <span className="dark:text-white text-gray-900/40">Guardando…</span>
                   </>
                 ) : (

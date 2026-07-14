@@ -65,7 +65,7 @@ export default function OnboardingSuccess({ onFinish }: OnboardingSuccessProps) 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => handleNextStep('/configuracion')}
+                onClick={() => handleNextStep('/configuracion?section=negocio')}
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 dark:text-white text-gray-900 p-4 rounded-[1rem] flex items-center justify-center space-x-3 transition-all shadow-xl shadow-blue-600/20 group touch-manipulation"
               >
                 <Building2 className="w-5 h-5" />
@@ -94,14 +94,14 @@ function NextStepCard({ icon, title, description, onClick }: { icon: React.React
       onClick={onClick}
       className="flex items-center space-x-4 p-4 rounded-2xl dark:bg-gray-800/40 bg-gray-200 border dark:border-gray-700/50 border-gray-300 hover:dark:bg-gray-800/60 hover:bg-gray-200 hover:dark:border-gray-600 hover:border-gray-300 transition-all text-left w-full group"
     >
-      <div className="dark:bg-gray-900 bg-gray-100 p-3 rounded-xl text-blue-400 group-hover:scale-110 transition-transform">
+      <div className="dark:bg-gray-900 bg-gray-100 p-3 rounded-xl dark:text-blue-400 text-blue-700 group-hover:scale-110 transition-transform">
         {icon}
       </div>
       <div className="flex-1">
         <h3 className="dark:text-white text-gray-900 font-bold text-sm mb-0.5">{title}</h3>
         <p className="text-gray-500 text-xs">{description}</p>
       </div>
-      <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-blue-400 transition-colors" />
+      <ArrowRight className="w-4 h-4 text-gray-600 group-hover:dark:text-blue-400 group-hover:text-blue-700 transition-colors" />
     </button>
   )
 }

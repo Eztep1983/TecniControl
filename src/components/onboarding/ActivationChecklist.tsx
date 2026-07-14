@@ -97,7 +97,7 @@ export default function ActivationChecklist({
           {/* Step 1: Account Created */}
           <div className="flex items-center justify-between p-3 rounded-2xl dark:bg-gray-800/20 bg-gray-200 border dark:border-gray-800 border-gray-200/40">
             <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-5 h-5 dark:text-emerald-400 text-emerald-700 shrink-0" />
               <div className="text-left">
                 <p className="dark:text-gray-300 text-gray-700 text-xs font-semibold line-through">Crear tu cuenta de acceso</p>
                 <p className="text-[10px] text-gray-500 font-medium">Cuenta verificada y activa</p>
@@ -109,7 +109,7 @@ export default function ActivationChecklist({
           <div className="flex items-center justify-between p-3 rounded-2xl dark:bg-gray-800/20 bg-gray-200 border dark:border-gray-800 border-gray-200/40 hover:border-blue-500/20 transition-all">
             <div className="flex items-center gap-3">
               {isSandboxCompleted ? (
-                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-5 h-5 dark:text-emerald-400 text-emerald-700 shrink-0" />
               ) : (
                 <Circle className="w-5 h-5 text-gray-600 shrink-0 animate-pulse" />
               )}
@@ -137,7 +137,7 @@ export default function ActivationChecklist({
           <div className="flex items-center justify-between p-3 rounded-2xl dark:bg-gray-800/20 bg-gray-200 border dark:border-gray-800 border-gray-200/40 hover:border-blue-500/20 transition-all">
             <div className="flex items-center gap-3">
               {isBusinessConfigured ? (
-                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-5 h-5 dark:text-emerald-400 text-emerald-700 shrink-0" />
               ) : (
                 <Circle className="w-5 h-5 text-gray-600 shrink-0" />
               )}
@@ -153,7 +153,7 @@ export default function ActivationChecklist({
             {!isBusinessConfigured ? (
               <button
                 onClick={() => router.push('/configuracion')}
-                className="dark:bg-gray-800 bg-gray-200 hover:bg-gray-700 dark:text-gray-200 text-gray-800 border dark:border-gray-700/50 border-gray-300 font-bold text-[11px] px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all active:scale-95"
+                className="dark:bg-gray-800 bg-gray-200 hover:dark:bg-gray-700 hover:bg-gray-300 dark:text-gray-200 text-gray-800 border dark:border-gray-700/50 border-gray-300 font-bold text-[11px] px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all active:scale-95"
               >
                 Configurar
                 <Settings className="w-3.5 h-3.5" />
@@ -177,7 +177,7 @@ export default function ActivationChecklist({
             className="mt-4 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col items-center text-center space-y-3"
           >
             <div className="w-10 h-10 bg-emerald-500/20 border border-emerald-500/30 rounded-full flex items-center justify-center">
-              <Trophy className="w-5 h-5 text-emerald-400 animate-bounce" />
+              <Trophy className="w-5 h-5 dark:text-emerald-400 text-emerald-700 animate-bounce" />
             </div>
             <div className="space-y-1">
               <p className="dark:text-white text-gray-900 text-xs font-extrabold">¡Todo listo para empezar!</p>

@@ -22,7 +22,7 @@ export function UpgradePrompt({
   return (
     <div className="flex flex-col items-center justify-center p-6 text-center h-full min-h-[60vh] animate-in fade-in zoom-in duration-300">
       <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
-        <Crown className="w-10 h-10 text-amber-500" />
+        <Crown className="w-10 h-10 dark:text-amber-500 text-amber-600" />
       </div>
       
       <h2 className="text-2xl font-bold dark:text-slate-100 text-slate-900 mb-3">{title}</h2>
@@ -36,7 +36,7 @@ export function UpgradePrompt({
         <ul className="space-y-3">
           {features.map((feature, idx) => (
             <li key={idx} className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 dark:text-amber-500 text-amber-600 shrink-0 mt-0.5" />
               <span className="dark:text-slate-300 text-slate-700">{feature}</span>
             </li>
           ))}

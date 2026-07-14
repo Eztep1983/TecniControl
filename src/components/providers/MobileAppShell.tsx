@@ -19,7 +19,7 @@ import { TAB_ORDER } from "@/lib/navigation-config";
 
 const ViewLoading = () => (
   <div className="flex flex-1 items-center justify-center min-h-[60vh]">
-    <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+    <Loader2 className="w-8 h-8 dark:text-blue-500 text-blue-600 animate-spin" />
   </div>
 );
 

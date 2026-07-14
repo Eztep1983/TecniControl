@@ -16,6 +16,7 @@ interface DispositivoSelectorProps {
   onSeleccionarDispositivo: (dispositivo: Dispositivo) => void
   onDesseleccionarDispositivo: () => void
   onClienteActualizado?: (cliente: Cliente) => void
+  isOnboarding?: boolean
 }
 
 const INITIAL_VISIBLE = 6
@@ -49,6 +50,7 @@ export default function DispositivoSelector({
   onSeleccionarDispositivo,
   onDesseleccionarDispositivo,
   onClienteActualizado,
+  isOnboarding,
 }: DispositivoSelectorProps) {
   const [dispositivoAnimando, setDispositivoAnimando] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -127,13 +129,15 @@ export default function DispositivoSelector({
             </div>
 
             {/* Change button — thumb-friendly */}
-            <button
-              type="button"
-              onClick={onDesseleccionarDispositivo}
-              className="flex-shrink-0 min-h-[44px] px-4 py-2 bg-blue-500/20 hover:bg-blue-500/35 active:bg-blue-500/45 dark:text-blue-300 text-blue-700 hover:text-blue-100 rounded-xl transition-all duration-150 font-medium text-sm active:scale-95"
-            >
-              Cambiar
-            </button>
+            {!isOnboarding && (
+              <button
+                type="button"
+                onClick={onDesseleccionarDispositivo}
+                className="flex-shrink-0 min-h-[44px] px-4 py-2 bg-blue-500/20 hover:bg-blue-500/35 active:bg-blue-500/45 dark:text-blue-300 text-blue-700 hover:text-blue-100 rounded-xl transition-all duration-150 font-medium text-sm active:scale-95"
+              >
+                Cambiar
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -179,7 +183,7 @@ export default function DispositivoSelector({
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-lg font-semibold dark:text-gray-200 text-gray-800">DISPOSITIVOS DEL CLIENTE</p>
+            <p className="text-lg font-semibold dark:text-gray-200 text-gray-800">Dispositivos de {cliente.name?.split(' ')[0] || 'este cliente'}</p>
             <p className="text-md text-gray-500 mt-0.5">
               {dispositivos.length} dispositivo{dispositivos.length !== 1 ? 's' : ''} registrado{dispositivos.length !== 1 ? 's' : ''}
             </p>
@@ -214,7 +218,7 @@ export default function DispositivoSelector({
             <button
               type="button"
               onClick={() => setVisibles(v => v + LOAD_MORE_STEP)}
-              className="w-full min-h-[48px] flex items-center justify-center gap-2 text-sm dark:text-gray-400 text-gray-600 hover:dark:text-blue-400 hover:text-blue-700 hover:bg-gray-700/30 active:dark:bg-gray-700/50 active:bg-gray-300 transition-all duration-150"
+              className="w-full min-h-[48px] flex items-center justify-center gap-2 text-sm dark:text-gray-400 text-gray-600 hover:dark:text-blue-400 hover:text-blue-700 hover:dark:bg-gray-700 hover:bg-gray-300/30 active:dark:bg-gray-700/50 active:bg-gray-300 transition-all duration-150"
             >
               <ChevronDown className="w-4 h-4" />
               Ver {Math.min(LOAD_MORE_STEP, dispositivos.length - visibles)} más
@@ -256,7 +260,7 @@ const DispositivoRow = memo(function DispositivoRow({
       type="button"
       onClick={() => onSelect(dispositivo)}
       // min-h-[72px] para touch target cómodo dado el contenido
-      className={`w-full min-h-[72px] px-4 py-4 flex items-center gap-3 text-left transition-all duration-150 active:scale-[0.985] ${animando ? 'bg-blue-500/20' : 'hover:bg-gray-700/40 active:bg-gray-700/60'} ${showDivider ? 'border-b dark:border-gray-700/30 border-gray-300' : ''}`}
+      className={`w-full min-h-[72px] px-4 py-4 flex items-center gap-3 text-left transition-all duration-150 active:scale-[0.985] ${animando ? 'bg-blue-500/20' : 'hover:dark:bg-gray-700 hover:bg-gray-300/40 active:bg-gray-700/60'} ${showDivider ? 'border-b dark:border-gray-700/30 border-gray-300' : ''}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Device icon */}

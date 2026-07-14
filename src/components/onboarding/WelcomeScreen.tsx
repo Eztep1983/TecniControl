@@ -10,7 +10,6 @@ import {
   Shield,
   PenLine,
   ChevronRight,
-  Info,
   Clock
 
 } from 'lucide-react'
@@ -75,8 +74,8 @@ export default function WelcomeScreen({ onStartOnboarding, onSkip }: WelcomeScre
             </h1>
             
             <div className="flex items-center justify-center gap-2 mb-4 bg-blue-500/10 w-fit mx-auto px-3 py-1 rounded-full border border-blue-500/20">
-              <Clock className="w-4 h-4 text-blue-400" />
-              <span className="text-blue-400 text-xs font-bold uppercase tracking-wider">Recorrido: 1 minuto</span>
+              <Clock className="w-4 h-4 dark:text-blue-400 text-blue-700" />
+              <span className="dark:text-blue-400 text-blue-700 text-xs font-bold uppercase tracking-wider">Recorrido: 1 minuto</span>
             </div>
 
             <p className="dark:text-gray-400 text-gray-600 text-lg sm:text-base max-w-sm mx-auto leading-relaxed">
@@ -108,13 +107,13 @@ export default function WelcomeScreen({ onStartOnboarding, onSkip }: WelcomeScre
               <StepIcon 
                 icon={<Laptop className="w-4 h-4" />} 
                 label="Equipo" 
-                description="Qué reparas" 
+                description="Procedimientos" 
                 delay={0.8} 
               />
               <StepIcon 
                 icon={<ClipboardCheck className="w-4 h-4" />} 
-                label="Orden" 
-                description="Qué hiciste" 
+                label="PDF" 
+                description="Profesional" 
                 delay={1.0} 
               />
             </div>
@@ -182,7 +181,7 @@ function StepIcon({ icon, label, description, delay }: { icon: React.ReactNode, 
       className="relative z-10 flex flex-col items-center"
     >
       <div className="w-8 h-8 dark:bg-gray-900 bg-gray-100 border dark:border-gray-700 border-gray-300 rounded-full flex items-center justify-center mb-1 shadow-lg">
-        <div className="text-blue-400">{icon}</div>
+        <div className="dark:text-blue-400 text-blue-700">{icon}</div>
       </div>
       <span className="text-[10px] font-bold dark:text-white text-gray-900 uppercase tracking-wider mb-0.5">{label}</span>
       <span className="text-[8px] text-gray-500 font-medium leading-none text-center whitespace-nowrap">{description}</span>
@@ -192,10 +191,10 @@ function StepIcon({ icon, label, description, delay }: { icon: React.ReactNode, 
 
 function LearningItem({ title, description, color, icon: Icon }: { title: string, description: string, color: 'blue' | 'indigo' | 'cyan' | 'purple', icon: any }) {
   const colors = {
-    blue: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
+    blue: 'bg-blue-500/10 border-blue-500/20 dark:text-blue-400 text-blue-700',
     indigo: 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400',
     cyan: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400',
-    purple: 'bg-purple-500/10 border-purple-500/20 text-purple-400',
+    purple: 'bg-purple-500/10 border-purple-500/20 dark:text-purple-400 text-purple-700',
   }
 
   return (

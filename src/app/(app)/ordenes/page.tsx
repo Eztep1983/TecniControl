@@ -5,17 +5,15 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import {
   Shield,
   Wrench,
-  Plus,
   ArrowRight,
   ClipboardList,
   Stethoscope,
-  FileX,
+  Inbox,
   FileEdit,
   Package,
   RefreshCw,
   AlertTriangle,
   Loader2,
-  Sparkles
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -146,34 +144,72 @@ const StatCard = memo(
     icon: Icon,
     value,
     label,
-    colorClass = 'dark:border-gray-700/50 border-gray-300',
+    colorPrefix,
     onClick,
   }: {
     icon: React.ElementType
     value: number
     label: string
-    colorClass?: string
+    colorPrefix?: string
     onClick?: () => void
   }) => {
     const Component = onClick ? 'button' : 'div'
+    
+    // Default colors if no prefix is provided
+    let bgClass = 'dark:bg-gray-800/40 bg-gray-100 border-gray-200 dark:border-gray-700/50 hover:bg-gray-200 hover:dark:bg-gray-800/60'
+    let textClass = 'dark:text-white text-gray-900'
+    let iconClass = 'dark:text-gray-400 text-gray-500'
+    let labelClass = 'dark:text-gray-400 text-gray-600'
+
+    if (colorPrefix === 'green') {
+      bgClass = 'bg-green-500/15 dark:bg-green-500/10 border-green-500/30 hover:bg-green-500/25 hover:dark:bg-green-500/20'
+      textClass = 'text-green-800 dark:text-green-300'
+      iconClass = 'text-green-600 dark:text-green-400'
+      labelClass = 'text-green-700 dark:text-green-400'
+    } else if (colorPrefix === 'orange') {
+      bgClass = 'bg-orange-500/15 dark:bg-orange-500/10 border-orange-500/30 hover:bg-orange-500/25 hover:dark:bg-orange-500/20'
+      textClass = 'text-orange-800 dark:text-orange-300'
+      iconClass = 'text-orange-600 dark:text-orange-400'
+      labelClass = 'text-orange-700 dark:text-orange-400'
+    } else if (colorPrefix === 'blue') {
+      bgClass = 'bg-blue-500/15 dark:bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/25 hover:dark:bg-blue-500/20'
+      textClass = 'text-blue-800 dark:text-blue-300'
+      iconClass = 'text-blue-600 dark:text-blue-400'
+      labelClass = 'text-blue-700 dark:text-blue-400'
+    } else if (colorPrefix === 'purple') {
+      bgClass = 'bg-purple-500/15 dark:bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/25 hover:dark:bg-purple-500/20'
+      textClass = 'text-purple-800 dark:text-purple-300'
+      iconClass = 'text-purple-600 dark:text-purple-400'
+      labelClass = 'text-purple-700 dark:text-purple-400'
+    } else if (colorPrefix === 'amber') {
+      bgClass = 'bg-amber-500/15 dark:bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/25 hover:dark:bg-amber-500/20'
+      textClass = 'text-amber-800 dark:text-amber-300'
+      iconClass = 'text-amber-600 dark:text-amber-400'
+      labelClass = 'text-amber-700 dark:text-amber-400'
+    } else if (colorPrefix === 'gray') {
+      bgClass = 'bg-gray-500/15 dark:bg-gray-500/10 border-gray-500/30 hover:bg-gray-500/25 hover:dark:bg-gray-500/20'
+      textClass = 'text-gray-800 dark:text-gray-300'
+      iconClass = 'text-gray-600 dark:text-gray-400'
+      labelClass = 'text-gray-700 dark:text-gray-400'
+    }
     
     return (
       <Component
         onClick={onClick}
         type={onClick ? "button" : undefined}
         className={cn(
-          'w-full dark:bg-gray-800/40 bg-gray-200 border rounded-2xl p-2.5',
-          'flex flex-col items-center justify-center text-center',
-          'transition-all duration-150',
-          onClick ? 'cursor-pointer hover:dark:bg-gray-800/60 hover:bg-gray-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400' : 'cursor-default',
-          colorClass
+          "w-full border rounded-2xl p-2.5",
+          "flex flex-col items-center justify-center text-center",
+          "transition-all duration-150",
+          onClick ? "cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400" : "cursor-default",
+          bgClass
         )}
-        role={onClick ? 'button' : 'listitem'}
+        role={onClick ? "button" : "listitem"}
         aria-label={onClick ? `Ver órdenes de tipo ${label}` : undefined}
       >
-        <Icon className="w-4 h-4 dark:text-gray-400 text-gray-600 mb-1" aria-hidden="true" />
-        <span className="text-lg font-bold dark:text-white text-gray-900 tabular-nums leading-tight">{value}</span>
-        <span className="text-[9px] sm:text-[10px] uppercase tracking-wider dark:text-gray-400 text-gray-600 font-medium text-center leading-tight mt-0.5 break-words max-w-full">
+        <Icon className={cn("w-4 h-4 mb-1", iconClass)} aria-hidden="true" />
+        <span className={cn("text-lg font-bold tabular-nums leading-tight", textClass)}>{value}</span>
+        <span className={cn("text-[9px] sm:text-[10px] uppercase tracking-wider font-medium text-center leading-tight mt-0.5 break-words max-w-full", labelClass)}>
           {label}
         </span>
       </Component>
@@ -188,9 +224,9 @@ const EmptyOrdenes = memo(
   () => (
     <div className="flex flex-col items-center justify-center py-10 px-6 text-center rounded-xl border border-dashed dark:border-gray-700/60 border-gray-300 dark:bg-gray-800/20 bg-gray-200">
       <div className="w-12 h-12 rounded-xl dark:bg-gray-800/60 bg-gray-200 border dark:border-gray-700/50 border-gray-300 flex items-center justify-center mb-3">
-        <FileX className="w-6 h-6 text-gray-600" aria-hidden="true" />
+        <Inbox className="w-6 h-6 text-gray-600" aria-hidden="true" />
       </div>
-      <p className="text-sm font-medium dark:text-white text-gray-900">Sin órdenes recientes</p>
+      <p className="text-sm font-medium dark:text-white text-gray-900">¡Crea tu primera orden!</p>
       <p className="text-xs dark:text-gray-400 text-gray-600 mt-2">
         Presiona el botón <strong className="dark:text-blue-400 text-blue-700 font-bold dark:bg-gray-800 bg-gray-200 px-1.5 py-0.5 rounded shadow-sm inline-flex items-center justify-center">+</strong> debajo para crear tu primera orden.
       </p>
@@ -484,35 +520,35 @@ function OrdenesDashboardContent() {
                 icon={Shield}
                 value={estadisticas.preventivos}
                 label="Prev"
-                colorClass="border-green-500/20"
+                colorPrefix="green"
                 onClick={() => router.push('/ordenes/mantenimiento?tipo=preventivo')}
               />
               <StatCard
                 icon={Wrench}
                 value={estadisticas.correctivos}
                 label="Corr"
-                colorClass="border-orange-500/20"
+                colorPrefix="orange"
                 onClick={() => router.push('/ordenes/mantenimiento?tipo=correctivo')}
               />
               <StatCard
                 icon={Stethoscope}
                 value={estadisticas.diagnosticos}
                 label="Diag"
-                colorClass="border-blue-500/20"
+                colorPrefix="blue"
                 onClick={() => router.push('/ordenes/mantenimiento?tipo=diagnostico')}
               />
               <StatCard
                 icon={Package}
                 value={estadisticas.instalaciones}
                 label="Inst"
-                colorClass="border-purple-500/20"
+                colorPrefix="purple"
                 onClick={() => router.push('/ordenes/mantenimiento?tipo=instalacion')}
               />
               <StatCard
                 icon={Shield}
                 value={estadisticas.garantias || 0}
-                label="Gar"
-                colorClass="border-amber-500/20"
+                label="DGar"
+                colorPrefix="amber"
                 onClick={() => router.push('/ordenes/mantenimiento?tipo=garantia')}
               />
             </div>

@@ -18,6 +18,7 @@ interface ClienteSelectorProps {
   setBusquedaCliente: (value: string) => void
   onSeleccionarCliente: (cliente: Cliente) => void
   onDesseleccionarCliente: () => void
+  isOnboarding?: boolean
 }
 
 // Cuántos clientes mostrar inicialmente y cuánto añadir por cada "Ver más"
@@ -29,6 +30,7 @@ const ClienteSelector = memo(function ClienteSelector({
   clienteSeleccionado,
   onSeleccionarCliente,
   onDesseleccionarCliente,
+  isOnboarding,
 }: Omit<ClienteSelectorProps, 'busquedaCliente' | 'setBusquedaCliente'>) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [clienteAnimando, setClienteAnimando] = useState<string | null>(null)
@@ -164,13 +166,15 @@ const ClienteSelector = memo(function ClienteSelector({
               </div>
 
               {/* Change button — tall enough for thumb tap */}
-              <button
-                type="button"
-                onClick={onDesseleccionarCliente}
-                className="flex-shrink-0 min-h-[44px] px-4 py-2 bg-blue-500/20 hover:bg-blue-500/35 active:bg-blue-500/45 dark:text-blue-300 text-blue-700 hover:text-blue-100 rounded-xl transition-all duration-150 font-medium text-sm active:scale-95"
-              >
-                Cambiar
-              </button>
+              {!isOnboarding && (
+                <button
+                  type="button"
+                  onClick={onDesseleccionarCliente}
+                  className="flex-shrink-0 min-h-[44px] px-4 py-2 bg-blue-500/20 hover:bg-blue-500/35 active:bg-blue-500/45 dark:text-blue-300 text-blue-700 hover:text-blue-100 rounded-xl transition-all duration-150 font-medium text-sm active:scale-95"
+                >
+                  Cambiar
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -289,7 +293,7 @@ const ClienteSelector = memo(function ClienteSelector({
                   <button
                     type="button"
                     onClick={() => setVisiblesEnBusqueda(v => v + LOAD_MORE_STEP)}
-                    className="w-full min-h-[48px] flex items-center justify-center gap-2 border-t dark:border-gray-700/50 border-gray-300 text-sm dark:text-gray-400 text-gray-600 hover:dark:text-blue-400 hover:text-blue-700 hover:bg-gray-700/30 active:dark:bg-gray-700/50 active:bg-gray-300 transition-all duration-150"
+                    className="w-full min-h-[48px] flex items-center justify-center gap-2 border-t dark:border-gray-700/50 border-gray-300 text-sm dark:text-gray-400 text-gray-600 hover:dark:text-blue-400 hover:text-blue-700 hover:dark:bg-gray-700 hover:bg-gray-300/30 active:dark:bg-gray-700/50 active:bg-gray-300 transition-all duration-150"
                   >
                     <ChevronDown className="w-4 h-4" />
                     Ver {Math.min(LOAD_MORE_STEP, clientesFiltrados.length - visiblesEnBusqueda)} más
@@ -333,7 +337,7 @@ const ClienteRow = memo(function ClienteRow({
       type="button"
       onClick={() => onSelect(cliente)}
       // min-h-[64px] garantiza touch target cómodo en mobile
-      className={`w-full min-h-[64px] px-4 py-3.5 flex items-center gap-3 text-left transition-all duration-150 active:scale-[0.985] ${animando ? 'bg-blue-500/20' : 'hover:bg-gray-700/40 active:bg-gray-700/60'} ${showDivider ? 'border-b dark:border-gray-700/30 border-gray-300' : ''}`}
+      className={`w-full min-h-[64px] px-4 py-3.5 flex items-center gap-3 text-left transition-all duration-150 active:scale-[0.985] ${animando ? 'bg-blue-500/20' : 'hover:dark:bg-gray-700 hover:bg-gray-300/40 active:bg-gray-700/60'} ${showDivider ? 'border-b dark:border-gray-700/30 border-gray-300' : ''}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Avatar */}

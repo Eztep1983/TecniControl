@@ -113,7 +113,7 @@ export default function GarantiaInput({
             <h3 className="text-lg sm:text-xl font-bold dark:text-gray-100 text-gray-900 flex items-center gap-2">
               Garantía del servicio
               {garantiaHabilitada && (
-                 <button type="button" onClick={() => setMostrarInfo(!mostrarInfo)} className="p-1 hover:bg-gray-700 rounded-full transition-colors">
+                 <button type="button" onClick={() => setMostrarInfo(!mostrarInfo)} className="p-1 hover:dark:bg-gray-700 hover:bg-gray-300 rounded-full transition-colors">
                    <Info className="w-4 h-4 dark:text-gray-400 text-gray-600" />
                  </button>
               )}
@@ -304,7 +304,7 @@ export default function GarantiaInput({
                       key={index}
                       type="button"
                       onClick={() => onCambiarDescripcion(`Cubre: ${sugerencia}`)}
-                      className="px-3.5 py-1.5 dark:bg-gray-800 bg-gray-200 border dark:border-gray-700 border-gray-300 hover:bg-gray-700 hover:border-gray-500 text-[13px] dark:text-gray-300 text-gray-700 rounded-full transition-all duration-200 active:scale-95 touch-manipulation"
+                      className="px-3.5 py-1.5 dark:bg-gray-800 bg-gray-200 border dark:border-gray-700 border-gray-300 hover:dark:bg-gray-700 hover:bg-gray-300 hover:border-gray-500 text-[13px] dark:text-gray-300 text-gray-700 rounded-full transition-all duration-200 active:scale-95 touch-manipulation"
                     >
                       + {sugerencia}
                     </button>

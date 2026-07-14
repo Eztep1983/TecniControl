@@ -39,7 +39,7 @@ export function UserProfile() {
           <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-blue-400 p-[1.5px] shadow-lg shadow-blue-500/20">
             <Avatar className="h-full w-full border-2 dark:border-gray-800 border-gray-200">
               <AvatarImage src={user.photoURL ?? ""} alt={user.displayName ?? "User"} className="object-cover" />
-              <AvatarFallback className="dark:bg-gray-800 bg-gray-200 text-blue-400 font-bold text-xs">
+              <AvatarFallback className="dark:bg-gray-800 bg-gray-200 dark:text-blue-400 text-blue-700 font-bold text-xs">
                 {getInitials(user.displayName)}
               </AvatarFallback>
             </Avatar>
@@ -54,7 +54,7 @@ export function UserProfile() {
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 border dark:border-gray-700 border-gray-300 shadow-inner">
                 <AvatarImage src={user.photoURL ?? ""} alt={user.displayName ?? "User"} />
-                <AvatarFallback className="dark:bg-gray-800 bg-gray-200 text-blue-400">{getInitials(user.displayName)}</AvatarFallback>
+                <AvatarFallback className="dark:bg-gray-800 bg-gray-200 dark:text-blue-400 text-blue-700">{getInitials(user.displayName)}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col overflow-hidden">
                 <p className="text-sm font-semibold leading-none truncate dark:text-white text-gray-900">{user.displayName}</p>
@@ -71,7 +71,7 @@ export function UserProfile() {
         <DropdownMenuGroup className="p-1">
           <Link href="/configuracion">
             <DropdownMenuItem className="cursor-pointer focus:dark:bg-gray-800 focus:bg-gray-200 focus:dark:text-white focus:text-gray-900 rounded-md transition-colors py-2 px-3 group">
-              <User className="mr-2 h-4 w-4 text-blue-400 transition-transform group-hover:scale-110" />
+              <User className="mr-2 h-4 w-4 dark:text-blue-400 text-blue-700 transition-transform group-hover:scale-110" />
               <span className="font-medium text-sm">Mi Perfil</span>
             </DropdownMenuItem>
           </Link>
@@ -83,7 +83,7 @@ export function UserProfile() {
         <div className="p-1">
           <DropdownMenuItem 
             onClick={logout} 
-            className="cursor-pointer text-red-400 focus:bg-red-500/10 focus:text-red-400 rounded-md py-2 px-3 font-medium transition-all"
+            className="cursor-pointer dark:text-red-400 text-red-700 focus:bg-red-500/10 focus:dark:text-red-400 focus:text-red-700 rounded-md py-2 px-3 font-medium transition-all"
           >
             <LogOut className="mr-2 h-4 w-4" />
             <span className="text-sm">Cerrar sesión</span>

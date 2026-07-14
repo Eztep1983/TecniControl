@@ -99,10 +99,10 @@ const ClienteCard = memo(function ClienteCard({
         }}
       >
         <div className="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-blue-600/20">
-          <User className="w-6 h-6 text-blue-400" aria-hidden="true" />
+          <User className="w-6 h-6 dark:text-blue-400 text-blue-700" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0 pr-2">
-          <h3 className="font-bold dark:text-white text-gray-900 text-base leading-tight truncate group-hover:text-blue-400 transition-colors">
+          <h3 className="font-bold dark:text-white text-gray-900 text-base leading-tight truncate group-hover:dark:text-blue-400 group-hover:text-blue-700 transition-colors">
             {client.name}
           </h3>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs font-medium dark:text-gray-400 text-gray-600">
@@ -118,13 +118,13 @@ const ClienteCard = memo(function ClienteCard({
                 {client.phone}
               </span>
             )}
-            <span className="flex items-center gap-1 text-blue-400/80 bg-blue-500/10 px-1.5 py-0.5 rounded-md">
+            <span className="flex items-center gap-1 dark:text-blue-400 text-blue-700/80 bg-blue-500/10 px-1.5 py-0.5 rounded-md">
               <Monitor className="w-3 h-3" />
               {client.dispositivos?.length ?? 0} {client.dispositivos?.length === 1 ? 'Disp.' : 'Disp.'}
             </span>
           </div>
         </div>
-        <div className="text-gray-500 group-hover:text-blue-400 transition-colors flex flex-col items-center justify-center">
+        <div className="text-gray-500 group-hover:dark:text-blue-400 group-hover:text-blue-700 transition-colors flex flex-col items-center justify-center">
           <ChevronRight className="w-5 h-5" />
         </div>
       </div>
@@ -133,7 +133,7 @@ const ClienteCard = memo(function ClienteCard({
       <div className="flex items-center gap-1.5 p-3 sm:p-4 dark:bg-gray-900/30 bg-gray-100 sm:bg-transparent border-t dark:border-gray-700/30 border-gray-300 sm:border-t-0 sm:border-l sm:ml-auto">
         <button
           onClick={handleEmitirOrden}
-          className="flex-1 sm:flex-none min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 transition-colors px-3"
+          className="flex-1 sm:flex-none min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 dark:text-blue-400 text-blue-700 transition-colors px-3"
           aria-label="Emitir orden"
         >
           <Plus className="w-4 h-4" />
@@ -211,7 +211,7 @@ const Pagination = memo(function Pagination({
               Página
             </span>
             <div className="flex items-center gap-1.5 leading-none">
-              <span className="text-sm font-black text-blue-400 tabular-nums">
+              <span className="text-sm font-black dark:text-blue-400 text-blue-700 tabular-nums">
                 {currentPage}
               </span>
               <span className="text-[10px] text-gray-600 font-medium">/</span>
@@ -242,7 +242,7 @@ const Pagination = memo(function Pagination({
       <button
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="flex items-center gap-2 h-11 px-4 rounded-xl dark:bg-gray-800/40 bg-gray-200 hover:bg-gray-700/60 text-sm dark:text-gray-300 text-gray-700 font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500/50 outline-none"
+        className="flex items-center gap-2 h-11 px-4 rounded-xl dark:bg-gray-800/40 bg-gray-200 hover:dark:bg-gray-700 hover:bg-gray-300/60 text-sm dark:text-gray-300 text-gray-700 font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500/50 outline-none"
       >
         <ChevronLeft className="w-4 h-4" />
         <span>Anterior</span>
@@ -268,7 +268,7 @@ const Pagination = memo(function Pagination({
               aria-current={currentPage === item ? "page" : undefined}
               className={`min-w-[40px] h-10 rounded-xl text-sm font-bold transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500/50 outline-none ${
                 currentPage === item
-                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                  ? "bg-blue-500/20 dark:text-blue-400 text-blue-700 border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
                   : "text-gray-500 hover:dark:bg-gray-800/60 hover:bg-gray-200 hover:dark:text-gray-300 hover:text-gray-700"
               }`}
             >
@@ -281,7 +281,7 @@ const Pagination = memo(function Pagination({
       <button
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="flex items-center gap-2 h-11 px-4 rounded-xl dark:bg-gray-800/40 bg-gray-200 hover:bg-gray-700/60 text-sm dark:text-gray-300 text-gray-700 font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500/50 outline-none"
+        className="flex items-center gap-2 h-11 px-4 rounded-xl dark:bg-gray-800/40 bg-gray-200 hover:dark:bg-gray-700 hover:bg-gray-300/60 text-sm dark:text-gray-300 text-gray-700 font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500/50 outline-none"
       >
         <span>Siguiente</span>
         <ChevronRight className="w-4 h-4" />

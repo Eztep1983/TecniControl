@@ -44,7 +44,7 @@ export default function FormActions({
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-2 border dark:border-gray-600 border-gray-300 rounded-lg dark:text-gray-300 text-gray-700 hover:bg-gray-700 transition-colors"
+            className="px-6 py-2 border dark:border-gray-600 border-gray-300 rounded-lg dark:text-gray-300 text-gray-700 hover:dark:bg-gray-700 hover:bg-gray-300 transition-colors"
           >
             Cancelar
           </button>

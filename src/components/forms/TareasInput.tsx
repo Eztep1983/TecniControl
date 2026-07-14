@@ -16,6 +16,7 @@ interface TareasInputProps {
   onActualizarTareaPersonalizada: (index: number, valor: string) => void
   onAgregarTareaPersonalizada: (valor?: string) => void
   onEliminarTareaPersonalizada: (index: number) => void
+  isOnboarding?: boolean
 }
 
 export default memo(function TareasInput({
@@ -25,7 +26,8 @@ export default memo(function TareasInput({
   onToggleTareaPredefinida,
   onActualizarTareaPersonalizada,
   onAgregarTareaPersonalizada,
-  onEliminarTareaPersonalizada
+  onEliminarTareaPersonalizada,
+  isOnboarding
 }: TareasInputProps) {
   const { user } = useAuth()
   const { impactLight, selection, success, error: hapticError } = useHapticFeedback()
@@ -169,6 +171,7 @@ export default memo(function TareasInput({
                 `}
               >
                 <span className="min-w-0 flex-1 truncate">{chip.nombre}</span>
+                {!isOnboarding && (
                 <button
                   type="button"
                   onClick={() => handleEliminarChip(chip)}
@@ -180,6 +183,7 @@ export default memo(function TareasInput({
                 >
                   <X className="w-4 h-4" strokeWidth={3} />
                 </button>
+                )}
               </div>
             ))}
           </div>
