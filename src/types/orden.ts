@@ -103,6 +103,7 @@ export interface Negocio {
   email: string;
   nit: string;
   logoUrl?: string;
+  firmaUrl?: string;
   onboardingCompleted?: boolean;
   createdAt?: Date;
   updatedAt?: Date;

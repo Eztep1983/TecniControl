@@ -19,7 +19,7 @@ import {
 } from '@/lib/offline-queue-helpers'
 import * as configHelpers from '@/lib/configuracion-helpers'
 import * as multiuserHelpers from '@/lib/multiuser-helpers'
-import { encryptData, decryptData } from '@/lib/encryption-utils'
+import { encryptData, decryptData, encryptFirestoreEntity } from '@/lib/encryption-utils'
 import type { PendingOrderQueueItem, TempOrderId, OrdenMantenimiento } from '@/types/orden'
 import type { TareaPredefinida, PiezaPredefinida } from '@/lib/configuracion-helpers'
 import { 
@@ -123,7 +123,7 @@ async function syncPendingOrder(
       updatedAt: new Date(),
     } as any)
 
-    await setDoc(nuevaOrdenRef, ordenCompleta)
+    await setDoc(nuevaOrdenRef, encryptFirestoreEntity(ordenCompleta, userId))
   } else {
     // Si tiene un ID temporal, reservamos uno nuevo usando la transacción anualizada
     const currentYear = new Date().getFullYear()
@@ -163,7 +163,7 @@ async function syncPendingOrder(
         updatedAt: new Date(),
       } as any)
 
-      tx.set(nuevaOrdenRef, ordenCompleta)
+      tx.set(nuevaOrdenRef, encryptFirestoreEntity(ordenCompleta, userId))
     })
   }
 

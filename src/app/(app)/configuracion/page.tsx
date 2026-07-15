@@ -11,6 +11,8 @@ import { useMobileNavigation } from '@/components/providers/MobileNavigationCont
 import CuentaYSeguridad from '@/components/configuracion/CuentaYSeguridad'
 import MiNegocio from '@/components/configuracion/MiNegocio'
 import Preferencias from '@/components/configuracion/Preferencias'
+import SoporteAyuda from '@/components/configuracion/SoporteAyuda'
+
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -110,14 +112,14 @@ function ConfiguracionContent() {
           {activeSection === 'negocio' && <MiNegocio />}
           {activeSection === 'seguridad' && <CuentaYSeguridad />}
           {activeSection === 'preferencias' && <Preferencias />}
-          {(activeSection === 'notificaciones' || activeSection === 'ayuda') && (
+          {activeSection === 'ayuda' && <SoporteAyuda />}
+          {activeSection === 'notificaciones' && (
              <div className="p-8 text-center border-2 border-dashed dark:border-gray-800 border-gray-200 rounded-2xl">
                <Settings className="w-12 h-12 dark:text-gray-600 dark:text-gray-400 text-gray-600 mx-auto mb-4" />
                <h2 className="text-lg font-medium dark:text-gray-400 text-gray-600">Próximamente</h2>
                <p className="text-sm dark:text-gray-500 dark:text-gray-400 text-gray-600 mt-2">Esta sección está en desarrollo.</p>
              </div>
-          )}
-        </div>
+          )}        </div>
       </div>
     );
   }

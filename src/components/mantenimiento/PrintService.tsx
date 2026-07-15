@@ -306,12 +306,18 @@ const generarContenidoHTML = (
       </div>
       ` : ''}
       <div class="signature-box">
-        <div class="signature-area" style="align-items: flex-end; padding-bottom: 5px;">
-          <span style="font-size:12px; font-weight:700; color:#333;">${escapeHTML(negocio?.nombre || 'Técnico Autorizado')}</span>
+        <div class="signature-area">
+          ${negocio?.firmaUrl ? `
+            <img src="${deobfuscateSignature(negocio.firmaUrl)}" alt="Firma Técnico" class="signature-img">
+          ` : `
+            <span style="font-size:12px; font-weight:700; color:#333; align-self: flex-end; padding-bottom: 5px;">
+              ${escapeHTML(negocio?.nombre || 'Técnico Autorizado')}
+            </span>
+          `}
         </div>
         <div class="signature-line"></div>
         <div class="signature-name">Técnico Responsable</div>
-        <div class="signature-role">TecniControl Service</div>
+        <div class="signature-role">${escapeHTML(negocio?.nombre) || 'TecniControl Service'}</div>
       </div>
     </div>
 

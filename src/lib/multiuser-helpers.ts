@@ -70,6 +70,7 @@ import {
   sanitizeNegocioPayload,
   sanitizeOrdenPayload,
 } from '@/lib/firestore-sanitizers';
+import { encryptSensitiveFields, CLIENT_SENSITIVE_FIELDS, NEGOCIO_SENSITIVE_FIELDS } from '@/lib/encryption-utils';
 
 // Cliente helpers
 export const getClientesPorUsuario = async (userId: string): Promise<Cliente[]> => {
@@ -101,7 +102,7 @@ export const crearCliente = async (cliente: Omit<Cliente, 'id'>, userId: string)
       throw new Error('Cliente inválido: nombre y userId son requeridos.');
     }
 
-    const docRef = await addDoc(collection(db, 'clientes'), clienteConUserId);
+    const docRef = await addDoc(collection(db, 'clientes'), encryptSensitiveFields(clienteConUserId, CLIENT_SENSITIVE_FIELDS, userId));
     return docRef.id;
   } catch (error) {
     console.error('Error creando cliente:', error);
@@ -118,7 +119,7 @@ export const actualizarCliente = async (clienteId: string, cliente: Partial<Clie
       updatedAt: new Date().toISOString(),
     });
 
-    await updateDoc(clienteRef, clienteActualizado);
+    await updateDoc(clienteRef, encryptSensitiveFields(clienteActualizado, CLIENT_SENSITIVE_FIELDS, userId));
   } catch (error) {
     console.error('Error actualizando cliente:', error);
     throw error;
@@ -470,7 +471,7 @@ export const crearNegocio = async (negocio: Omit<Negocio, 'id'>, userId: string)
       throw new Error('Negocio inválido: userId y nombre son requeridos.');
     }
 
-    await setDoc(negocioRef, negocioConUserId);
+    await setDoc(negocioRef, encryptSensitiveFields(negocioConUserId, NEGOCIO_SENSITIVE_FIELDS, userId));
   } catch (error) {
     console.error('Hubo un error creando negocio:', error);
     throw error;
@@ -486,7 +487,7 @@ export const actualizarNegocio = async (negocio: Partial<Negocio>, userId: strin
       updatedAt: new Date(),
     });
 
-    await updateDoc(negocioRef, negocioActualizado);
+    await updateDoc(negocioRef, encryptSensitiveFields(negocioActualizado, NEGOCIO_SENSITIVE_FIELDS, userId));
   } catch (error) {
     console.error('Error actualizando negocio:', error);
     throw error;

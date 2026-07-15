@@ -382,13 +382,21 @@ export default function FirmaInput({
                   )}
                 </div>
               </div>
-
               <div
                 ref={containerRef}
                 className={`border-2 border-dashed rounded-xl bg-white overflow-hidden relative shadow-inner touch-none ${
                   showFirmaError ? 'border-red-500/50' : 'dark:border-gray-600/50 border-gray-300'
                 }`}
                 style={{ height: 'clamp(160px, 28dvh, 240px)' }}
+                onPointerDown={(e) => e.stopPropagation()}
+                onPointerMove={(e) => e.stopPropagation()}
+                onPointerUp={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                onTouchMove={(e) => e.stopPropagation()}
+                onTouchEnd={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onMouseMove={(e) => e.stopPropagation()}
+                onMouseUp={(e) => e.stopPropagation()}
               >
                 <SignatureCanvas
                   ref={sigCanvas}

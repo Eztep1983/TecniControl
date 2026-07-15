@@ -15,6 +15,7 @@ import {
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { getPendingTempIds } from '@/lib/offline-queue-helpers'
+import { decryptFirestoreEntity } from '@/lib/encryption-utils'
 
 /**
  * FirestoreSyncProvider: El motor de persistencia absoluta y reactividad.
@@ -42,7 +43,7 @@ export const FirestoreSyncProvider: React.FC<{ children: React.ReactNode }> = ({
     // 1. Listener de Clientes (Completo)
     const qClientes = query(collection(db, 'clientes'), where('userId', '==', user.uid))
     const unsubClientes = onSnapshot(qClientes, (snap) => {
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      const data = snap.docs.map(d => decryptFirestoreEntity({ id: d.id, ...d.data() }, user.uid))
       queryClient.setQueryData(['clientes', user.uid], data)
     })
 
@@ -56,7 +57,7 @@ export const FirestoreSyncProvider: React.FC<{ children: React.ReactNode }> = ({
     )
     const unsubOrdenes = onSnapshot(qOrdenes, (snap) => {
       // 1. Mapear datos
-      const rawData = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      const rawData = snap.docs.map(d => decryptFirestoreEntity({ id: d.id, ...d.data() }, user.uid))
       
       // 2. Filtrar órdenes que aún están en la cola offline (Deduplicación)
       const pendingTempIds = getPendingTempIds(user.uid)
@@ -81,7 +82,8 @@ export const FirestoreSyncProvider: React.FC<{ children: React.ReactNode }> = ({
     const userRef = doc(db, 'users', user.uid)
     const unsubUser = onSnapshot(userRef, (snap) => {
       if (snap.exists()) {
-        queryClient.setQueryData(['userData', user.uid], snap.data())
+        const data = decryptFirestoreEntity(snap.data(), user.uid)
+        queryClient.setQueryData(['userData', user.uid], data)
       }
     })
 
@@ -89,7 +91,8 @@ export const FirestoreSyncProvider: React.FC<{ children: React.ReactNode }> = ({
     const negocioRef = doc(db, 'negocios', user.uid)
     const unsubNegocio = onSnapshot(negocioRef, (snap) => {
       if (snap.exists()) {
-        queryClient.setQueryData(['negocio', user.uid], { id: snap.id, ...snap.data() })
+        const data = decryptFirestoreEntity({ id: snap.id, ...snap.data() }, user.uid)
+        queryClient.setQueryData(['negocio', user.uid], data)
       }
     })
 

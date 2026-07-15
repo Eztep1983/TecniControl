@@ -91,7 +91,7 @@ service cloud.firestore {
       return request.resource.data.userId == request.auth.uid
              && request.resource.data.keys().hasOnly([
                   'id', 'userId', 'nombre', 'direccion', 'telefono',
-                  'email', 'nit', 'logoUrl', 'onboardingCompleted', 'createdAt', 'updatedAt'
+                  'email', 'nit', 'logoUrl', 'firmaUrl', 'onboardingCompleted', 'createdAt', 'updatedAt'
                 ])
              && isOptionalString('id')
              && isOptionalString('nombre')
@@ -100,6 +100,7 @@ service cloud.firestore {
              && isOptionalString('email')
              && isOptionalString('nit')
              && isOptionalString('logoUrl')
+             && isOptionalString('firmaUrl')
              && isOptionalBool('onboardingCompleted')
              && isTimestampOrString('createdAt')
              && isTimestampOrString('updatedAt');
@@ -356,12 +357,22 @@ service cloud.firestore {
     }
 
     // ── Denegación global ─────────────────────────────────────────────────────
-    //  Cualquier colección no listada queda bloqueada por defecto (principio
-    //  de mínimo privilegio).
+    match /tickets/{ticketId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() 
+                       && request.resource.data.userId == request.auth.uid
+                       && request.resource.data.keys().hasOnly(['id', 'userId', 'userEmail', 'asunto', 'categoria', 'descripcion', 'estado', 'createdAt'])
+                       && isOptionalString('id')
+                       && isNonEmptyString('asunto')
+                       && isNonEmptyString('categoria')
+                       && isNonEmptyString('descripcion')
+                       && request.resource.data.estado == 'abierto'
+                       && isTimestampOrString('createdAt');
+      allow update, delete: if false;
+    }
 
     match /{document=**} {
       allow read, write: if false;
     }
-
   }
 }
