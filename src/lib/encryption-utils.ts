@@ -75,7 +75,8 @@ export function decryptData(encryptedData: string, userId?: string): any {
 // --- ENCRIPTACIÓN PARA FIRESTORE ---
 
 export const CLIENT_SENSITIVE_FIELDS = ['name', 'cedula', 'email', 'phone', 'address'];
-export const NEGOCIO_SENSITIVE_FIELDS = ['nombre', 'direccion', 'telefono', 'email', 'nit'];
+export const NEGOCIO_SENSITIVE_FIELDS = ['nombre', 'direccion', 'telefono', 'email', 'nit', 'firmaUrl'];
+export const ORDEN_SENSITIVE_FIELDS = ['firmaCliente', 'nombreFirmante', 'nombreReceptor', 'cedulaReceptor'];
 
 /**
  * Cifra un texto simple (usado para campos individuales de Firestore).
@@ -104,19 +105,29 @@ export function decryptString(text: string, userId: string): string {
   if (!text || typeof text !== 'string') return text;
   if (!text.startsWith('ENC:')) return text; // Texto plano legacy
   
-  try {
-    const key = `${FIRESTORE_SECRET}_${userId}`;
-    const encrypted = text.substring(4); // Remover 'ENC:'
-    const bytes = CryptoJS.AES.decrypt(encrypted, key);
-    const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-    
-    // Si la clave era incorrecta o los datos están corruptos, bytes.toString(Utf8) puede ser vacío.
-    // Retornamos el string desencriptado, o el original si falló silenciosamente.
-    return decrypted || text;
-  } catch (error) {
-    console.error('[Encryption] Error descifrando string:', error);
-    return text;
+  const encrypted = text.substring(4); // Remover 'ENC:'
+
+  const keysToTry = [
+    `${FIRESTORE_SECRET}_${userId}`,
+    `tc_firestore_fallback_2026_x99_${userId}` // Llave fallback en caso de datos antiguos
+  ];
+
+  for (const key of keysToTry) {
+    try {
+      const bytes = CryptoJS.AES.decrypt(encrypted, key);
+      const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+      
+      // Si la clave es correcta, decrypted contendrá el string original
+      if (decrypted) {
+        return decrypted;
+      }
+    } catch (error) {
+      // Fallo silencioso con esta clave, probamos la siguiente
+    }
   }
+
+  console.warn('[Encryption] No se pudo descifrar el string. Ninguna clave funcionó.');
+  return text;
 }
 
 /**
@@ -127,8 +138,8 @@ export function encryptSensitiveFields<T extends Record<string, any>>(data: T, f
   const result = { ...data };
   
   for (const field of fields) {
-    if (result[field] && typeof result[field] === 'string') {
-      result[field] = encryptString(result[field] as string, userId) as any;
+    if ((result as any)[field] && typeof (result as any)[field] === 'string') {
+      (result as any)[field] = encryptString((result as any)[field] as string, userId);
     }
   }
   
@@ -143,8 +154,8 @@ export function decryptSensitiveFields<T extends Record<string, any>>(data: T, f
   const result = { ...data };
   
   for (const field of fields) {
-    if (result[field] && typeof result[field] === 'string') {
-      result[field] = decryptString(result[field] as string, userId) as any;
+    if ((result as any)[field] && typeof (result as any)[field] === 'string') {
+      (result as any)[field] = decryptString((result as any)[field] as string, userId);
     }
   }
   
@@ -173,6 +184,7 @@ export function encryptFirestoreEntity(entity: any, userId: string): any {
   // Si es una Orden, tiene un cliente anidado
   if (result.cliente && typeof result.cliente === 'object') {
     result.cliente = encryptSensitiveFields(result.cliente, CLIENT_SENSITIVE_FIELDS, userId);
+    result = encryptSensitiveFields(result, ORDEN_SENSITIVE_FIELDS, userId);
   }
 
   return result;
@@ -199,6 +211,7 @@ export function decryptFirestoreEntity(entity: any, userId: string): any {
   // Si es una Orden (contiene cliente)
   if (result.cliente && typeof result.cliente === 'object') {
     result.cliente = decryptSensitiveFields(result.cliente, CLIENT_SENSITIVE_FIELDS, userId);
+    result = decryptSensitiveFields(result, ORDEN_SENSITIVE_FIELDS, userId);
   }
 
   return result;

@@ -70,7 +70,7 @@ import {
   sanitizeNegocioPayload,
   sanitizeOrdenPayload,
 } from '@/lib/firestore-sanitizers';
-import { encryptSensitiveFields, CLIENT_SENSITIVE_FIELDS, NEGOCIO_SENSITIVE_FIELDS } from '@/lib/encryption-utils';
+import { encryptSensitiveFields, decryptFirestoreEntity, CLIENT_SENSITIVE_FIELDS, NEGOCIO_SENSITIVE_FIELDS } from '@/lib/encryption-utils';
 
 // Cliente helpers
 export const getClientesPorUsuario = async (userId: string): Promise<Cliente[]> => {
@@ -79,10 +79,10 @@ export const getClientesPorUsuario = async (userId: string): Promise<Cliente[]> 
     const q = query(clientesRef, where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
     
-    return querySnapshot.docs.map(doc => ({
+    return querySnapshot.docs.map(doc => decryptFirestoreEntity({
       id: doc.id,
       ...doc.data()
-    })) as Cliente[];
+    }, userId)) as Cliente[];
   } catch (error) {
     console.error('Error obteniendo clientes:', error);
     return [];
@@ -143,10 +143,10 @@ export const getOrdenesPorUsuario = async (userId: string): Promise<Orden[]> => 
     const q = query(ordenesRef, where('userId', '==', userId), orderBy('fechaCreacion', 'desc'));
     const querySnapshot = await getDocs(q);
     
-    return querySnapshot.docs.map(doc => ({
+    return querySnapshot.docs.map(doc => decryptFirestoreEntity({
       id: doc.id,
       ...doc.data()
-    })) as Orden[];
+    }, userId)) as Orden[];
   } catch (error) {
     console.error('Error obteniendo órdenes:', error);
     return [];
@@ -181,10 +181,10 @@ export const getOrdenesPaginadas = async (userId: string, pageSize: number = 10,
     const querySnapshot = await getDocs(q);
     const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
     
-    const ordenes = querySnapshot.docs.map(doc => ({
+    const ordenes = querySnapshot.docs.map(doc => decryptFirestoreEntity({
       id: doc.id,
       ...doc.data()
-    })) as Orden[];
+    }, userId)) as Orden[];
     
     return { ordenes, lastDoc: lastVisible };
   } catch (error) {
@@ -225,10 +225,10 @@ export const getOrdenesPaginadasConFiltro = async (
     const querySnapshot = await getDocs(q);
     const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
 
-    const ordenes = querySnapshot.docs.map(doc => ({
+    const ordenes = querySnapshot.docs.map(doc => decryptFirestoreEntity({
       id: doc.id,
       ...doc.data()
-    })) as Orden[];
+    }, userId)) as Orden[];
 
     return { ordenes, lastDoc: lastVisible };
   } catch (error) {
@@ -261,10 +261,10 @@ export const getTodasLasOrdenesConFiltro = async (
     const q = query(ordenesRef, ...constraints);
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map(doc => ({
+    return querySnapshot.docs.map(doc => decryptFirestoreEntity({
       id: doc.id,
       ...doc.data()
-    })) as Orden[];
+    }, userId)) as Orden[];
   } catch (error) {
     console.error('Error obteniendo todas las órdenes con filtro:', error);
     return [];
@@ -383,58 +383,6 @@ export const crearOrdenAtomica = async (
   return { id: nuevaOrdenRef.id, idPersonalizado };
 };
 
-/**
- * Reserva un rango de IDs consecutivos para un usuario y año actuales.
- */
-export const reservarBloqueIds = async (
-  userId: string,
-  size: number = 10
-): Promise<{ year: number; nextAvailable: number; maxAllowed: number }> => {
-  const contadorRef = doc(db, 'contadores', userId);
-  const currentYear = new Date().getFullYear();
-  let range: { year: number; nextAvailable: number; maxAllowed: number } | null = null;
-
-  await runTransaction(db, async (transaction) => {
-    const snap = await transaction.get(contadorRef);
-    let consecutivo = 1;
-
-    if (!snap.exists()) {
-      const siguientePorAnio = {
-        [currentYear]: 1 + size
-      };
-      transaction.set(contadorRef, {
-        userId,
-        siguiente: 1, // Para compatibilidad
-        ultimaOrden: '',
-        fechaActualizacion: new Date(),
-        siguientePorAnio
-      });
-      consecutivo = 1;
-    } else {
-      const data = snap.data();
-      const siguientePorAnio = data.siguientePorAnio || {};
-      consecutivo = Number(siguientePorAnio[currentYear]) || 1;
-      siguientePorAnio[currentYear] = consecutivo + size;
-
-      transaction.update(contadorRef, {
-        siguientePorAnio,
-        fechaActualizacion: new Date()
-      });
-    }
-
-    range = {
-      year: currentYear,
-      nextAvailable: consecutivo,
-      maxAllowed: consecutivo + size - 1
-    };
-  });
-
-  if (!range) {
-    throw new Error('No se pudo reservar el bloque de IDs');
-  }
-
-  return range;
-};
 
 // Negocio helpers
 export const getNegocioPorUsuario = async (userId: string): Promise<Negocio | null> => {
@@ -443,10 +391,10 @@ export const getNegocioPorUsuario = async (userId: string): Promise<Negocio | nu
     const negocioDoc = await getDoc(negocioRef);
     
     if (negocioDoc.exists()) {
-      return {
+      return decryptFirestoreEntity({
         id: negocioDoc.id,
         ...negocioDoc.data()
-      } as Negocio;
+      }, userId) as Negocio;
     }
     
     return null;

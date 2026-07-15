@@ -40,8 +40,8 @@
     "semantic_hash": "f870d84a47f950de9e430d2c0fc615ef"
   },
   "src/app/(app)/configuracion/page.tsx": {
-    "mtime": 1784135366.697431,
-    "ast_hash": "323ec6be8a9f815e8078d0e3ae56222b",
+    "mtime": 1784062273.0668762,
+    "ast_hash": "a9b69a59dc7fa791542b56d2d8a9870e",
     "semantic_hash": ""
   },
   "src/app/(app)/layout.tsx": {
@@ -100,8 +100,8 @@
     "semantic_hash": "60e127f246fa5670b245535a2f952780"
   },
   "src/components/auth/AuthGuard.tsx": {
-    "mtime": 1784137216.884409,
-    "ast_hash": "98ad1bae2829d16ec13613f7df803615",
+    "mtime": 1783871736.011969,
+    "ast_hash": "ccebb2fb43edf1fd75e40631eeb3016c",
     "semantic_hash": ""
   },
   "src/components/auth/AuthProvider.tsx": {
@@ -180,8 +180,8 @@
     "semantic_hash": ""
   },
   "src/components/forms/FirmaInput.tsx": {
-    "mtime": 1784132984.2121172,
-    "ast_hash": "c2e094aebe50f31e39f52e610afb906d",
+    "mtime": 1784065239.6181707,
+    "ast_hash": "cabc4ae056c621e5be8ea650395a4673",
     "semantic_hash": ""
   },
   "src/components/forms/FormActions.tsx": {
@@ -235,8 +235,8 @@
     "semantic_hash": ""
   },
   "src/components/mantenimiento/PrintService.tsx": {
-    "mtime": 1784132866.271725,
-    "ast_hash": "191e6efed07829c2949c4eb651c17ce2",
+    "mtime": 1783872859.708435,
+    "ast_hash": "3c00e3c39b39fe86b732d4c6d1d10cc2",
     "semantic_hash": ""
   },
   "src/components/onboarding/OnboardingSuccess.tsx": {
@@ -255,9 +255,9 @@
     "semantic_hash": "afea0c6bada96df14944a530198c07fd"
   },
   "src/components/providers/FirestoreSyncProvider.tsx": {
-    "mtime": 1784136838.482029,
-    "ast_hash": "54c1a39390bbd8107e7359b89f1a5248",
-    "semantic_hash": ""
+    "mtime": 1781217815.917127,
+    "ast_hash": "ac275a0e4f417b589fd188da1aaf7566",
+    "semantic_hash": "ac275a0e4f417b589fd188da1aaf7566"
   },
   "src/components/providers/MobileAppShell.tsx": {
     "mtime": 1784060140.1827917,
@@ -270,8 +270,8 @@
     "semantic_hash": ""
   },
   "src/components/providers/OfflineSyncProvider.tsx": {
-    "mtime": 1784136853.3074,
-    "ast_hash": "07aa43968e9031a99302ee0d80ed05de",
+    "mtime": 1781717428.1068134,
+    "ast_hash": "d469a74e1977f8614c902b7bd4cc688b",
     "semantic_hash": ""
   },
   "src/components/providers/QueryProvider.tsx": {
@@ -675,9 +675,9 @@
     "semantic_hash": "be78887e23282cf579c9d673b0ced9ae"
   },
   "src/lib/encryption-utils.ts": {
-    "mtime": 1784136774.7062755,
-    "ast_hash": "e5df6ae95b69217e1cfb30f7a5770f84",
-    "semantic_hash": ""
+    "mtime": 1780521330.6261027,
+    "ast_hash": "3bfe91e72053a08051ee371b2cc01006",
+    "semantic_hash": "3bfe91e72053a08051ee371b2cc01006"
   },
   "src/lib/firebase-utils.ts": {
     "mtime": 1778515547.3382995,
@@ -695,8 +695,8 @@
     "semantic_hash": ""
   },
   "src/lib/multiuser-helpers.ts": {
-    "mtime": 1784136874.4863496,
-    "ast_hash": "9ac8e62d79950dd56c03a7cacd54d308",
+    "mtime": 1781716232.0095117,
+    "ast_hash": "dda6bebab6ecda47efb71d37f88f132d",
     "semantic_hash": ""
   },
   "src/lib/navigation-config.ts": {
@@ -725,8 +725,8 @@
     "semantic_hash": "1d8011eb18769078bf77502b220daa5e"
   },
   "src/types/orden.ts": {
-    "mtime": 1784132812.398884,
-    "ast_hash": "94c500a886760ae75188e0f19e5a1465",
+    "mtime": 1781819964.4124825,
+    "ast_hash": "612dcc9cea899bc9fc21eafbe9f1056b",
     "semantic_hash": ""
   },
   "src/types/react-window.d.ts": {
@@ -955,8 +955,8 @@
     "semantic_hash": ""
   },
   "src/components/configuracion/MiNegocio.tsx": {
-    "mtime": 1784133856.435918,
-    "ast_hash": "0f5677b4816ea71517f8b76e925f6558",
+    "mtime": 1784064165.9103105,
+    "ast_hash": "5f6dd2ae127d8f0285433860c0307d08",
     "semantic_hash": ""
   },
   "src/components/configuracion/Preferencias.tsx": {
@@ -987,16 +987,6 @@
   "fix_white.js": {
     "mtime": 1784060366.5409138,
     "ast_hash": "9d102b2044a6b9ac087e7686cb820772",
-    "semantic_hash": ""
-  },
-  "src/components/configuracion/SoporteAyuda.tsx": {
-    "mtime": 1784135336.4225905,
-    "ast_hash": "0c4063e1715199ba49bcb2a58440ad10",
-    "semantic_hash": ""
-  },
-  "tests/encryption-utils.test.ts": {
-    "mtime": 1784136807.8860438,
-    "ast_hash": "a9c19933548ae84e3b2c53c2da117a8c",
     "semantic_hash": ""
   }
 }

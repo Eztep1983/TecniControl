@@ -11,8 +11,6 @@ import {
   getOrdenesPaginadasConFiltro,
   getTodasLasOrdenesConFiltro,
   crearOrdenAtomica,
-  reservarBloqueIds,
-  crearOrden,
   getEstadisticasPorUsuario,
   completarOnboarding,
   getOrdenesPaginadas,
@@ -21,7 +19,8 @@ import {
   actualizarCliente as actualizarClienteHelper,
   eliminarCliente as eliminarClienteHelper
 } from '@/lib/multiuser-helpers';
-import { obtenerSiguienteIdDePool, saveLocalIdPool } from '@/lib/id-pool-helper';
+
+import { decryptFirestoreEntity } from '@/lib/encryption-utils';
 
 /**
  * ✅ Hook para Clientes
@@ -43,7 +42,7 @@ export const useClientesUsuario = () => {
     );
 
     const unsubscribe = onSnapshot(q, { includeMetadataChanges: true }, (snapshot: any) => {
-      const clientes = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      const clientes = snapshot.docs.map((doc: any) => decryptFirestoreEntity({ id: doc.id, ...doc.data() }, user.uid));
       queryClient.setQueryData(['clientes', user.uid], clientes);
     });
 
@@ -58,7 +57,7 @@ export const useClientesUsuario = () => {
 
       const q = query(collection(db, 'clientes'), where('userId', '==', user!.uid), orderBy('createdAt', 'desc'));
       const snapshot: any = await getDocs(q);
-      const data = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      const data = snapshot.docs.map((doc: any) => decryptFirestoreEntity({ id: doc.id, ...doc.data() }, user!.uid));
       return data as Cliente[];
     },
     enabled: !!user?.uid,
@@ -244,33 +243,9 @@ export const useCrearOrden = () => {
         updatedAt: new Date(),
       };
 
-      // 1. Intentar resolver un ID definitivo desde el pool local
-      let idPersonalizado = obtenerSiguienteIdDePool(userId);
-
-      if (!idPersonalizado) {
-        // Pool vacío o de año anterior, intentar reservar un bloque nuevo
-        try {
-          const nuevoPool = await reservarBloqueIds(userId, 10);
-          saveLocalIdPool(userId, nuevoPool);
-          idPersonalizado = obtenerSiguienteIdDePool(userId);
-        } catch (error) {
-          console.warn('Error reservando bloque de IDs online, usando crearOrdenAtomica como fallback:', error);
-        }
-      }
-
-      let id = '';
-      if (idPersonalizado) {
-        // Crear orden directamente sin transacciones individuales
-        id = await crearOrden({
-          ...ordenBase,
-          idPersonalizado
-        }, userId);
-      } else {
-        // Fallback si la transacción del pool falla por red/concurrencia
-        const res = await crearOrdenAtomica(ordenBase, userId);
-        id = res.id;
-        idPersonalizado = res.idPersonalizado;
-      }
+      // Crear orden usando transacción atómica siempre (previene saltos en numeración)
+      const res = await crearOrdenAtomica(ordenBase, userId);
+      const { id, idPersonalizado } = res;
 
       return { id, idPersonalizado, isOffline: false, ...ordenBase };
     },
@@ -389,7 +364,7 @@ export const useSyncTodasLasOrdenes = () => {
     );
 
     const unsubscribe = onSnapshot(q, { includeMetadataChanges: true }, (snapshot: any) => {
-      const ordenes = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      const ordenes = snapshot.docs.map((doc: any) => decryptFirestoreEntity({ id: doc.id, ...doc.data() }, user.uid));
       queryClient.setQueryData(['ordenes_completas', user.uid], ordenes);
     });
 
@@ -404,7 +379,7 @@ export const useSyncTodasLasOrdenes = () => {
 
       const q = query(collection(db, 'ordenes'), where('userId', '==', user!.uid), orderBy('fechaCreacion', 'desc'));
       const snapshot: any = await getDocs(q);
-      const data = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      const data = snapshot.docs.map((doc: any) => decryptFirestoreEntity({ id: doc.id, ...doc.data() }, user!.uid));
       return data as OrdenMantenimiento[];
     },
     staleTime: Infinity,

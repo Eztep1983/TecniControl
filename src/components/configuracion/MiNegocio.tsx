@@ -12,7 +12,12 @@ import { motion, AnimatePresence } from 'motion/react'
 import SignatureCanvas from 'react-signature-canvas'
 import { obfuscateSignature, deobfuscateSignature } from '@/lib/signature-utils'
 import { useQueryClient } from '@tanstack/react-query'
-
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/basic/dialog"
 interface NegocioConUsuario extends Negocio {
   userId: string;
 }
@@ -107,6 +112,7 @@ export default function MiNegocio() {
 
   // Tab views and refs
   const [signatureTab, setSignatureTab] = useState<'draw' | 'upload'>('draw');
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const sigCanvas = useRef<SignatureCanvas>(null);
   const sigContainerRef = useRef<HTMLDivElement>(null);
   
@@ -689,72 +695,15 @@ export default function MiNegocio() {
                   </div>
 
                   {signatureTab === 'draw' ? (
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-semibold text-gray-500">Dibuja tu firma sobre el lienzo</span>
-                        <div className="flex gap-2">
-                          {history.length > 0 && (
-                            <button
-                              type="button"
-                              onClick={handleUndoSignature}
-                              className="px-3 py-2 rounded-xl dark:bg-gray-900 bg-gray-200 text-gray-600 dark:text-gray-450 hover:text-blue-500 dark:hover:text-blue-400 transition-colors flex items-center gap-1 text-xs min-h-[44px]"
-                            >
-                              <Undo className="w-3.5 h-3.5" />
-                              Deshacer
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={handleClearSignature}
-                            className="px-3 py-2 rounded-xl dark:bg-gray-900 bg-gray-200 text-gray-600 dark:text-gray-450 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center gap-1 text-xs min-h-[44px]"
-                          >
-                            <Eraser className="w-3.5 h-3.5" />
-                            Limpiar
-                          </button>
+                    <div className="space-y-4">
+                      <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed dark:border-gray-700 border-gray-300 rounded-2xl bg-white dark:bg-gray-950/20 text-center cursor-pointer hover:border-blue-500/50 transition-colors relative"
+                           onClick={() => setIsSignatureModalOpen(true)}>
+                        
+                        <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center border dark:border-blue-500/20 border-blue-100 mb-3 text-blue-500">
+                          <PenTool className="w-6 h-6" />
                         </div>
-                      </div>
-                      
-                      {/* Canvas Container with propagation blocking */}
-                      <div
-                        ref={sigContainerRef}
-                        className="border-2 border-dashed rounded-2xl bg-white overflow-hidden relative shadow-inner touch-none dark:border-gray-700 border-gray-300"
-                        style={{ height: '140px' }}
-                        onPointerDownCapture={(e) => e.stopPropagation()}
-                        onPointerMoveCapture={(e) => e.stopPropagation()}
-                        onPointerUpCapture={(e) => e.stopPropagation()}
-                        onTouchStartCapture={(e) => e.stopPropagation()}
-                        onTouchMoveCapture={(e) => e.stopPropagation()}
-                        onTouchEndCapture={(e) => e.stopPropagation()}
-                        onMouseDownCapture={(e) => e.stopPropagation()}
-                        onMouseMoveCapture={(e) => e.stopPropagation()}
-                        onMouseUpCapture={(e) => e.stopPropagation()}
-                      >
-                        {transitionDone && (
-                          <SignatureCanvas
-                            ref={sigCanvas}
-                            penColor="black"
-                            minWidth={1.5}
-                            maxWidth={4.5}
-                            canvasProps={{
-                              className: 'cursor-crosshair',
-                              style: {
-                                display: 'block',
-                                touchAction: 'none',
-                                width: '100%',
-                                height: '100%',
-                              },
-                            }}
-                            onEnd={handleCanvasDrawEnd}
-                            clearOnResize={false}
-                          />
-                        )}
-                        {sigEmpty && (
-                          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                            <span className="text-xs font-medium text-gray-400 bg-gray-100/80 px-3 py-1 rounded-full">
-                              Firma aquí
-                            </span>
-                          </div>
-                        )}
+                        <span className="text-sm font-bold dark:text-gray-200 text-gray-800">Abrir lienzo de firma</span>
+                        <span className="text-xs text-gray-400 mt-1 leading-normal">Toca aquí para dibujar tu firma a pantalla completa</span>
                       </div>
                     </div>
                   ) : (
@@ -877,6 +826,82 @@ export default function MiNegocio() {
           </button>
         </div>
       </form>
+      
+      {/* Signature Modal */}
+      <Dialog open={isSignatureModalOpen} onOpenChange={setIsSignatureModalOpen}>
+        <DialogContent className="dark:bg-gray-900 bg-white border dark:border-gray-800 border-gray-200 max-w-lg w-[95vw] rounded-[32px] p-6 shadow-2xl overflow-hidden flex flex-col items-center">
+          <DialogHeader className="w-full mb-4">
+            <DialogTitle className="text-xl font-bold dark:text-white text-gray-900 flex items-center gap-2">
+              <PenTool className="w-5 h-5 text-blue-500" />
+              Dibujar Firma
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="w-full flex justify-end gap-2 mb-3">
+            {history.length > 0 && (
+              <button
+                type="button"
+                onClick={handleUndoSignature}
+                className="px-3 py-2 rounded-xl dark:bg-gray-800 bg-gray-200 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors flex items-center gap-1 text-xs"
+              >
+                <Undo className="w-3.5 h-3.5" />
+                Deshacer
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleClearSignature}
+              className="px-3 py-2 rounded-xl dark:bg-gray-800 bg-gray-200 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center gap-1 text-xs"
+            >
+              <Eraser className="w-3.5 h-3.5" />
+              Limpiar
+            </button>
+          </div>
+
+          <div
+            ref={sigContainerRef}
+            className="w-full border-2 border-dashed rounded-2xl bg-white overflow-hidden relative shadow-inner touch-none dark:border-gray-700 border-gray-300"
+            style={{ height: '220px' }}
+          >
+            {transitionDone && isSignatureModalOpen && (
+              <SignatureCanvas
+                ref={sigCanvas}
+                penColor="black"
+                minWidth={1.5}
+                maxWidth={4.5}
+                canvasProps={{
+                  className: 'cursor-crosshair',
+                  style: {
+                    display: 'block',
+                    touchAction: 'none',
+                    width: '100%',
+                    height: '100%',
+                  },
+                }}
+                onEnd={handleCanvasDrawEnd}
+                clearOnResize={false}
+              />
+            )}
+            {sigEmpty && (
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <span className="text-xs font-medium text-gray-400 bg-gray-100/80 px-4 py-2 rounded-full shadow-sm">
+                  Firma aquí
+                </span>
+              </div>
+            )}
+          </div>
+          
+          <div className="w-full mt-6">
+            <button
+              type="button"
+              onClick={() => setIsSignatureModalOpen(false)}
+              className="w-full px-6 h-12 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm flex items-center justify-center shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all"
+            >
+              Guardar y Cerrar
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

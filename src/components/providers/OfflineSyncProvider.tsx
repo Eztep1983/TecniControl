@@ -8,7 +8,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { runTransaction, doc, addDoc, collection, setDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { deserializeOrdenPayload, serializeOrden } from '@/lib/orden-serializer'
-import { obtenerSiguienteIdDePool } from '@/lib/id-pool-helper'
+// Eliminar id-pool-helper import
 import { sanitizeOrdenPayload } from '@/lib/firestore-sanitizers'
 import { 
   readOfflineQueue, 
@@ -19,7 +19,7 @@ import {
 } from '@/lib/offline-queue-helpers'
 import * as configHelpers from '@/lib/configuracion-helpers'
 import * as multiuserHelpers from '@/lib/multiuser-helpers'
-import { encryptData, decryptData, encryptFirestoreEntity } from '@/lib/encryption-utils'
+import { encryptData, decryptData, encryptFirestoreEntity, decryptFirestoreEntity } from '@/lib/encryption-utils'
 import type { PendingOrderQueueItem, TempOrderId, OrdenMantenimiento } from '@/types/orden'
 import type { TareaPredefinida, PiezaPredefinida } from '@/lib/configuracion-helpers'
 import { 
@@ -28,8 +28,10 @@ import {
   CONFIG_STORAGE_KEY, 
   type QueueOperation, 
   type EntityType, 
-  type OperationType 
+  type OperationType
 } from '@/lib/offline-client-helpers'
+import { toast } from '@/hooks/use-toast'
+import { getDoc } from 'firebase/firestore'
 
 // ─── Tipos del Contexto ───────────────────────────────────────────────────────
 
@@ -105,13 +107,20 @@ async function syncPendingOrder(
   const { userId, payload } = item
 
   const contadorRef = doc(db, 'contadores', userId)
-  const nuevaOrdenRef = doc(collection(db, 'ordenes'))
+  const nuevaOrdenRef = doc(db, 'ordenes', item.tempId) // Usamos tempId como ID de documento para garantizar idempotencia
   let idPersonalizadoFinal = ''
+
+  // Verificar si ya existe para evitar duplicados (Idempotencia)
+  const docSnap = await getDoc(nuevaOrdenRef)
+  if (docSnap.exists()) {
+    const data = decryptFirestoreEntity(docSnap.data(), userId)
+    return { firestoreId: nuevaOrdenRef.id, idPersonalizado: data.idPersonalizado || data.id }
+  }
 
   // Deserializar la orden desde la cola offline
   const ordenPayload = deserializeOrdenPayload(payload)
 
-  // Omitir estrictamente tempId para no subirlo a Firestore
+  // Omitir estrictamente tempId de la raíz si estuviera ahí (lo inyectamos seguro después)
   const { tempId: _, ...ordenSinTempId } = ordenPayload as any
 
   // Si ya tiene un ID real pre-asignado, no necesitamos hacer una transacción
@@ -120,6 +129,7 @@ async function syncPendingOrder(
 
     const ordenCompleta = sanitizeOrdenPayload({
       ...ordenSinTempId,
+      tempId: item.tempId, // Trazabilidad dual
       updatedAt: new Date(),
     } as any)
 
@@ -129,6 +139,10 @@ async function syncPendingOrder(
     const currentYear = new Date().getFullYear()
 
     await runTransaction(db, async (tx) => {
+      // Re-verificar en transacción
+      const snapOrden = await tx.get(nuevaOrdenRef)
+      if (snapOrden.exists()) return
+
       const snap = await tx.get(contadorRef)
       let consecutivo = 1
 
@@ -160,6 +174,7 @@ async function syncPendingOrder(
       const ordenCompleta = sanitizeOrdenPayload({
         ...ordenSinTempId,
         idPersonalizado: idPersonalizadoFinal,
+        tempId: item.tempId, // Trazabilidad dual
         updatedAt: new Date(),
       } as any)
 
@@ -227,16 +242,18 @@ export const OfflineSyncProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   }, [user?.uid])
 
+  // Pre-carga eliminada para asegurar que los IDs sean 100% gapless
+
   // ─── Métodos de Órdenes ────────────────────────────────────────────────────
 
   const generateTempId = useCallback((): TempOrderId => `OSER-TEMP-${Date.now()}` as TempOrderId, [])
 
   const enqueueOrder = useCallback((ordenData: Omit<OrdenMantenimiento, 'id' | 'idPersonalizado'>, userId: string): { tempId: TempOrderId; idPersonalizado: string } => {
-    const poolId = obtenerSiguienteIdDePool(userId)
     const tempId = generateTempId()
     const queue = readOfflineQueue(userId)
 
-    const finalId = poolId || tempId
+    const finalId = tempId
+
 
     // Comprobar si el clienteId está mapeado a un ID real
     let finalClienteId = ordenData.clienteId
@@ -332,6 +349,14 @@ export const OfflineSyncProvider: React.FC<{ children: React.ReactNode }> = ({ c
         setPendingCount(finalQ.length)
         syncedCount++
         console.info(`[Sync] Órden OK: ${idPersonalizado}`)
+        
+        if (idPersonalizado !== item.tempId && idPersonalizado !== deserializeOrdenPayload(item.payload).idPersonalizado) {
+          toast({
+            title: "Orden sincronizada",
+            description: `La orden offline ha sido asignada al ID: ${idPersonalizado}`,
+          })
+        }
+
         await new Promise(r => setTimeout(r, INTER_OP_DELAY_MS))
       } catch (err) {
         console.warn(`[Sync] Error Órden ${item.tempId}:`, err)
